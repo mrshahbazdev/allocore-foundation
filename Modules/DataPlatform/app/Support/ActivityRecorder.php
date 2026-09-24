@@ -11,6 +11,9 @@ use Modules\Compliance\Models\OperatingInstruction;
 use Modules\Compliance\Models\RiskAssessment;
 use Modules\Core\Models\Company;
 use Modules\Core\Models\Person;
+use Modules\CorporateDev\Models\Measure;
+use Modules\CorporateDev\Models\Project;
+use Modules\CorporateDev\Models\Strategy;
 use Modules\DataPlatform\Events\DomainEvent;
 use Modules\Documents\Models\Document;
 use Modules\ExpertNetwork\Models\Answer;
@@ -18,6 +21,8 @@ use Modules\ExpertNetwork\Models\ExpertProfile;
 use Modules\ExpertNetwork\Models\Question;
 use Modules\ExpertNetwork\Models\Tender;
 use Modules\ExpertNetwork\Models\TenderApplication;
+use Modules\Investments\Models\Investment;
+use Modules\Investments\Models\Portfolio;
 use Modules\Tasks\Models\Task;
 
 /**
@@ -42,6 +47,11 @@ class ActivityRecorder
         Answer::class => 'answer',
         Tender::class => 'tender',
         TenderApplication::class => 'tender_application',
+        Portfolio::class => 'portfolio',
+        Investment::class => 'investment',
+        Strategy::class => 'strategy',
+        Project::class => 'project',
+        Measure::class => 'measure',
     ];
 
     public static function register(): void

@@ -1,0 +1,11 @@
+{
+    "name": "CorporateDev",
+    "alias": "corporatedev",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\CorporateDev\\Providers\\CorporateDevServiceProvider"
+    ],
+    "files": []
+}
