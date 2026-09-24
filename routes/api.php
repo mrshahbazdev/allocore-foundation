@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Tenant;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,8 @@ Route::prefix('v1')->group(function () {
         ]);
 
         $tenant = Tenant::create($validated);
+
+        RoleSeeder::forTenant($tenant);
 
         return response()->json($tenant, 201);
     });
