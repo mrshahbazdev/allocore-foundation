@@ -11,5 +11,6 @@
     "Participations": true,
     "Production": true,
     "Tasks": true,
-    "DataLake": true
+    "DataLake": true,
+    "Executive": true
 }
