@@ -7,5 +7,7 @@
     "ExpertNetwork": true,
     "Hr": true,
     "Investments": true,
+    "Participations": true,
+    "Production": true,
     "Tasks": true
 }
