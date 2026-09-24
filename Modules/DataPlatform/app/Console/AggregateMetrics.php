@@ -32,6 +32,7 @@ class AggregateMetrics extends Command
         'expert_profiles' => 'expert_profiles',
         'questions' => 'questions',
         'tenders_open' => ['tenders', "status = 'open'"],
+        'participations_active' => ['participations', "status = 'active'"],
         'portfolios' => 'portfolios',
         'investments_active' => ['investments', 'disposed_at IS NULL'],
         'strategies' => 'strategies',
