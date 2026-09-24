@@ -15,10 +15,12 @@ class CorePlatformTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function actingWithTenant(Tenant $tenant): User
+    protected function actingWithTenant(Tenant $tenant, string $role = 'holding'): User
     {
         $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        tenancy()->initialize($tenant);
+        $user->assignRole($role);
+        Sanctum::actingAs($user->fresh());
 
         return $user;
     }
@@ -27,7 +29,7 @@ class CorePlatformTest extends TestCase
     {
         $tenantA = Tenant::create(['name' => 'A GmbH']);
         $tenantB = Tenant::create(['name' => 'B GmbH']);
-        $this->actingWithTenant($tenantA);
+        $user = $this->actingWithTenant($tenantA);
 
         $this->postJson('/api/v1/companies', ['name' => 'DentalTech'], ['X-Tenant' => $tenantA->id])
             ->assertCreated();
@@ -36,10 +38,11 @@ class CorePlatformTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data');
 
-        // Same user, other tenant: sees nothing
+        // Same user, other tenant: role is per-tenant -> forbidden
+        // Fresh user instance: loaded role relations must not leak across tenants.
+        Sanctum::actingAs(User::find($user->id));
         $this->getJson('/api/v1/companies', ['X-Tenant' => $tenantB->id])
-            ->assertOk()
-            ->assertJsonCount(0, 'data');
+            ->assertForbidden();
     }
 
     public function test_company_is_auto_stamped_with_tenant_id(): void

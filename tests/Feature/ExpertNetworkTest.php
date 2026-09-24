@@ -14,10 +14,12 @@ class ExpertNetworkTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function acting(?User $user = null): User
+    protected function acting(Tenant $tenant): User
     {
-        $user ??= User::factory()->create();
-        Sanctum::actingAs($user);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
 
         return $user;
     }
@@ -25,7 +27,7 @@ class ExpertNetworkTest extends TestCase
     public function test_profile_question_answer_flow(): void
     {
         $tenant = Tenant::create(['name' => 'Net GmbH']);
-        $user = $this->acting();
+        $user = $this->acting($tenant);
 
         $person = $this->postJson('/api/v1/persons', [
             'first_name' => 'Max', 'last_name' => 'Expert', 'type' => 'consultant',
@@ -55,7 +57,7 @@ class ExpertNetworkTest extends TestCase
     public function test_tender_apply_and_award(): void
     {
         $tenant = Tenant::create(['name' => 'Tend GmbH']);
-        $user = $this->acting();
+        $user = $this->acting($tenant);
 
         $person = $this->postJson('/api/v1/persons', [
             'first_name' => 'Eva', 'last_name' => 'Pro',
@@ -84,7 +86,7 @@ class ExpertNetworkTest extends TestCase
     public function test_match_endpoint_scores_skill_overlap(): void
     {
         $tenant = Tenant::create(['name' => 'Match GmbH']);
-        $this->acting();
+        $this->acting($tenant);
 
         $p1 = $this->postJson('/api/v1/persons', ['first_name' => 'A', 'last_name' => 'B'], ['X-Tenant' => $tenant->id])->json('id');
         $p2 = $this->postJson('/api/v1/persons', ['first_name' => 'C', 'last_name' => 'D'], ['X-Tenant' => $tenant->id])->json('id');
@@ -103,13 +105,14 @@ class ExpertNetworkTest extends TestCase
     {
         $tenantA = Tenant::create(['name' => 'X GmbH']);
         $tenantB = Tenant::create(['name' => 'Y GmbH']);
-        $this->acting();
+        $user = $this->acting($tenantA);
 
         $person = $this->postJson('/api/v1/persons', ['first_name' => 'Z', 'last_name' => 'W'], ['X-Tenant' => $tenantA->id])->json('id');
         $this->postJson('/api/v1/expert-profiles', ['person_id' => $person], ['X-Tenant' => $tenantA->id]);
 
+        Sanctum::actingAs(User::find($user->id));
         $this->getJson('/api/v1/expert-profiles', ['X-Tenant' => $tenantB->id])
-            ->assertOk()->assertJsonCount(0, 'data');
+            ->assertForbidden();
     }
 
     public function test_expert_network_requires_auth(): void
