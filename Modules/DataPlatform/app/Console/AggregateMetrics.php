@@ -34,6 +34,11 @@ class AggregateMetrics extends Command
         'tenders_open' => ['tenders', "status = 'open'"],
         'persons_on_leave' => ['leave_requests', "status = 'approved' AND starts_on <= date('now') AND ends_on >= date('now')"],
         'leave_requests_pending' => ['leave_requests', "status = 'pending'"],
+        'strategies' => 'strategies',
+        'projects' => 'projects',
+        'projects_open' => ['projects', "status IN ('planned','active','on_hold')"],
+        'measures' => 'measures',
+        'measures_open' => ['measures', "status IN ('open','in_progress')"],
     ];
 
     public function handle(): int
