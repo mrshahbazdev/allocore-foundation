@@ -46,6 +46,8 @@ class AggregateMetrics extends Command
         'projects_open' => ['projects', "status IN ('planned','active','on_hold')"],
         'measures' => 'measures',
         'measures_open' => ['measures', "status IN ('open','in_progress')"],
+        'graph_entities' => 'graph_entities',
+        'graph_edges' => 'graph_edges',
     ];
 
     public function handle(): int
