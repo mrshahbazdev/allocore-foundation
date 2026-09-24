@@ -4,5 +4,6 @@
     "Tasks": true,
     "Compliance": true,
     "ExpertNetwork": true,
-    "DataPlatform": true
+    "DataPlatform": true,
+    "Participations": true
 }
