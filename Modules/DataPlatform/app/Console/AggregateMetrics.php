@@ -32,6 +32,7 @@ class AggregateMetrics extends Command
         'expert_profiles' => 'expert_profiles',
         'questions' => 'questions',
         'tenders_open' => ['tenders', "status = 'open'"],
+        'financial_reports' => 'financial_reports',
     ];
 
     public function handle(): int
