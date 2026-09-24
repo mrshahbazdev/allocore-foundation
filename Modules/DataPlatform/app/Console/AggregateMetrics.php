@@ -32,6 +32,7 @@ class AggregateMetrics extends Command
         'expert_profiles' => 'expert_profiles',
         'questions' => 'questions',
         'tenders_open' => ['tenders', "status = 'open'"],
+        'financial_reports' => 'financial_reports',
         'persons_on_leave' => ['leave_requests', "status = 'approved' AND starts_on <= date('now') AND ends_on >= date('now')"],
         'leave_requests_pending' => ['leave_requests', "status = 'pending'"],
         'machines_active' => ['machines', "status = 'active'"],
