@@ -3,5 +3,6 @@
     "Documents": true,
     "Tasks": true,
     "Compliance": true,
-    "ExpertNetwork": true
+    "ExpertNetwork": true,
+    "DataPlatform": true
 }
