@@ -1,0 +1,11 @@
+{
+    "name": "DataPlatform",
+    "alias": "dataplatform",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\DataPlatform\\Providers\\DataPlatformServiceProvider"
+    ],
+    "files": []
+}
