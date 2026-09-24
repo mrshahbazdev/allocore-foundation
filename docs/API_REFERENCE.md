@@ -55,6 +55,35 @@ Erinnerungen: `compliance:remind` (stündlich).
 |---|---|---|
 | `/events` | `metrics.view` | Event-Stream aus `stored_events` (R5) |
 | `/metrics`, `/metrics/{metric}` | `metrics.view` | KPI-Snapshots aus `analytics:aggregate` (daily) |
+| `/analytics/trends` | `metrics.view` | Layer 7: Trend je Metrik — letzter Wert, Vorgänger, `delta`, `direction` (up/down/flat/unknown) |
+
+## DataLake (`datalake`) — Layer 4
+
+| Pfad | Recht | Zweck |
+|---|---|---|
+| `/data-objects` | `datalake.view` / `datalake.manage` | Objektspeicher (PDFs, Bilder, Verträge, CAD, Produktionsdaten) — `category`-Filter |
+| `/data-objects/{id}/download` | `datalake.view` | Objekt herunterladen |
+
+## KnowledgeGraph (`graph`) — Layer 6
+
+| Pfad | Recht | Zweck |
+|---|---|---|
+| `/graph-entities` | `graph.view` / `graph.manage` | Knoten (`type`, `name`, morph `subject`, json `properties`) |
+| `/graph-edges` | `graph.view` / `graph.manage` | Kanten (`from`, `to`, `relation`, idempotent via unique) |
+| `/graph-entities/{id}/neighbors?depth={n}` | `graph.view` | BFS-Traversal, `depth` ≤ 3 |
+
+## Ai (`ai`) — Layer 8
+
+| Pfad | Recht | Zweck |
+|---|---|---|
+| `/ai-analyses` | `ai.view` / `ai.manage` | Analyse-Runs (provider-agnostic; Default `heuristic`, LLM-Provider steckbar) |
+
+## Executive (`executive`) — Layer 9
+
+| Pfad | Recht | Zweck |
+|---|---|---|
+| `/executive/overview` | `executive.view` | Holding-Rollup: KPIs über alle Tenants + `totals` |
+| `/exec-reports` | `executive.view` / `executive.manage` | Persistierte Executive-Snapshots |
 
 ## Fehlerformat
 
