@@ -11,6 +11,9 @@ use Modules\Compliance\Models\OperatingInstruction;
 use Modules\Compliance\Models\RiskAssessment;
 use Modules\Core\Models\Company;
 use Modules\Core\Models\Person;
+use Modules\CorporateDev\Models\Measure;
+use Modules\CorporateDev\Models\Project;
+use Modules\CorporateDev\Models\Strategy;
 use Modules\DataPlatform\Events\DomainEvent;
 use Modules\Documents\Models\Document;
 use Modules\ExpertNetwork\Models\Answer;
@@ -44,6 +47,9 @@ class ActivityRecorder
         Tender::class => 'tender',
         TenderApplication::class => 'tender_application',
         Participation::class => 'participation',
+        Strategy::class => 'strategy',
+        Project::class => 'project',
+        Measure::class => 'measure',
     ];
 
     public static function register(): void
