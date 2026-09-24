@@ -11,5 +11,6 @@
     "Participations": true,
     "Production": true,
     "Tasks": true,
-    "KnowledgeGraph": true
+    "KnowledgeGraph": true,
+    "DataLake": true
 }

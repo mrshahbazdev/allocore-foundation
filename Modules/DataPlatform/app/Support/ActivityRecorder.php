@@ -14,6 +14,7 @@ use Modules\Core\Models\Person;
 use Modules\CorporateDev\Models\Measure;
 use Modules\CorporateDev\Models\Project;
 use Modules\CorporateDev\Models\Strategy;
+use Modules\DataLake\Models\DataObject;
 use Modules\DataPlatform\Events\DomainEvent;
 use Modules\Documents\Models\Document;
 use Modules\ExpertNetwork\Models\Answer;
@@ -59,6 +60,7 @@ class ActivityRecorder
         Machine::class => 'machine',
         ProductionOrder::class => 'production_order',
         Participation::class => 'participation',
+        DataObject::class => 'data_object',
         Portfolio::class => 'portfolio',
         Investment::class => 'investment',
         GraphEntity::class => 'graph_entity',

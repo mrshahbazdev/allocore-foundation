@@ -1,0 +1,11 @@
+{
+    "name": "DataLake",
+    "alias": "datalake",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\DataLake\\Providers\\DataLakeServiceProvider"
+    ],
+    "files": []
+}
