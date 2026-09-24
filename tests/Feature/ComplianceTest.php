@@ -21,7 +21,9 @@ class ComplianceTest extends TestCase
     protected function actingWithTenant(Tenant $tenant): User
     {
         $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
 
         return $user;
     }
@@ -52,15 +54,18 @@ class ComplianceTest extends TestCase
     {
         $tenantA = Tenant::create(['name' => 'A GmbH']);
         $tenantB = Tenant::create(['name' => 'B GmbH']);
-        $this->actingWithTenant($tenantA);
+        $user = $this->actingWithTenant($tenantA);
 
         $this->postJson('/api/v1/risk-assessments', [
             'title' => 'GB Labor',
             'risk_level' => 'high',
         ], ['X-Tenant' => $tenantA->id])->assertCreated();
 
+        // Rolle ist pro Tenant: ohne Rolle auf B ist der Zugriff direkt verboten.
+        // Fresh user instance: loaded role relations must not leak across tenants.
+        Sanctum::actingAs(User::find($user->id));
         $this->getJson('/api/v1/risk-assessments', ['X-Tenant' => $tenantB->id])
-            ->assertOk()->assertJsonCount(0, 'data');
+            ->assertForbidden();
     }
 
     public function test_deadline_reminder_notifies_responsible_user(): void

@@ -16,10 +16,12 @@ class DataPlatformTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function acting(): User
+    protected function acting(Tenant $tenant): User
     {
         $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
 
         return $user;
     }
@@ -27,7 +29,7 @@ class DataPlatformTest extends TestCase
     public function test_domain_events_are_recorded_in_event_store(): void
     {
         $tenant = Tenant::create(['name' => 'Ev GmbH']);
-        $this->acting();
+        $this->acting($tenant);
 
         $this->postJson('/api/v1/companies', ['name' => 'EvCo'], ['X-Tenant' => $tenant->id])
             ->assertCreated();
@@ -47,19 +49,18 @@ class DataPlatformTest extends TestCase
     {
         $tenantA = Tenant::create(['name' => 'EA GmbH']);
         $tenantB = Tenant::create(['name' => 'EB GmbH']);
-        $this->acting();
+        $user = $this->acting($tenantA);
 
         $this->postJson('/api/v1/companies', ['name' => 'OnlyA'], ['X-Tenant' => $tenantA->id]);
 
-        $res = $this->getJson('/api/v1/events', ['X-Tenant' => $tenantB->id])->assertOk();
-
-        $this->assertCount(0, $res->json('data'));
+        Sanctum::actingAs(User::find($user->id));
+        $this->getJson('/api/v1/events', ['X-Tenant' => $tenantB->id])->assertForbidden();
     }
 
     public function test_metrics_aggregation(): void
     {
         $tenant = Tenant::create(['name' => 'Kpi GmbH']);
-        $this->acting();
+        $this->acting($tenant);
 
         $this->postJson('/api/v1/companies', ['name' => 'C1'], ['X-Tenant' => $tenant->id]);
         $this->postJson('/api/v1/companies', ['name' => 'C2'], ['X-Tenant' => $tenant->id]);

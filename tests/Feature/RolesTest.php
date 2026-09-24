@@ -64,10 +64,14 @@ class RolesTest extends TestCase
             ->assertForbidden();
     }
 
-    protected function actingAsUser(): User
+    protected function actingAsUser(Tenant|string|null $tenant = null): User
     {
         $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        if ($tenant) {
+            tenancy()->initialize($tenant);
+            $user->assignRole('administrator');
+        }
+        Sanctum::actingAs($user->fresh());
 
         return $user;
     }

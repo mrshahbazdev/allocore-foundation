@@ -21,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Jeder Tenant bekommt automatisch das Rollenmodell (Dokument C),
+        // egal ueber welchen Pfad er angelegt wurde.
         Tenant::created(function (Tenant $tenant) {
             RoleSeeder::forTenant($tenant);
         });
