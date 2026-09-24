@@ -21,6 +21,7 @@ use Modules\ExpertNetwork\Models\ExpertProfile;
 use Modules\ExpertNetwork\Models\Question;
 use Modules\ExpertNetwork\Models\Tender;
 use Modules\ExpertNetwork\Models\TenderApplication;
+use Modules\Hr\Models\LeaveRequest;
 use Modules\Production\Models\Machine;
 use Modules\Production\Models\ProductionOrder;
 use Modules\Participations\Models\Participation;
@@ -50,6 +51,7 @@ class ActivityRecorder
         Answer::class => 'answer',
         Tender::class => 'tender',
         TenderApplication::class => 'tender_application',
+        LeaveRequest::class => 'leave_request',
         Machine::class => 'machine',
         ProductionOrder::class => 'production_order',
         Participation::class => 'participation',
