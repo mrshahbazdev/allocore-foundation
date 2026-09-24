@@ -3,6 +3,7 @@
 namespace Modules\Tasks\Providers;
 
 use Illuminate\Console\Scheduling\Schedule;
+use Modules\Tasks\Console\RemindDueTasks;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class TasksServiceProvider extends ModuleServiceProvider
@@ -22,7 +23,9 @@ class TasksServiceProvider extends ModuleServiceProvider
      *
      * @var string[]
      */
-    // protected array $commands = [];
+    protected array $commands = [
+        RemindDueTasks::class,
+    ];
 
     /**
      * Provider classes to register.
@@ -36,11 +39,9 @@ class TasksServiceProvider extends ModuleServiceProvider
 
     /**
      * Define module schedules.
-     *
-     * @param  $schedule
      */
-    // protected function configureSchedules(Schedule $schedule): void
-    // {
-    //     $schedule->command('inspire')->hourly();
-    // }
+    protected function configureSchedules(Schedule $schedule): void
+    {
+        $schedule->command('tasks:remind')->hourly();
+    }
 }
