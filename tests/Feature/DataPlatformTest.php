@@ -77,4 +77,28 @@ class DataPlatformTest extends TestCase
         $this->getJson('/api/v1/metrics/companies', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonCount(1);
     }
+
+    public function test_insights_endpoint_reports_findings(): void
+    {
+        $tenant = Tenant::create(['name' => 'Insights GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/tasks', [
+            'title' => 'Alt', 'due_at' => now()->subDays(2),
+        ], ['X-Tenant' => $tenant->id]);
+
+        $this->postJson('/api/v1/risk-assessments', [
+            'title' => 'Laser-Arbeitsplatz', 'risk_level' => 'high',
+        ], ['X-Tenant' => $tenant->id]);
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('tasks_overdue', $codes);
+        $this->assertContains('high_risks_open', $codes);
+    }
 }
