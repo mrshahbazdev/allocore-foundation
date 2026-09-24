@@ -1,0 +1,21 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use Modules\ExpertNetwork\Http\Controllers\AnswerController;
+use Modules\ExpertNetwork\Http\Controllers\ExpertProfileController;
+use Modules\ExpertNetwork\Http\Controllers\QuestionController;
+use Modules\ExpertNetwork\Http\Controllers\TenderApplicationController;
+use Modules\ExpertNetwork\Http\Controllers\TenderController;
+
+Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
+    Route::get('expert-profiles/match', [ExpertProfileController::class, 'match'])->name('expert-network.profiles.match');
+    Route::apiResource('expert-profiles', ExpertProfileController::class)->names('expert-network.profiles');
+    Route::apiResource('questions', QuestionController::class)->names('expert-network.questions');
+    Route::post('questions/{question}/answers', [AnswerController::class, 'store'])->name('expert-network.answers.store');
+    Route::post('answers/{answer}/accept', [AnswerController::class, 'accept'])->name('expert-network.answers.accept');
+    Route::delete('answers/{answer}', [AnswerController::class, 'destroy'])->name('expert-network.answers.destroy');
+    Route::apiResource('tenders', TenderController::class)->names('expert-network.tenders');
+    Route::post('tenders/{tender}/applications', [TenderApplicationController::class, 'store'])->name('expert-network.applications.store');
+    Route::patch('tender-applications/{tenderApplication}', [TenderApplicationController::class, 'update'])->name('expert-network.applications.update');
+    Route::delete('tender-applications/{tenderApplication}', [TenderApplicationController::class, 'destroy'])->name('expert-network.applications.destroy');
+});

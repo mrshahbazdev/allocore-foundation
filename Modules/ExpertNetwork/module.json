@@ -1,0 +1,11 @@
+{
+    "name": "ExpertNetwork",
+    "alias": "expertnetwork",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\ExpertNetwork\\Providers\\ExpertNetworkServiceProvider"
+    ],
+    "files": []
+}
