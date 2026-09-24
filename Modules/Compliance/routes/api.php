@@ -8,9 +8,16 @@ use Modules\Compliance\Http\Controllers\OperatingInstructionController;
 use Modules\Compliance\Http\Controllers\RiskAssessmentController;
 
 Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
-    Route::apiResource('instructions', InstructionController::class)->names('compliance.instructions');
-    Route::apiResource('inspections', InspectionController::class)->names('compliance.inspections');
-    Route::apiResource('deadlines', DeadlineController::class)->names('compliance.deadlines');
-    Route::apiResource('risk-assessments', RiskAssessmentController::class)->names('compliance.risk-assessments');
-    Route::apiResource('operating-instructions', OperatingInstructionController::class)->names('compliance.operating-instructions');
+    foreach ([
+        'instructions' => InstructionController::class,
+        'inspections' => InspectionController::class,
+        'deadlines' => DeadlineController::class,
+        'risk-assessments' => RiskAssessmentController::class,
+        'operating-instructions' => OperatingInstructionController::class,
+    ] as $resource => $controller) {
+        Route::apiResource($resource, $controller)
+            ->only(['index', 'show'])->middleware('permission:compliance.view')->names("compliance.{$resource}");
+        Route::apiResource($resource, $controller)
+            ->only(['store', 'update', 'destroy'])->middleware('permission:compliance.manage')->names("compliance.{$resource}");
+    }
 });

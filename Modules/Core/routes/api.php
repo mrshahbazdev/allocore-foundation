@@ -6,11 +6,19 @@ use Modules\Core\Http\Controllers\PersonController;
 use Modules\Core\Http\Controllers\RoleController;
 
 Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
-    Route::apiResource('companies', CompanyController::class)->names('companies');
-    Route::apiResource('persons', PersonController::class)->names('persons');
+    Route::apiResource('companies', CompanyController::class)
+        ->only(['index', 'show'])->middleware('permission:companies.view')->names('companies');
+    Route::apiResource('companies', CompanyController::class)
+        ->only(['store', 'update', 'destroy'])->middleware('permission:companies.manage')->names('companies');
+
+    Route::apiResource('persons', PersonController::class)
+        ->only(['index', 'show'])->middleware('permission:persons.view')->names('persons');
+    Route::apiResource('persons', PersonController::class)
+        ->only(['store', 'update', 'destroy'])->middleware('permission:persons.manage')->names('persons');
+
     Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('users/{user}/roles', [RoleController::class, 'userRoles'])->name('users.roles.show');
     Route::put('users/{user}/roles', [RoleController::class, 'assign'])
-        ->middleware('role:holding|administrator|geschaeftsfuehrer')
+        ->middleware('permission:roles.manage')
         ->name('users.roles.assign');
 });
