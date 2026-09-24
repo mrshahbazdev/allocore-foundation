@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('tenant_id', 36)->index();
             $table->foreignId('question_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('answered_by')->constrained('users')->nullOnDelete();
+            $table->foreignId('answered_by')->nullable()->constrained('users')->nullOnDelete();
             $table->text('body');
             $table->boolean('is_accepted')->default(false)->index();
             $table->timestamps();
