@@ -33,6 +33,8 @@ class AggregateMetrics extends Command
         'questions' => 'questions',
         'tenders_open' => ['tenders', "status = 'open'"],
         'financial_reports' => 'financial_reports',
+        'portfolios' => 'portfolios',
+        'investments_active' => ['investments', 'disposed_at IS NULL'],
         'strategies' => 'strategies',
         'projects' => 'projects',
         'projects_open' => ['projects', "status IN ('planned','active','on_hold')"],
