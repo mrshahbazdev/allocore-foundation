@@ -22,8 +22,10 @@ COPY --from=assets /app/public/build ./public/build
 
 ENV APP_ENV=production \
     APP_DEBUG=false \
-    DB_CONNECTION=sqlite \
-    DB_DATABASE=/var/www/html/storage/database.sqlite
+    DB_CONNECTION=mysql \
+    DB_HOST=mysql \
+    DB_PORT=3306 \
+    DB_DATABASE=allocore
 
 EXPOSE 8000
 

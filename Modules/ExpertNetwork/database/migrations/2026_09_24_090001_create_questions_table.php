@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('body')->nullable();
             $table->string('category')->nullable()->index();
-            $table->foreignId('asked_by')->constrained('users')->nullOnDelete();
+            $table->foreignId('asked_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('expert_profile_id')->nullable()->constrained()->nullOnDelete();
             $table->string('status')->default('open')->index();
             $table->timestamps();

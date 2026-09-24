@@ -23,34 +23,36 @@ class InsightController extends Controller
     private function rules(): array
     {
         $t = tenant()->getTenantKey();
-        $count = fn (string $table, string $where = '1=1') => DB::table($table)
-            ->where('tenant_id', $t)->whereRaw($where)->count();
+        $count = fn (string $table, ?callable $scope = null) => DB::table($table)
+            ->where('tenant_id', $t)
+            ->when($scope, fn ($q) => $q->where($scope))
+            ->count();
 
         $insights = [];
 
-        $overdue = $count('tasks', "status IN ('open','in_progress') AND due_at < datetime('now')");
+        $overdue = $count('tasks', fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->where('due_at', '<', now()));
         if ($overdue) {
             $insights[] = $this->hit('warning', 'tasks_overdue', "{$overdue} Aufgabe(n) überfällig.", ['count' => $overdue]);
         }
 
         $instructions = $count('instructions');
-        $done = $count('instructions', "status = 'completed'");
+        $done = $count('instructions', fn ($q) => $q->where('status', 'completed'));
         if ($instructions && ($done / $instructions) < 0.8) {
             $rate = round($done / $instructions * 100);
             $insights[] = $this->hit('warning', 'compliance_rate_low', "Schulungsquote bei {$rate}% — Ziel ≥ 80%.", ['rate' => $rate]);
         }
 
-        $high = $count('risk_assessments', "risk_level = 'high'");
+        $high = $count('risk_assessments', fn ($q) => $q->where('risk_level', 'high'));
         if ($high) {
             $insights[] = $this->hit('critical', 'high_risks_open', "{$high} Gefährdungsbeurteilung(en) mit hohem Risiko.", ['count' => $high]);
         }
 
-        $dl = $count('deadlines', "status = 'open' AND due_at < date('now')");
+        $dl = $count('deadlines', fn ($q) => $q->where('status', 'open')->whereDate('due_at', '<', now()));
         if ($dl) {
             $insights[] = $this->hit('critical', 'deadlines_overdue', "{$dl} offene Frist(en) überschritten.", ['count' => $dl]);
         }
 
-        $openTenders = $count('tenders', "status = 'open'");
+        $openTenders = $count('tenders', fn ($q) => $q->where('status', 'open'));
         if ($openTenders) {
             $insights[] = $this->hit('info', 'tenders_open', "{$openTenders} Ausschreibung(en) offen — Experten-Matching prüfen.", ['count' => $openTenders]);
         }

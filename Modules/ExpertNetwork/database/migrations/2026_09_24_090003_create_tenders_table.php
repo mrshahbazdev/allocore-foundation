@@ -16,7 +16,7 @@ return new class extends Migration
             $table->json('required_skills')->nullable();
             $table->decimal('budget', 12, 2)->nullable();
             $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('created_by')->constrained('users')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('status')->default('open')->index();
             $table->timestamp('deadline_at')->nullable()->index();
             $table->timestamps();
