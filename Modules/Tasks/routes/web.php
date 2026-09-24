@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Tasks\Http\Controllers\TasksController;
 
+// Web UI follows in a later sprint; functions are available via /api/v1.
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('tasks', TasksController::class)->names('tasks');
+    //
 });

@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Documents\Http\Controllers\DocumentsController;
 
+// Web UI follows in a later sprint; functions are available via /api/v1.
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('documents', DocumentsController::class)->names('documents');
+    //
 });
