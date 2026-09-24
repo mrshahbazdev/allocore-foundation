@@ -14,7 +14,7 @@ class MetricController extends Controller
         return MetricSnapshot::query()
             ->select('metric', 'value', 'captured_on')
             ->whereIn('id', function ($q) {
-                $q->selectRaw('MAX(id)')->from('metric_snapshots')->groupBy('metric');
+                $q->selectRaw('MAX(id)')->from('metric_snapshots')->groupBy('metric', 'tenant_id');
             })
             ->orderBy('metric')
             ->get()

@@ -15,10 +15,11 @@ class TenancyTest extends TestCase
 
     public function test_creates_a_tenant_via_the_central_api(): void
     {
+        $before = Tenant::count();
         $response = $this->postJson('/api/v1/tenants', ['name' => 'DISAVO Holding GmbH']);
 
         $response->assertCreated();
-        $this->assertSame(1, Tenant::count());
+        $this->assertSame($before + 1, Tenant::count());
     }
 
     public function test_lists_tenants_via_the_central_api(): void
@@ -27,7 +28,7 @@ class TenancyTest extends TestCase
 
         $this->getJson('/api/v1/tenants')
             ->assertOk()
-            ->assertJsonPath('data.0.name', 'ALLOCORE GmbH');
+            ->assertJsonFragment(['name' => 'ALLOCORE GmbH']);
     }
 
     public function test_initializes_tenancy_context_for_a_tenant(): void

@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/datalake",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\DataLake\\": "app/",
+            "Modules\\DataLake\\Database\\Factories\\": "database/factories/",
+            "Modules\\DataLake\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\DataLake\\Tests\\": "tests/"
+        }
+    }
+}

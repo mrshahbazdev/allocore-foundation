@@ -12,7 +12,8 @@ class RoleController extends Controller
 {
     public function index()
     {
-        return Role::query()->with('permissions:id,name')->get(['id', 'name']);
+        return Role::query()->where('team_id', tenant()->getTenantKey())
+            ->with('permissions:id,name')->get(['id', 'name']);
     }
 
     public function users()
