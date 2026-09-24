@@ -22,6 +22,8 @@ use Modules\ExpertNetwork\Models\Question;
 use Modules\ExpertNetwork\Models\Tender;
 use Modules\ExpertNetwork\Models\TenderApplication;
 use Modules\Hr\Models\LeaveRequest;
+use Modules\Investments\Models\Investment;
+use Modules\Investments\Models\Portfolio;
 use Modules\Tasks\Models\Task;
 
 /**
@@ -47,6 +49,8 @@ class ActivityRecorder
         Tender::class => 'tender',
         TenderApplication::class => 'tender_application',
         LeaveRequest::class => 'leave_request',
+        Portfolio::class => 'portfolio',
+        Investment::class => 'investment',
         Strategy::class => 'strategy',
         Project::class => 'project',
         Measure::class => 'measure',
