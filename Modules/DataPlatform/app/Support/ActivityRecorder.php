@@ -21,6 +21,8 @@ use Modules\ExpertNetwork\Models\ExpertProfile;
 use Modules\ExpertNetwork\Models\Question;
 use Modules\ExpertNetwork\Models\Tender;
 use Modules\ExpertNetwork\Models\TenderApplication;
+use Modules\Investments\Models\Investment;
+use Modules\Investments\Models\Portfolio;
 use Modules\Tasks\Models\Task;
 
 /**
@@ -45,6 +47,8 @@ class ActivityRecorder
         Answer::class => 'answer',
         Tender::class => 'tender',
         TenderApplication::class => 'tender_application',
+        Portfolio::class => 'portfolio',
+        Investment::class => 'investment',
         Strategy::class => 'strategy',
         Project::class => 'project',
         Measure::class => 'measure',
