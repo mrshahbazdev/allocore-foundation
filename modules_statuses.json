@@ -6,5 +6,7 @@
     "Documents": true,
     "ExpertNetwork": true,
     "Investments": true,
+    "Participations": true,
+    "Production": true,
     "Tasks": true
 }
