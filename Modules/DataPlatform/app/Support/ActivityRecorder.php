@@ -18,6 +18,7 @@ use Modules\ExpertNetwork\Models\ExpertProfile;
 use Modules\ExpertNetwork\Models\Question;
 use Modules\ExpertNetwork\Models\Tender;
 use Modules\ExpertNetwork\Models\TenderApplication;
+use Modules\Hr\Models\LeaveRequest;
 use Modules\Tasks\Models\Task;
 
 /**
@@ -42,6 +43,7 @@ class ActivityRecorder
         Answer::class => 'answer',
         Tender::class => 'tender',
         TenderApplication::class => 'tender_application',
+        LeaveRequest::class => 'leave_request',
     ];
 
     public static function register(): void

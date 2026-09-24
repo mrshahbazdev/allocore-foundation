@@ -14,7 +14,7 @@ use Spatie\Permission\PermissionRegistrar;
  */
 class RoleSeeder extends Seeder
 {
-    public const DOMAINS = ['companies', 'persons', 'documents', 'tasks', 'compliance', 'experts'];
+    public const DOMAINS = ['companies', 'persons', 'documents', 'tasks', 'compliance', 'experts', 'hr'];
 
     public const EXTRA_PERMISSIONS = ['metrics.view', 'roles.manage'];
 
@@ -26,6 +26,7 @@ class RoleSeeder extends Seeder
             'tasks.view', 'tasks.manage',
             'documents.view', 'documents.manage',
             'persons.view',
+            'hr.view', 'hr.manage',
         ],
         'berater' => [
             'tasks.view', 'tasks.manage',
