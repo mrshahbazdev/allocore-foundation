@@ -16,6 +16,18 @@
                 <span x-show="error" x-text="error" class="text-sm text-red-600"></span>
             </div>
 
+            <div x-show="insights.length" class="space-y-2">
+                <template x-for="i in insights" :key="i.code">
+                    <div class="border-l-4 p-3 bg-white shadow-sm sm:rounded-lg text-sm"
+                         :class="{
+                            'border-red-500 text-red-800': i.severity === 'critical',
+                            'border-yellow-500 text-yellow-800': i.severity === 'warning',
+                            'border-blue-500 text-blue-800': i.severity === 'info'
+                         }"
+                         x-text="i.message"></div>
+                </template>
+            </div>
+
             <div x-show="metrics" class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <template x-for="m in cards" :key="m.key">
                     <div class="bg-white shadow-sm sm:rounded-lg p-4">
@@ -62,6 +74,7 @@
                 users: null,
                 roles: [],
                 roleMsg: '',
+                insights: [],
                 error: '',
                 cards: [
                     {key:'companies',label:'Unternehmen'},
@@ -86,10 +99,18 @@
                     this.error = '';
                     this.users = null;
                     fetch('/api/v1/metrics', {headers: {
+                api(path) {
+                    return fetch(path, {headers: {
                         'Authorization': 'Bearer {{ $apiToken }}',
                         'X-Tenant': this.tenant,
                         'Accept': 'application/json',
-                    }}).then(r => {
+                    }});
+                },
+                load() {
+                    if (!this.tenant) return;
+                    this.error = '';
+                    this.insights = [];
+                    this.api('/api/v1/metrics').then(r => {
                         if (!r.ok) { this.error = 'HTTP '+r.status+' — keine Berechtigung?'; this.metrics = null; return null; }
                         return r.json();
                     }).then(d => { if (d) this.metrics = d; });
@@ -128,6 +149,8 @@
                     }).then(r => {
                         this.roleMsg = r.ok ? 'Gespeichert: '+u.name : 'Fehler HTTP '+r.status+' (roles.manage fehlt?)';
                     });
+                    this.api('/api/v1/insights').then(r => r.ok ? r.json() : [])
+                        .then(d => { this.insights = d.filter(i => i.code !== 'all_clear'); });
                 }
             }
         }
