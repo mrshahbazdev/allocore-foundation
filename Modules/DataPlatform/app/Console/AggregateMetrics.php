@@ -33,6 +33,11 @@ class AggregateMetrics extends Command
         'questions' => 'questions',
         'tenders_open' => ['tenders', "status = 'open'"],
         'financial_reports' => 'financial_reports',
+        'strategies' => 'strategies',
+        'projects' => 'projects',
+        'projects_open' => ['projects', "status IN ('planned','active','on_hold')"],
+        'measures' => 'measures',
+        'measures_open' => ['measures', "status IN ('open','in_progress')"],
     ];
 
     public function handle(): int
