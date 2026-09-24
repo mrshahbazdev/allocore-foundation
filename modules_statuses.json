@@ -1,8 +1,10 @@
 {
-    "Core": true,
-    "Documents": true,
-    "Tasks": true,
     "Compliance": true,
+    "Core": true,
+    "CorporateDev": true,
+    "DataPlatform": true,
+    "Documents": true,
     "ExpertNetwork": true,
-    "DataPlatform": true
+    "Investments": true,
+    "Tasks": true
 }
