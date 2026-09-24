@@ -23,6 +23,7 @@ use Modules\ExpertNetwork\Models\Tender;
 use Modules\ExpertNetwork\Models\TenderApplication;
 use Modules\Production\Models\Machine;
 use Modules\Production\Models\ProductionOrder;
+use Modules\Participations\Models\Participation;
 use Modules\Investments\Models\Investment;
 use Modules\Investments\Models\Portfolio;
 use Modules\Tasks\Models\Task;
@@ -51,6 +52,7 @@ class ActivityRecorder
         TenderApplication::class => 'tender_application',
         Machine::class => 'machine',
         ProductionOrder::class => 'production_order',
+        Participation::class => 'participation',
         Portfolio::class => 'portfolio',
         Investment::class => 'investment',
         Strategy::class => 'strategy',
