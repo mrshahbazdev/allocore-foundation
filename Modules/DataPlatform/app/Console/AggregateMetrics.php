@@ -33,6 +33,8 @@ class AggregateMetrics extends Command
         'questions' => 'questions',
         'tenders_open' => ['tenders', "status = 'open'"],
         'financial_reports' => 'financial_reports',
+        'persons_on_leave' => ['leave_requests', "status = 'approved' AND starts_on <= date('now') AND ends_on >= date('now')"],
+        'leave_requests_pending' => ['leave_requests', "status = 'pending'"],
         'machines_active' => ['machines', "status = 'active'"],
         'production_orders_open' => ['production_orders', "status IN ('queued','running')"],
         'production_scrap' => ['production_orders', 'scrap_qty > 0'],
