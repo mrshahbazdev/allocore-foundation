@@ -9,7 +9,7 @@ class MetricSnapshot extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['metric', 'value', 'captured_on'];
+    protected $fillable = ['metric', 'value', 'captured_on', 'tenant_id'];
 
     protected function casts(): array
     {

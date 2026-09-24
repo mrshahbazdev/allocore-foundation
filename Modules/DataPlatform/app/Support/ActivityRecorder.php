@@ -14,6 +14,7 @@ use Modules\Core\Models\Person;
 use Modules\CorporateDev\Models\Measure;
 use Modules\CorporateDev\Models\Project;
 use Modules\CorporateDev\Models\Strategy;
+use Modules\DataLake\Models\DataObject;
 use Modules\DataPlatform\Events\DomainEvent;
 use Modules\Documents\Models\Document;
 use Modules\ExpertNetwork\Models\Answer;
@@ -23,11 +24,11 @@ use Modules\ExpertNetwork\Models\Tender;
 use Modules\ExpertNetwork\Models\TenderApplication;
 use Modules\Finance\Models\FinancialReport;
 use Modules\Hr\Models\LeaveRequest;
-use Modules\Production\Models\Machine;
-use Modules\Production\Models\ProductionOrder;
-use Modules\Participations\Models\Participation;
 use Modules\Investments\Models\Investment;
 use Modules\Investments\Models\Portfolio;
+use Modules\Participations\Models\Participation;
+use Modules\Production\Models\Machine;
+use Modules\Production\Models\ProductionOrder;
 use Modules\Tasks\Models\Task;
 
 /**
@@ -57,6 +58,7 @@ class ActivityRecorder
         Machine::class => 'machine',
         ProductionOrder::class => 'production_order',
         Participation::class => 'participation',
+        DataObject::class => 'data_object',
         Portfolio::class => 'portfolio',
         Investment::class => 'investment',
         Strategy::class => 'strategy',

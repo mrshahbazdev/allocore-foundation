@@ -10,5 +10,6 @@
     "Investments": true,
     "Participations": true,
     "Production": true,
-    "Tasks": true
+    "Tasks": true,
+    "DataLake": true
 }
