@@ -1,0 +1,1625 @@
+openapi: 3.0.3
+info:
+  title: ALLOCORE Foundation API
+  version: 1.0.0
+  description: |
+    R3 API First — alle Module unter /api/v1, tenant-scoped via X-Tenant header.
+    Auth: Sanctum Bearer Token (POST /api/v1/auth/token oder Dashboard-Token).
+    Permissions: {domain}.view (GET), {domain}.manage (schreibend) pro Tenant-Rolle.
+servers:
+  - url: /
+paths:
+  /api/v1/answers/{answer}:
+    delete:
+      tags: [answers]
+      summary: DELETE /api/v1/answers/{answer}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/answers/{answer}/accept:
+    post:
+      tags: [answers]
+      summary: POST /api/v1/answers/{answer}/accept
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/companies:
+    get:
+      tags: [companies]
+      summary: GET /api/v1/companies
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [companies]
+      summary: POST /api/v1/companies
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/companies/{company}:
+    get:
+      tags: [companies]
+      summary: GET /api/v1/companies/{company}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [companies]
+      summary: PUT /api/v1/companies/{company}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [companies]
+      summary: PATCH /api/v1/companies/{company}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [companies]
+      summary: DELETE /api/v1/companies/{company}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/context:
+    get:
+      tags: [context]
+      summary: GET /api/v1/context
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/deadlines:
+    get:
+      tags: [deadlines]
+      summary: GET /api/v1/deadlines
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [deadlines]
+      summary: POST /api/v1/deadlines
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/deadlines/{deadline}:
+    get:
+      tags: [deadlines]
+      summary: GET /api/v1/deadlines/{deadline}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [deadlines]
+      summary: PUT /api/v1/deadlines/{deadline}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [deadlines]
+      summary: PATCH /api/v1/deadlines/{deadline}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [deadlines]
+      summary: DELETE /api/v1/deadlines/{deadline}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/documents:
+    get:
+      tags: [documents]
+      summary: GET /api/v1/documents
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [documents]
+      summary: POST /api/v1/documents
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/documents/{document}:
+    get:
+      tags: [documents]
+      summary: GET /api/v1/documents/{document}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [documents]
+      summary: PUT /api/v1/documents/{document}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [documents]
+      summary: PATCH /api/v1/documents/{document}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [documents]
+      summary: DELETE /api/v1/documents/{document}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/documents/{document}/download/{version?}:
+    get:
+      tags: [documents]
+      summary: GET /api/v1/documents/{document}/download/{version?}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/documents/{document}/versions:
+    post:
+      tags: [documents]
+      summary: POST /api/v1/documents/{document}/versions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/events:
+    get:
+      tags: [events]
+      summary: GET /api/v1/events
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/expert-profiles:
+    get:
+      tags: [expert-profiles]
+      summary: GET /api/v1/expert-profiles
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [expert-profiles]
+      summary: POST /api/v1/expert-profiles
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/expert-profiles/match:
+    get:
+      tags: [expert-profiles]
+      summary: GET /api/v1/expert-profiles/match
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/expert-profiles/{expert_profile}:
+    get:
+      tags: [expert-profiles]
+      summary: GET /api/v1/expert-profiles/{expert_profile}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [expert-profiles]
+      summary: PUT /api/v1/expert-profiles/{expert_profile}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [expert-profiles]
+      summary: PATCH /api/v1/expert-profiles/{expert_profile}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [expert-profiles]
+      summary: DELETE /api/v1/expert-profiles/{expert_profile}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/health:
+    get:
+      tags: [health]
+      summary: GET /api/v1/health
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/inspections:
+    get:
+      tags: [inspections]
+      summary: GET /api/v1/inspections
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [inspections]
+      summary: POST /api/v1/inspections
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/inspections/{inspection}:
+    get:
+      tags: [inspections]
+      summary: GET /api/v1/inspections/{inspection}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [inspections]
+      summary: PUT /api/v1/inspections/{inspection}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [inspections]
+      summary: PATCH /api/v1/inspections/{inspection}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [inspections]
+      summary: DELETE /api/v1/inspections/{inspection}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/instructions:
+    get:
+      tags: [instructions]
+      summary: GET /api/v1/instructions
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [instructions]
+      summary: POST /api/v1/instructions
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/instructions/{instruction}:
+    get:
+      tags: [instructions]
+      summary: GET /api/v1/instructions/{instruction}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [instructions]
+      summary: PUT /api/v1/instructions/{instruction}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [instructions]
+      summary: PATCH /api/v1/instructions/{instruction}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [instructions]
+      summary: DELETE /api/v1/instructions/{instruction}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/metrics:
+    get:
+      tags: [metrics]
+      summary: GET /api/v1/metrics
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/metrics/{metric}:
+    get:
+      tags: [metrics]
+      summary: GET /api/v1/metrics/{metric}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/operating-instructions:
+    get:
+      tags: [operating-instructions]
+      summary: GET /api/v1/operating-instructions
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [operating-instructions]
+      summary: POST /api/v1/operating-instructions
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/operating-instructions/{operating_instruction}:
+    get:
+      tags: [operating-instructions]
+      summary: GET /api/v1/operating-instructions/{operating_instruction}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [operating-instructions]
+      summary: PUT /api/v1/operating-instructions/{operating_instruction}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [operating-instructions]
+      summary: PATCH /api/v1/operating-instructions/{operating_instruction}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [operating-instructions]
+      summary: DELETE /api/v1/operating-instructions/{operating_instruction}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/persons:
+    get:
+      tags: [persons]
+      summary: GET /api/v1/persons
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [persons]
+      summary: POST /api/v1/persons
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/persons/{person}:
+    get:
+      tags: [persons]
+      summary: GET /api/v1/persons/{person}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [persons]
+      summary: PUT /api/v1/persons/{person}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [persons]
+      summary: PATCH /api/v1/persons/{person}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [persons]
+      summary: DELETE /api/v1/persons/{person}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/questions:
+    get:
+      tags: [questions]
+      summary: GET /api/v1/questions
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [questions]
+      summary: POST /api/v1/questions
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/questions/{question}:
+    get:
+      tags: [questions]
+      summary: GET /api/v1/questions/{question}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [questions]
+      summary: PUT /api/v1/questions/{question}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [questions]
+      summary: PATCH /api/v1/questions/{question}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [questions]
+      summary: DELETE /api/v1/questions/{question}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/questions/{question}/answers:
+    post:
+      tags: [questions]
+      summary: POST /api/v1/questions/{question}/answers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/risk-assessments:
+    get:
+      tags: [risk-assessments]
+      summary: GET /api/v1/risk-assessments
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [risk-assessments]
+      summary: POST /api/v1/risk-assessments
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/risk-assessments/{risk_assessment}:
+    get:
+      tags: [risk-assessments]
+      summary: GET /api/v1/risk-assessments/{risk_assessment}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [risk-assessments]
+      summary: PUT /api/v1/risk-assessments/{risk_assessment}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [risk-assessments]
+      summary: PATCH /api/v1/risk-assessments/{risk_assessment}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [risk-assessments]
+      summary: DELETE /api/v1/risk-assessments/{risk_assessment}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/roles:
+    get:
+      tags: [roles]
+      summary: GET /api/v1/roles
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/tasks:
+    get:
+      tags: [tasks]
+      summary: GET /api/v1/tasks
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [tasks]
+      summary: POST /api/v1/tasks
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/tasks/{task}:
+    get:
+      tags: [tasks]
+      summary: GET /api/v1/tasks/{task}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [tasks]
+      summary: PUT /api/v1/tasks/{task}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [tasks]
+      summary: PATCH /api/v1/tasks/{task}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [tasks]
+      summary: DELETE /api/v1/tasks/{task}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/tenants:
+    post:
+      tags: [tenants]
+      summary: POST /api/v1/tenants
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    get:
+      tags: [tenants]
+      summary: GET /api/v1/tenants
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/tender-applications/{tenderApplication}:
+    patch:
+      tags: [tender-applications]
+      summary: PATCH /api/v1/tender-applications/{tenderApplication}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [tender-applications]
+      summary: DELETE /api/v1/tender-applications/{tenderApplication}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/tenders:
+    get:
+      tags: [tenders]
+      summary: GET /api/v1/tenders
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    post:
+      tags: [tenders]
+      summary: POST /api/v1/tenders
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/tenders/{tender}:
+    get:
+      tags: [tenders]
+      summary: GET /api/v1/tenders/{tender}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [tenders]
+      summary: PUT /api/v1/tenders/{tender}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    patch:
+      tags: [tenders]
+      summary: PATCH /api/v1/tenders/{tender}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    delete:
+      tags: [tenders]
+      summary: DELETE /api/v1/tenders/{tender}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/tenders/{tender}/applications:
+    post:
+      tags: [tenders]
+      summary: POST /api/v1/tenders/{tender}/applications
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+  /api/v1/users/{user}/roles:
+    get:
+      tags: [users]
+      summary: GET /api/v1/users/{user}/roles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+    put:
+      tags: [users]
+      summary: PUT /api/v1/users/{user}/roles
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
