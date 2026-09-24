@@ -24,6 +24,33 @@
                     </div>
                 </template>
             </div>
+
+            <div x-show="users" class="bg-white shadow-sm sm:rounded-lg p-4">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">Team &amp; Rollen</h3>
+                <template x-for="u in users" :key="u.id">
+                    <div class="flex items-center gap-4 py-2 border-t">
+                        <div class="w-64">
+                            <div class="text-sm font-medium" x-text="u.name"></div>
+                            <div class="text-xs text-gray-500" x-text="u.email"></div>
+                        </div>
+                        <template x-for="r in roles" :key="r">
+                            <label class="text-xs flex items-center gap-1">
+                                <input type="checkbox" :checked="u.roles.includes(r)"
+                                       @change="toggleRole(u, r)" class="rounded border-gray-300">
+                                <span x-text="r"></span>
+                            </label>
+                        </template>
+                        <button @click="saveRoles(u)"
+                                class="ml-auto text-xs px-2 py-1 bg-gray-800 text-white rounded">
+                            Speichern
+                        </button>
+                    </div>
+                </template>
+                <div x-show="users && users.length === 0" class="text-sm text-gray-500">
+                    Keine Benutzer mit Rolle in diesem Mandant.
+                </div>
+                <span x-show="roleMsg" x-text="roleMsg" class="text-xs text-gray-600"></span>
+            </div>
         </div>
     </div>
 
@@ -32,6 +59,9 @@
             return {
                 tenant: '',
                 metrics: null,
+                users: null,
+                roles: [],
+                roleMsg: '',
                 error: '',
                 cards: [
                     {key:'companies',label:'Unternehmen'},
@@ -54,6 +84,7 @@
                 load() {
                     if (!this.tenant) return;
                     this.error = '';
+                    this.users = null;
                     fetch('/api/v1/metrics', {headers: {
                         'Authorization': 'Bearer {{ $apiToken }}',
                         'X-Tenant': this.tenant,
@@ -62,6 +93,41 @@
                         if (!r.ok) { this.error = 'HTTP '+r.status+' — keine Berechtigung?'; this.metrics = null; return null; }
                         return r.json();
                     }).then(d => { if (d) this.metrics = d; });
+                    this.loadTeam();
+                },
+                api(path, opts) {
+                    opts = opts || {};
+                    opts.headers = Object.assign({
+                        'Authorization': 'Bearer {{ $apiToken }}',
+                        'X-Tenant': this.tenant,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    }, opts.headers || {});
+                    return fetch(path, opts);
+                },
+                loadTeam() {
+                    this.api('/api/v1/roles').then(r => r.ok ? r.json() : [])
+                        .then(rs => { this.roles = rs.map(x => x.name); });
+                    this.api('/api/v1/users').then(r => r.ok ? r.json() : [])
+                        .then(us => {
+                            Promise.all(us.map(u =>
+                                this.api('/api/v1/users/'+u.id+'/roles')
+                                    .then(r => r.ok ? r.json() : {roles: []})
+                                    .then(d => Object.assign(u, {roles: d.roles}))
+                            )).then(() => { this.users = us; });
+                        });
+                },
+                toggleRole(u, r) {
+                    u.roles = u.roles.includes(r) ? u.roles.filter(x => x !== r) : u.roles.concat(r);
+                },
+                saveRoles(u) {
+                    this.roleMsg = '';
+                    this.api('/api/v1/users/'+u.id+'/roles', {
+                        method: 'PUT',
+                        body: JSON.stringify({roles: u.roles}),
+                    }).then(r => {
+                        this.roleMsg = r.ok ? 'Gespeichert: '+u.name : 'Fehler HTTP '+r.status+' (roles.manage fehlt?)';
+                    });
                 }
             }
         }

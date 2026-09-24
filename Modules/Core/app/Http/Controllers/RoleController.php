@@ -5,6 +5,7 @@ namespace Modules\Core\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
@@ -12,6 +13,16 @@ class RoleController extends Controller
     public function index()
     {
         return Role::query()->with('permissions:id,name')->get(['id', 'name']);
+    }
+
+    public function users()
+    {
+        $userIds = DB::table('model_has_roles')
+            ->where('team_id', tenant()->getTenantKey())
+            ->where('model_type', User::class)
+            ->pluck('model_id');
+
+        return User::whereIn('id', $userIds)->orderBy('name')->get(['id', 'name', 'email']);
     }
 
     public function userRoles(User $user)

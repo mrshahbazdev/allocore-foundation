@@ -17,6 +17,7 @@ Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(funct
         ->only(['store', 'update', 'destroy'])->middleware('permission:persons.manage')->names('persons');
 
     Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
+    Route::get('users', [RoleController::class, 'users'])->name('users.index');
     Route::get('users/{user}/roles', [RoleController::class, 'userRoles'])->name('users.roles.show');
     Route::put('users/{user}/roles', [RoleController::class, 'assign'])
         ->middleware('permission:roles.manage')
