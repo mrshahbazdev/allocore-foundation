@@ -18,7 +18,7 @@ class TenantTeamResolver implements PermissionsTeamResolver
 
     public function getPermissionsTeamId(): int|string|null
     {
-        return $this->teamId ??= tenancy()->initialized ? tenant()->getTenantKey() : null;
+        return tenancy()->initialized ? tenant()->getTenantKey() : $this->teamId;
     }
 
     public function setPermissionsTeamId(int|string|Model|null $id): void
