@@ -1551,7 +1551,10 @@ function workspace(initial) {
         },
         applyRowStatus(row, s) {
             const prev = row.status;
-            this.api(this.item().ep + '/' + row.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
+            const payload = {status: s};
+            const stamp = {completed: 'completed_at', approved: 'approved_at', cancelled: 'cancelled_at'}[s];
+            if (stamp && stamp in row && !row[stamp]) payload[stamp] = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            this.api(this.item().ep + '/' + row.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
                 .then(r => {
                     if (!r.ok) { this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); return; }
                     this.loadSection(true);
@@ -1562,7 +1565,10 @@ function workspace(initial) {
         },
         applyStatus(s) {
             const prev = this.detail.status, id = this.detail.id;
-            this.api(this.item().ep + '/' + id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
+            const payload = {status: s};
+            const stamp = {completed: 'completed_at', approved: 'approved_at', cancelled: 'cancelled_at'}[s];
+            if (stamp && stamp in this.detail && !this.detail[stamp]) payload[stamp] = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            this.api(this.item().ep + '/' + id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
                 .then(r => {
                     if (!r.ok) { this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); return; }
                     this.detail = null; this.loadSection();
