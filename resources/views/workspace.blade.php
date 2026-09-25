@@ -122,12 +122,14 @@
                         <thead>
                             <tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
                                 <template x-for="c in columns" :key="c">
-                                    <th class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E]" x-text="label(c)"></th>
+                                    <th @click="sort(c)" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] cursor-pointer select-none hover:text-[#0B0B0F]">
+                                        <span x-text="label(c)"></span><span class="ml-1 text-[#CA8A04]" x-text="sortKey===c ? (sortAsc?'▲':'▼') : ''"></span>
+                                    </th>
                                 </template>
                             </tr>
                         </thead>
                         <tbody>
-                            <template x-for="(row, idx) in filtered()" :key="idx">
+                            <template x-for="(row, idx) in sorted(filtered())" :key="idx">
                                 <tr @click="detail = row" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer">
                                     <template x-for="c in columns" :key="c">
                                         <td class="px-5 py-3 text-[#1A2433]" x-html="cell(row, c)"></td>
@@ -249,6 +251,7 @@ function workspace(initial) {
         section: initial, groups: GROUPS, kpiCards: KPI,
         tenant: '', rows: null, columns: [], metrics: null, insights: [],
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
+        sortKey: '', sortAsc: true,
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -291,6 +294,18 @@ function workspace(initial) {
                     this.columns = keys.slice(0, 7);
                 } else this.columns = [];
                 this.loading = false;
+            });
+        },
+        sort(c) { if (this.sortKey === c) this.sortAsc = !this.sortAsc; else { this.sortKey = c; this.sortAsc = true; } },
+        sorted(rows) {
+            if (!this.sortKey) return rows;
+            const k = this.sortKey, dir = this.sortAsc ? 1 : -1;
+            return [...rows].sort((a,b) => {
+                const x = a[k], y = b[k];
+                if (x === y) return 0;
+                if (x === null || x === undefined) return 1;
+                if (y === null || y === undefined) return -1;
+                return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'de')) * dir;
             });
         },
         filtered() {
