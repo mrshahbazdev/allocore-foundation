@@ -424,7 +424,7 @@
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="detail = null"></div>
             <div class="absolute inset-y-0 right-0 w-full bg-white shadow-xl flex flex-col transition-[max-width] duration-200" :class="drawerWide ? 'max-w-2xl' : 'max-w-md'" role="dialog" aria-modal="true" :aria-label="title() + ' · Details'">
                 <div class="px-6 py-4 border-b border-[#E4E9F0] flex items-center justify-between">
-                    <h2 class="font-semibold text-[#0B0B0F]" x-text="title() + ' · Details'"></h2>
+                    <h2 class="font-semibold text-[#0B0B0F]" x-text="detailTitle()"></h2>
                     <div class="flex items-center gap-1">
                         <button @click="drawerWide = !drawerWide" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" :title="drawerWide ? 'Schmal' : 'Breit'">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 3v3m0 0l-3-3m3 3l3-3M16 21v-3m0 0l-3 3m3-3l3 3"/></svg>
@@ -1433,6 +1433,12 @@ function workspace(initial) {
             return !isNaN(d) && d >= now && d <= new Date(now.getTime() + 7*864e5);
         },
         eintrag(n) { return n === 1 ? 'Eintrag' : 'Einträge'; },
+        detailTitle() {
+            if (!this.detail) return this.title() + ' · Details';
+            const d = this.detail;
+            const name = d.name || d.title || d.headline || d.subject || d.order_no || (d.first_name ? [d.first_name, d.last_name].filter(Boolean).join(' ') : null) || d.file_name || d.email;
+            return name ? this.title() + ' · ' + name : this.title() + ' · Details';
+        },
         label(c) {
             const L = {name:'Name',title:'Titel',first_name:'Vorname',last_name:'Nachname',email:'E-Mail',phone:'Telefon',type:'Typ',status:'Status',description:'Beschreibung',content:'Inhalt',category:'Kategorie',subject:'Betreff',area:'Bereich',hazard:'Gefährdung',risk_level:'Risikostufe',measures:'Maßnahmen',result:'Ergebnis',notes:'Notizen',progress:'Fortschritt',quantity:'Menge',order_no:'Auftrag-Nr.',product:'Produkt',scrap_qty:'Ausschuss',headline:'Schlagzeile',bio:'Bio',skills:'Skills',hourly_rate:'Stundensatz',budget:'Budget',price:'Preis',proposal:'Angebot',stake_pct:'Anteil %',invested_amount:'Investiert',current_valuation:'Bewertung',capital_need:'Kapitalbedarf',revenue:'Umsatz',cashflow:'Cashflow',ebitda:'EBITDA',liquidity:'Liquidität',period:'Periode',legal_form:'Rechtsform',street:'Straße',zip:'PLZ',city:'Stadt',country:'Land',version:'Version',valid_from:'Gültig ab',interval_months:'Intervall (Mon.)',capacity_units_per_day:'Kapazität/Tag',asset_class:'Anlageklasse',cost_basis:'Kostenbasis',current_value:'Aktueller Wert',currency:'Währung',due_at:'Fällig',deadline_at:'Frist',scheduled_at:'Geplant',starts_on:'Von',ends_on:'Bis',starts_at:'Start',ends_at:'Ende',acquired_at:'Erworben',valued_at:'Bewertet am',body:'Inhalt',is_accepted:'Akzeptiert',document_id:'Dokument'};
             if (!L[c] && c.endsWith('_id')) {
