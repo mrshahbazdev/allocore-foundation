@@ -101,6 +101,9 @@
     <main class="flex-1 min-w-0">
         <header class="bg-white border-b border-[#E4E9F0] px-6 py-4 flex items-center justify-between">
             <div>
+                <div x-show="groupOf(section)" class="text-[10px] font-semibold tracking-widest text-[#9CA3AF] mb-0.5">
+                    <span x-text="groupOf(section)"></span><span class="mx-1.5">›</span><span x-text="title()"></span>
+                </div>
                 <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F]" x-text="title()"></h1>
                 <p class="text-xs text-[#5B6B7E]" x-text="subtitle()"></p>
             </div>
@@ -645,6 +648,10 @@ function workspace(initial) {
         },
         item() {
             return GROUPS.flatMap(g => g.items).find(i => i.key === this.section) || {label:this.section};
+        },
+        groupOf(key) {
+            const g = GROUPS.find(g => g.items.some(i => i.key === key));
+            return g ? g.label : '';
         },
         title() { return this.item().label; },
         paletteItems() {
