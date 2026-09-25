@@ -1706,6 +1706,23 @@ paths:
         '404': {description: Not Found}
         '422': {description: Validation failed}
 
+  /api/v1/nav-counts:
+    get:
+      tags: [metrics]
+      summary: "GET /api/v1/nav-counts — {sektion: [überfällig, heute]} Aggregation für Nav-Badges"
+      parameters:
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+
   /api/v1/analytics/trends:
     get:
       tags: [analytics]

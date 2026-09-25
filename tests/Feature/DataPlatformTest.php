@@ -120,4 +120,20 @@ class DataPlatformTest extends TestCase
         $this->assertContains('tasks_overdue', $codes);
         $this->assertContains('high_risks_open', $codes);
     }
+    public function test_nav_counts_returns_overdue_and_today(): void
+    {
+        $tenant = Tenant::create(['name' => 'Nav GmbH']);
+        $this->acting($tenant);
+
+        $this->postJson('/api/v1/tasks', ['title' => 'Alt', 'due_at' => now()->subDays(3)], ['X-Tenant' => $tenant->id]);
+        $this->postJson('/api/v1/tasks', ['title' => 'Heute', 'due_at' => now()], ['X-Tenant' => $tenant->id]);
+        $this->postJson('/api/v1/tasks', ['title' => 'Später', 'due_at' => now()->addDays(5)], ['X-Tenant' => $tenant->id]);
+        $this->postJson('/api/v1/tasks', ['title' => 'Fertig', 'due_at' => now()->subDays(3), 'status' => 'done'], ['X-Tenant' => $tenant->id]);
+
+        $res = $this->getJson('/api/v1/nav-counts', ['X-Tenant' => $tenant->id])->assertOk()->json();
+
+        $this->assertSame(1, $res['tasks'][0]);
+        $this->assertSame(1, $res['tasks'][1]);
+        $this->assertArrayNotHasKey('events', $res);
+    }
 }
