@@ -504,7 +504,7 @@
                 <div class="px-6 py-4 border-b border-[#E4E9F0]">
                     <h2 class="font-semibold text-[#0B0B0F]" x-text="(editing ? 'Bearbeiten: ' : 'Neu: ') + title()"></h2>
                 </div>
-                <form @submit.prevent="submitCreate" class="p-6 space-y-4">
+                <form @submit.prevent="submitCreate" class="p-6 space-y-4" id="createForm">
                     <template x-for="f in createFields()" :key="f.key">
                         <div>
                             <label class="block text-[13px] font-medium text-[#42536A] mb-1" x-text="label(f.key)"></label>
@@ -917,6 +917,7 @@ function workspace(initial) {
                 return;
             }
             this.editing = null; this.form = {}; this.formError = ''; this.showCreate = true;
+            this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         exportCsv() {
             const rows = this.sorted(this.filtered());
@@ -943,6 +944,7 @@ function workspace(initial) {
             this.form = {};
             fields.forEach(f => { const v = this.detail[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.showCreate = true;
+            this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         openEdit() {
             this.editing = this.detail;
@@ -950,6 +952,7 @@ function workspace(initial) {
             this.form = {};
             fields.forEach(f => { const v = this.editing[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.showCreate = true;
+            this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         submitCreate() {
             this.formError = '';
