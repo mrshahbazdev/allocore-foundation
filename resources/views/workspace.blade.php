@@ -221,6 +221,20 @@
                             </template>
                         </div>
                     </div>
+                    <div x-show="overdueSections().length" class="bg-white border border-[#A6362E]/30 rounded-xl overflow-hidden">
+                        <div class="px-5 py-3 border-b border-[#A6362E]/20 text-xs font-medium text-[#A6362E] flex items-center justify-between">
+                            Überfällige Einträge
+                            <span class="font-mono" x-text="overdueSections().reduce((s, x) => s + x.count, 0)"></span>
+                        </div>
+                        <div class="divide-y divide-[#F0F3F7]">
+                            <template x-for="o in overdueSections()" :key="o.key">
+                                <a :href="'/app/' + o.key + '?tenant=' + tenant + '&overdue=1'" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC] transition">
+                                    <span class="text-sm text-[#1A2433] truncate" x-text="o.label"></span>
+                                    <span class="text-[11px] font-mono text-[#A6362E] shrink-0" x-text="o.count + ' überfällig'"></span>
+                                </a>
+                            </template>
+                        </div>
+                    </div>
                     <div x-show="events.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
                         <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E]">Letzte Ereignisse</div>
                         <div class="divide-y divide-[#F0F3F7] max-h-64 overflow-y-auto">
@@ -896,6 +910,11 @@ function workspace(initial) {
             try { localStorage.setItem('af_pins', JSON.stringify(this.pins)); } catch (e) {}
         },
         sectionLabel(k) { const i = this.groups.flatMap(g => g.items).find(x => x.key === k); return i ? i.label : k; },
+        overdueSections() {
+            return Object.entries(this.navBadges || {}).filter(([k, n]) => n > 0)
+                .map(([k, n]) => ({key: k, label: this.sectionLabel(k), count: n}))
+                .sort((a, b) => b.count - a.count);
+        },
         paletteItems() {
             const q = this.paletteQ.trim().toLowerCase();
             const all = this.groups.flatMap(g => g.items.map(i => ({key: i.key, label: i.label, group: g.label})));
