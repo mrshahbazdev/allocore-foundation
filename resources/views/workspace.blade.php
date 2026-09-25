@@ -1510,8 +1510,13 @@ function workspace(initial) {
         insightKey(i) { return (this.tenant || '') + '|' + (i.code || '') + '|' + (i.message || ''); },
         visibleInsights() { return (this.insights || []).filter(i => !this.insDismissed.includes(this.insightKey(i))); },
         dismissInsight(i) {
-            this.insDismissed.push(this.insightKey(i));
+            const key = this.insightKey(i);
+            this.insDismissed.push(key);
             localStorage.setItem('af_insdismissed', JSON.stringify(this.insDismissed));
+            this.toast('Hinweis ausgeblendet.', {label: 'Rückgängig', fn: () => {
+                this.insDismissed = this.insDismissed.filter(k => k !== key);
+                localStorage.setItem('af_insdismissed', JSON.stringify(this.insDismissed));
+            }});
         },
         refSection(k) {
             const t = FKMAP[k];
