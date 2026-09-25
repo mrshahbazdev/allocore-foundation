@@ -24,6 +24,7 @@
             if ($event.key === '/') { $event.preventDefault(); if ($refs.search) $refs.search.focus(); }
             else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
+            else if ($event.key === 'o' && !detail && !showCreate && !palette && filtered().length > 0) detail = filtered()[0];
         }">
 
     {{-- Mobile top bar --}}
