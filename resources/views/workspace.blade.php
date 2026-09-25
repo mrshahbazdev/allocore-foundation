@@ -913,6 +913,7 @@
                 <div class="p-6 space-y-3">
                     <p class="text-xs text-[#5B6B7E]">Erste Zeile = Spaltennamen (<span x-text="createFields().map(f => f.key).join(', ')"></span>). Trennzeichen ; oder ,</p>
                     <textarea x-model="importText" rows="8" class="w-full rounded-lg border-[#D6DEE9] text-xs font-mono focus:border-[#CA8A04] focus:ring-[#CA8A04]/30" placeholder="title;status&#10;Beispiel;open"></textarea>
+                    <div class="flex justify-end"><button type="button" @click="importText = importTemplate()" class="text-xs text-[#CA8A04] hover:underline">Vorlage mit Beispielzeile einfügen</button></div>
                     <div x-show="importResult" class="text-xs" :class="importErr ? 'text-[#A6362E]' : 'text-[#2E7D4F]'" x-text="importResult"></div>
                     <div class="flex justify-end gap-2 pt-1">
                         <button type="button" @click="showImport = false" class="text-sm px-4 py-2 text-[#5B6B7E]">Schließen</button>
@@ -1862,6 +1863,11 @@ function workspace(initial) {
             this.importErr = fail > 0;
             this.importResult = ok + ' importiert' + (fail ? ', ' + fail + ' fehlgeschlagen (Zeilen: ' + badRows.join(', ') + ')' : '') + '.';
             if (ok) this.loadSection();
+        },
+        importTemplate() {
+            const ex = f => f.type === 'date' ? '2026-01-15' : f.type === 'datetime-local' ? '2026-01-15T10:00' : f.type === 'number' ? '0' : f.type === 'checkbox' ? '1' : f.type === 'fk' ? '' : 'Beispiel';
+            const fields = this.createFields();
+            return fields.map(f => f.key).join(';') + '\n' + fields.map(ex).join(';') + '\n';
         },
         openDuplicate() {
             this.editing = null;
