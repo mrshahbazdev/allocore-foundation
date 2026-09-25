@@ -31,11 +31,18 @@ class SearchController extends Controller
         'production-orders' => 'production_orders',
         'leave-requests' => 'leave_requests',
         'financial-reports' => 'financial_reports',
+        'data-objects' => 'data_objects',
+        'graph-entities' => 'graph_entities',
+        'graph-edges' => 'graph_edges',
+        'ai-analyses' => 'ai_analyses',
+        'events' => 'stored_events',
     ];
 
-    private const SEARCH_COLS = ['name', 'title', 'subject', 'question', 'reference', 'email'];
+    private const TENANT_COLS = ['stored_events' => 'meta_data->tenant_id'];
 
-    private const LABEL_COLS = ['name', 'title', 'subject', 'question', 'reference', 'email'];
+    private const SEARCH_COLS = ['name', 'title', 'subject', 'question', 'reference', 'email', 'relation', 'event_type', 'event_class', 'summary'];
+
+    private const LABEL_COLS = ['name', 'title', 'subject', 'question', 'reference', 'email', 'relation', 'event_type', 'event_class', 'summary'];
 
     public function index()
     {
@@ -59,7 +66,7 @@ class SearchController extends Controller
             $label = collect(self::LABEL_COLS)->first(fn ($c) => in_array($c, $cols, true)) ?: $searchCols[0];
 
             $hits = DB::table($table)
-                ->when($tid, fn ($w) => $w->where('tenant_id', $tid))
+                ->when($tid, fn ($w) => $w->where(self::TENANT_COLS[$table] ?? 'tenant_id', $tid))
                 ->where(function ($w) use ($searchCols, $like) {
                     foreach ($searchCols as $c) {
                         $w->orWhere($c, 'like', $like);
