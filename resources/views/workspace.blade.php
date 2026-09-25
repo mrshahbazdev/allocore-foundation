@@ -1622,7 +1622,7 @@ function workspace(initial) {
             const name = prompt('Name der Ansicht:');
             if (!name) return;
             const all = this.views();
-            all[name] = {query: this.query, statusFilter: this.statusFilter, overdueOnly: this.overdueOnly, dueSoonOnly: this.dueSoonOnly, dueTodayOnly: this.dueTodayOnly, myOnly: this.myOnly, groupBy: this.groupBy, sortKey: this.sortKey, sortAsc: this.sortAsc, hiddenCols: this.hiddenCols};
+            all[name] = {query: this.query, statusFilter: this.statusFilter, overdueOnly: this.overdueOnly, dueSoonOnly: this.dueSoonOnly, dueTodayOnly: this.dueTodayOnly, myOnly: this.myOnly, unassignedOnly: this.unassignedOnly, evGroup: this.evGroup, groupBy: this.groupBy, sortKey: this.sortKey, sortAsc: this.sortAsc, hiddenCols: this.hiddenCols};
             localStorage.setItem('af_views_' + this.section, JSON.stringify(all));
             this.viewPicker = false;
             this.toast('Ansicht „' + name + '“ gespeichert.');
@@ -1630,7 +1630,7 @@ function workspace(initial) {
         applyView(name) {
             const v = this.views()[name];
             if (!v) return;
-            this.query = v.query || ''; this.statusFilter = v.statusFilter || ''; this.overdueOnly = !!v.overdueOnly; this.dueSoonOnly = !!v.dueSoonOnly; this.dueTodayOnly = !!v.dueTodayOnly; this.myOnly = !!v.myOnly;
+            this.query = v.query || ''; this.statusFilter = v.statusFilter || ''; this.overdueOnly = !!v.overdueOnly; this.dueSoonOnly = !!v.dueSoonOnly; this.dueTodayOnly = !!v.dueTodayOnly; this.myOnly = !!v.myOnly; this.unassignedOnly = !!v.unassignedOnly; this.evGroup = v.evGroup || '';
             this.groupBy = v.groupBy || ''; this.sortKey = v.sortKey || ''; this.sortAsc = v.sortAsc !== false; this.hiddenCols = v.hiddenCols || {};
             this.viewPicker = false; this.toast('Ansicht „' + name + '“ angewendet.');
         },
