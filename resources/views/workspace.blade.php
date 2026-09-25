@@ -1628,8 +1628,15 @@ function workspace(initial) {
         bulkStatus(s) {
             const ids = Object.keys(this.selected);
             if (!ids.length) return;
+            const prev = (this.rows || []).filter(r => this.selected[r.id]).map(r => ({id: r.id, status: r.status}));
             Promise.all(ids.map(id => this.api(this.item().ep + '/' + id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})))
-                .then(() => { this.selected = {}; this.loadSection(); });
+                .then(() => {
+                    this.selected = {}; this.loadSection();
+                    this.toast(ids.length + ' × ' + this.statusLabel(s) + '.', {label: 'Rückgängig', fn: () => {
+                        Promise.all(prev.map(p => this.api(this.item().ep + '/' + p.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status: p.status})})))
+                            .then(() => { this.toast('Wiederhergestellt.'); this.loadSection(); });
+                    }});
+                });
         },
         bulkDelete() {
             const ids = Object.keys(this.selected);
