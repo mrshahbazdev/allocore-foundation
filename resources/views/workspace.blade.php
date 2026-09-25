@@ -91,7 +91,7 @@
                                ? 'text-white bg-[#1A1A1F] border-r-2 border-[#FACC15]'
                                : 'text-[#9CA3AF] hover:text-white hover:bg-[#141419]'">
                             <a :href="'/app/' + item.key + (tenant ? '?tenant='+tenant : '')"
-                               class="flex-1 px-5 py-2"><span x-text="item.label"></span></a>
+                               class="flex-1 px-5 py-2 flex items-center gap-2.5"><span class="w-4 text-center text-[11px] opacity-70" x-text="icons[item.key] || '·'"></span><span x-text="item.label"></span></a>
                             <a x-show="navBadges[item.key] > 0" x-text="navBadges[item.key]"
                                :href="'/app/' + item.key + '?overdue=1' + (tenant ? '&tenant='+tenant : '')"
                                title="Überfällige Einträge anzeigen"
@@ -823,6 +823,7 @@ function workspace(initial) {
             {key:'graph-edges',label:'Graphen · Kanten',ep:'/api/v1/graph-edges'},
         ]},
     ];
+    const ICONS = {dashboard:'◈',companies:'▣',persons:'◉',documents:'▤',tasks:'☑',instructions:'ⓘ',inspections:'✓',deadlines:'◷','risk-assessments':'⚠','operating-instructions':'✎','expert-profiles':'◎',questions:'?',tenders:'☰',strategies:'⌘',projects:'◇',measures:'→',portfolios:'▲',investments:'€',participations:'◆',machines:'⚙','production-orders':'▶','hr-requests':'◔','financial-reports':'₣',events:'≋','data-objects':'▦','ai-analyses':'✦','graph-entities':'●','graph-edges':'↔',executive:'∑'};
     const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',assigned_to:'persons',from_entity_id:'graph_entities',to_entity_id:'graph_entities',subject_id:'graph_entities'};
     const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv'};
     const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at']);
@@ -835,7 +836,7 @@ function workspace(initial) {
         {key:'questions',label:'Fragen',to:'questions'},{key:'inspections',label:'Prüfungen',to:'inspections'},
     ];
     return {
-        section: initial, groups: GROUPS, kpiCards: KPI,
+        section: initial, groups: GROUPS, kpiCards: KPI, icons: ICONS,
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], spark: {}, exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, upcoming: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: false, showCreate: false, compact: localStorage.getItem('af_density') === '1',
