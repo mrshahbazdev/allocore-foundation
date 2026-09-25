@@ -144,6 +144,10 @@
         </header>
 
         <div class="p-6 space-y-5">
+            <div x-show="offline" class="bg-[#FFFBEB] border border-[#CA8A04]/40 rounded-xl px-4 py-2.5 text-xs text-[#CA8A04] flex items-center gap-2" x-cloak>
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.36 6.64a9 9 0 11-12.73 0M12 2v9"/></svg>
+                Keine Internetverbindung — Daten werden nicht aktualisiert.
+            </div>
             <div x-show="error" class="bg-white border border-[#A6362E]/40 rounded-xl px-4 py-3 text-sm text-[#A6362E] flex items-start justify-between gap-3">
                 <span x-text="error"></span>
                 <button @click="error = ''" class="shrink-0 text-[#A6362E]/60 hover:text-[#A6362E] leading-none" aria-label="Fehler schließen">&times;</button>
@@ -765,8 +769,10 @@ function workspace(initial) {
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, selected: {}, recent: [], navBadges: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        meId: @js($user->id ?? null),
+        meId: @js($user->id ?? null), offline: !navigator.onLine,
         init() {
+            window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
+            window.addEventListener('offline', () => { this.offline = true; });
             const p = new URLSearchParams(location.search);
             const t = p.get('tenant');
             try { this.recent = JSON.parse(localStorage.getItem('af_recent') || '[]').filter(k => k !== this.section).slice(0, 5); } catch (e) { this.recent = []; }
