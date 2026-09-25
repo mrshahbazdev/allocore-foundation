@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Modules\Compliance\Models\Instruction;
 use Modules\Core\Models\Company;
 use Modules\Core\Models\Person;
@@ -39,6 +40,28 @@ class DemoSeedTest extends TestCase
 
         $this->artisan('demo:seed', ['tenant' => $tenant->id])->assertSuccessful();
         $this->assertSame(2, Task::count(), 'second run must not duplicate rows');
+    }
+
+    public function test_demo_seed_endpoint_seeds_tenant_via_api(): void
+    {
+        $tenant = Tenant::create(['name' => 'Api Demo GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+
+        $this->postJson('/api/v1/demo-seed', [], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->assertGreaterThanOrEqual(2, Company::count());
+    }
+
+    public function test_demo_seed_endpoint_rejects_without_permission(): void
+    {
+        $tenant = Tenant::create(['name' => 'Api Demo 2 GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        Sanctum::actingAs($user->fresh());
+
+        $this->postJson('/api/v1/demo-seed', [], ['X-Tenant' => $tenant->id])->assertForbidden();
     }
 
     public function test_workspace_page_renders_for_logged_in_user(): void
