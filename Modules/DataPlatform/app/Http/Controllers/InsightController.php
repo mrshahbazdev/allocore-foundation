@@ -72,6 +72,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'inspections_due_soon', "{$inspSoon} Prüfung(en) innerhalb von 7 Tagen geplant.", ['count' => $inspSoon]);
         }
 
+        $negLiquidity = DB::table('financial_reports')->where('tenant_id', $t)->where('period', now()->format('Y-m'))->where('liquidity', '<', 0)->count();
+        if ($negLiquidity) {
+            $insights[] = $this->hit('critical', 'fin_negative_liquidity', "{$negLiquidity} Unternehmen mit negativer Liquidität im laufenden Monat.", ['count' => $negLiquidity]);
+        }
+
         $leave = $count('leave_requests', fn ($q) => $q->where('status', 'pending'));
         if ($leave) {
             $insights[] = $this->hit('info', 'leave_requests_pending', "{$leave} Urlaubs-/Fehlzeitenantrag/-anträge zur Genehmigung offen.", ['count' => $leave]);
