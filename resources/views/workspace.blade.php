@@ -899,6 +899,7 @@ function workspace(initial) {
             if (p.get('status')) this.statusFilter = p.get('status');
             if (p.get('overdue')) this.overdueOnly = true;
             if (p.get('dueSoon')) this.dueSoonOnly = true;
+            if (p.get('today')) this.dueTodayOnly = true;
             if (p.get('my')) this.myOnly = true;
             if (p.get('group')) this.groupBy = p.get('group');
             this._urlSort = p.get('sort') || null;
@@ -906,6 +907,7 @@ function workspace(initial) {
             this.$watch('statusFilter', () => this.syncUrl());
             this.$watch('overdueOnly', () => this.syncUrl());
             this.$watch('dueSoonOnly', () => this.syncUrl());
+            this.$watch('dueTodayOnly', () => this.syncUrl());
             this.$watch('myOnly', () => this.syncUrl());
             this.$watch('groupBy', v => { try { localStorage.setItem('af_group_' + this.section, v); localStorage.removeItem('af_gc_' + this.section); } catch (e) {} this.collapsedGroups = {}; this.syncUrl(); });
             this.$watch('tenant', v => {
@@ -937,6 +939,7 @@ function workspace(initial) {
             if (this.statusFilter) url.searchParams.set('status', this.statusFilter); else url.searchParams.delete('status');
             if (this.overdueOnly) url.searchParams.set('overdue', '1'); else url.searchParams.delete('overdue');
             if (this.dueSoonOnly) url.searchParams.set('dueSoon', '1'); else url.searchParams.delete('dueSoon');
+            if (this.dueTodayOnly) url.searchParams.set('today', '1'); else url.searchParams.delete('today');
             if (this.myOnly) url.searchParams.set('my', '1'); else url.searchParams.delete('my');
             if (this.groupBy) url.searchParams.set('group', this.groupBy); else url.searchParams.delete('group');
             history.replaceState(null, '', url);
