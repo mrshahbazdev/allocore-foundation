@@ -250,7 +250,7 @@
                                 <div class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
                                     <a :href="'/app/tasks?tenant=' + tenant + '&open=' + t.id" class="text-sm text-[#1A2433] truncate hover:text-[#CA8A04] transition" x-text="t.title"></a>
                                     <span class="flex items-center gap-2.5 shrink-0">
-                                        <span class="text-[11px] font-mono" :class="t.due_at && new Date(t.due_at) < new Date() ? 'text-[#A6362E]' : 'text-[#9CA3AF]'" x-text="t.due_at ? new Date(t.due_at).toLocaleDateString('de-DE') : ''"></span>
+                                        <span class="text-[11px] font-mono" x-html="dueRel(t.due_at)"></span>
                                         <button @click="completeDashTask(t)" title="Erledigt markieren" class="h-4.5 w-4.5 p-0.5 rounded border border-[#D6DEE9] text-transparent hover:border-[#2E7D5B] hover:text-[#2E7D5B] transition">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                                         </button>
@@ -268,7 +268,7 @@
                             <template x-for="d in upcoming" :key="d.id">
                                 <a :href="'/app/deadlines?tenant=' + tenant + '&open=' + d.id" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
                                     <span class="text-sm text-[#1A2433] truncate" x-text="d.title"></span>
-                                    <span class="text-[11px] font-mono shrink-0" :class="new Date(d.due_at) < new Date() ? 'text-[#A6362E]' : 'text-[#9CA3AF]'" x-text="new Date(d.due_at).toLocaleDateString('de-DE')"></span>
+                                    <span class="text-[11px] font-mono shrink-0" x-html="dueRel(d.due_at)"></span>
                                 </a>
                             </template>
                         </div>
@@ -2003,6 +2003,14 @@ function workspace(initial) {
                 return c.slice(0, -3).replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
             }
             return L[c] || c.replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
+        },
+        dueRel(v) {
+            if (!v) return '';
+            const d = new Date(v);
+            const days = Math.ceil((d - Date.now()) / 86400000);
+            const rel = days === -1 ? 'gestern' : days === 0 ? 'heute' : days === 1 ? 'morgen' : days < 0 ? `vor ${-days} T` : `in ${days} T`;
+            const col = days < 0 ? 'text-[#A6362E]' : days <= 7 ? 'text-[#CA8A04]' : 'text-[#9CA3AF]';
+            return `<span class="${col}">${d.toLocaleDateString('de-DE')} (${rel})</span>`;
         },
         cell(row, c) {
             let v = row[c];
