@@ -61,6 +61,9 @@
         </div>
 
         <nav class="flex-1 overflow-y-auto py-3 text-[13px]">
+            <div class="px-4 pb-2">
+                <input x-model="navQ" placeholder="Module filtern…" class="w-full bg-[#141419] text-[#9CA3AF] text-[11px] px-2.5 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-[#FACC15] placeholder-[#4B5563]">
+            </div>
             <div x-show="pins.length" class="mb-1" style="display:none">
                 <div class="px-5 pt-3 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280]">FAVORITEN</div>
                 <template x-for="pk in pins" :key="pk">
@@ -94,7 +97,7 @@
                         </span>
                     </button>
                     <template x-for="item in group.items" :key="item.key">
-                        <div x-show="!collapsed[group.label] || group.items.some(i => i.key === section)"
+                        <div x-show="(navQ === '' && (!collapsed[group.label] || group.items.some(i => i.key === section))) || (navQ !== '' && item.label.toLowerCase().includes(navQ.toLowerCase()))"
                            class="flex items-center gap-1 transition pr-2"
                            :class="section === item.key
                                ? 'text-white bg-[#1A1A1F] border-r-2 border-[#FACC15]'
@@ -872,7 +875,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'),
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0,
