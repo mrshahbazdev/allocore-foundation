@@ -891,7 +891,8 @@ function workspace(initial) {
                         .then(d => { const v = (Array.isArray(d) ? d : (d.data || [])).map(x => x.value); if (v.length > 1) this.spark[m.key] = v; });
                 });
                 this.api('/api/v1/insights').then(r => r.ok ? r.json() : [])
-                    .then(d => this.insights = d.filter(i => i.code !== 'all_clear'));
+                    .then(d => this.insights = d.filter(i => i.code !== 'all_clear')
+                        .sort((a, b) => ({critical: 0, warning: 1, info: 2}[a.severity] ?? 3) - ({critical: 0, warning: 1, info: 2}[b.severity] ?? 3)));
                 this.api('/api/v1/events').then(r => r.ok ? r.json() : [])
                     .then(d => this.events = (Array.isArray(d) ? d : (d.data || [])).slice(-15).reverse());
                 this.api('/api/v1/analytics/trends').then(r => r.ok ? r.json() : [])
