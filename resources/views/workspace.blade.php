@@ -204,6 +204,15 @@
                         <button @click="exportCsv()" title="CSV exportieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
                         <button x-show="canCreate()" @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
                     </div>
+                    <div x-show="rows && statusOpts().length > 1" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0]">
+                        <button @click="statusFilter = ''" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                                :class="statusFilter === '' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Alle</button>
+                        <template x-for="s in statusOpts()" :key="s">
+                            <button @click="statusFilter = statusFilter === s ? '' : s" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                                    :class="statusFilter === s ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
+                                    x-text="statusLabel(s)"></button>
+                        </template>
+                    </div>
                     <div x-show="rows && rows.length === 0" class="px-6 py-12 text-center text-sm text-[#5B6B7E]">
                         Keine Einträge vorhanden.
                     </div>
@@ -375,6 +384,7 @@ function workspace(initial) {
         ]},
     ];
     const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',assigned_to:'persons'};
+    const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv'};
     const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at']);
     const KPI = [
         {key:'companies',label:'Unternehmen'},{key:'persons',label:'Personen'},
@@ -389,7 +399,7 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false,
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, answers: [], answerText: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', answers: [], answerText: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -421,7 +431,7 @@ function workspace(initial) {
         loadSection() {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
-            this.loading = true; this.error = ''; this.limit = 100;
+            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = '';
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
             history.replaceState(null,'',url);
             if (this.section === 'dashboard') {
@@ -544,10 +554,17 @@ function workspace(initial) {
         },
         filtered() {
             if (!this.rows) return [];
+            let rs = this.rows;
+            if (this.statusFilter) rs = rs.filter(r => String(r.status || '') === this.statusFilter);
             const q = this.query.trim().toLowerCase();
-            if (!q) return this.rows;
-            return this.rows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
+            if (!q) return rs;
+            return rs.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
         },
+        statusOpts() {
+            if (!this.rows) return [];
+            return [...new Set(this.rows.map(r => r.status).filter(Boolean))].sort();
+        },
+        statusLabel(s) { return STATUS_DE[String(s).toLowerCase()] || s; },
         fmtD(row, k) {
             const rn = this.resolveId(k, row[k]);
             if (rn) return rn;
@@ -674,8 +691,7 @@ function workspace(initial) {
             if (c === 'status' || c === 'severity' || c === 'type') {
                 const map = {open:'#CA8A04',pending:'#CA8A04',in_progress:'#CA8A04',running:'#CA8A04',queued:'#5B6B7E',scheduled:'#5B6B7E',planned:'#5B6B7E',on_hold:'#CA8A04',critical:'#A6362E',high:'#A6362E',warning:'#CA8A04',cancelled:'#A6362E',rejected:'#A6362E',done:'#2E7D5B',completed:'#2E7D5B',approved:'#2E7D5B',accepted:'#2E7D5B',mitigated:'#2E7D5B',active:'#2E7D5B',awarded:'#2E7D5B',info:'#5B6B7E'};
                 const col = map[String(v).toLowerCase()] || '#5B6B7E';
-                const DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv'};
-                const txt = DE[String(v).toLowerCase()] || v;
+                const txt = STATUS_DE[String(v).toLowerCase()] || v;
                 return `<span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full" style="background:${col}"></span>${txt}</span>`;
             }
             if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleDateString('de-DE');
