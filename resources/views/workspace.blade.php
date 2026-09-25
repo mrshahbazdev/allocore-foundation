@@ -1131,6 +1131,7 @@ function workspace(initial) {
                 if (this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.unassignedOnly || this.statusFilter || this.query) acts.push({key: null, action: 'filter', filter: '_reset', label: 'Filter zurücksetzen', group: 'Aktion'});
             }
             this.recentRows().forEach(r => acts.push({key: null, action: 'openrow', row: r, label: '↻ ' + (r.name || r.id) + ' (' + this.sectionLabel(r.key) + ')', group: 'Zuletzt'}));
+            if (q && this.rows && this.rows.length) this.rows.filter(r => JSON.stringify(r).toLowerCase().includes(q)).slice(0, 5).forEach(r => acts.push({key: null, action: 'openrowcur', id: r.id, label: '→ ' + (r.name || r.title || r.headline || r.id) + ' (' + this.title() + ')', group: 'Eintrag'}));
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
             mods.sort((a, b) => ((this.pins || []).includes(b.key) ? 1 : 0) - ((this.pins || []).includes(a.key) ? 1 : 0));
             return [...acts.filter(a => !q || a.label.toLowerCase().includes(q)), ...mods];
@@ -1151,6 +1152,7 @@ function workspace(initial) {
             if (it.action === 'tenant') { this.tenant = it.tenant; this.loadSection(); this.loadNavBadges(); return; }
             if (it.action === 'view') { this.applyView(it.view); return; }
             if (it.action === 'openrow') { location.href = '/app/' + it.row.key + '?tenant=' + this.tenant + '&open=' + encodeURIComponent(it.row.id); return; }
+            if (it.action === 'openrowcur') { const r = (this.rows || []).find(x => String(x.id) === String(it.id)); if (r) this.detail = r; return; }
             if (it.action === 'filter') {
                 if (it.filter === '_reset') { this.query = ''; this.statusFilter = ''; this.evGroup = ''; this.overdueOnly = this.dueSoonOnly = this.dueTodayOnly = this.myOnly = this.unassignedOnly = false; }
                 else this[it.filter] = !this[it.filter];
