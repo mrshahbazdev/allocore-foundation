@@ -480,6 +480,14 @@
             </div>
         </div>
     </main>
+
+    {{-- Toasts --}}
+    <div class="fixed bottom-4 right-4 z-50 space-y-2">
+        <template x-for="t in toasts" :key="t.id">
+            <div class="bg-[#0B0B0F] text-white text-xs px-4 py-3 rounded-lg shadow-lg border-l-2 border-[#A6362E] max-w-xs"
+                 x-text="t.msg"></div>
+        </template>
+    </div>
 </div>
 
 <script>
@@ -545,7 +553,7 @@ function workspace(initial) {
         section: initial, groups: GROUPS, kpiCards: KPI,
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
-        loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
+        loading: false, error: '', detail: null, toasts: [], showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
@@ -578,11 +586,16 @@ function workspace(initial) {
             const title = prompt('Report-Titel', 'Executive Report ' + new Date().toLocaleDateString('de-DE'));
             if (!title) return;
             this.api('/api/v1/exec-reports', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title})})
-                .then(r => { if (r.ok) this.loadSection(); else alert('Report fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) this.loadSection(); else this.toast('Report fehlgeschlagen (HTTP '+r.status+')'); });
         },
         subtitle() { return (this.section === 'dashboard' ? 'Unternehmenssteuerung' : 'Modul ' + (this.item().label||this.section)) + ' · ' + this.tenantName(); },
         metric(k) { const v = this.metrics && this.metrics[k]; return v ? parseFloat(v.value) : '–'; },
         trend(k) { const t = this.trends.find(x => x.metric === k); return t || {delta: null, direction: 'unknown'}; },
+        toast(msg) {
+            const t = {id: Date.now() + Math.random(), msg};
+            this.toasts.push(t);
+            setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== t.id); }, 4500);
+        },
         api(path, opts={}) {
             opts.headers = Object.assign({
                 'Authorization': 'Bearer {{ $apiToken }}',
@@ -677,7 +690,7 @@ function workspace(initial) {
         },
         applyStatus(s) {
             this.api(this.item().ep + '/' + this.detail.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
-                .then(r => { if (r.ok) { this.detail = null; this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.detail = null; this.loadSection(); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
         },
         appName(a) {
             const p = a.expert_profile?.person;
@@ -692,11 +705,11 @@ function workspace(initial) {
         submitApp() {
             if (!this.appForm.expert_profile_id || !this.detail) return;
             this.api('/api/v1/tenders/' + this.detail.id + '/applications', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(this.appForm)})
-                .then(r => { if (r.ok) { this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.loadApps(this.detail.id); this.loadSection(); } else alert('Bewerbung fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.loadApps(this.detail.id); this.loadSection(); } else this.toast('Bewerbung fehlgeschlagen (HTTP '+r.status+')'); });
         },
         setAppStatus(id, s) {
             this.api('/api/v1/tender-applications/' + id, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
-                .then(r => { if (r.ok) { this.loadApps(this.detail.id); this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.loadApps(this.detail.id); this.loadSection(); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
         },
         deleteApp(id) {
             if (!confirm('Bewerbung löschen?')) return;
@@ -712,11 +725,11 @@ function workspace(initial) {
             const body = this.answerText.trim();
             if (!body || !this.detail) return;
             this.api('/api/v1/questions/' + this.detail.id + '/answers', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({body})})
-                .then(r => { if (r.ok) { this.answerText = ''; this.loadAnswers(this.detail.id); this.loadSection(); } else alert('Antwort fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.answerText = ''; this.loadAnswers(this.detail.id); this.loadSection(); } else this.toast('Antwort fehlgeschlagen (HTTP '+r.status+')'); });
         },
         acceptAnswer(id) {
             this.api('/api/v1/answers/' + id + '/accept', {method:'POST'})
-                .then(r => { if (r.ok) { this.loadAnswers(this.detail.id); this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.loadAnswers(this.detail.id); this.loadSection(); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
         },
         deleteAnswer(id) {
             if (!confirm('Antwort löschen?')) return;
@@ -734,7 +747,7 @@ function workspace(initial) {
             const fd = new FormData();
             fd.append('file', f);
             this.api('/api/v1/documents/' + this.detail.id + '/versions', {method:'POST', body:fd})
-                .then(r => { if (r.ok) { this.$refs.versionFile.value = ''; this.loadDocVersions(this.detail.id); this.loadSection(); } else alert('Upload fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.$refs.versionFile.value = ''; this.loadDocVersions(this.detail.id); this.loadSection(); } else this.toast('Upload fehlgeschlagen (HTTP '+r.status+')'); });
         },
         dlPath(row) {
             if (this.section === 'data-objects') return '/api/v1/data-objects/' + row.id + '/download';
@@ -742,7 +755,7 @@ function workspace(initial) {
         },
         async downloadDoc(row) {
             const r = await this.api(this.dlPath(row));
-            if (!r.ok) { alert('Download fehlgeschlagen'); return; }
+            if (!r.ok) { this.toast('Download fehlgeschlagen'); return; }
             const blob = await r.blob();
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -759,7 +772,7 @@ function workspace(initial) {
                 'Authorization': 'Bearer {{ $apiToken }}', 'Accept':'application/json',
                 'Content-Type':'application/json'},
                 body: JSON.stringify({name: name.trim()})});
-            if (!r.ok) { alert('Anlegen fehlgeschlagen (HTTP '+r.status+')'); return; }
+            if (!r.ok) { this.toast('Anlegen fehlgeschlagen (HTTP '+r.status+')'); return; }
             const t = await r.json();
             this.tenantList.push({id: t.id, name: t.name});
             this.tenant = t.id;
@@ -823,7 +836,7 @@ function workspace(initial) {
         openCreate() {
             if (this.section === 'ai-analyses') {
                 this.api('/api/v1/ai-analyses', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'})
-                    .then(r => { if (r.ok) this.loadSection(); else alert('Analyse fehlgeschlagen (HTTP '+r.status+')'); });
+                    .then(r => { if (r.ok) this.loadSection(); else this.toast('Analyse fehlgeschlagen (HTTP '+r.status+')'); });
                 return;
             }
             this.editing = null; this.form = {}; this.formError = ''; this.showCreate = true;
