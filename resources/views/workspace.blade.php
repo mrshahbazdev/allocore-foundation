@@ -259,7 +259,6 @@
                         <button @click="applyStatus(a[1])" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" x-text="a[0]"></button>
                     </template>
                 </div>
-<<<<<<< HEAD
                 <div x-show="section === 'tenders'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">BEWERBUNGEN</div>
                     <div x-show="!apps.length" class="text-xs text-[#9CA3AF]">Noch keine Bewerbungen.</div>
