@@ -310,7 +310,8 @@
                         <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
                     </div>
-                    <table x-show="rows && filtered().length" class="w-full text-sm">
+                    <div x-show="rows && filtered().length" class="overflow-x-auto">
+                    <table class="w-full text-sm min-w-max">
                         <thead>
                             <tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
                                 <template x-for="c in visCols()" :key="c">
@@ -338,6 +339,7 @@
                             </template>
                         </tbody>
                     </table>
+                    </div>
                     <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center flex items-center justify-center gap-4">
                         <button @click="limit += 100" class="text-xs text-[#CA8A04] hover:underline">
                             Mehr laden (<span x-text="filtered().length - limit"></span> weitere)
