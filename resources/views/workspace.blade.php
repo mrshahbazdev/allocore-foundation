@@ -186,7 +186,7 @@
                                 x-text="'Ausgeblendete: ' + insDismissed.length + ' \u21ba'"></button>
                             <template x-for="s in [['','Alle'],['critical','Kritisch'],['warning','Warnung'],['info','Info']]" :key="s[0]">
                                 <button @click="insightSev = s[0]" class="text-[11px] px-2 py-1 rounded-full border transition"
-                                        :class="insightSev === s[0] ? 'bg-[#0B0B0F] text-[#FACC15] border-[#0B0B0F]' : 'bg-white text-[#5B6B7E] border-[#D6DEE9] hover:border-[#CA8A04]'" x-text="s[1]"></button>
+                                        :class="insightSev === s[0] ? 'bg-[#0B0B0F] text-[#FACC15] border-[#0B0B0F]' : 'bg-white text-[#5B6B7E] border-[#D6DEE9] hover:border-[#CA8A04]'" x-text="s[1] + ' · ' + (s[0] ? visibleInsights().filter(i => i.severity === s[0]).length : visibleInsights().length)"></button>
                             </template>
                         </div>
                         <template x-for="i in visibleInsights().filter(x => !insightSev || x.severity === insightSev)" :key="i.code">
