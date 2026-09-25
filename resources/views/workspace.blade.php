@@ -54,9 +54,14 @@
         <nav class="flex-1 overflow-y-auto py-3 text-[13px]">
             <template x-for="group in groups" :key="group.label">
                 <div class="mb-1">
-                    <div class="px-5 pt-4 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280]" x-text="group.label"></div>
+                    <button @click="collapsed[group.label] = !collapsed[group.label]"
+                            class="w-full flex items-center justify-between px-5 pt-4 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280] hover:text-[#9CA3AF] transition">
+                        <span x-text="group.label"></span>
+                        <svg class="w-2.5 h-2.5 transition-transform" :class="collapsed[group.label] && !group.items.some(i => i.key === section) ? '-rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
                     <template x-for="item in group.items" :key="item.key">
-                        <a :href="'/app/' + item.key + (tenant ? '?tenant='+tenant : '')"
+                        <a x-show="!collapsed[group.label] || group.items.some(i => i.key === section)"
+                           :href="'/app/' + item.key + (tenant ? '?tenant='+tenant : '')"
                            class="flex items-center gap-3 px-5 py-2 transition"
                            :class="section === item.key
                                ? 'text-white bg-[#1A1A1F] border-r-2 border-[#FACC15]'
@@ -455,7 +460,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false,
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {},
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''},
