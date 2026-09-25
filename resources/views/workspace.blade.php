@@ -17,6 +17,7 @@
     @include('partials.dark-mode')
 </head>
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
+<a href="#hauptinhalt" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-[#0B0B0F] focus:text-[#FACC15] focus:px-3 focus:py-2 focus:rounded-lg focus:text-xs">Zum Inhalt springen</a>
 <div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak
      @keydown.escape.window="detail = null; closeCreate(); showCreate = false; navOpen = false; palette = false; colPicker = false; viewPicker = false; kbdHelp = false; showImport = false; confirmDel = false; notif = false"
      @keydown.arrowright.window="detail && navDetail(1)"
@@ -138,7 +139,7 @@
     </aside>
 
     {{-- Main --}}
-    <main class="flex-1 min-w-0">
+    <main id="hauptinhalt" class="flex-1 min-w-0" tabindex="-1">
         <header class="bg-white border-b border-[#E4E9F0] px-6 py-4 flex items-center justify-between">
             <div>
                 <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F] flex items-center gap-2">
