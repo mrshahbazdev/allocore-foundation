@@ -1206,12 +1206,26 @@ function workspace(initial) {
             return this.sectionActions().filter(a => a[1] !== row.status);
         },
         applyRowStatus(row, s) {
+            const prev = row.status;
             this.api(this.item().ep + '/' + row.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
-                .then(r => { if (r.ok) this.loadSection(true); else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => {
+                    if (!r.ok) { this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); return; }
+                    this.loadSection(true);
+                    this.toast(this.statusLabel(s) + '.', {label: 'Rückgängig', fn: () => {
+                        this.api(this.item().ep + '/' + row.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status: prev})}).then(() => this.loadSection(true));
+                    }});
+                });
         },
         applyStatus(s) {
-            this.api(this.item().ep + '/' + this.detail.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
-                .then(r => { if (r.ok) { this.detail = null; this.loadSection(); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+            const prev = this.detail.status, id = this.detail.id;
+            this.api(this.item().ep + '/' + id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
+                .then(r => {
+                    if (!r.ok) { this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); return; }
+                    this.detail = null; this.loadSection();
+                    this.toast(this.statusLabel(s) + '.', {label: 'Rückgängig', fn: () => {
+                        this.api(this.item().ep + '/' + id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status: prev})}).then(() => this.loadSection());
+                    }});
+                });
         },
         appName(a) {
             const p = a.expert_profile?.person;
