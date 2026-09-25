@@ -450,15 +450,18 @@
                 <div class="flex-1 overflow-y-auto p-6">
                     <dl class="space-y-3 text-sm">
                         <template x-for="k in detailKeys()" :key="k">
-                            <div class="flex gap-3">
+                            <div class="flex gap-3 group">
                                 <dt class="w-36 shrink-0 text-[#5B6B7E]" :title="k" x-text="label(k)"></dt>
-                                <dd class="min-w-0 font-mono text-[13px] text-[#1A2433] break-words">
+                                <dd class="min-w-0 flex-1 font-mono text-[13px] text-[#1A2433] break-words">
                                     <span x-show="!linkOf(detail[k])" x-text="fmtD(detail, k)"></span>
                                     <a x-show="linkOf(detail[k])" :href="linkOf(detail[k])" :target="/^https?:/.test(linkOf(detail[k]) || '') ? '_blank' : null" rel="noopener"
                                        class="text-[#CA8A04] hover:underline break-all" x-text="fmtD(detail, k)"></a>
                                     <a x-show="refSection(k) && detail[k]" :href="'/app/' + refSection(k) + '?tenant=' + tenant + '&open=' + detail[k]"
                                        class="ml-1.5 text-[#CA8A04] hover:underline text-[11px] font-sans whitespace-nowrap">öffnen →</a>
                                 </dd>
+                                <button x-show="detail[k] !== null && detail[k] !== undefined && detail[k] !== ''"
+                                        @click="copyVal(detail[k])" title="Wert kopieren"
+                                        class="self-start shrink-0 opacity-0 group-hover:opacity-100 transition text-[#9CA3AF] hover:text-[#CA8A04] text-xs leading-none">⧉</button>
                             </div>
                         </template>
                     </dl>
@@ -1381,6 +1384,10 @@ function workspace(initial) {
                     this.selected = {}; this.loadSection();
                     this.toast(ids.length + ' gelöscht.', {label: 'Rückgängig', fn: () => this.restoreRows(snapshots)});
                 });
+        },
+        copyVal(v) {
+            const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
+            navigator.clipboard && navigator.clipboard.writeText(s).then(() => this.toast('Kopiert.')).catch(() => this.toast('Kopieren fehlgeschlagen.'));
         },
         restoreRows(rows) {
             Promise.all(rows.map(r => {
