@@ -346,6 +346,8 @@
                         <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly && !myOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
                     </div>
+                    <div x-show="rows && filtered().length" class="overflow-x-auto">
+                    <table class="w-full text-sm min-w-max">
                     <div x-show="selCount() > 0" class="flex flex-wrap items-center gap-2 px-5 py-2.5 border-b border-[#E4E9F0] bg-[#FFFBEB]">
                         <span class="text-xs font-semibold text-[#0B0B0F]"><span x-text="selCount()"></span> ausgewählt</span>
                         <template x-for="a in sectionActions()" :key="a[1]">
