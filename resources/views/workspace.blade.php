@@ -772,6 +772,7 @@ function workspace(initial) {
             if (p.get('new')) this.$nextTick(() => { if (this.tenant && this.canCreate()) this.openCreate(); });
             if (p.get('q')) this.query = p.get('q');
             if (p.get('status')) this.statusFilter = p.get('status');
+            this._urlSort = p.get('sort') || null;
             this.$watch('query', () => this.syncUrl());
             this.$watch('statusFilter', () => this.syncUrl());
             this.$watch('tenant', v => {
@@ -874,6 +875,7 @@ function workspace(initial) {
             this.loading = true; this.error = '';
             if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; }
             try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
+            if (this._urlSort) { const m = this._urlSort.match(/^(.+?)(?::(asc|desc))?$/); this.sortKey = m[1]; this.sortAsc = m[2] !== 'desc'; this._urlSort = null; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
             history.replaceState(null,'',url);
             if (this.section === 'dashboard') {
@@ -936,6 +938,7 @@ function workspace(initial) {
         sort(c) {
             if (this.sortKey === c) this.sortAsc = !this.sortAsc; else { this.sortKey = c; this.sortAsc = !/_at$|_date$|amount|price|value|qty|rate$|pct|percent|progress|revenue|ebitda|hours|salary|budget|cost/i.test(c); }
             try { localStorage.setItem('af_sort_' + this.section, JSON.stringify({k: this.sortKey, a: this.sortAsc})); } catch (e) {}
+            const su = new URL(location.href); su.searchParams.set('sort', this.sortKey + ':' + (this.sortAsc ? 'asc' : 'desc')); history.replaceState(null, '', su);
         },
         sorted(rows) {
             const k = this.sortKey || 'updated_at', dir = (this.sortKey ? this.sortAsc : false) ? 1 : -1;
