@@ -702,6 +702,15 @@
                     <div x-show="entityEdges.length === 0" class="text-xs text-[#9CA3AF]">Keine Kanten zu dieser Entität.</div>
                     <a :href="'/app/graph-edges?tenant=' + tenant + '&new=1&from=' + detail.id" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Kante anlegen</a>
                 </div>
+                <div x-show="rowEvents.length" class="px-6 py-4 border-t border-[#E4E9F0]">
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-2">VERLAUF</div>
+                    <template x-for="(e, i) in rowEvents" :key="i">
+                        <div class="flex items-center justify-between text-xs py-1">
+                            <span class="text-[#1A2433]"><span class="text-[#CA8A04] font-semibold uppercase text-[10px] tracking-wide" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span></span>
+                            <span class="text-[10px] text-[#9CA3AF] font-mono" x-text="e.created_at ? new Date(e.created_at).toLocaleString('de-DE') : ''"></span>
+                        </div>
+                    </template>
+                </div>
                 <div x-show="detail && (detail.created_at || detail.updated_at)" class="px-6 py-2.5 border-t border-[#F0F3F7] text-[10px] text-[#9CA3AF] flex gap-4">
                     <span x-show="detail && detail.created_at">Erstellt: <span x-text="detail && new Date(detail.created_at).toLocaleString('de-DE')"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.created_at) + ')'"></span></span>
                     <span x-show="detail && detail.updated_at">Geändert: <span x-text="detail && new Date(detail.updated_at).toLocaleString('de-DE')"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.updated_at) + ')'"></span></span>
@@ -919,7 +928,7 @@ function workspace(initial) {
         form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
-        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
+        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [],
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, insightSev: '', fkQ: {},
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {},
         init() {
@@ -965,7 +974,8 @@ function workspace(initial) {
                 if (v && v.id) url.searchParams.set('open', v.id); else url.searchParams.delete('open');
                 history.replaceState(null, '', url);
                 this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null;
-                this.confirmDel = false;
+                this.confirmDel = false; this.rowEvents = [];
+                if (v && v.id && !['events','metrics','ai-analyses','executive','dashboard'].includes(this.section)) this.loadRowEvents(v.id);
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
                 if (v && this.section === 'documents') this.loadDocVersions(v.id);
@@ -1324,6 +1334,11 @@ function workspace(initial) {
             if (!confirm('Bewerbung löschen?')) return;
             this.api('/api/v1/tender-applications/' + id, {method:'DELETE'})
                 .then(() => this.loadApps(this.detail.id));
+        },
+        loadRowEvents(id) {
+            this.api('/api/v1/events?per_page=100').then(r => r.ok ? r.json() : {data: []})
+                .then(d => { const es = (d.data || d || []); this.rowEvents = es.filter(e => e.event_properties && e.event_properties.subject && String(e.event_properties.subject.id) === String(id)).slice(0, 6); })
+                .catch(() => this.rowEvents = []);
         },
         loadAnswers(qid) {
             this.api('/api/v1/questions/' + qid).then(r => r.ok ? r.json() : {answers: []}).then(d => {
