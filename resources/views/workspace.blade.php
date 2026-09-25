@@ -14,7 +14,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
-<div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak>
+<div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak
+     @keydown.escape.window="detail = null; showCreate = false; navOpen = false">
 
     {{-- Mobile top bar --}}
     <div class="lg:hidden flex items-center justify-between px-4 h-14 bg-[#0B0B0F] text-white sticky top-0 z-30 shrink-0">
