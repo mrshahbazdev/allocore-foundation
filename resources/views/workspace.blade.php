@@ -1022,7 +1022,8 @@ function workspace(initial) {
             if (this.section === 'executive') return base;
             if (this.rows && this.rows.length) {
                 const od = this.rows.filter(r => this.overdue(r)).length;
-                return base + ' · ' + this.rows.length + ' ' + this.eintrag(this.rows.length) + (od ? ' · ' + od + ' überfällig' : '');
+                const td = this.rows.filter(r => this.dueToday(r)).length;
+                return base + ' · ' + this.rows.length + ' ' + this.eintrag(this.rows.length) + (od ? ' · ' + od + ' überfällig' : '') + (td ? ' · ' + td + ' heute' : '');
             }
             return base;
         },
