@@ -653,8 +653,8 @@
                             <div class="flex gap-3 group">
                                 <dt class="w-36 shrink-0 text-[#5B6B7E]" :title="k" x-text="label(k)"></dt>
                                 <dd class="min-w-0 flex-1 font-mono text-[13px] text-[#1A2433] break-words">
-                                    <span x-show="!linkOf(detail[k]) && !(k === 'status' || k === 'severity')" x-text="fmtD(detail, k)"></span>
-                                    <span x-show="(k === 'status' || k === 'severity')" class="inline-flex items-center gap-1.5 font-sans text-[13px]"><span class="h-2 w-2 rounded-full" :style="'background:' + statusColor(detail[k])"></span><span x-text="statusLabel(detail[k])"></span></span>
+                                    <span x-show="!linkOf(detail[k]) && !(k === 'status' || k === 'severity' || k === 'risk_level')" x-text="fmtD(detail, k)"></span>
+                                    <span x-show="(k === 'status' || k === 'severity' || k === 'risk_level')" class="inline-flex items-center gap-1.5 font-sans text-[13px]"><span class="h-2 w-2 rounded-full" :style="'background:' + statusColor(detail[k])"></span><span x-text="statusLabel(detail[k])"></span></span>
                                     <a x-show="linkOf(detail[k])" :href="linkOf(detail[k])" :target="/^https?:/.test(linkOf(detail[k]) || '') ? '_blank' : null" rel="noopener"
                                        class="text-[#CA8A04] hover:underline break-all" x-text="fmtD(detail, k)"></a>
                                     <a x-show="refSection(k) && detail[k]" :href="'/app/' + refSection(k) + '?tenant=' + tenant + '&open=' + detail[k]"
@@ -1439,7 +1439,7 @@ function workspace(initial) {
             });
             const out = []; let i = 0;
             for (const [label, rs] of buckets) {
-                const disp = this.groupBy === '__period' ? label : ((this.groupBy === 'status' || this.groupBy === 'severity') ? (label ? this.statusLabel(label) : 'Ohne Status') : (/_id$/.test(this.groupBy) ? (label ? (this.resolveId(this.groupBy, label) || label) : 'Nicht zugewiesen') : (label || '—')));
+                const disp = this.groupBy === '__period' ? label : ((this.groupBy === 'status' || this.groupBy === 'severity' || this.groupBy === 'risk_level') ? (label ? this.statusLabel(label) : 'Ohne Status') : (/_id$/.test(this.groupBy) ? (label ? (this.resolveId(this.groupBy, label) || label) : 'Nicht zugewiesen') : (label || '—')));
                 out.push({t: 'h', label, disp, count: rs.length, overdue: rs.filter(r => this.overdue(r)).length});
                 if (!this.collapsedGroups[label]) rs.forEach(r => out.push(mk(r, i++)));
                 else i += rs.length;
@@ -1698,7 +1698,7 @@ function workspace(initial) {
         fmtD(row, k) {
             const rn = this.resolveId(k, row[k]);
             if (rn) return rn;
-            if (k === 'status') return this.statusLabel(row[k]);
+            if (k === 'status' || k === 'risk_level') return this.statusLabel(row[k]);
             if (k === 'type') return this.typeLabel(row[k]);
             const v = row[k];
             if (typeof v === 'number' && k !== 'id' && !k.endsWith('_id')) {
@@ -1749,7 +1749,7 @@ function workspace(initial) {
             const rank = k => {
                 if (k === 'id') return 0;
                 if (/^(title|name|subject|question|company|label|description)$/.test(k)) return 1;
-                if (k === 'status' || k === 'severity' || k === 'type') return 2;
+                if (k === 'status' || k === 'severity' || k === 'type' || k === 'risk_level') return 2;
                 if (k === 'created_at' || k === 'updated_at' || k === 'deleted_at') return 4;
                 return 3;
             };
@@ -2259,7 +2259,7 @@ function workspace(initial) {
                 const f = Math.abs(v) % 1 ? v.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : v.toLocaleString('de-DE');
                 return /price|amount|value|cost|rate|budget|revenue|ebitda|salary|euro|eur/i.test(c) ? f + ' €' : f;
             }
-            if (c === 'status' || c === 'severity' || c === 'type') {
+            if (c === 'status' || c === 'severity' || c === 'type' || c === 'risk_level') {
                 const map = {open:'#CA8A04',pending:'#CA8A04',in_progress:'#CA8A04',running:'#CA8A04',queued:'#5B6B7E',scheduled:'#5B6B7E',planned:'#5B6B7E',on_hold:'#CA8A04',critical:'#A6362E',high:'#A6362E',warning:'#CA8A04',cancelled:'#A6362E',rejected:'#A6362E',done:'#2E7D5B',completed:'#2E7D5B',approved:'#2E7D5B',accepted:'#2E7D5B',mitigated:'#2E7D5B',active:'#2E7D5B',awarded:'#2E7D5B',info:'#5B6B7E'};
                 const col = map[String(v).toLowerCase()] || '#5B6B7E';
                 const txt = STATUS_DE[String(v).toLowerCase()] || v;
