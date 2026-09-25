@@ -404,7 +404,7 @@
                                 <button x-show="Object.values(hiddenCols).some(Boolean)" @click="hiddenCols = {}; saveColPrefs()" class="w-full text-left px-3 py-1.5 text-xs text-[#CA8A04] hover:bg-[#CA8A04]/10 border-b border-[#E4E9F0]">Alle einblenden</button>
                                 <template x-for="c in columns" :key="c">
                                     <label class="flex items-center gap-2 px-3 py-1.5 text-xs text-[#1A2433] hover:bg-[#FAFBFC] cursor-pointer">
-                                        <input type="checkbox" :checked="!hiddenCols[c]" @change="toggleCol(c)" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                        <input type="checkbox" :aria-label="'Spalte ' + label(c)" :checked="!hiddenCols[c]" @change="toggleCol(c)" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                         <span x-text="label(c)"></span>
                                     </label>
                                 </template>
@@ -511,7 +511,7 @@
                         <thead>
                             <tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
                                 <th x-show="writable()" class="px-4 py-3 w-10">
-                                    <input type="checkbox" @change="toggleAll($event.target.checked)" :checked="sorted(filtered()).length > 0 && selCount() === sorted(filtered()).length"
+                                    <input type="checkbox" aria-label="Alle sichtbaren Zeilen auswählen" @change="toggleAll($event.target.checked)" :checked="sorted(filtered()).length > 0 && selCount() === sorted(filtered()).length"
                                            x-effect="$el.indeterminate = selCount() > 0 && selCount() < sorted(filtered()).length"
                                            class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 </th>
@@ -538,7 +538,7 @@
                                         <template x-for="e in it.cells" :key="e.t + ':' + (e.c || '')">
                                             <template x-if="e.t === 'cb'">
                                                 <td x-show="writable()" @click.stop class="px-4 py-3 w-10">
-                                                    <input type="checkbox" @change="toggleSel(it.r.id)" :checked="!!selected[it.r.id]"
+                                                    <input type="checkbox" :aria-label="'Zeile auswählen: ' + (it.r.name || it.r.title || it.r.headline || it.r.id)" @change="toggleSel(it.r.id)" :checked="!!selected[it.r.id]"
                                                            class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                                 </td>
                                             </template>
