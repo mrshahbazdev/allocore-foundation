@@ -83,7 +83,7 @@
             </div>
             <template x-for="group in groups" :key="group.label">
                 <div class="mb-1">
-                    <button @click="collapsed[group.label] = !collapsed[group.label]"
+                    <button @click="toggleGroup(group.label)"
                             class="w-full flex items-center justify-between px-5 pt-4 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280] hover:text-[#9CA3AF] transition">
                         <span><span x-text="group.label"></span><span class="ml-1.5 font-normal text-[#4B5563]" x-text="'· ' + group.items.length"></span></span>
                         <span class="flex items-center gap-1.5">
@@ -865,6 +865,7 @@ function workspace(initial) {
             const p = new URLSearchParams(location.search);
             const t = p.get('tenant');
             try { this.recent = JSON.parse(localStorage.getItem('af_recent') || '[]').filter(k => k !== this.section).slice(0, 5); } catch (e) { this.recent = []; }
+            try { this.collapsed = JSON.parse(localStorage.getItem('af_navgroups') || '{}') || {}; } catch (e) { this.collapsed = {}; }
             if (this.section !== 'dashboard' && this.section !== 'executive') {
                 const next = [this.section, ...this.recent.filter(k => k !== this.section)].slice(0, 5);
                 try { localStorage.setItem('af_recent', JSON.stringify(next)); } catch (e) {}
@@ -927,7 +928,9 @@ function workspace(initial) {
         },
         sectionLabel(k) { const i = this.groups.flatMap(g => g.items).find(x => x.key === k); return i ? i.label : k; },
         allCollapsed() { return this.groups.every(g => this.collapsed[g.label]); },
-        toggleAllGroups() { const v = !this.allCollapsed(); this.groups.forEach(g => { this.collapsed[g.label] = v; }); },
+        toggleAllGroups() { const v = !this.allCollapsed(); this.groups.forEach(g => { this.collapsed[g.label] = v; }); this.saveCollapsed(); },
+        toggleGroup(k) { this.collapsed[k] = !this.collapsed[k]; this.saveCollapsed(); },
+        saveCollapsed() { try { localStorage.setItem('af_navgroups', JSON.stringify(this.collapsed)); } catch (e) {} },
         overdueSections() {
             return Object.entries(this.navBadges || {}).filter(([k, n]) => n > 0)
                 .map(([k, n]) => ({key: k, label: this.sectionLabel(k), count: n}))
