@@ -828,7 +828,7 @@ function workspace(initial) {
             this.$watch('overdueOnly', () => this.syncUrl());
             this.$watch('dueSoonOnly', () => this.syncUrl());
             this.$watch('myOnly', () => this.syncUrl());
-            this.$watch('groupBy', () => this.syncUrl());
+            this.$watch('groupBy', v => { try { localStorage.setItem('af_group_' + this.section, v); } catch (e) {} this.syncUrl(); });
             this.$watch('tenant', v => {
                 if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
                 document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE';
@@ -938,7 +938,7 @@ function workspace(initial) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
             this.loading = true; this.error = '';
-            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = ''; }
+            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; }
             try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             if (this._urlSort) { const m = this._urlSort.match(/^(.+?)(?::(asc|desc))?$/); this.sortKey = m[1]; this.sortAsc = m[2] !== 'desc'; this._urlSort = null; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
