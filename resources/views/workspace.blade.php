@@ -771,8 +771,8 @@ function workspace(initial) {
             try { localStorage.setItem('af_sort_' + this.section, JSON.stringify({k: this.sortKey, a: this.sortAsc})); } catch (e) {}
         },
         sorted(rows) {
-            if (!this.sortKey) return rows;
-            const k = this.sortKey, dir = this.sortAsc ? 1 : -1;
+            const k = this.sortKey || 'updated_at', dir = (this.sortKey ? this.sortAsc : false) ? 1 : -1;
+            if (!rows.length || rows[0][k] === undefined) return rows;
             return [...rows].sort((a,b) => {
                 const x = a[k], y = b[k];
                 if (x === y) return 0;
