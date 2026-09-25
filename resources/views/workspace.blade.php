@@ -257,7 +257,7 @@
                             <template x-for="d in upcoming" :key="d.id">
                                 <a :href="'/app/deadlines?tenant=' + tenant + '&open=' + d.id" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
                                     <span class="text-sm text-[#1A2433] truncate" x-text="d.title"></span>
-                                    <span class="text-[11px] font-mono shrink-0" :class="new Date(d.due_at) < new Date() ? 'text-[#A6362E]' : 'text-[#9CA3AF]'" x-text="new Date(d.due_at).toLocaleDateString('de-DE')"></span>
+                                    <span class="text-[11px] font-mono shrink-0 text-[#9CA3AF]" x-html="dueRel(d.due_at)"></span>
                                 </a>
                             </template>
                         </div>
@@ -1563,6 +1563,13 @@ function workspace(initial) {
             if (s < 3600) return 'vor ' + Math.round(s / 60) + ' Min.';
             if (s < 86400) return 'vor ' + Math.round(s / 3600) + ' Std.';
             return 'vor ' + Math.round(s / 86400) + ' T';
+        },
+        dueRel(v) {
+            const d = new Date(v);
+            const days = Math.ceil((d - Date.now()) / 86400000);
+            const rel = days === -1 ? 'gestern' : days === 0 ? 'heute' : days === 1 ? 'morgen' : days < 0 ? `vor ${-days} T` : `in ${days} T`;
+            const col = days < 0 ? '#A6362E' : days <= 7 ? '#CA8A04' : '#9CA3AF';
+            return d.toLocaleDateString('de-DE') + ` <span style="color:${col}">(${rel})</span>`;
         },
         eventLink(e) {
             const p = e && e.event_properties;
