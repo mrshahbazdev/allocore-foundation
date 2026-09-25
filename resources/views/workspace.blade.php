@@ -259,6 +259,30 @@
                         <button @click="applyStatus(a[1])" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" x-text="a[0]"></button>
                     </template>
                 </div>
+                <div x-show="section === 'questions'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">ANTWORTEN</div>
+                    <div x-show="!answers.length" class="text-xs text-[#9CA3AF]">Noch keine Antworten.</div>
+                    <template x-for="ans in answers" :key="ans.id">
+                        <div class="rounded-lg border px-3 py-2.5" :class="ans.is_accepted ? 'border-[#2E7D5B]/50 bg-[#2E7D5B]/5' : 'border-[#E4E9F0]'">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-xs font-medium text-[#1A2433]" x-text="ans.author?.name || resolveId('answered_by', ans.answered_by) || '—'"></span>
+                                <span x-show="ans.is_accepted" class="text-[10px] font-semibold text-[#2E7D5B]">AKZEPTIERT</span>
+                            </div>
+                            <p class="mt-1 text-sm text-[#42536A] whitespace-pre-wrap" x-text="ans.body"></p>
+                            <div class="mt-2 flex gap-3">
+                                <button x-show="!ans.is_accepted" @click="acceptAnswer(ans.id)" class="text-[11px] font-medium text-[#2E7D5B] hover:underline">Akzeptieren</button>
+                                <button @click="deleteAnswer(ans.id)" class="text-[11px] text-[#A6362E] hover:underline">Löschen</button>
+                            </div>
+                        </div>
+                    </template>
+                    <form @submit.prevent="postAnswer()" class="space-y-2">
+                        <textarea x-model="answerText" rows="3" placeholder="Antwort schreiben…"
+                                  class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30"></textarea>
+                        <div class="flex justify-end">
+                            <button type="submit" :disabled="!answerText.trim()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40">Antworten</button>
+                        </div>
+                    </form>
+                </div>
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button x-show="canEdit()" @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
@@ -365,11 +389,12 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false,
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100,
+        sortKey: '', sortAsc: true, limit: 100, answers: [], answerText: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
             if (this.tenant) this.loadSection();
+            this.$watch('detail', v => { this.answers = []; this.answerText = ''; if (v && this.section === 'questions') this.loadAnswers(v.id); });
         },
         item() {
             return GROUPS.flatMap(g => g.items).find(i => i.key === this.section) || {label:this.section};
@@ -467,6 +492,26 @@ function workspace(initial) {
         applyStatus(s) {
             this.api(this.item().ep + '/' + this.detail.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
                 .then(r => { if (r.ok) { this.detail = null; this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+        },
+        loadAnswers(qid) {
+            this.api('/api/v1/questions/' + qid).then(r => r.ok ? r.json() : {answers: []}).then(d => {
+                this.answers = d.answers || [];
+            });
+        },
+        postAnswer() {
+            const body = this.answerText.trim();
+            if (!body || !this.detail) return;
+            this.api('/api/v1/questions/' + this.detail.id + '/answers', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({body})})
+                .then(r => { if (r.ok) { this.answerText = ''; this.loadAnswers(this.detail.id); this.loadSection(); } else alert('Antwort fehlgeschlagen (HTTP '+r.status+')'); });
+        },
+        acceptAnswer(id) {
+            this.api('/api/v1/answers/' + id + '/accept', {method:'POST'})
+                .then(r => { if (r.ok) { this.loadAnswers(this.detail.id); this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+        },
+        deleteAnswer(id) {
+            if (!confirm('Antwort löschen?')) return;
+            this.api('/api/v1/answers/' + id, {method:'DELETE'})
+                .then(() => this.loadAnswers(this.detail.id));
         },
         dlPath(row) {
             if (this.section === 'data-objects') return '/api/v1/data-objects/' + row.id + '/download';
