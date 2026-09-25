@@ -19,6 +19,8 @@
      @keydown.escape.window="detail = null; closeCreate(); showCreate = false; navOpen = false; palette = false; colPicker = false; viewPicker = false; kbdHelp = false; showImport = false; confirmDel = false"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
+     @keydown.home.window="detail && (detail = sorted(filtered())[0])"
+     @keydown.end.window="detail && (detail = sorted(filtered())[sorted(filtered()).length - 1])"
      @keydown.window="kbd($event)"
      @beforeprint.window="limit = 100000">
 
@@ -683,7 +685,7 @@
             <div class="relative w-full max-w-sm bg-white rounded-xl shadow-2xl p-6 max-h-[80vh] overflow-y-auto">
                 <h2 class="font-semibold text-[#0B0B0F] mb-4">Tastenkürzel</h2>
                 <dl class="space-y-2 text-sm">
-                    <template x-for="k in [['Ctrl/⌘ + K', 'Befehlspalette öffnen (↑/↓ wählen, Enter öffnen)'], ['/', 'Suche fokussieren'], ['n', 'Neuen Eintrag anlegen'], ['e', 'Eintrag bearbeiten (Drawer)'], ['d', 'Eintrag duplizieren (Drawer)'], ['f', 'Sektion (ent)pinnen'], ['a', 'Alle Zeilen (ab)wählen'], ['p', 'Deep-Link kopieren (Drawer)'], ['o', 'Erste gefilterte Zeile öffnen'], ['l', 'Alle Zeilen laden'], ['r', 'Liste neu laden'], ['i', 'CSV-Import öffnen'], ['c', 'Spalten-Picker'], ['v', 'Ansichten-Picker'], ['x', 'Filter zurücksetzen'], ['u', 'Überfällig-Filter'], ['s', '≤7-Tage-Filter'], ['m', 'Mir zugewiesen'], ['g', 'Gruppieren nach Status'], ['.', 'Zum Dashboard'], ['1–9', 'n-te Zeile öffnen'], ['← / →', 'Vorheriger / nächster Eintrag (Drawer)'], ['Ctrl + Enter', 'Formular absenden'], ['t', 'Dunkel/Hell umschalten'], ['Esc', 'Schließen'], ['?', 'Diese Übersicht']]" :key="k[0]">
+                    <template x-for="k in [['Ctrl/⌘ + K', 'Befehlspalette öffnen (↑/↓ wählen, Enter öffnen)'], ['/', 'Suche fokussieren'], ['n', 'Neuen Eintrag anlegen'], ['e', 'Eintrag bearbeiten (Drawer)'], ['d', 'Eintrag duplizieren (Drawer)'], ['f', 'Sektion (ent)pinnen'], ['a', 'Alle Zeilen (ab)wählen'], ['p', 'Deep-Link kopieren (Drawer)'], ['o', 'Erste gefilterte Zeile öffnen'], ['l', 'Alle Zeilen laden'], ['r', 'Liste neu laden'], ['i', 'CSV-Import öffnen'], ['c', 'Spalten-Picker'], ['v', 'Ansichten-Picker'], ['x', 'Filter zurücksetzen'], ['u', 'Überfällig-Filter'], ['s', '≤7-Tage-Filter'], ['m', 'Mir zugewiesen'], ['g', 'Gruppieren nach Status'], ['.', 'Zum Dashboard'], ['1–9', 'n-te Zeile öffnen'], ['← / →', 'Vorheriger / nächster Eintrag (Drawer)'], ['Pos1 / Ende', 'Erster / letzter Eintrag (Drawer)'], ['Ctrl + Enter', 'Formular absenden'], ['t', 'Dunkel/Hell umschalten'], ['Esc', 'Schließen'], ['?', 'Diese Übersicht']]" :key="k[0]">
                         <div class="flex justify-between items-center">
                             <dt class="text-[#5B6B7E]"><kbd class="px-1.5 py-0.5 bg-[#F0F3F7] border border-[#E4E9F0] rounded text-xs font-mono" x-text="k[0]"></kbd></dt>
                             <dd class="text-[#1A2433]" x-text="k[1]"></dd>
