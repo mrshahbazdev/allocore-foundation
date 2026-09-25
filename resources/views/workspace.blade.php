@@ -989,6 +989,7 @@ function workspace(initial) {
             if (p.get('my')) this.myOnly = true;
             if (p.get('unassigned')) this.unassignedOnly = true;
             if (p.get('group')) this.groupBy = p.get('group');
+            if (p.get('eg')) this.evGroup = p.get('eg');
             this._urlSort = p.get('sort') || null;
             this.$watch('query', () => this.syncUrl());
             this.$watch('statusFilter', () => this.syncUrl());
@@ -997,6 +998,7 @@ function workspace(initial) {
             this.$watch('dueTodayOnly', () => this.syncUrl());
             this.$watch('myOnly', () => this.syncUrl());
             this.$watch('unassignedOnly', () => this.syncUrl());
+            this.$watch('evGroup', () => this.syncUrl());
             this.$watch('groupBy', v => { try { localStorage.setItem('af_group_' + this.section, v); localStorage.removeItem('af_gc_' + this.section); } catch (e) {} this.collapsedGroups = {}; this.syncUrl(); });
             this.$watch('tenant', v => {
                 if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
@@ -1035,6 +1037,7 @@ function workspace(initial) {
             if (this.myOnly) url.searchParams.set('my', '1'); else url.searchParams.delete('my');
             if (this.unassignedOnly) url.searchParams.set('unassigned', '1'); else url.searchParams.delete('unassigned');
             if (this.groupBy) url.searchParams.set('group', this.groupBy); else url.searchParams.delete('group');
+            if (this.evGroup) url.searchParams.set('eg', this.evGroup); else url.searchParams.delete('eg');
             history.replaceState(null, '', url);
         },
         item() {
