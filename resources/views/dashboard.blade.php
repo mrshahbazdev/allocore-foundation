@@ -98,22 +98,13 @@
                     if (!this.tenant) return;
                     this.error = '';
                     this.users = null;
-                    fetch('/api/v1/metrics', {headers: {
-                api(path) {
-                    return fetch(path, {headers: {
-                        'Authorization': 'Bearer {{ $apiToken }}',
-                        'X-Tenant': this.tenant,
-                        'Accept': 'application/json',
-                    }});
-                },
-                load() {
-                    if (!this.tenant) return;
-                    this.error = '';
                     this.insights = [];
                     this.api('/api/v1/metrics').then(r => {
                         if (!r.ok) { this.error = 'HTTP '+r.status+' — keine Berechtigung?'; this.metrics = null; return null; }
                         return r.json();
                     }).then(d => { if (d) this.metrics = d; });
+                    this.api('/api/v1/insights').then(r => r.ok ? r.json() : [])
+                        .then(d => { this.insights = d; });
                     this.loadTeam();
                 },
                 api(path, opts) {

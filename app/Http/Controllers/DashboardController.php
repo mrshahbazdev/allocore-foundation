@@ -13,7 +13,7 @@ class DashboardController extends Controller
         $token = $request->user()->createToken('dashboard')->plainTextToken;
 
         return view('dashboard', [
-            'tenants' => Tenant::orderBy('name')->get(['id', 'name']),
+            'tenants' => Tenant::all()->sortBy('name')->values(),
             'apiToken' => $token,
         ]);
     }
