@@ -56,6 +56,17 @@
         </div>
 
         <nav class="flex-1 overflow-y-auto py-3 text-[13px]">
+            <div x-show="pins.length" class="mb-1" style="display:none">
+                <div class="px-5 pt-3 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280]">FAVORITEN</div>
+                <template x-for="pk in pins" :key="pk">
+                    <a :href="'/app/' + pk + (tenant ? '?tenant='+tenant : '')"
+                       class="flex items-center gap-3 px-5 py-2 transition"
+                       :class="section === pk ? 'text-white bg-[#1A1A1F] border-r-2 border-[#FACC15]' : 'text-[#9CA3AF] hover:text-white hover:bg-[#141419]'">
+                        <span class="text-[#CA8A04] text-xs">★</span>
+                        <span x-text="(groups.flatMap(g => g.items).find(i => i.key === pk) || {label: pk}).label"></span>
+                    </a>
+                </template>
+            </div>
             <template x-for="group in groups" :key="group.label">
                 <div class="mb-1">
                     <button @click="collapsed[group.label] = !collapsed[group.label]"
@@ -95,7 +106,11 @@
     <main class="flex-1 min-w-0">
         <header class="bg-white border-b border-[#E4E9F0] px-6 py-4 flex items-center justify-between">
             <div>
-                <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F]" x-text="title()"></h1>
+                <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F] flex items-center gap-2">
+                    <span x-text="title()"></span>
+                    <button @click="togglePin(section)" :title="pins.includes(section) ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'"
+                            class="text-sm transition" :class="pins.includes(section) ? 'text-[#CA8A04]' : 'text-[#D6DEE9] hover:text-[#CA8A04]'">★</button>
+                </h1>
                 <p class="text-xs text-[#5B6B7E]" x-text="subtitle()"></p>
             </div>
             <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
@@ -546,7 +561,7 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -562,6 +577,10 @@ function workspace(initial) {
             return GROUPS.flatMap(g => g.items).find(i => i.key === this.section) || {label:this.section};
         },
         title() { return this.item().label; },
+        togglePin(key) {
+            this.pins = this.pins.includes(key) ? this.pins.filter(k => k !== key) : [...this.pins, key];
+            try { localStorage.setItem('af_pins', JSON.stringify(this.pins)); } catch (e) {}
+        },
         paletteItems() {
             const q = this.paletteQ.trim().toLowerCase();
             const all = this.groups.flatMap(g => g.items.map(i => ({key: i.key, label: i.label, group: g.label})));
