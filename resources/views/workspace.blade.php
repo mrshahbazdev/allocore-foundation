@@ -389,6 +389,9 @@
                         <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" title="Überfällig (u)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
                                 x-text="'Überfällig · ' + rows.filter(r => overdue(r)).length"></button>
+                        <button x-show="rows.some(r => dueToday(r))" @click="dueTodayOnly = !dueTodayOnly" title="Heute fällig" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                                :class="dueTodayOnly ? 'border-[#CA8A04] bg-[#CA8A04] text-black' : 'border-[#CA8A04]/40 text-[#B45309] hover:bg-[#CA8A04]/10'"
+                                x-text="'Heute · ' + rows.filter(r => dueToday(r)).length"></button>
                         <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" title="≤7 Tage (s)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'"
                                 x-text="'≤ 7 Tage · ' + rows.filter(r => dueSoon(r)).length"></button>
@@ -413,10 +416,10 @@
                         </template>
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
-                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly || myOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
-                        <button x-show="query || statusFilter || overdueOnly || dueSoonOnly || myOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; myOnly = false"
+                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
+                        <button x-show="query || statusFilter || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; dueTodayOnly = false; myOnly = false"
                                 title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
-                        <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly && !myOnly" @click="openCreate()"
+                        <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly && !dueTodayOnly && !myOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
                     </div>
                     <div x-show="selCount() > 0" class="flex flex-wrap items-center gap-2 px-5 py-2.5 border-b border-[#E4E9F0] bg-[#FFFBEB]">
@@ -866,7 +869,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'),
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'),
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0,
@@ -1044,7 +1047,7 @@ function workspace(initial) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
             this.loading = true; this.error = '';
-            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; try { this.collapsedGroups = JSON.parse(localStorage.getItem('af_gc_' + this.section) || '{}') || {}; } catch (e) { this.collapsedGroups = {}; } }
+            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; try { this.collapsedGroups = JSON.parse(localStorage.getItem('af_gc_' + this.section) || '{}') || {}; } catch (e) { this.collapsedGroups = {}; } }
             try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             if (this._urlSort) { const m = this._urlSort.match(/^(.+?)(?::(asc|desc))?$/); this.sortKey = m[1]; this.sortAsc = m[2] !== 'desc'; this._urlSort = null; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
@@ -1300,6 +1303,7 @@ function workspace(initial) {
             let rs = this.rows;
             if (this.overdueOnly) rs = rs.filter(r => this.overdue(r));
             if (this.dueSoonOnly) rs = rs.filter(r => this.dueSoon(r));
+            if (this.dueTodayOnly) rs = rs.filter(r => this.dueToday(r));
             if (this.myOnly) rs = rs.filter(r => String(r.assignee_id || r.responsible_id || '') === String(this.meId));
             if (this.statusFilter) rs = rs.filter(r => String(r.status || '') === this.statusFilter);
             const q = this.query.trim().toLowerCase();
@@ -1440,7 +1444,7 @@ function workspace(initial) {
             const name = prompt('Name der Ansicht:');
             if (!name) return;
             const all = this.views();
-            all[name] = {query: this.query, statusFilter: this.statusFilter, overdueOnly: this.overdueOnly, dueSoonOnly: this.dueSoonOnly, myOnly: this.myOnly, groupBy: this.groupBy, sortKey: this.sortKey, sortAsc: this.sortAsc, hiddenCols: this.hiddenCols};
+            all[name] = {query: this.query, statusFilter: this.statusFilter, overdueOnly: this.overdueOnly, dueSoonOnly: this.dueSoonOnly, dueTodayOnly: this.dueTodayOnly, myOnly: this.myOnly, groupBy: this.groupBy, sortKey: this.sortKey, sortAsc: this.sortAsc, hiddenCols: this.hiddenCols};
             localStorage.setItem('af_views_' + this.section, JSON.stringify(all));
             this.viewPicker = false;
             this.toast('Ansicht „' + name + '“ gespeichert.');
@@ -1448,7 +1452,7 @@ function workspace(initial) {
         applyView(name) {
             const v = this.views()[name];
             if (!v) return;
-            this.query = v.query || ''; this.statusFilter = v.statusFilter || ''; this.overdueOnly = !!v.overdueOnly; this.dueSoonOnly = !!v.dueSoonOnly; this.myOnly = !!v.myOnly;
+            this.query = v.query || ''; this.statusFilter = v.statusFilter || ''; this.overdueOnly = !!v.overdueOnly; this.dueSoonOnly = !!v.dueSoonOnly; this.dueTodayOnly = !!v.dueTodayOnly; this.myOnly = !!v.myOnly;
             this.groupBy = v.groupBy || ''; this.sortKey = v.sortKey || ''; this.sortAsc = v.sortAsc !== false; this.hiddenCols = v.hiddenCols || {};
             this.viewPicker = false; this.toast('Ansicht „' + name + '“ angewendet.');
         },
@@ -1684,7 +1688,7 @@ function workspace(initial) {
             else if (e.key === 'o') { if (!this.detail && !this.showCreate && !this.palette && this.filtered().length) this.detail = this.filtered()[0]; }
             else if (e.key === 'l') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.filtered().length > this.limit) this.limit = this.filtered().length; }
             else if (e.key === 't') { this.toggleDark(); }
-            else if (e.key === 'x') { if (!this.detail && !this.showCreate && !this.palette && (this.query || this.statusFilter || this.overdueOnly || this.dueSoonOnly || this.myOnly)) { this.query = ''; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; } }
+            else if (e.key === 'x') { if (!this.detail && !this.showCreate && !this.palette && (this.query || this.statusFilter || this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly)) { this.query = ''; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; } }
             else if (e.key === 'c') { if (!this.detail && !this.showCreate && !this.palette && this.rows) this.colPicker = !this.colPicker; }
             else if (e.key === 'v') { if (!this.detail && !this.showCreate && !this.palette && this.rows) this.viewPicker = !this.viewPicker; }
             else if (e.key === 's') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.dueSoon(r))) this.dueSoonOnly = !this.dueSoonOnly; }
@@ -1747,6 +1751,12 @@ function workspace(initial) {
             if (!key || !this.isOpenStatus(row)) return false;
             const d = new Date(row[key]), now = new Date();
             return !isNaN(d) && d >= now && d <= new Date(now.getTime() + 7*864e5);
+        },
+        dueToday(row) {
+            const key = this.dueKey(row);
+            if (!key || !this.isOpenStatus(row)) return false;
+            const d = new Date(row[key]), now = new Date();
+            return !isNaN(d) && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
         },
         eintrag(n) { return n === 1 ? 'Eintrag' : 'Einträge'; },
         detailTitle() {
