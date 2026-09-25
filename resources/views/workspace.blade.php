@@ -962,7 +962,9 @@ function workspace(initial) {
             const all = this.groups.flatMap(g => g.items.map(i => ({key: i.key, label: i.label, group: g.label})));
             const acts = [];
             if (this.canCreate()) acts.push({key: null, action: 'create', label: '+ Neu: ' + this.title(), group: 'Aktion'});
-            if (this.rows && this.section !== 'dashboard') acts.push({key: null, action: 'export', label: 'CSV exportieren', group: 'Aktion'}, {key: null, action: 'reload', label: 'Liste neu laden', group: 'Aktion'});
+            if (this.rows && this.section !== 'dashboard') acts.push({key: null, action: 'export', label: 'CSV exportieren', group: 'Aktion'}, {key: null, action: 'reload', label: 'Liste neu laden', group: 'Aktion'}, {key: null, action: 'print', label: 'Liste drucken', group: 'Aktion'});
+            if (this.rows && this.canImport()) acts.push({key: null, action: 'import', label: 'CSV importieren', group: 'Aktion'});
+            acts.push({key: null, action: 'dark', label: 'Dunkel/Hell umschalten', group: 'Aktion'});
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
             return [...acts.filter(a => !q || a.label.toLowerCase().includes(q)), ...mods];
         },
@@ -975,6 +977,9 @@ function workspace(initial) {
             if (it.action === 'create') { this.openCreate(); return; }
             if (it.action === 'export') { this.exportCsv(); return; }
             if (it.action === 'reload') { this.loadSection(true); return; }
+            if (it.action === 'import') { if (this.canImport()) this.showImport = true; return; }
+            if (it.action === 'print') { window.print(); return; }
+            if (it.action === 'dark') { this.toggleDark(); return; }
             location.href = '/app/' + it.key + (this.tenant ? '?tenant=' + this.tenant : '');
         },
         insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
