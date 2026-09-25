@@ -17,7 +17,7 @@ class ProductionOrderController extends Controller
             ->when($request->overdue === '1', fn ($q) => $q->whereIn('status', ['queued', 'running'])->where('due_at', '<', today()))
             ->with('machine:id,name', 'assignee:id,first_name,last_name')
             ->orderBy('due_at')
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

@@ -12,7 +12,7 @@ class GraphEntityController extends Controller
     {
         return GraphEntity::query()
             ->when($request->type, fn ($q, $t) => $q->where('type', $t))
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

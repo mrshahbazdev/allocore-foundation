@@ -16,7 +16,7 @@ class ProjectController extends Controller
             ->when($request->strategy_id, fn ($q) => $q->where('strategy_id', $request->strategy_id))
             ->with('owner:id,name')
             ->withCount('measures')
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

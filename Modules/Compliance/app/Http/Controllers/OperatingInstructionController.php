@@ -13,7 +13,7 @@ class OperatingInstructionController extends Controller
     {
         return OperatingInstruction::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

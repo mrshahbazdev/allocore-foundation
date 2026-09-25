@@ -15,7 +15,7 @@ class MeasureController extends Controller
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->project_id, fn ($q) => $q->where('project_id', $request->project_id))
             ->with('responsible:id,name')
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

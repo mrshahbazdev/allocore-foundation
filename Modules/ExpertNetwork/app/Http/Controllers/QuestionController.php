@@ -16,7 +16,7 @@ class QuestionController extends Controller
             ->when($request->category, fn ($q) => $q->where('category', $request->category))
             ->with('asker:id,name', 'expertProfile:id,headline')
             ->withCount('answers')
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)
