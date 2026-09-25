@@ -934,8 +934,10 @@ function workspace(initial) {
             this.$watch('groupBy', v => { try { localStorage.setItem('af_group_' + this.section, v); localStorage.removeItem('af_gc_' + this.section); } catch (e) {} this.collapsedGroups = {}; this.syncUrl(); });
             this.$watch('tenant', v => {
                 if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
-                document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE';
+                this.setDocTitle();
             });
+            this.$watch('rows', () => this.setDocTitle());
+            this.$watch('section', () => this.setDocTitle());
             setInterval(() => { if (this.tenant && !this.detail && !this.showCreate && !this.palette) this.loadSection(true); }, 30000);
             this.$watch('detail', v => {
                 const url = new URL(location.href);
@@ -986,6 +988,10 @@ function workspace(initial) {
         toggleGroup(k) { this.collapsed[k] = !this.collapsed[k]; this.saveCollapsed(); },
         toggleGroupHeader(label) { this.collapsedGroups[label] = !this.collapsedGroups[label]; try { localStorage.setItem('af_gc_' + this.section, JSON.stringify(this.collapsedGroups)); } catch (e) {} },
         saveCollapsed() { try { localStorage.setItem('af_navgroups', JSON.stringify(this.collapsed)); } catch (e) {} },
+        setDocTitle() {
+            const od = (this.rows || []).filter(r => this.overdue(r)).length;
+            document.title = (od ? '(' + od + ') ' : '') + this.title() + ' · ' + this.tenantName() + ' — ALLOCORE';
+        },
         overdueSections() {
             return Object.entries(this.navBadges || {}).filter(([k, n]) => n > 0)
                 .map(([k, n]) => ({key: k, label: this.sectionLabel(k), count: n}))
