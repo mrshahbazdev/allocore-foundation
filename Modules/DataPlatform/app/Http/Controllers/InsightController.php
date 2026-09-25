@@ -35,6 +35,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tasks_overdue', "{$overdue} Aufgabe(n) überfällig.", ['count' => $overdue]);
         }
 
+        $soon = $count('tasks', fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->whereBetween('due_at', [now(), now()->addDays(7)]));
+        if ($soon) {
+            $insights[] = $this->hit('info', 'tasks_due_soon', "{$soon} Aufgabe(n) innerhalb von 7 Tagen fällig.", ['count' => $soon]);
+        }
+
         $instructions = $count('instructions');
         $done = $count('instructions', fn ($q) => $q->where('status', 'completed'));
         if ($instructions && ($done / $instructions) < 0.8) {
