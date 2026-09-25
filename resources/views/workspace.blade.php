@@ -452,6 +452,7 @@
                         <button @click="copySel()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Als TSV in die Zwischenablage">Kopieren</button>
                         <button @click="invertSel()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Auswahl umkehren (sichtbare Zeilen)">Invertieren</button>
                         <button @click="exportCsv((this.rows || []).filter(r => selected[r.id]))" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">CSV</button>
+                        <button @click="exportJson((this.rows || []).filter(r => selected[r.id]))" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Ausgewählte Zeilen als JSON-Datei">JSON</button>
                         <button @click="bulkDelete()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
                         <button @click="selected = {}" class="text-xs px-3 py-1.5 text-[#5B6B7E] hover:text-[#0B0B0F]">Auswahl aufheben</button>
                     </div>
@@ -1559,6 +1560,15 @@ function workspace(initial) {
             a.download = this.section + '.csv';
             a.click();
             this.toast(rows.length + ' ' + this.eintrag(rows.length) + ' exportiert.');
+        },
+        exportJson(only) {
+            const rows = only || this.sorted(this.filtered());
+            if (!rows.length) return;
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(rows, null, 2)], {type: 'application/json'}));
+            a.download = this.section + '.json';
+            a.click();
+            this.toast(rows.length + ' ' + this.eintrag(rows.length) + ' exportiert (JSON).');
         },
         canImport() { return this.writable() && !['documents','data-objects','ai-analyses','events','metrics'].includes(this.section); },
         async importCsv() {
