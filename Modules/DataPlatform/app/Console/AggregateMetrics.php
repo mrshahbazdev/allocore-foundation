@@ -83,6 +83,21 @@ class AggregateMetrics extends Command
                 ['value' => $total ? round($done / $total * 100, 2) : 0],
             );
             $written++;
+
+            // Finanz-KPIs: Summen der Berichtsperiode aus financial_reports
+            $period = substr($date, 0, 7);
+            foreach (['revenue', 'ebitda', 'cashflow', 'liquidity'] as $col) {
+                $sum = DB::table('financial_reports')
+                    ->where('tenant_id', $tenant->getTenantKey())
+                    ->where('period', $period)
+                    ->sum($col);
+
+                MetricSnapshot::withoutGlobalScopes()->updateOrCreate(
+                    ['tenant_id' => $tenant->getTenantKey(), 'metric' => 'fin_'.$col, 'captured_on' => $date],
+                    ['value' => $sum],
+                );
+                $written++;
+            }
         }
 
         $this->info("{$written} Metriken geschrieben fuer {$date}.");

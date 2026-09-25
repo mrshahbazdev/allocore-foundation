@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
+use Modules\Core\Models\Company;
 use Tests\TestCase;
 
 class DataPlatformTest extends TestCase
@@ -85,6 +86,14 @@ class DataPlatformTest extends TestCase
         $this->postJson('/api/v1/companies', ['name' => 'C2'], ['X-Tenant' => $tenant->id]);
         $this->postJson('/api/v1/tasks', ['title' => 'T1'], ['X-Tenant' => $tenant->id]);
 
+        $companyId = Company::where('name', 'C1')->value('id');
+        $this->postJson('/api/v1/financial-reports', [
+            'company_id' => $companyId,
+            'period' => now()->format('Y-m'),
+            'revenue' => 12500.5,
+            'ebitda' => 3100,
+        ], ['X-Tenant' => $tenant->id]);
+
         tenancy()->initialize($tenant);
         Artisan::call('analytics:aggregate');
 
@@ -92,6 +101,8 @@ class DataPlatformTest extends TestCase
 
         $this->assertEquals('2.0000', $res->json('companies.value'));
         $this->assertEquals('1.0000', $res->json('tasks.value'));
+        $this->assertEquals('12500.5000', $res->json('fin_revenue.value'));
+        $this->assertEquals('3100.0000', $res->json('fin_ebitda.value'));
 
         $this->getJson('/api/v1/metrics/companies', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonCount(1);

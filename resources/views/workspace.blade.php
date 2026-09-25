@@ -260,7 +260,7 @@
                                class="bg-white border border-[#E4E9F0] rounded-xl px-5 py-4 block transition"
                                :class="m.to ? 'hover:border-[#CA8A04]/60 hover:shadow-sm cursor-pointer' : 'cursor-default'">
                                 <div class="text-[11px] font-medium text-[#5B6B7E]" x-text="m.label"></div>
-                                <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="metric(m.key)"></div>
+                                <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="kpiValue(m)"></div>
                                 <div class="mt-0.5 text-[11px] font-mono" :class="trend(m.key).direction === 'up' ? 'text-[#2E7D5B]' : (trend(m.key).direction === 'down' ? 'text-[#A6362E]' : 'text-[#9CA3AF]')" x-text="trend(m.key).delta === null ? '' : (trend(m.key).direction === 'up' ? '▲ +' : (trend(m.key).direction === 'down' ? '▼ ' : '')) + (trend(m.key).delta ?? '')"></div>
                                 <div class="mt-2 flex items-end justify-between gap-2">
                                     <div class="h-0.5 w-8 rounded-full bg-[#FACC15] mb-1"></div>
@@ -998,7 +998,7 @@ function workspace(initial) {
         {key:'documents',label:'Dokumente',to:'documents'},{key:'tasks_open',label:'Offene Aufgaben',to:'tasks'},
         {key:'instructions',label:'Unterweisungen',to:'instructions'},{key:'compliance_rate',label:'Compliance %',to:'instructions'},
         {key:'deadlines_open',label:'Offene Fristen',to:'deadlines'},{key:'risk_high',label:'Hohe Risiken',to:'risk-assessments'},
-        {key:'tenders_open',label:'Offene Ausschreibungen',to:'tenders'},{key:'expert_profiles',label:'Experten',to:'expert-profiles'},
+        {key:'tenders_open',label:'Offene Ausschreibungen',to:'tenders'},{key:'fin_revenue',label:'Umsatz (Monat)',to:'financial-reports',money:true},{key:'fin_ebitda',label:'EBITDA (Monat)',to:'financial-reports',money:true},{key:'expert_profiles',label:'Experten',to:'expert-profiles'},
         {key:'questions',label:'Fragen',to:'questions'},{key:'inspections',label:'Prüfungen',to:'inspections'},
     ];
     return {
@@ -1246,6 +1246,7 @@ function workspace(initial) {
             return base;
         },
         metric(k) { const v = this.metrics && this.metrics[k]; return v ? parseFloat(v.value) : '–'; },
+        kpiValue(m) { const v = this.metric(m.key); if (v === '–' || !m.money) return v; return v.toLocaleString('de-DE', {maximumFractionDigits: 0}) + ' €'; },
         trend(k) { const t = this.trends.find(x => x.metric === k); return t || {delta: null, direction: 'unknown'}; },
         sparkPath(k) {
             const v = this.spark[k] || [];
