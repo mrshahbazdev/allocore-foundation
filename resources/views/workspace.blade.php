@@ -106,12 +106,14 @@
                 <div class="space-y-5">
                     <div x-show="insights.length" class="space-y-2">
                         <template x-for="i in insights" :key="i.code">
-                            <div class="flex items-start gap-3 rounded-lg border bg-white px-4 py-3 text-sm"
-                                 :class="{'border-[#A6362E]/40': i.severity==='critical','border-[#CA8A04]/50': i.severity==='warning','border-[#D6DEE9]': i.severity==='info'}">
+                            <a :href="insightSection(i.code) ? '/app/' + insightSection(i.code) + '?tenant=' + tenant : '#'"
+                               class="flex items-start gap-3 rounded-lg border bg-white px-4 py-3 text-sm transition"
+                               :class="{'border-[#A6362E]/40': i.severity==='critical','border-[#CA8A04]/50': i.severity==='warning','border-[#D6DEE9]': i.severity==='info','hover:shadow-sm': insightSection(i.code)}">
                                 <span class="mt-0.5 inline-block h-2 w-2 rounded-full shrink-0"
                                       :class="{'bg-[#A6362E]': i.severity==='critical','bg-[#CA8A04]': i.severity==='warning','bg-[#5B6B7E]': i.severity==='info'}"></span>
                                 <span x-text="i.message"></span>
-                            </div>
+                                <svg x-show="insightSection(i.code)" class="ml-auto h-4 w-4 shrink-0 text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </a>
                         </template>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -483,6 +485,7 @@ function workspace(initial) {
             return GROUPS.flatMap(g => g.items).find(i => i.key === this.section) || {label:this.section};
         },
         title() { return this.item().label; },
+        insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
         execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake'}; return M[k] || k; },
         createExecReport() {
