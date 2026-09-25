@@ -892,7 +892,7 @@ function workspace(initial) {
             this.$watch('overdueOnly', () => this.syncUrl());
             this.$watch('dueSoonOnly', () => this.syncUrl());
             this.$watch('myOnly', () => this.syncUrl());
-            this.$watch('groupBy', v => { try { localStorage.setItem('af_group_' + this.section, v); } catch (e) {} this.syncUrl(); });
+            this.$watch('groupBy', v => { try { localStorage.setItem('af_group_' + this.section, v); localStorage.removeItem('af_gc_' + this.section); } catch (e) {} this.collapsedGroups = {}; this.syncUrl(); });
             this.$watch('tenant', v => {
                 if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
                 document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE';
