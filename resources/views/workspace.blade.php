@@ -744,6 +744,14 @@
                     <div class="flex justify-end" x-show="allRoles.length">
                         <button @click="saveUserRoles()" :disabled="!userRoles.length" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40">Rollen speichern</button>
                     </div>
+                    <div x-show="userPerms.length" class="pt-2">
+                        <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5">BERECHTIGUNGEN</div>
+                        <div class="flex flex-wrap gap-1">
+                            <template x-for="p in userPerms" :key="p">
+                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#F4F6F9] text-[#42536A] font-mono" x-text="p"></span>
+                            </template>
+                        </div>
+                    </div>
                 </div>
                 <div x-show="section === 'documents'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERSIONEN</div>
@@ -1025,7 +1033,7 @@ function workspace(initial) {
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
-        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [],
+        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [],
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
@@ -1102,7 +1110,7 @@ function workspace(initial) {
                 const url = new URL(location.href);
                 if (v && v.id) url.searchParams.set('open', v.id); else url.searchParams.delete('open');
                 history.replaceState(null, '', url);
-                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null; this.userRoles = [];
+                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null; this.userRoles = []; this.userPerms = [];
                 this.confirmDel = false; this.rowEvents = []; this.evShown = 6;
                 if (v && v.id && !['events','metrics','ai-analyses','executive','dashboard'].includes(this.section)) this.loadRowEvents(v.id);
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
@@ -1534,12 +1542,12 @@ function workspace(initial) {
         },
         loadUserRoles(id) {
             this.api('/api/v1/roles').then(r => r.ok ? r.json() : []).then(d => { this.allRoles = Array.isArray(d) ? d : (d.data || []); });
-            this.api('/api/v1/users/' + id + '/roles').then(r => r.ok ? r.json() : {roles: []}).then(d => { this.userRoles = d.roles || []; });
+            this.api('/api/v1/users/' + id + '/roles').then(r => r.ok ? r.json() : {roles: []}).then(d => { this.userRoles = d.roles || []; this.userPerms = d.permissions || []; });
         },
         saveUserRoles() {
             if (!this.detail) return;
             this.api('/api/v1/users/' + this.detail.id + '/roles', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({roles: this.userRoles})})
-                .then(r => { this.toast(r.ok ? 'Rollen gespeichert.' : 'Speichern fehlgeschlagen (HTTP ' + r.status + ')'); });
+                .then(r => { this.toast(r.ok ? 'Rollen gespeichert.' : 'Speichern fehlgeschlagen (HTTP ' + r.status + ')'); if (r.ok) this.loadUserRoles(this.detail.id); });
         },
         loadAnswers(qid) {
             this.api('/api/v1/questions/' + qid).then(r => r.ok ? r.json() : {answers: []}).then(d => {
