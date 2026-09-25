@@ -369,7 +369,9 @@
                             <div class="flex gap-3">
                                 <dt class="w-36 shrink-0 text-[#5B6B7E]" x-text="label(k)"></dt>
                                 <dd class="min-w-0 font-mono text-[13px] text-[#1A2433] break-words">
-                                    <span x-text="fmtD(detail, k)"></span>
+                                    <span x-show="!linkOf(detail[k])" x-text="fmtD(detail, k)"></span>
+                                    <a x-show="linkOf(detail[k])" :href="linkOf(detail[k])" :target="/^https?:/.test(linkOf(detail[k]) || '') ? '_blank' : null" rel="noopener"
+                                       class="text-[#CA8A04] hover:underline break-all" x-text="fmtD(detail, k)"></a>
                                     <a x-show="refSection(k) && detail[k]" :href="'/app/' + refSection(k) + '?tenant=' + tenant + '&open=' + detail[k]"
                                        class="ml-1.5 text-[#CA8A04] hover:underline text-[11px] font-sans whitespace-nowrap">öffnen →</a>
                                 </dd>
@@ -957,6 +959,13 @@ function workspace(initial) {
             const rn = this.resolveId(k, row[k]);
             if (rn) return rn;
             return this.fmt(row[k]);
+        },
+        linkOf(v) {
+            if (typeof v !== 'string') return null;
+            if (/^https?:\/\/\S+$/.test(v)) return v;
+            if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return 'mailto:' + v;
+            if (/^[+\d][\d\s\/()-]{5,}$/.test(v)) return 'tel:' + v.replace(/\s/g, '');
+            return null;
         },
         fmt(v) {
             if (v === null || v === undefined) return '—';
