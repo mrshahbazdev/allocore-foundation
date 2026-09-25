@@ -289,6 +289,7 @@
                                         <span x-text="label(c)"></span><span class="ml-1 text-[#CA8A04]" x-text="sortKey===c ? (sortAsc?'▲':'▼') : ''"></span>
                                     </th>
                                 </template>
+                                <th x-show="sectionActions().length" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] w-28">Aktionen</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -297,6 +298,13 @@
                                     <template x-for="c in visCols()" :key="c">
                                         <td class="px-5 py-3 text-[#1A2433]" x-html="cell(row, c)"></td>
                                     </template>
+                                    <td x-show="sectionActions().length" @click.stop class="px-5 py-3">
+                                        <div class="flex gap-1">
+                                            <template x-for="a in rowActions(row).slice(0, 2)" :key="a[1]">
+                                                <button @click="applyRowStatus(row, a[1])" class="text-[10px] px-2 py-1 rounded-md border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 whitespace-nowrap" x-text="a[0]"></button>
+                                            </template>
+                                        </div>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
@@ -675,8 +683,7 @@ function workspace(initial) {
                 return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'de')) * dir;
             });
         },
-        statusActions() {
-            if (!this.detail || !('status' in this.detail)) return [];
+        sectionActions() {
             const A = {
                 'leave-requests': [['Genehmigen','approved'],['Ablehnen','rejected']],
                 'tasks': [['Starten','in_progress'],['Erledigen','done'],['Absagen','cancelled'],['Wieder öffnen','open']],
@@ -691,7 +698,19 @@ function workspace(initial) {
                 'risk-assessments': [['Akzeptieren','accepted'],['Gemindert','mitigated']],
                 'strategies': [['Aktivieren','active'],['Archivieren','archived']],
             };
-            return (A[this.section] || []).filter(a => a[1] !== this.detail.status);
+            return A[this.section] || [];
+        },
+        statusActions() {
+            if (!this.detail || !('status' in this.detail)) return [];
+            return this.sectionActions().filter(a => a[1] !== this.detail.status);
+        },
+        rowActions(row) {
+            if (!row || !('status' in row)) return [];
+            return this.sectionActions().filter(a => a[1] !== row.status);
+        },
+        applyRowStatus(row, s) {
+            this.api(this.item().ep + '/' + row.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
+                .then(r => { if (r.ok) this.loadSection(true); else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
         },
         applyStatus(s) {
             this.api(this.item().ep + '/' + this.detail.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
