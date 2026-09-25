@@ -28,6 +28,7 @@
             else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
             else if ($event.key === 'e' && detail && !showCreate && canEdit()) openEdit();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
+            else if ($event.key === 's' && !detail && !showCreate && !palette && rows.some(r => dueSoon(r))) dueSoonOnly = !dueSoonOnly;
             else if ($event.key === 'u' && !detail && !showCreate && !palette && rows.some(r => overdue(r))) overdueOnly = !overdueOnly;
             else if ($event.key === 'd' && detail && !showCreate && section !== 'documents' && canEdit()) openDuplicate();
             else if ($event.key === 'i' && !detail && !showCreate && !palette && canImport()) { showImport = true; importText = ''; importResult = ''; }
@@ -319,6 +320,7 @@
                         <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
                                 x-text="'Überfällig · ' + rows.filter(r => overdue(r)).length"></button>
+                        <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" title="≤7 Tage (s)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                         <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'">≤ 7 Tage</button>
                         <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r)" @click="myOnly = !myOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
