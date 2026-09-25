@@ -18,10 +18,11 @@
      @keydown.escape.window="detail = null; showCreate = false; navOpen = false; palette = false"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
-     @keydown.window="if (($event.ctrlKey || $event.metaKey) && $event.key === 'k') { $event.preventDefault(); palette = !palette; paletteQ = ''; }">
+     @keydown.window="if (($event.ctrlKey || $event.metaKey) && $event.key === 'k') { $event.preventDefault(); palette = !palette; paletteQ = ''; }"
+     @beforeprint.window="limit = 100000">
 
     {{-- Mobile top bar --}}
-    <div class="lg:hidden flex items-center justify-between px-4 h-14 bg-[#0B0B0F] text-white sticky top-0 z-30 shrink-0">
+    <div class="lg:hidden flex items-center justify-between px-4 h-14 bg-[#0B0B0F] text-white sticky top-0 z-30 shrink-0 print:hidden">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
             <img src="{{ asset('logo-mark.png') }}" alt="ALLOCORE" class="h-7 w-auto">
             <span class="font-semibold tracking-tight">ALLO<span class="text-[#FACC15]">CORE</span></span>
@@ -35,7 +36,7 @@
     <div x-show="navOpen" @click="navOpen = false" class="lg:hidden fixed inset-0 bg-black/50 z-30" x-transition.opacity></div>
 
     {{-- Sidebar --}}
-    <aside class="bg-[#0B0B0F] text-white w-64 flex flex-col fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-200 lg:translate-x-0 lg:static lg:min-h-screen lg:sticky lg:top-0 lg:shrink-0"
+    <aside class="bg-[#0B0B0F] text-white w-64 flex flex-col fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-200 lg:translate-x-0 lg:static lg:min-h-screen lg:sticky lg:top-0 lg:shrink-0 print:hidden"
            :class="navOpen ? 'translate-x-0' : '-translate-x-full'">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-5 h-16 border-b border-[#1A1A1F]">
             <img src="{{ asset('logo-mark.png') }}" alt="ALLOCORE" class="h-9 w-auto">
@@ -239,7 +240,7 @@
                     <div x-show="!rows" class="px-6 py-12 text-center text-sm text-[#5B6B7E]">
                         Wählen Sie links einen Mandanten, um Daten zu laden.
                     </div>
-                    <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0]">
+                    <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0] print:hidden">
                         <span class="text-xs text-[#5B6B7E] shrink-0" x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
                         <input x-model="query" placeholder="Suchen…" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         <div class="relative shrink-0">
@@ -256,7 +257,7 @@
                         <button @click="exportCsv()" title="CSV exportieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
                         <button x-show="canCreate()" @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
                     </div>
-                    <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0]">
+                    <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
                         <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'">Überfällig</button>
                         <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
@@ -296,7 +297,7 @@
                             </template>
                         </tbody>
                     </table>
-                    <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center">
+                    <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center print:hidden">
                         <button @click="limit += 100" class="text-xs text-[#CA8A04] hover:underline">
                             Mehr laden (<span x-text="filtered().length - limit"></span> weitere)
                         </button>
