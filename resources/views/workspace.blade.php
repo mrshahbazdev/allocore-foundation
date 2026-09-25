@@ -357,7 +357,7 @@
                                    class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         </div>
                     </template>
-                    <div x-show="section === 'documents' && !editing">
+                    <div x-show="['documents','data-objects'].includes(section) && !editing">
                         <label class="block text-[13px] font-medium text-[#42536A] mb-1">Datei</label>
                         <input type="file" x-ref="fileInput" class="w-full text-sm">
                     </div>
@@ -695,11 +695,11 @@ function workspace(initial) {
             const method = this.editing ? 'PUT' : 'POST';
             const url = this.item().ep + (this.editing ? '/' + this.editing.id : '');
             let fetchOpts = {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)};
-            if (this.section === 'documents' && !this.editing) {
+            if (['documents','data-objects'].includes(this.section) && !this.editing) {
                 const f = this.$refs.fileInput && this.$refs.fileInput.files[0];
                 if (!f) { this.formError = 'Bitte eine Datei wählen.'; return; }
                 const fd = new FormData();
-                fd.append('title', body.title || f.name);
+                fd.append(this.section === 'data-objects' ? 'name' : 'title', body.title || body.name || f.name);
                 if (body.category) fd.append('category', body.category);
                 fd.append('file', f);
                 fetchOpts = {method: 'POST', body: fd};
