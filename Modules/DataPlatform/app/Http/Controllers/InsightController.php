@@ -72,6 +72,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'inspections_due_soon', "{$inspSoon} Prüfung(en) innerhalb von 7 Tagen geplant.", ['count' => $inspSoon]);
         }
 
+        $reviewsDue = $count('risk_assessments', fn ($q) => $q->where('status', 'open')->where('review_at', '<', now()));
+        if ($reviewsDue) {
+            $insights[] = $this->hit('warning', 'risk_reviews_overdue', "{$reviewsDue} Gefährdungsbeurteilung(en) — Reviews überfällig.", ['count' => $reviewsDue]);
+        }
+
         $negLiquidity = DB::table('financial_reports')->where('tenant_id', $t)->where('period', now()->format('Y-m'))->where('liquidity', '<', 0)->count();
         if ($negLiquidity) {
             $insights[] = $this->hit('critical', 'fin_negative_liquidity', "{$negLiquidity} Unternehmen mit negativer Liquidität im laufenden Monat.", ['count' => $negLiquidity]);
