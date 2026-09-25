@@ -18,7 +18,12 @@
      @keydown.escape.window="detail = null; showCreate = false; navOpen = false; palette = false"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
-     @keydown.window="if (($event.ctrlKey || $event.metaKey) && $event.key === 'k') { $event.preventDefault(); palette = !palette; paletteQ = ''; }">
+     @keydown.window="
+        if (($event.ctrlKey || $event.metaKey) && $event.key === 'k') { $event.preventDefault(); palette = !palette; paletteQ = ''; }
+        else if (!$event.ctrlKey && !$event.metaKey && !$event.altKey && !/^(input|textarea|select)$/i.test($event.target.tagName)) {
+            if ($event.key === '/') { $event.preventDefault(); if ($refs.search) $refs.search.focus(); }
+            else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
+        }">
 
     {{-- Mobile top bar --}}
     <div class="lg:hidden flex items-center justify-between px-4 h-14 bg-[#0B0B0F] text-white sticky top-0 z-30 shrink-0">
@@ -98,7 +103,13 @@
                 <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F]" x-text="title()"></h1>
                 <p class="text-xs text-[#5B6B7E]" x-text="subtitle()"></p>
             </div>
-            <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
+            <div class="flex items-center gap-3">
+                <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" title="Refresh"
+                        class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 9A8 8 0 0119 7.5M18.5 15A8 8 0 015 16.5"/></svg>
+                </button>
+                <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
+            </div>
         </header>
 
         <div class="p-6 space-y-5">
@@ -241,7 +252,7 @@
                     </div>
                     <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0]">
                         <span class="text-xs text-[#5B6B7E] shrink-0" x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
-                        <input x-model="query" placeholder="Suchen…" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                        <input x-ref="search" x-model="query" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         <div class="relative shrink-0">
                             <button @click="colPicker = !colPicker" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten</button>
                             <div x-show="colPicker" @click.outside="colPicker = false" class="absolute right-0 mt-1.5 w-48 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20 max-h-64 overflow-y-auto" style="display:none">
@@ -258,15 +269,18 @@
                     </div>
                     <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0]">
                         <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
-                                :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'">Überfällig</button>
+                                :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
+                                x-text="'Überfällig · ' + rows.filter(r => overdue(r)).length"></button>
                         <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
-                                :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'">≤ 7 Tage</button>
+                                :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'"
+                                x-text="'≤ 7 Tage · ' + rows.filter(r => dueSoon(r)).length"></button>
                         <button @click="statusFilter = ''" class="text-[11px] px-2.5 py-1 rounded-full border transition"
-                                :class="statusFilter === '' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Alle</button>
+                                :class="statusFilter === '' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
+                                x-text="'Alle · ' + rows.length"></button>
                         <template x-for="s in statusOpts()" :key="s">
                             <button @click="statusFilter = statusFilter === s ? '' : s" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="statusFilter === s ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
-                                    x-text="statusLabel(s)"></button>
+                                    x-text="statusLabel(s) + ' · ' + rows.filter(r => String(r.status) === s).length"></button>
                         </template>
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
@@ -285,6 +299,7 @@
                                         <span x-text="label(c)"></span><span class="ml-1 text-[#CA8A04]" x-text="sortKey===c ? (sortAsc?'▲':'▼') : ''"></span>
                                     </th>
                                 </template>
+                                <th x-show="sectionActions().length" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] w-28">Aktionen</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -293,6 +308,13 @@
                                     <template x-for="c in visCols()" :key="c">
                                         <td class="px-5 py-3 text-[#1A2433]" x-html="cell(row, c)"></td>
                                     </template>
+                                    <td x-show="sectionActions().length" @click.stop class="px-5 py-3">
+                                        <div class="flex gap-1">
+                                            <template x-for="a in rowActions(row).slice(0, 2)" :key="a[1]">
+                                                <button @click="applyRowStatus(row, a[1])" class="text-[10px] px-2 py-1 rounded-md border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 whitespace-nowrap" x-text="a[0]"></button>
+                                            </template>
+                                        </div>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
@@ -310,14 +332,14 @@
         {{-- Detail drawer --}}
         <div x-show="detail" class="fixed inset-0 z-40" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="detail = null"></div>
-            <div class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-xl flex flex-col">
+            <div class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-xl flex flex-col" role="dialog" aria-modal="true" :aria-label="title() + ' · Details'">
                 <div class="px-6 py-4 border-b border-[#E4E9F0] flex items-center justify-between">
                     <h2 class="font-semibold text-[#0B0B0F]" x-text="title() + ' · Details'"></h2>
                     <div class="flex items-center gap-1">
                         <button @click="navDetail(-1)" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" title="Vorheriger (←)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
                         <button @click="navDetail(1)" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" title="Nächster (→)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
                     </div>
-                    <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]">&times;</button>
+                    <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]" title="Schließen (Esc)" aria-label="Schließen">&times;</button>
                 </div>
                 <div class="flex-1 overflow-y-auto p-6">
                     <dl class="space-y-3 text-sm">
@@ -413,6 +435,36 @@
                         <button type="submit" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] shrink-0">Neue Version</button>
                     </form>
                 </div>
+                <div x-show="section === 'graph-entities'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERKNÜPFUNGEN</div>
+                    <template x-for="e in entityEdges" :key="e.relation + e.other">
+                        <div>
+                            <div class="flex items-center gap-2 rounded-lg border border-[#E4E9F0] px-3 py-2 text-xs hover:border-[#CA8A04]/60 transition">
+                                <a :href="'/app/graph-entities?tenant=' + tenant + '&open=' + e.other" class="flex items-center gap-2 flex-1 min-w-0">
+                                    <span class="font-mono text-[#9CA3AF] w-4 shrink-0" x-text="e.dir"></span>
+                                    <span class="text-[#5B6B7E]" x-text="e.relation"></span>
+                                    <span class="ml-auto font-medium text-[#1A2433] truncate" x-text="e.name"></span>
+                                </a>
+                                <button @click="expandedEdge = expandedEdge === e.relation + e.other ? null : e.relation + e.other"
+                                        class="shrink-0 text-[#9CA3AF] hover:text-[#CA8A04] px-1" title="Nachbarn zeigen">
+                                    <span x-text="expandedEdge === e.relation + e.other ? '−' : '+'"></span>
+                                </button>
+                            </div>
+                            <div x-show="expandedEdge === e.relation + e.other" class="ml-6 mt-1 space-y-1">
+                                <template x-for="n in edgeNeighbors(e.other)" :key="n.relation + n.other">
+                                    <a :href="'/app/graph-entities?tenant=' + tenant + '&open=' + n.other"
+                                       class="flex items-center gap-2 rounded-md bg-[#FAFBFC] px-3 py-1.5 text-[11px] hover:bg-[#F0F3F7] transition">
+                                        <span class="font-mono text-[#9CA3AF] w-4 shrink-0" x-text="n.dir"></span>
+                                        <span class="text-[#5B6B7E]" x-text="n.relation"></span>
+                                        <span class="ml-auto font-medium text-[#1A2433] truncate" x-text="n.name"></span>
+                                    </a>
+                                </template>
+                                <div x-show="edgeNeighbors(e.other).length === 0" class="text-[11px] text-[#9CA3AF] px-3 py-1">Keine weiteren Kanten.</div>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="entityEdges.length === 0" class="text-xs text-[#9CA3AF]">Keine Kanten zu dieser Entität.</div>
+                </div>
                 <div x-show="detail && (detail.created_at || detail.updated_at)" class="px-6 py-2.5 border-t border-[#F0F3F7] text-[10px] text-[#9CA3AF] flex gap-4">
                     <span x-show="detail && detail.created_at">Erstellt: <span x-text="detail && new Date(detail.created_at).toLocaleString('de-DE')"></span></span>
                     <span x-show="detail && detail.updated_at">Geändert: <span x-text="detail && new Date(detail.updated_at).toLocaleString('de-DE')"></span></span>
@@ -422,7 +474,10 @@
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Duplizieren</button>
                     <button x-show="canEdit()" @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
-                    <button x-show="writable()" @click="deleteRow(detail)" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
+                    <button x-show="writable()" @click="confirmDel ? deleteRow(detail) : (confirmDel = true, setTimeout(() => confirmDel = false, 3000))"
+                            class="text-xs px-3 py-1.5 border rounded-lg transition"
+                            :class="confirmDel ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
+                            x-text="confirmDel ? 'Wirklich löschen?' : 'Löschen'"></button>
                 </div>
             </div>
         </div>
@@ -450,14 +505,16 @@
         {{-- Create modal --}}
         <div x-show="showCreate" class="fixed inset-0 z-40 flex items-center justify-center" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="showCreate = false"></div>
-            <div class="relative w-full max-w-md bg-white rounded-xl shadow-xl">
+            <div class="relative w-full max-w-md bg-white rounded-xl shadow-xl" role="dialog" aria-modal="true">
                 <div class="px-6 py-4 border-b border-[#E4E9F0]">
                     <h2 class="font-semibold text-[#0B0B0F]" x-text="(editing ? 'Bearbeiten: ' : 'Neu: ') + title()"></h2>
                 </div>
-                <form @submit.prevent="submitCreate" class="p-6 space-y-4">
+                <form @submit.prevent="submitCreate" class="p-6 space-y-4" id="createForm">
                     <template x-for="f in createFields()" :key="f.key">
                         <div>
-                            <label class="block text-[13px] font-medium text-[#42536A] mb-1" x-text="label(f.key)"></label>
+                            <label class="block text-[13px] font-medium text-[#42536A] mb-1">
+                                <span x-text="label(f.key)"></span><span x-show="f.req" class="text-[#A6362E]"> *</span>
+                            </label>
                             <select x-show="f.type === 'fk'" x-model="form[f.key]"
                                     class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 <option value="">— wählen —</option>
@@ -476,7 +533,8 @@
                     <div x-show="formError" class="text-xs text-[#A6362E]" x-text="formError"></div>
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" @click="showCreate = false" class="text-sm px-4 py-2 text-[#5B6B7E]">Abbrechen</button>
-                        <button type="submit" class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Speichern</button>
+                        <button type="submit" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
+                                class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 disabled:cursor-not-allowed">Speichern</button>
                     </div>
                 </form>
             </div>
@@ -548,16 +606,21 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
             if (this.tenant) this.loadSection();
+            setInterval(() => { if (this.tenant && !this.detail && !this.showCreate && !this.palette) this.loadSection(true); }, 30000);
             this.$watch('detail', v => {
+                this.confirmDel = false;
                 this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = [];
+                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null;
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
                 if (v && this.section === 'documents') this.loadDocVersions(v.id);
+                if (v && this.section === 'graph-entities') this.loadEntityEdges(v.id);
             });
         },
         item() {
@@ -592,10 +655,11 @@ function workspace(initial) {
             }, opts.headers||{});
             return fetch(path, opts);
         },
-        loadSection() {
+        loadSection(soft) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
-            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false;
+            this.loading = true; this.error = '';
+            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
             history.replaceState(null,'',url);
             if (this.section === 'dashboard') {
@@ -659,8 +723,7 @@ function workspace(initial) {
                 return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'de')) * dir;
             });
         },
-        statusActions() {
-            if (!this.detail || !('status' in this.detail)) return [];
+        sectionActions() {
             const A = {
                 'leave-requests': [['Genehmigen','approved'],['Ablehnen','rejected']],
                 'tasks': [['Starten','in_progress'],['Erledigen','done'],['Absagen','cancelled'],['Wieder öffnen','open']],
@@ -675,7 +738,19 @@ function workspace(initial) {
                 'risk-assessments': [['Akzeptieren','accepted'],['Gemindert','mitigated']],
                 'strategies': [['Aktivieren','active'],['Archivieren','archived']],
             };
-            return (A[this.section] || []).filter(a => a[1] !== this.detail.status);
+            return A[this.section] || [];
+        },
+        statusActions() {
+            if (!this.detail || !('status' in this.detail)) return [];
+            return this.sectionActions().filter(a => a[1] !== this.detail.status);
+        },
+        rowActions(row) {
+            if (!row || !('status' in row)) return [];
+            return this.sectionActions().filter(a => a[1] !== row.status);
+        },
+        applyRowStatus(row, s) {
+            this.api(this.item().ep + '/' + row.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
+                .then(r => { if (r.ok) this.loadSection(true); else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
         },
         applyStatus(s) {
             this.api(this.item().ep + '/' + this.detail.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
@@ -724,6 +799,30 @@ function workspace(initial) {
             if (!confirm('Antwort löschen?')) return;
             this.api('/api/v1/answers/' + id, {method:'DELETE'})
                 .then(() => this.loadAnswers(this.detail.id));
+        },
+        edgeNeighbors(id) {
+            const names = this.lookups.graph_entities || {};
+            return this.allEdges
+                .filter(e => (String(e.from_entity_id) === String(id) || String(e.to_entity_id) === String(id))
+                    && String(e.from_entity_id) !== String(this.detail && this.detail.id) && String(e.to_entity_id) !== String(this.detail && this.detail.id))
+                .map(e => {
+                    const out = String(e.from_entity_id) === String(id);
+                    const other = out ? e.to_entity_id : e.from_entity_id;
+                    return {dir: out ? '→' : '←', relation: e.relation, other, name: names[other] || other};
+                });
+        },
+        loadEntityEdges(id) {
+            this.api('/api/v1/graph-edges').then(r => r.ok ? r.json() : []).then(d => {
+                const rs = Array.isArray(d) ? d : (d.data || []);
+                this.allEdges = rs;
+                this.entityEdges = rs.filter(e => String(e.from_entity_id) === String(id) || String(e.to_entity_id) === String(id))
+                    .map(e => {
+                        const out = String(e.from_entity_id) === String(id);
+                        const other = out ? e.to_entity_id : e.from_entity_id;
+                        const names = this.lookups.graph_entities || {};
+                        return {dir: out ? '→' : '←', relation: e.relation, other, name: names[other] || other};
+                    });
+            }).catch(() => this.entityEdges = []);
         },
         loadDocVersions(id) {
             this.api('/api/v1/documents/' + id).then(r => r.ok ? r.json() : {versions: []}).then(d => {
@@ -813,6 +912,7 @@ function workspace(initial) {
                 key: k,
                 type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text')),
                 table: FKMAP[k] || null,
+                req: ['name', 'title'].includes(k),
             }));
         },
         fkOptions(table) {
@@ -829,6 +929,7 @@ function workspace(initial) {
                 return;
             }
             this.editing = null; this.form = {}; this.formError = ''; this.showCreate = true;
+            this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         exportCsv() {
             const rows = this.sorted(this.filtered());
@@ -855,6 +956,7 @@ function workspace(initial) {
             this.form = {};
             fields.forEach(f => { const v = this.detail[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.showCreate = true;
+            this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         openEdit() {
             this.editing = this.detail;
@@ -862,6 +964,7 @@ function workspace(initial) {
             this.form = {};
             fields.forEach(f => { const v = this.editing[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.showCreate = true;
+            this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         submitCreate() {
             this.formError = '';
