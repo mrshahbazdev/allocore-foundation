@@ -986,6 +986,14 @@ function workspace(initial) {
             acts.push({key: null, action: 'dark', label: 'Dunkel/Hell umschalten', group: 'Aktion'});
             if (this.tenantList.length > 1) this.sortedTenants().filter(t => t.id !== this.tenant).forEach(t => acts.push({key: null, action: 'tenant', tenant: t.id, label: 'Mandant: ' + t.name, group: 'Aktion'}));
             if (this.rows) Object.keys(this.views()).forEach(vn => acts.push({key: null, action: 'view', view: vn, label: 'Ansicht: ' + vn, group: 'Aktion'}));
+            if (this.rows && this.rows.length) {
+                if (this.rows.some(r => this.dueKey(r))) acts.push(
+                    {key: null, action: 'filter', filter: 'overdueOnly', label: 'Filter: Überfällig ' + (this.overdueOnly ? '(an)' : '(aus)'), group: 'Aktion'},
+                    {key: null, action: 'filter', filter: 'dueSoonOnly', label: 'Filter: ≤7 Tage ' + (this.dueSoonOnly ? '(an)' : '(aus)'), group: 'Aktion'},
+                    {key: null, action: 'filter', filter: 'dueTodayOnly', label: 'Filter: Heute ' + (this.dueTodayOnly ? '(an)' : '(aus)'), group: 'Aktion'});
+                if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r)) acts.push({key: null, action: 'filter', filter: 'myOnly', label: 'Filter: Mir zugewiesen ' + (this.myOnly ? '(an)' : '(aus)'), group: 'Aktion'});
+                if (this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.statusFilter || this.query) acts.push({key: null, action: 'filter', filter: '_reset', label: 'Filter zurücksetzen', group: 'Aktion'});
+            }
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
             mods.sort((a, b) => ((this.pins || []).includes(b.key) ? 1 : 0) - ((this.pins || []).includes(a.key) ? 1 : 0));
             return [...acts.filter(a => !q || a.label.toLowerCase().includes(q)), ...mods];
@@ -1004,6 +1012,11 @@ function workspace(initial) {
             if (it.action === 'dark') { this.toggleDark(); return; }
             if (it.action === 'tenant') { this.tenant = it.tenant; this.loadSection(); this.loadNavBadges(); return; }
             if (it.action === 'view') { this.applyView(it.view); return; }
+            if (it.action === 'filter') {
+                if (it.filter === '_reset') { this.query = ''; this.statusFilter = ''; this.overdueOnly = this.dueSoonOnly = this.dueTodayOnly = this.myOnly = false; }
+                else this[it.filter] = !this[it.filter];
+                return;
+            }
             location.href = '/app/' + it.key + (this.tenant ? '?tenant=' + this.tenant : '');
         },
         insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
