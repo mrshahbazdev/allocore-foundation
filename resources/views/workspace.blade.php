@@ -103,7 +103,13 @@
                 <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F]" x-text="title()"></h1>
                 <p class="text-xs text-[#5B6B7E]" x-text="subtitle()"></p>
             </div>
-            <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
+            <div class="flex items-center gap-3">
+                <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" title="Refresh"
+                        class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 9A8 8 0 0119 7.5M18.5 15A8 8 0 015 16.5"/></svg>
+                </button>
+                <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
+            </div>
         </header>
 
         <div class="p-6 space-y-5">
@@ -576,6 +582,7 @@ function workspace(initial) {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
             if (this.tenant) this.loadSection();
+            setInterval(() => { if (this.tenant && !this.detail && !this.showCreate && !this.palette) this.loadSection(true); }, 30000);
             this.$watch('detail', v => {
                 this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = [];
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
@@ -616,10 +623,11 @@ function workspace(initial) {
             }, opts.headers||{});
             return fetch(path, opts);
         },
-        loadSection() {
+        loadSection(soft) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
-            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false;
+            this.loading = true; this.error = '';
+            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
             history.replaceState(null,'',url);
             if (this.section === 'dashboard') {
