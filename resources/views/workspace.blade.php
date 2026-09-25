@@ -258,6 +258,20 @@
                             </template>
                         </div>
                     </div>
+                    <div x-show="todaySections().length" class="bg-white border border-[#CA8A04]/30 rounded-xl overflow-hidden">
+                        <div class="px-5 py-3 border-b border-[#CA8A04]/20 text-xs font-medium text-[#B45309] flex items-center justify-between">
+                            Heute fällige Einträge
+                            <span class="font-mono" x-text="todaySections().reduce((s, x) => s + x.count, 0)"></span>
+                        </div>
+                        <div class="divide-y divide-[#F0F3F7]">
+                            <template x-for="o in todaySections()" :key="o.key">
+                                <a :href="'/app/' + o.key + '?tenant=' + tenant + '&today=1'" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC] transition">
+                                    <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] text-[#9CA3AF] mr-1.5" x-text="icons[o.key] || '·'"></span><span x-text="o.label"></span></span>
+                                    <span class="text-[11px] font-mono text-[#B45309] shrink-0" x-text="o.count + ' heute'"></span>
+                                </a>
+                            </template>
+                        </div>
+                    </div>
                     <div x-show="events.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
                         <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E]">Letzte Ereignisse</div>
                         <div class="divide-y divide-[#F0F3F7] max-h-64 overflow-y-auto">
@@ -973,6 +987,11 @@ function workspace(initial) {
         saveCollapsed() { try { localStorage.setItem('af_navgroups', JSON.stringify(this.collapsed)); } catch (e) {} },
         overdueSections() {
             return Object.entries(this.navBadges || {}).filter(([k, n]) => n > 0)
+                .map(([k, n]) => ({key: k, label: this.sectionLabel(k), count: n}))
+                .sort((a, b) => b.count - a.count);
+        },
+        todaySections() {
+            return Object.entries(this.navBadgesToday || {}).filter(([k, n]) => n > 0)
                 .map(([k, n]) => ({key: k, label: this.sectionLabel(k), count: n}))
                 .sort((a, b) => b.count - a.count);
         },
