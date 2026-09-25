@@ -2033,6 +2033,7 @@ function workspace(initial) {
                 const row = d.data || d;
                 this.detail = row;
                 this.rows = (this.rows || []).map(r => String(r.id) === String(row.id) ? row : r);
+                this.loadRowEvents(row.id);
                 this.rowLoading = false;
                 this.toast('Datensatz aktualisiert.');
             }).finally(() => { this.rowLoading = false; });
