@@ -259,6 +259,41 @@
                         <button @click="applyStatus(a[1])" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" x-text="a[0]"></button>
                     </template>
                 </div>
+                <div x-show="section === 'tenders'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">BEWERBUNGEN</div>
+                    <div x-show="!apps.length" class="text-xs text-[#9CA3AF]">Noch keine Bewerbungen.</div>
+                    <template x-for="a in apps" :key="a.id">
+                        <div class="rounded-lg border px-3 py-2.5" :class="a.status === 'awarded' ? 'border-[#2E7D5B]/50 bg-[#2E7D5B]/5' : 'border-[#E4E9F0]'">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-xs font-medium text-[#1A2433]" x-text="appName(a)"></span>
+                                <span class="text-[10px] font-semibold" :class="a.status === 'awarded' ? 'text-[#2E7D5B]' : a.status === 'rejected' ? 'text-[#A6362E]' : 'text-[#5B6B7E]'" x-text="appStatus(a.status)"></span>
+                            </div>
+                            <p x-show="a.proposal" class="mt-1 text-sm text-[#42536A] whitespace-pre-wrap" x-text="a.proposal"></p>
+                            <div x-show="a.price" class="mt-1 text-xs text-[#5B6B7E]"><span x-text="a.price"></span> €</div>
+                            <div class="mt-2 flex flex-wrap gap-3">
+                                <template x-for="t in [['shortlisted','Vormerken'],['awarded','Vergeben'],['rejected','Ablehnen']]" :key="t[0]">
+                                    <button x-show="a.status !== t[0]" @click="setAppStatus(a.id, t[0])" class="text-[11px] font-medium text-[#CA8A04] hover:underline" x-text="t[1]"></button>
+                                </template>
+                                <button @click="deleteApp(a.id)" class="text-[11px] text-[#A6362E] hover:underline">Löschen</button>
+                            </div>
+                        </div>
+                    </template>
+                    <form x-show="detail.status === 'open'" @submit.prevent="submitApp()" class="space-y-2 rounded-lg border border-dashed border-[#D6DEE9] p-3">
+                        <select x-model="appForm.expert_profile_id" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                            <option value="">— Experte wählen —</option>
+                            <template x-for="o in fkOptions('expert_profiles')" :key="o[0]">
+                                <option :value="o[0]" x-text="o[1]"></option>
+                            </template>
+                        </select>
+                        <textarea x-model="appForm.proposal" rows="2" placeholder="Angebot / Beschreibung…"
+                                  class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30"></textarea>
+                        <input x-model="appForm.price" type="number" min="0" step="0.01" placeholder="Preis (€)"
+                               class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                        <div class="flex justify-end">
+                            <button type="submit" :disabled="!appForm.expert_profile_id" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40">Bewerbung anlegen</button>
+                        </div>
+                    </form>
+                </div>
                 <div x-show="section === 'questions'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">ANTWORTEN</div>
                     <div x-show="!answers.length" class="text-xs text-[#9CA3AF]">Noch keine Antworten.</div>
@@ -389,12 +424,16 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false,
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, answers: [], answerText: '',
+        sortKey: '', sortAsc: true, limit: 100, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''},
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
             if (this.tenant) this.loadSection();
-            this.$watch('detail', v => { this.answers = []; this.answerText = ''; if (v && this.section === 'questions') this.loadAnswers(v.id); });
+            this.$watch('detail', v => {
+                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''};
+                if (v && this.section === 'questions') this.loadAnswers(v.id);
+                if (v && this.section === 'tenders') this.loadApps(v.id);
+            });
         },
         item() {
             return GROUPS.flatMap(g => g.items).find(i => i.key === this.section) || {label:this.section};
@@ -492,6 +531,30 @@ function workspace(initial) {
         applyStatus(s) {
             this.api(this.item().ep + '/' + this.detail.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
                 .then(r => { if (r.ok) { this.detail = null; this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+        },
+        appName(a) {
+            const p = a.expert_profile?.person;
+            return p ? (p.first_name + ' ' + p.last_name).trim() : (this.lookups['expert_profiles'] || {})[a.expert_profile_id] || '—';
+        },
+        appStatus(s) { return ({submitted:'EINGEREICHT', shortlisted:'VORGEMERKT', awarded:'VERGEBEN', rejected:'ABGELEHNT'})[s] || s; },
+        loadApps(tid) {
+            this.api('/api/v1/tenders/' + tid).then(r => r.ok ? r.json() : {applications: []}).then(d => {
+                this.apps = d.applications || [];
+            });
+        },
+        submitApp() {
+            if (!this.appForm.expert_profile_id || !this.detail) return;
+            this.api('/api/v1/tenders/' + this.detail.id + '/applications', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(this.appForm)})
+                .then(r => { if (r.ok) { this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.loadApps(this.detail.id); this.loadSection(); } else alert('Bewerbung fehlgeschlagen (HTTP '+r.status+')'); });
+        },
+        setAppStatus(id, s) {
+            this.api('/api/v1/tender-applications/' + id, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
+                .then(r => { if (r.ok) { this.loadApps(this.detail.id); this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+        },
+        deleteApp(id) {
+            if (!confirm('Bewerbung löschen?')) return;
+            this.api('/api/v1/tender-applications/' + id, {method:'DELETE'})
+                .then(() => this.loadApps(this.detail.id));
         },
         loadAnswers(qid) {
             this.api('/api/v1/questions/' + qid).then(r => r.ok ? r.json() : {answers: []}).then(d => {
