@@ -794,7 +794,7 @@
     {{-- Toasts --}}
     <div class="fixed bottom-4 right-4 z-50 space-y-2">
         <template x-for="t in toasts" :key="t.id">
-            <div class="bg-[#0B0B0F] text-white text-xs px-4 py-3 rounded-lg shadow-lg border-l-2 border-[#A6362E] max-w-xs flex items-center gap-3">
+            <div :class="t.type === 'error' ? 'border-[#A6362E]' : 'border-[#FACC15]'" class="bg-[#0B0B0F] text-white text-xs px-4 py-3 rounded-lg shadow-lg border-l-2 max-w-xs flex items-center gap-3">
                 <span x-text="t.msg" class="flex-1"></span>
                 <button x-show="t.action" @click="t.action.fn(); toasts = toasts.filter(x => x.id !== t.id)"
                         class="text-[#FACC15] font-semibold hover:underline shrink-0" x-text="t.action ? t.action.label : ''"></button>
@@ -1017,7 +1017,8 @@ function workspace(initial) {
             return v.map((p, i) => (i ? 'L' : 'M') + (i * 96 / (v.length - 1)).toFixed(1) + ',' + (22 - (p - min) / span * 20).toFixed(1)).join(' ');
         },
         toast(msg, action) {
-            const t = {id: Date.now() + Math.random(), msg, action};
+            const type = /fehlgeschlagen|abgelaufen|fehler/i.test(msg) ? 'error' : 'info';
+            const t = {id: Date.now() + Math.random(), msg, action, type};
             this.toasts.push(t);
             if (action) { this._undo = {tid: t.id, fn: action.fn, label: action.label}; setTimeout(() => { if (this._undo && this._undo.tid === t.id) this._undo = null; }, 4500); }
             setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== t.id); }, 4500);
