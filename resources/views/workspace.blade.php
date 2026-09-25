@@ -499,7 +499,7 @@
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="detail = null"></div>
             <div class="absolute inset-y-0 right-0 w-full bg-white shadow-xl flex flex-col transition-[max-width] duration-200" :class="drawerWide ? 'max-w-2xl' : 'max-w-md'" role="dialog" aria-modal="true" :aria-label="title() + ' · Details'">
                 <div class="px-6 py-4 border-b border-[#E4E9F0] flex items-center justify-between">
-                    <h2 class="font-semibold text-[#0B0B0F]" x-text="detailTitle()"></h2>
+                    <h2 class="font-semibold text-[#0B0B0F] flex items-center gap-2 min-w-0"><span class="truncate" x-text="detailTitle()"></span><span x-show="overdue(detail)" class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#A6362E] text-white">ÜBERFÄLLIG</span></h2>
                     <div class="flex items-center gap-1">
                         <button @click="drawerWide = !drawerWide" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" :title="drawerWide ? 'Schmal' : 'Breit'">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 3v3m0 0l-3-3m3 3l3-3M16 21v-3m0 0l-3 3m3-3l3 3"/></svg>
