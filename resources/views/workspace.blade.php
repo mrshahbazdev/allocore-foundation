@@ -694,6 +694,7 @@
                         </div>
                     </template>
                     <div x-show="entityEdges.length === 0" class="text-xs text-[#9CA3AF]">Keine Kanten zu dieser Entität.</div>
+                    <a :href="'/app/graph-edges?tenant=' + tenant + '&new=1&from=' + detail.id" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Kante anlegen</a>
                 </div>
                 <div x-show="detail && (detail.created_at || detail.updated_at)" class="px-6 py-2.5 border-t border-[#F0F3F7] text-[10px] text-[#9CA3AF] flex gap-4">
                     <span x-show="detail && detail.created_at">Erstellt: <span x-text="detail && new Date(detail.created_at).toLocaleString('de-DE')"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.created_at) + ')'"></span></span>
@@ -925,7 +926,7 @@ function workspace(initial) {
             if (t) this.tenant = t;
             else if (localStorage.getItem('allocore.tenant')) this.tenant = localStorage.getItem('allocore.tenant');
             if (this.tenant) { this.loadSection(); this.loadNavBadges(); }
-            if (p.get('new')) this.$nextTick(() => { if (this.tenant && this.canCreate()) this.openCreate(); });
+            if (p.get('new')) this.$nextTick(() => { if (this.tenant && this.canCreate()) this.openCreate(p.get('from') ? {from_entity_id: p.get('from')} : {}); });
             if (p.get('q')) this.query = p.get('q');
             if (p.get('status')) this.statusFilter = p.get('status');
             if (p.get('overdue')) this.overdueOnly = true;
@@ -1540,13 +1541,13 @@ function workspace(initial) {
         writable() { return !['events','ai-analyses','metrics'].includes(this.section); },
         canEdit() { return this.writable() && this.section !== 'data-objects'; },
         canCreate() { return this.section === 'ai-analyses' || this.writable(); },
-        openCreate() {
+        openCreate(prefill) {
             if (this.section === 'ai-analyses') {
                 this.api('/api/v1/ai-analyses', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'})
                     .then(r => { if (r.ok) this.loadSection(); else this.toast('Analyse fehlgeschlagen (HTTP '+r.status+')'); });
                 return;
             }
-            this.editing = null; this.form = {}; this.formError = ''; this.formDirty = false; this.showCreate = true;
+            this.editing = null; this.form = prefill || {}; this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         views() {
