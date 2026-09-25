@@ -1149,6 +1149,7 @@ function workspace(initial) {
         cell(row, c) {
             let v = row[c];
             if (v === null || v === undefined) return '—';
+            if (c === 'id' && typeof v === 'string' && v.length > 8) return `<button onclick="event.stopPropagation();navigator.clipboard.writeText('${v}')" title="ID kopieren: ${v}" class="font-mono text-[11px] text-[#5B6B7E] hover:text-[#CA8A04]">${v.slice(0, 8)}…</button>`;
             const rn = this.resolveId(c, v);
             if (rn) return `<span title="${v}">${rn}</span>`;
             if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
