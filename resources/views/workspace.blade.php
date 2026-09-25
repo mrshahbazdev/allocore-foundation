@@ -15,9 +15,10 @@
 </head>
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
 <div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak
-     @keydown.escape.window="detail = null; showCreate = false; navOpen = false"
+     @keydown.escape.window="detail = null; showCreate = false; navOpen = false; palette = false"
      @keydown.arrowright.window="detail && navDetail(1)"
-     @keydown.arrowleft.window="detail && navDetail(-1)">
+     @keydown.arrowleft.window="detail && navDetail(-1)"
+     @keydown.window="if (($event.ctrlKey || $event.metaKey) && $event.key === 'k') { $event.preventDefault(); palette = !palette; paletteQ = ''; }">
 
     {{-- Mobile top bar --}}
     <div class="lg:hidden flex items-center justify-between px-4 h-14 bg-[#0B0B0F] text-white sticky top-0 z-30 shrink-0">
@@ -394,6 +395,26 @@
             </div>
         </div>
 
+        {{-- Command palette (Ctrl+K) --}}
+        <div x-show="palette" class="fixed inset-0 z-50" style="display:none">
+            <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="palette = false"></div>
+            <div class="relative mx-auto mt-24 w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
+                <input x-ref="paletteInput" x-model="paletteQ" x-init="$watch('palette', v => v && $nextTick(() => $refs.paletteInput.focus()))"
+                       placeholder="Modul suchen…" class="w-full px-5 py-4 text-sm border-0 border-b border-[#E4E9F0] focus:ring-0 focus:border-[#CA8A04]"
+                       @keydown.enter.prevent="paletteGo()">
+                <div class="max-h-72 overflow-y-auto py-1">
+                    <template x-for="it in paletteItems()" :key="it.key">
+                        <a :href="'/app/' + it.key + (tenant ? '?tenant='+tenant : '')"
+                           class="block px-5 py-2.5 text-sm text-[#1A2433] hover:bg-[#FAFBFC] transition">
+                            <span x-text="it.label"></span>
+                            <span class="ml-2 text-[10px] text-[#9CA3AF] tracking-wide" x-text="it.group"></span>
+                        </a>
+                    </template>
+                    <div x-show="paletteItems().length === 0" class="px-5 py-6 text-center text-xs text-[#9CA3AF]">Kein Modul gefunden.</div>
+                </div>
+            </div>
+        </div>
+
         {{-- Create modal --}}
         <div x-show="showCreate" class="fixed inset-0 z-40 flex items-center justify-center" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="showCreate = false"></div>
@@ -495,7 +516,7 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {},
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''},
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -511,6 +532,15 @@ function workspace(initial) {
             return GROUPS.flatMap(g => g.items).find(i => i.key === this.section) || {label:this.section};
         },
         title() { return this.item().label; },
+        paletteItems() {
+            const q = this.paletteQ.trim().toLowerCase();
+            const all = this.groups.flatMap(g => g.items.map(i => ({key: i.key, label: i.label, group: g.label})));
+            return q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
+        },
+        paletteGo() {
+            const it = this.paletteItems()[0];
+            if (it) location.href = '/app/' + it.key + (this.tenant ? '?tenant=' + this.tenant : '');
+        },
         insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
         execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake'}; return M[k] || k; },
