@@ -404,9 +404,28 @@
                                 <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E]">Reports</div>
                                 <div class="divide-y divide-[#F0F3F7]">
                                     <template x-for="r in execReports" :key="r.id">
-                                        <div class="px-5 py-2.5 flex items-center justify-between gap-4">
-                                            <span class="text-sm text-[#1A2433]" x-text="r.title"></span>
-                                            <span class="text-[11px] text-[#9CA3AF] font-mono" x-text="fmt(r.created_at)"></span>
+                                        <div>
+                                            <div @click="toggleReport(r)" class="px-5 py-2.5 flex items-center justify-between gap-4 cursor-pointer hover:bg-[#FAFBFC]">
+                                                <span class="text-sm text-[#1A2433]" x-text="r.title"></span>
+                                                <span class="flex items-center gap-3">
+                                                    <span class="text-[11px] text-[#9CA3AF] font-mono" x-text="fmt(r.created_at)"></span>
+                                                    <span class="text-[10px] text-[#CA8A04]" x-text="reportOpen[r.id] ? '▾' : '▸'"></span>
+                                                </span>
+                                            </div>
+                                            <div x-show="reportOpen[r.id]" class="px-5 pb-3" x-transition>
+                                                <div x-show="!reportData[r.id]" class="text-[11px] text-[#9CA3AF] py-2">Lade Report…</div>
+                                                <template x-if="reportData[r.id] && reportData[r.id].payload">
+                                                    <div class="space-y-1">
+                                                        <template x-for="t in (reportData[r.id].payload.tenants || [])" :key="t.id">
+                                                            <div class="flex items-center justify-between text-[12px] py-1 border-b border-[#F0F3F7] last:border-0">
+                                                                <span class="font-medium text-[#1A2433]" x-text="t.name"></span>
+                                                                <span class="text-[#5B6B7E] font-mono text-[11px]" x-text="(t.companies||0)+' Unt · '+(t.persons||0)+' Pers · '+(t.tasks_open||0)+' Aufg · '+(t.high_risks||0)+' Risiko · '+(t.compliance_rate!=null?t.compliance_rate+'%':'—')+' Compl.'"></span>
+                                                            </div>
+                                                        </template>
+                                                        <div x-show="reportData[r.id].payload.totals" class="text-[11px] text-[#9CA3AF] pt-1" x-text="'Gesamt: ' + (reportData[r.id].payload.totals.tenants || 0) + ' Mandanten'"></div>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </div>
                                     </template>
                                 </div>
@@ -1028,7 +1047,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI, icons: ICONS,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], spark: {}, exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, upcoming: [], openTasks: [],
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], spark: {}, exec: null, execReports: [], reportOpen: {}, reportData: {}, lookups: {}, navOpen: false, collapsed: {}, upcoming: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
@@ -1259,6 +1278,14 @@ function workspace(initial) {
             if (!title) return;
             this.api('/api/v1/exec-reports', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title})})
                 .then(r => { if (r.ok) this.loadSection(); else this.toast('Report fehlgeschlagen (HTTP '+r.status+')'); });
+        },
+        toggleReport(r) {
+            const id = r.id;
+            this.reportOpen = {...this.reportOpen, [id]: !this.reportOpen[id]};
+            if (this.reportOpen[id] && !this.reportData[id]) {
+                this.api('/api/v1/exec-reports/' + id).then(res => res.ok ? res.json() : null)
+                    .then(d => { if (d) this.reportData = {...this.reportData, [id]: d}; });
+            }
         },
         subtitle() {
             const base = (this.section === 'dashboard' ? 'Unternehmenssteuerung' : 'Modul ' + (this.item().label||this.section)) + ' · ' + this.tenantName();
