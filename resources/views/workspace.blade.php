@@ -107,13 +107,15 @@
                 <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F]" x-text="title()"></h1>
                 <p class="text-xs text-[#5B6B7E]" x-text="subtitle()"></p>
             </div>
+            <div class="text-right">
+                <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
+                <span x-show="!loading && lastLoad" class="text-[11px] text-[#9CA3AF]" x-text="lastLoad ? 'Stand ' + lastLoad.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'}) : ''"></span>
+            </div>
             <div class="flex items-center gap-3">
                 <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" title="Aktualisieren (r)"
                         class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 9A8 8 0 0119 7.5M18.5 15A8 8 0 015 16.5"/></svg>
                 </button>
-                <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
-            </div>
         </header>
 
         <div class="p-6 space-y-5">
@@ -654,6 +656,7 @@ function workspace(initial) {
         meId: @js($user->id ?? null),
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, lastLoad: null, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
@@ -722,7 +725,7 @@ function workspace(initial) {
             history.replaceState(null,'',url);
             if (this.section === 'dashboard') {
                 this.api('/api/v1/metrics').then(r => r.ok ? r.json() : (this.error='HTTP '+r.status, null))
-                    .then(d => { this.metrics = d; this.loading = false; });
+                    .then(d => { this.metrics = d; this.loading = false; this.lastLoad = new Date(); });
                 this.api('/api/v1/insights').then(r => r.ok ? r.json() : [])
                     .then(d => this.insights = d.filter(i => i.code !== 'all_clear'));
                 this.api('/api/v1/events').then(r => r.ok ? r.json() : [])
@@ -747,7 +750,7 @@ function workspace(initial) {
                 this.api('/api/v1/executive/overview').then(r => {
                     if (!r.ok) { this.error = 'HTTP '+r.status+' — keine Berechtigung (executive.view)?'; this.exec = null; this.loading=false; return null; }
                     return r.json();
-                }).then(d => { if (d) this.exec = d; this.loading = false; });
+                }).then(d => { if (d) this.exec = d; this.loading = false; this.lastLoad = new Date(); });
                 this.api('/api/v1/exec-reports').then(r => r.ok ? r.json() : [])
                     .then(d => this.execReports = Array.isArray(d) ? d : (d.data || []));
                 return;
@@ -766,7 +769,7 @@ function workspace(initial) {
                 } else this.columns = [];
                 const oid = new URLSearchParams(location.search).get('open');
                 if (oid) { const r = rows.find(x => String(x.id) === oid); if (r) this.detail = r; }
-                this.loading = false;
+                this.loading = false; this.lastLoad = new Date();
             });
         },
         sort(c) {
