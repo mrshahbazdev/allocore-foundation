@@ -827,7 +827,16 @@ function workspace(initial) {
                 const txt = STATUS_DE[String(v).toLowerCase()] || v;
                 return `<span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full" style="background:${col}"></span>${txt}</span>`;
             }
-            if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleDateString('de-DE');
+            if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) {
+                const d = new Date(v);
+                let out = d.toLocaleDateString('de-DE');
+                if (/due|deadline|scheduled/.test(c)) {
+                    const days = Math.ceil((d - Date.now()) / 86400000);
+                    if (days < 0) out += ` <span class="text-[#A6362E]">(vor ${-days} T)</span>`;
+                    else if (days <= 7) out += ` <span class="text-[#CA8A04]">(in ${days} T)</span>`;
+                }
+                return out;
+            }
             if (typeof v === 'string' && v.length > 80) return v.slice(0,80)+'…';
             return v;
         },
