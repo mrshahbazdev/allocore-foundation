@@ -425,7 +425,7 @@
                                         <span x-text="label(c)"></span><span class="ml-1 text-[#CA8A04]" x-text="sortKey===c ? (sortAsc?'▲':'▼') : ''"></span>
                                     </th>
                                 </template>
-                                <th x-show="sectionActions().length" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] w-28">Aktionen</th>
+                                <th x-show="sectionActions().length || canEdit()" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] w-28">Aktionen</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -434,7 +434,7 @@
                                     :class="it.t === 'h' ? 'bg-[#F0F3F7] hover:bg-[#E4E9F0] cursor-pointer' : ([overdue(it.r) ? 'bg-[#A6362E]/5' : '', selected[it.r.id] ? 'bg-[#FFFBEB]' : '', detail && detail.id === it.r.id ? 'bg-[#FACC15]/10' : '', it.i % 2 ? 'bg-[#FAFBFC]/50' : ''].join(' ') + ' hover:bg-[#F3F6FA] cursor-pointer')"
                                     class="border-b border-[#F0F3F7] last:border-b-0" :title="it.t === 'r' ? 'Doppelklick: Bearbeiten' : 'Klick: einklappen/ausklappen'">
                                     <template x-if="it.t === 'h'">
-                                        <td :colspan="visCols().length + (writable() ? 3 : 2)" class="px-5 py-2 text-[11px] font-semibold text-[#5B6B7E]">
+                                        <td :colspan="visCols().length + 1 + (writable() ? 1 : 0) + (sectionActions().length || canEdit() ? 1 : 0)" class="px-5 py-2 text-[11px] font-semibold text-[#5B6B7E]">
                                             <span x-text="collapsedGroups[it.label] ? '▸' : '▾'" class="mr-1.5 text-[#CA8A04]"></span><span x-text="it.label || '—'"></span> <span class="font-normal text-[#9CA3AF]" x-text="'· ' + it.count"></span><span x-show="it.overdue" class="ml-1.5 font-normal text-[#A6362E]" x-text="it.overdue + ' überfällig'"></span>
                                         </td>
                                     </template>
@@ -455,11 +455,12 @@
                                                 </td>
                                             </template>
                                             <template x-if="e.t === 'act'">
-                                                <td x-show="sectionActions().length" @click.stop class="px-5 py-3 w-28">
-                                                    <div class="flex gap-1">
+                                                <td x-show="sectionActions().length || canEdit()" @click.stop class="px-5 py-3 w-28">
+                                                    <div class="flex gap-1 items-center">
                                                         <template x-for="a in rowActions(it.r).slice(0, 2)" :key="a[1]">
                                                             <button @click="applyRowStatus(it.r, a[1])" class="text-[10px] px-2 py-1 rounded-md border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 whitespace-nowrap" x-text="a[0]"></button>
                                                         </template>
+                                                        <button x-show="canEdit()" @click="detail = it.r; openEdit()" title="Bearbeiten" class="text-[11px] px-1.5 py-1 rounded-md border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]">&#9998;</button>
                                                     </div>
                                                 </td>
                                             </template>
@@ -475,7 +476,7 @@
                                 <template x-for="c in visCols()" :key="'f-'+c">
                                     <td class="px-5 py-2.5 text-xs font-semibold text-[#1A2433] tabular-nums" x-text="colSum(c)"></td>
                                 </template>
-                                <td x-show="sectionActions().length" class="px-5 py-2.5 w-28"></td>
+                                <td x-show="sectionActions().length || canEdit()" class="px-5 py-2.5 w-28"></td>
                             </tr>
                         </tfoot>
                     </table>
