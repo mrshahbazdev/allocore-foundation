@@ -179,14 +179,16 @@
             {{-- Dashboard --}}
             <template x-if="section === 'dashboard'">
                 <div class="space-y-5">
-                    <div x-show="insights.length" class="space-y-2">
-                        <div x-show="insights.some(i => i.severity === 'warning' || i.severity === 'info')" class="flex gap-1.5">
+                    <div x-show="visibleInsights().length" class="space-y-2">
+                        <div x-show="visibleInsights().some(i => i.severity === 'warning' || i.severity === 'info')" class="flex gap-1.5">
                             <template x-for="s in [['','Alle'],['critical','Kritisch'],['warning','Warnung'],['info','Info']]" :key="s[0]">
                                 <button @click="insightSev = s[0]" class="text-[11px] px-2 py-1 rounded-full border transition"
                                         :class="insightSev === s[0] ? 'bg-[#0B0B0F] text-[#FACC15] border-[#0B0B0F]' : 'bg-white text-[#5B6B7E] border-[#D6DEE9] hover:border-[#CA8A04]'" x-text="s[1]"></button>
                             </template>
                         </div>
-                        <template x-for="i in insights.filter(x => !insightSev || x.severity === insightSev)" :key="i.code">
+                        <template x-for="i in visibleInsights().filter(x => !insightSev || x.severity === insightSev)" :key="i.code">
+                            <div class="relative">
+                            <button @click="dismissInsight(i)" title="Ausblenden" class="absolute top-1.5 right-1.5 z-10 h-5 w-5 rounded text-[#9CA3AF] hover:text-[#A6362E] hover:bg-[#A6362E]/10 text-sm leading-none">&times;</button>
                             <a :href="insightSection(i.code) ? '/app/' + insightSection(i.code) + '?tenant=' + tenant + (insightFilter(i.code) ? '&' + insightFilter(i.code) : '') : '#'"
                                class="flex items-start gap-3 rounded-lg border bg-white px-4 py-3 text-sm transition"
                                :class="{'border-[#A6362E]/40': i.severity==='critical','border-[#CA8A04]/50': i.severity==='warning','border-[#D6DEE9]': i.severity==='info','hover:shadow-sm': insightSection(i.code)}">
@@ -198,13 +200,14 @@
                                     <svg class="h-4 w-4 text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                                 </span>
                             </a>
+                            </div>
                         </template>
                     </div>
                     <div x-show="tenant && metrics && !insights.length && !openTasks.length && !upcoming.length && !events.length" class="bg-white border border-[#E4E9F0] rounded-xl px-6 py-8 text-center">
                         <div class="text-sm text-[#5B6B7E]">Noch keine Einträge für diesen Mandanten.</div>
                         <button @click="seedDemo()" :disabled="seeding" class="mt-3 text-xs px-4 py-2 bg-[#0B0B0F] text-[#FACC15] rounded-lg hover:opacity-90 disabled:opacity-50" x-text="seeding ? 'Lade Demo-Daten…' : 'Demo-Daten laden'"></button>
                     </div>
-                    <div x-show="tenant && metrics && !insights.length" class="flex items-center gap-3 rounded-lg border border-[#2E7D5B]/30 bg-[#2E7D5B]/5 px-4 py-3 text-sm text-[#2E7D5B]">
+                    <div x-show="tenant && metrics && !visibleInsights().length" class="flex items-center gap-3 rounded-lg border border-[#2E7D5B]/30 bg-[#2E7D5B]/5 px-4 py-3 text-sm text-[#2E7D5B]">
                         <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Alles im grünen Bereich — keine offenen Hinweise.
                     </div>
@@ -939,7 +942,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [],
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, insightSev: '', fkQ: {},
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {},
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
@@ -1471,6 +1474,12 @@ function workspace(initial) {
             return [...new Set(this.rows.map(r => r.status).filter(Boolean))].sort();
         },
         statusLabel(s) { return STATUS_DE[String(s).toLowerCase()] || s; },
+        insightKey(i) { return (i.code || '') + '|' + (i.message || ''); },
+        visibleInsights() { return (this.insights || []).filter(i => !this.insDismissed.includes(this.insightKey(i))); },
+        dismissInsight(i) {
+            this.insDismissed.push(this.insightKey(i));
+            localStorage.setItem('af_insdismissed', JSON.stringify(this.insDismissed));
+        },
         refSection(k) {
             const t = FKMAP[k];
             if (!t) return null;
