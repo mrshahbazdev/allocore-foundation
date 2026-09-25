@@ -236,12 +236,17 @@
                         </template>
                     </div>
                     <div x-show="openTasks.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
-                        <a :href="'/app/tasks?tenant=' + tenant" class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex items-center justify-between hover:text-[#CA8A04]">
-                            Offene Aufgaben
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </a>
+                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex items-center justify-between gap-2">
+                            <a :href="'/app/tasks?tenant=' + tenant" class="flex items-center gap-1.5 hover:text-[#CA8A04]">
+                                Offene Aufgaben
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                            <button @click="dashMyOnly = !dashMyOnly" class="text-[10px] px-2 py-0.5 rounded-full border transition"
+                                    :class="dashMyOnly ? 'border-[#CA8A04] bg-[#CA8A04] text-black' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'">Mir zugewiesen</button>
+                        </div>
                         <div class="divide-y divide-[#F0F3F7]">
-                            <template x-for="t in openTasks" :key="t.id">
+                            <div x-show="dashMyOnly && !openTasks.some(t => String(t.assignee_id || t.responsible_id || t.owner_id || '') === String(meId))" class="px-5 py-4 text-xs text-[#9CA3AF]">Ihnen ist nichts offen zugewiesen.</div>
+                            <template x-for="t in openTasks.filter(t => !dashMyOnly || String(t.assignee_id || t.responsible_id || t.owner_id || '') === String(meId))" :key="t.id">
                                 <div class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
                                     <a :href="'/app/tasks?tenant=' + tenant + '&open=' + t.id" class="text-sm text-[#1A2433] truncate hover:text-[#CA8A04] transition" x-text="t.title"></a>
                                     <span class="flex items-center gap-2.5 shrink-0">
@@ -960,7 +965,7 @@ function workspace(initial) {
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [],
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
-        meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {},
+        meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false,
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
             window.addEventListener('offline', () => { this.offline = true; });
