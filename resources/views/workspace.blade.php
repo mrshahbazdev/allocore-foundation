@@ -1303,8 +1303,8 @@ function workspace(initial) {
             }
             location.href = '/app/' + it.key + (this.tenant ? '?tenant=' + this.tenant : '');
         },
-        insightSection(code) { return ({tasks_overdue:'tasks',tasks_due_soon:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders',inspections_overdue:'inspections',leave_requests_pending:'leave-requests'})[code] || null; },
-        insightFilter(code) { return ({tasks_overdue:'overdue=1',tasks_due_soon:'dueSoon=1',deadlines_overdue:'overdue=1',high_risks_open:'status=open',tenders_open:'status=open',inspections_overdue:'overdue=1',leave_requests_pending:'status=pending'})[code] || ''; },
+        insightSection(code) { return ({tasks_overdue:'tasks',tasks_due_soon:'tasks',deadlines_due_soon:'deadlines',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders',inspections_overdue:'inspections',leave_requests_pending:'leave-requests'})[code] || null; },
+        insightFilter(code) { return ({tasks_overdue:'overdue=1',tasks_due_soon:'dueSoon=1',deadlines_due_soon:'dueSoon=1',deadlines_overdue:'overdue=1',high_risks_open:'status=open',tenders_open:'status=open',inspections_overdue:'overdue=1',leave_requests_pending:'status=pending'})[code] || ''; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
         sortedTenants() { return [...this.tenantList].sort((a, b) => String(a.name).localeCompare(String(b.name), 'de')); },
         execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake'}; return M[k] || k; },
