@@ -1707,7 +1707,7 @@ function workspace(initial) {
             else if (e.key === 'j') { if (this.detail && !this.showCreate) this.copyJson(); }
             else if (e.key === 'k') { if (!this.detail && !this.showCreate && !this.palette) { this.compact = !this.compact; try { localStorage.setItem('af_density', this.compact ? '1' : '0'); } catch (err) {} } }
             else if (e.key === 'w') { if (this.detail && !this.showCreate) { this.drawerWide = !this.drawerWide; try { localStorage.setItem('af_drawer_wide', this.drawerWide ? '1' : '0'); } catch (err) {} } }
-            else if (e.key === 'g') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => 'status' in r)) this.groupBy = this.groupBy === 'status' ? '' : 'status'; }
+            else if (e.key === 'g') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.length) { const opts = ['status', ...this.visCols().filter(c => /_id$/.test(c)), '']; const cyc = opts.filter(o => o === '' || this.rows.some(r => o in r)); const i = cyc.indexOf(this.groupBy); this.groupBy = cyc[(i + 1) % cyc.length]; } }
             else if (e.key === 'm') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r)) this.myOnly = !this.myOnly; }
             else if (e.key === 'u') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.overdue(r))) this.overdueOnly = !this.overdueOnly; }
             else if (e.key === '.') { if (!this.detail && !this.showCreate && !this.palette && this.section !== 'dashboard') window.location.href = '/app/dashboard' + (this.tenant ? '?tenant=' + this.tenant : ''); }
