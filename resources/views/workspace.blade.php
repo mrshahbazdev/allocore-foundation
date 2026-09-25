@@ -1249,8 +1249,8 @@ function workspace(initial) {
             }
             location.href = '/app/' + it.key + (this.tenant ? '?tenant=' + this.tenant : '');
         },
-        insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
-        insightFilter(code) { return ({tasks_overdue:'overdue=1',deadlines_overdue:'overdue=1',high_risks_open:'status=open',tenders_open:'status=open'})[code] || ''; },
+        insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders',inspections_overdue:'inspections',leave_requests_pending:'leave-requests'})[code] || null; },
+        insightFilter(code) { return ({tasks_overdue:'overdue=1',deadlines_overdue:'overdue=1',high_risks_open:'status=open',tenders_open:'status=open',inspections_overdue:'overdue=1',leave_requests_pending:'status=pending'})[code] || ''; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
         sortedTenants() { return [...this.tenantList].sort((a, b) => String(a.name).localeCompare(String(b.name), 'de')); },
         execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake'}; return M[k] || k; },
@@ -1677,6 +1677,7 @@ function workspace(initial) {
             return [...new Set(this.rows.map(r => r.status).filter(Boolean))].sort();
         },
         statusLabel(s) { return STATUS_DE[String(s).toLowerCase()] || s; },
+        typeLabel(t) { const M = {vacation:'Urlaub',sick:'Krank',other:'Sonstiges',question:'Frage',feedback:'Feedback',maintenance:'Wartung',safety:'Sicherheit',general:'Allgemein',external:'Extern',internal:'Intern',onboarding:'Onboarding',video:'Video',document:'Dokument',workshop:'Workshop',audit:'Audit',inspection:'Prüfung',training:'Schulung',financial:'Finanzen',quality:'Qualität',environment:'Umwelt',risk:'Risiko',strategic:'Strategisch',operational:'Operativ'}; return M[String(t).toLowerCase()] || t; },
         insightKey(i) { return (this.tenant || '') + '|' + (i.code || '') + '|' + (i.message || ''); },
         visibleInsights() { return (this.insights || []).filter(i => !this.insDismissed.includes(this.insightKey(i))); },
         dismissInsight(i) {
@@ -1698,6 +1699,7 @@ function workspace(initial) {
             const rn = this.resolveId(k, row[k]);
             if (rn) return rn;
             if (k === 'status') return this.statusLabel(row[k]);
+            if (k === 'type') return this.typeLabel(row[k]);
             const v = row[k];
             if (typeof v === 'number' && k !== 'id' && !k.endsWith('_id')) {
                 if (/price|amount|value|budget|revenue|ebitda|cashflow|liquidity|capital|cost|salary|hourly|invested|valuation/i.test(k)) return v.toLocaleString('de-DE', {maximumFractionDigits: 2}) + ' €';
@@ -2159,7 +2161,7 @@ function workspace(initial) {
             const i = rs.findIndex(r => String(r.id) === String(this.detail.id));
             return i < 0 ? '' : (i + 1) + ' / ' + rs.length;
         },
-        dueKey(row) { return ['due_at','deadline','deadline_at','ends_on','ends_at','due_date','end_date','next_due_at','review_at'].find(k => row[k]); },
+        dueKey(row) { return ['due_at','deadline','deadline_at','ends_on','ends_at','due_date','end_date','next_due_at','review_at','scheduled_at'].find(k => row[k]); },
         isOpenStatus(row) {
             const OPEN = ['open','pending','in_progress','running','queued','scheduled','planned','active','submitted','shortlisted','draft','on_hold'];
             return !row.status || OPEN.includes(String(row.status));
