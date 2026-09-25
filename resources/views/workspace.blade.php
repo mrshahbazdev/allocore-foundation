@@ -330,6 +330,12 @@
                                 </template>
                             </div>
                         </div>
+                        <select x-model="groupBy" title="Gruppieren nach" class="text-xs px-2 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg bg-white hover:border-[#CA8A04] transition shrink-0 max-w-[10rem]">
+                            <option value="">Keine Gruppierung</option>
+                            <template x-for="c in columns" :key="'g-'+c">
+                                <option :value="c" x-text="label(c)"></option>
+                            </template>
+                        </select>
                         <button @click="exportCsv()" title="CSV exportieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
                         <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren (i)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
                         <button @click="window.print()" title="Drucken" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">Drucken</button>
@@ -393,27 +399,42 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <template x-for="(row, idx) in sorted(filtered()).slice(0, limit)" :key="idx">
-                                <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())"
-                                    :class="[overdue(row) ? 'bg-[#A6362E]/5' : '', selected[row.id] ? 'bg-[#FFFBEB]' : '', detail && detail.id === row.id ? 'bg-[#FACC15]/10' : '', idx % 2 ? 'bg-[#FAFBFC]/50' : '']"
-                                    class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#F3F6FA] cursor-pointer" title="Doppelklick: Bearbeiten">
-                                    <td x-show="writable()" @click.stop class="px-4 py-3 w-10">
-                                        <input type="checkbox" @change="toggleSel(row.id)" :checked="!!selected[row.id]"
-                                               class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
-                                    </td>
-                                    <td class="px-3 py-3 text-[#9CA3AF] text-xs tabular-nums" x-text="idx + 1"></td>
-                                    <template x-for="c in visCols()" :key="c">
-                                        <td class="px-5 text-[#1A2433]" :class="compact ? 'py-1.5 text-xs' : 'py-3'">
-                                            <span x-html="cell(row, c)"></span><span x-show="c === visCols()[0] && isNew(row)" class="ml-1.5 text-[9px] font-bold px-1 py-0.5 rounded bg-[#FACC15] text-[#0B0B0F] align-middle">NEU</span>
+                            <template x-for="it in renderRows()" :key="it.t === 'h' ? 'h-'+it.label : it.r.id">
+                                <tr @click="it.t === 'r' && (detail = it.r)" @dblclick="it.t === 'r' && canEdit() && (detail = it.r, openEdit())"
+                                    :class="it.t === 'h' ? 'bg-[#F0F3F7]' : ([overdue(it.r) ? 'bg-[#A6362E]/5' : '', selected[it.r.id] ? 'bg-[#FFFBEB]' : '', detail && detail.id === it.r.id ? 'bg-[#FACC15]/10' : '', it.i % 2 ? 'bg-[#FAFBFC]/50' : ''].join(' ') + ' hover:bg-[#F3F6FA] cursor-pointer')"
+                                    class="border-b border-[#F0F3F7] last:border-b-0" :title="it.t === 'r' ? 'Doppelklick: Bearbeiten' : ''">
+                                    <template x-if="it.t === 'h'">
+                                        <td :colspan="visCols().length + (writable() ? 3 : 2)" class="px-5 py-2 text-[11px] font-semibold text-[#5B6B7E]">
+                                            <span x-text="it.label || '—'"></span> <span class="font-normal text-[#9CA3AF]" x-text="'· ' + it.count"></span>
                                         </td>
                                     </template>
-                                    <td x-show="sectionActions().length" @click.stop class="px-5 py-3">
-                                        <div class="flex gap-1">
-                                            <template x-for="a in rowActions(row).slice(0, 2)" :key="a[1]">
-                                                <button @click="applyRowStatus(row, a[1])" class="text-[10px] px-2 py-1 rounded-md border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 whitespace-nowrap" x-text="a[0]"></button>
+                                    <template x-if="it.t === 'r'">
+                                        <template x-for="e in it.cells" :key="e.t + ':' + (e.c || '')">
+                                            <template x-if="e.t === 'cb'">
+                                                <td x-show="writable()" @click.stop class="px-4 py-3 w-10">
+                                                    <input type="checkbox" @change="toggleSel(it.r.id)" :checked="!!selected[it.r.id]"
+                                                           class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                                </td>
                                             </template>
-                                        </div>
-                                    </td>
+                                            <template x-if="e.t === 'n'">
+                                                <td class="px-3 py-3 text-[#9CA3AF] text-xs tabular-nums" x-text="it.i + 1"></td>
+                                            </template>
+                                            <template x-if="e.t === 'c'">
+                                                <td class="px-5 text-[#1A2433]" :class="compact ? 'py-1.5 text-xs' : 'py-3'">
+                                                    <span x-html="cell(it.r, e.c)"></span><span x-show="e.c === visCols()[0] && isNew(it.r)" class="ml-1.5 text-[9px] font-bold px-1 py-0.5 rounded bg-[#FACC15] text-[#0B0B0F] align-middle">NEU</span>
+                                                </td>
+                                            </template>
+                                            <template x-if="e.t === 'act'">
+                                                <td x-show="sectionActions().length" @click.stop class="px-5 py-3 w-28">
+                                                    <div class="flex gap-1">
+                                                        <template x-for="a in rowActions(it.r).slice(0, 2)" :key="a[1]">
+                                                            <button @click="applyRowStatus(it.r, a[1])" class="text-[10px] px-2 py-1 rounded-md border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 whitespace-nowrap" x-text="a[0]"></button>
+                                                        </template>
+                                                    </div>
+                                                </td>
+                                            </template>
+                                        </template>
+                                    </template>
                                 </tr>
                             </template>
                         </tbody>
@@ -780,7 +801,7 @@ function workspace(initial) {
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, selected: {}, recent: [], navBadges: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        meId: @js($user->id ?? null), offline: !navigator.onLine,
+        meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '',
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
             window.addEventListener('offline', () => { this.offline = true; });
@@ -914,7 +935,7 @@ function workspace(initial) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
             this.loading = true; this.error = '';
-            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; }
+            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = ''; }
             try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             if (this._urlSort) { const m = this._urlSort.match(/^(.+?)(?::(asc|desc))?$/); this.sortKey = m[1]; this.sortAsc = m[2] !== 'desc'; this._urlSort = null; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
@@ -980,6 +1001,23 @@ function workspace(initial) {
             if (this.sortKey === c) this.sortAsc = !this.sortAsc; else { this.sortKey = c; this.sortAsc = !/_at$|_date$|amount|price|value|qty|rate$|pct|percent|progress|revenue|ebitda|hours|salary|budget|cost/i.test(c); }
             try { localStorage.setItem('af_sort_' + this.section, JSON.stringify({k: this.sortKey, a: this.sortAsc})); } catch (e) {}
             const su = new URL(location.href); su.searchParams.set('sort', this.sortKey + ':' + (this.sortAsc ? 'asc' : 'desc')); history.replaceState(null, '', su);
+        },
+        renderRows() {
+            const rows = this.sorted(this.filtered()).slice(0, this.limit);
+            const mk = (r, i) => ({t: 'r', r, i, cells: [{t: 'cb'}, {t: 'n'}, ...this.visCols().map(c => ({t: 'c', c})), {t: 'act'}]});
+            if (!this.groupBy) return rows.map((r, i) => mk(r, i));
+            const buckets = new Map();
+            rows.forEach(r => {
+                const g = String(r[this.groupBy] ?? '');
+                if (!buckets.has(g)) buckets.set(g, []);
+                buckets.get(g).push(r);
+            });
+            const out = []; let i = 0;
+            for (const [label, rs] of buckets) {
+                out.push({t: 'h', label, count: rs.length});
+                rs.forEach(r => out.push(mk(r, i++)));
+            }
+            return out;
         },
         sorted(rows) {
             const k = this.sortKey || 'updated_at', dir = (this.sortKey ? this.sortAsc : false) ? 1 : -1;
