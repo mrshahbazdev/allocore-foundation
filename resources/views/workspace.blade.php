@@ -544,7 +544,11 @@
                                     <option :value="o[0]" x-text="o[1]"></option>
                                 </template>
                             </select>
-                            <input x-show="f.type !== 'fk'" x-model="form[f.key]" :type="f.type"
+                            <label x-show="f.type === 'checkbox'" class="inline-flex items-center gap-2 text-sm text-[#42536A]">
+                                <input type="checkbox" x-model="form[f.key]" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                <span x-text="label(f.key)"></span>
+                            </label>
+                            <input x-show="f.type !== 'fk' && f.type !== 'checkbox'" x-model="form[f.key]" :type="f.type"
                                    class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         </div>
                     </template>
@@ -968,7 +972,7 @@ function workspace(initial) {
             const src = (this.rows && this.rows[0]) || {};
             return Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12).map(k => ({
                 key: k,
-                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text')),
+                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'boolean' ? 'checkbox' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text'))),
                 table: FKMAP[k] || null,
                 req: ['name', 'title'].includes(k),
             }));
