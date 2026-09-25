@@ -206,7 +206,7 @@
                             <template x-for="h in dashHits" :key="h.section + '-' + h.id">
                                 <a :href="'/app/' + h.section + '?tenant=' + tenant + '&open=' + encodeURIComponent(h.id)"
                                    class="flex items-center justify-between gap-3 px-2 py-1.5 rounded-lg text-sm hover:bg-[#FAFBFC] transition">
-                                    <span class="truncate" x-text="h.label || h.id"></span>
+                                    <span class="truncate"><span class="text-[11px] text-[#9CA3AF] mr-1.5" x-text="icons[h.section] || '·'"></span><span x-text="h.label || h.id"></span></span>
                                     <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF] shrink-0" x-text="sectionLabel(h.section)"></span>
                                 </a>
                             </template>
@@ -838,7 +838,7 @@
                            @click="it.action ? (function(){ $event.preventDefault(); paletteRun(it); })() : null"
                            :class="pi === palIdx ? 'bg-[#CA8A04]/10' : ''"
                            class="block px-5 py-2.5 text-sm text-[#1A2433] hover:bg-[#FAFBFC] transition">
-                            <span class="inline-block w-4 text-center text-[11px] text-[#9CA3AF] mr-2" x-text="icons[it.key] || '·'"></span><span x-text="it.label"></span>
+                            <span class="inline-block w-4 text-center text-[11px] text-[#9CA3AF] mr-2" x-text="it.icon || icons[it.key] || '·'"></span><span x-text="it.label"></span>
                             <span x-show="it.key === section" class="ml-1.5 text-[9px] text-[#CA8A04] font-semibold">●</span>
                             <span class="ml-2 text-[10px] text-[#9CA3AF] tracking-wide" x-text="it.group"></span>
                         </a>
@@ -1191,7 +1191,7 @@ function workspace(initial) {
             if (q && this.rows && this.rows.length) this.rows.filter(r => JSON.stringify(r).toLowerCase().includes(q)).slice(0, 5).forEach(r => acts.push({key: null, action: 'openrowcur', id: r.id, label: '→ ' + (r.name || r.title || r.headline || r.id) + ' (' + this.title() + ')', group: 'Eintrag'}));
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
             mods.sort((a, b) => ((this.pins || []).includes(b.key) ? 1 : 0) - ((this.pins || []).includes(a.key) ? 1 : 0));
-            const globals = this.globHits.map(h => ({key: null, action: 'gsearch', section: h.section, id: h.id, label: '⇉ ' + (h.label || h.id) + ' (' + this.sectionLabel(h.section) + ')', group: 'Global'}));
+            const globals = this.globHits.map(h => ({key: null, action: 'gsearch', section: h.section, id: h.id, icon: this.icons[h.section], label: '⇉ ' + (h.label || h.id) + ' (' + this.sectionLabel(h.section) + ')', group: 'Global'}));
             return [...acts.filter(a => !q || a.label.toLowerCase().includes(q)), ...globals, ...mods];
         },
         paletteGo() {
