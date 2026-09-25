@@ -98,7 +98,10 @@
                 <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F]" x-text="title()"></h1>
                 <p class="text-xs text-[#5B6B7E]" x-text="subtitle()"></p>
             </div>
-            <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
+            <div class="text-right">
+                <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
+                <span x-show="!loading && lastLoad" class="text-[11px] text-[#9CA3AF]" x-text="lastLoad ? 'Stand ' + lastLoad.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'}) : ''"></span>
+            </div>
         </header>
 
         <div class="p-6 space-y-5">
@@ -546,7 +549,7 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, lastLoad: null, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -598,7 +601,7 @@ function workspace(initial) {
             history.replaceState(null,'',url);
             if (this.section === 'dashboard') {
                 this.api('/api/v1/metrics').then(r => r.ok ? r.json() : (this.error='HTTP '+r.status, null))
-                    .then(d => { this.metrics = d; this.loading = false; });
+                    .then(d => { this.metrics = d; this.loading = false; this.lastLoad = new Date(); });
                 this.api('/api/v1/insights').then(r => r.ok ? r.json() : [])
                     .then(d => this.insights = d.filter(i => i.code !== 'all_clear'));
                 this.api('/api/v1/events').then(r => r.ok ? r.json() : [])
@@ -623,7 +626,7 @@ function workspace(initial) {
                 this.api('/api/v1/executive/overview').then(r => {
                     if (!r.ok) { this.error = 'HTTP '+r.status+' — keine Berechtigung (executive.view)?'; this.exec = null; this.loading=false; return null; }
                     return r.json();
-                }).then(d => { if (d) this.exec = d; this.loading = false; });
+                }).then(d => { if (d) this.exec = d; this.loading = false; this.lastLoad = new Date(); });
                 this.api('/api/v1/exec-reports').then(r => r.ok ? r.json() : [])
                     .then(d => this.execReports = Array.isArray(d) ? d : (d.data || []));
                 return;
@@ -642,7 +645,7 @@ function workspace(initial) {
                 } else this.columns = [];
                 const oid = new URLSearchParams(location.search).get('open');
                 if (oid) { const r = rows.find(x => String(x.id) === oid); if (r) this.detail = r; }
-                this.loading = false;
+                this.loading = false; this.lastLoad = new Date();
             });
         },
         sort(c) { if (this.sortKey === c) this.sortAsc = !this.sortAsc; else { this.sortKey = c; this.sortAsc = true; } },
