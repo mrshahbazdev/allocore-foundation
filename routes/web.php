@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
@@ -9,7 +8,7 @@ Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'workspace' : 'login');
 });
 
-Route::get('/dashboard', DashboardController::class)
+Route::get('/dashboard', fn () => redirect('/app/dashboard'))
     ->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/app/{section?}', WorkspaceController::class)
