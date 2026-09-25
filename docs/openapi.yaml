@@ -1726,7 +1726,7 @@ paths:
   /api/v1/search:
     get:
       tags: [search]
-      summary: GET /api/v1/search?q= — globale Suche über alle Module [{section, id, label}]
+      summary: "GET /api/v1/search?q= — globale Suche über alle Module inkl. Data Lake, Graph, KI-Analysen, Events [{section, id, label}]"
       parameters:
         - name: q
           in: query
