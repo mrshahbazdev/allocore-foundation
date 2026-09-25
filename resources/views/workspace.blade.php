@@ -73,7 +73,7 @@
                 <div class="text-[10px] font-semibold tracking-widest text-[#6B7280] pb-1.5">ZULETZT</div>
                 <div class="flex flex-wrap gap-1.5">
                     <template x-for="r in recent" :key="r">
-                        <a :href="'/app/' + r + (tenant ? '?tenant='+tenant : '')" class="px-2 py-1 rounded-full bg-[#1A1A1F] text-[11px] text-[#9CA3AF] hover:text-[#FACC15] transition" x-text="sectionLabel(r)"></a>
+                        <a :href="'/app/' + r + (tenant ? '?tenant='+tenant : '')" class="px-2 py-1 rounded-full bg-[#1A1A1F] text-[11px] text-[#9CA3AF] hover:text-[#FACC15] transition"><span class="opacity-70 mr-1" x-text="icons[r] || '·'"></span><span x-text="sectionLabel(r)"></span></a>
                     </template>
                 </div>
             </div>
