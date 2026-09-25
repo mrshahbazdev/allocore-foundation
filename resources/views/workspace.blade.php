@@ -258,7 +258,11 @@
                         <template x-for="k in Object.keys(detail || {})" :key="k">
                             <div class="flex gap-3">
                                 <dt class="w-36 shrink-0 text-[#5B6B7E]" x-text="label(k)"></dt>
-                                <dd class="min-w-0 font-mono text-[13px] text-[#1A2433] break-words" x-text="fmtD(detail, k)"></dd>
+                                <dd class="min-w-0 font-mono text-[13px] text-[#1A2433] break-words">
+                                    <span x-text="fmtD(detail, k)"></span>
+                                    <a x-show="refSection(k) && detail[k]" :href="'/app/' + refSection(k) + '?tenant=' + tenant + '&open=' + detail[k]"
+                                       class="ml-1.5 text-[#CA8A04] hover:underline text-[11px] font-sans whitespace-nowrap">öffnen →</a>
+                                </dd>
                             </div>
                         </template>
                     </dl>
@@ -524,6 +528,8 @@ function workspace(initial) {
                     const keys = Object.keys(rows[0]).filter(k => !HIDE.has(k) && typeof rows[0][k] !== 'object');
                     this.columns = keys.slice(0, 7);
                 } else this.columns = [];
+                const oid = new URLSearchParams(location.search).get('open');
+                if (oid) { const r = rows.find(x => String(x.id) === oid); if (r) this.detail = r; }
                 this.loading = false;
             });
         },
@@ -660,6 +666,12 @@ function workspace(initial) {
             return [...new Set(this.rows.map(r => r.status).filter(Boolean))].sort();
         },
         statusLabel(s) { return STATUS_DE[String(s).toLowerCase()] || s; },
+        refSection(k) {
+            const t = FKMAP[k];
+            if (!t) return null;
+            const key = ({expert_profiles: 'expert-profiles', graph_entities: 'graph-entities'})[t] || t;
+            return GROUPS.flatMap(g => g.items).some(i => i.key === key) ? key : null;
+        },
         fmtD(row, k) {
             const rn = this.resolveId(k, row[k]);
             if (rn) return rn;
