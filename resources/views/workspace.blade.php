@@ -263,7 +263,8 @@ function workspace(initial) {
             return GROUPS.flatMap(g => g.items).find(i => i.key === this.section) || {label:this.section};
         },
         title() { return this.item().label; },
-        subtitle() { return this.section === 'dashboard' ? 'Unternehmenssteuerung' : 'Modul · ' + (this.item().ep||''); },
+        tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
+        subtitle() { return (this.section === 'dashboard' ? 'Unternehmenssteuerung' : 'Modul ' + (this.item().label||this.section)) + ' · ' + this.tenantName(); },
         metric(k) { const v = this.metrics && this.metrics[k]; return v ? parseFloat(v.value) : '–'; },
         api(path, opts={}) {
             opts.headers = Object.assign({
