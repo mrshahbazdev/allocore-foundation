@@ -1167,8 +1167,9 @@ function workspace(initial) {
                 let out = d.toLocaleDateString('de-DE');
                 if (/due|deadline|scheduled/.test(c)) {
                     const days = Math.ceil((d - Date.now()) / 86400000);
-                    if (days < 0) out += ` <span class="text-[#A6362E]">(vor ${-days} T)</span>`;
-                    else if (days <= 7) out += ` <span class="text-[#CA8A04]">(in ${days} T)</span>`;
+                    const rel = days === -1 ? 'gestern' : days === 0 ? 'heute' : days === 1 ? 'morgen' : days < 0 ? `vor ${-days} T` : `in ${days} T`;
+                    if (days < 0) out += ` <span class="text-[#A6362E]">(${rel})</span>`;
+                    else if (days <= 7) out += ` <span class="text-[#CA8A04]">(${rel})</span>`;
                 }
                 return out;
             }
