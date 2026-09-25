@@ -82,6 +82,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'leave_requests_pending', "{$leave} Urlaubs-/Fehlzeitenantrag/-anträge zur Genehmigung offen.", ['count' => $leave]);
         }
 
+        $machinesDown = $count('machines', fn ($q) => $q->where('status', 'maintenance'));
+        if ($machinesDown) {
+            $insights[] = $this->hit('warning', 'machines_in_maintenance', "{$machinesDown} Maschine(n) in Wartung — Produktionskapazität prüfen.", ['count' => $machinesDown]);
+        }
+
         $openTenders = $count('tenders', fn ($q) => $q->where('status', 'open'));
         if ($openTenders) {
             $insights[] = $this->hit('info', 'tenders_open', "{$openTenders} Ausschreibung(en) offen — Experten-Matching prüfen.", ['count' => $openTenders]);
