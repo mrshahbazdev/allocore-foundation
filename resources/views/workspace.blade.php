@@ -1449,6 +1449,7 @@ function workspace(initial) {
             const rn = this.resolveId(c, v);
             if (rn) return `<span title="${v}">${rn}</span>`;
             if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
+            if (typeof v === 'string' && /^\d+(\.\d+)?$/.test(v) && c !== 'id' && !c.endsWith('_id') && !/_date|_at|no$|number|phone|zip/i.test(c)) v = parseFloat(v);
             if (typeof v === 'number' && c !== 'id' && !c.endsWith('_id') && Number.isFinite(v)) {
                 if (/_?size_?bytes?$|bytes/i.test(c)) {
                     const u = ['B','KB','MB','GB']; let s = v, i = 0;
