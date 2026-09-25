@@ -790,9 +790,14 @@ function workspace(initial) {
             if (p.get('q')) this.query = p.get('q');
             if (p.get('status')) this.statusFilter = p.get('status');
             if (p.get('overdue')) this.overdueOnly = true;
+            if (p.get('dueSoon')) this.dueSoonOnly = true;
+            if (p.get('my')) this.myOnly = true;
             this._urlSort = p.get('sort') || null;
             this.$watch('query', () => this.syncUrl());
             this.$watch('statusFilter', () => this.syncUrl());
+            this.$watch('overdueOnly', () => this.syncUrl());
+            this.$watch('dueSoonOnly', () => this.syncUrl());
+            this.$watch('myOnly', () => this.syncUrl());
             this.$watch('tenant', v => {
                 if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
                 document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE';
@@ -814,6 +819,9 @@ function workspace(initial) {
             const url = new URL(location.href);
             if (this.query) url.searchParams.set('q', this.query); else url.searchParams.delete('q');
             if (this.statusFilter) url.searchParams.set('status', this.statusFilter); else url.searchParams.delete('status');
+            if (this.overdueOnly) url.searchParams.set('overdue', '1'); else url.searchParams.delete('overdue');
+            if (this.dueSoonOnly) url.searchParams.set('dueSoon', '1'); else url.searchParams.delete('dueSoon');
+            if (this.myOnly) url.searchParams.set('my', '1'); else url.searchParams.delete('my');
             history.replaceState(null, '', url);
         },
         item() {
