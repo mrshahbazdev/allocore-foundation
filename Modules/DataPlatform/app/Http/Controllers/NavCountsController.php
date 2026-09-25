@@ -33,7 +33,7 @@ class NavCountsController extends Controller
         'financial-reports' => 'financial_reports',
     ];
 
-    private const DUE_KEYS = ['due_at', 'deadline', 'deadline_at', 'ends_on', 'ends_at', 'due_date', 'end_date', 'next_due_at', 'review_at'];
+    private const DUE_KEYS = ['due_at', 'deadline', 'deadline_at', 'ends_on', 'ends_at', 'due_date', 'end_date', 'next_due_at', 'review_at', 'scheduled_at'];
 
     private const OPEN = ['open', 'pending', 'in_progress', 'running', 'queued', 'scheduled', 'planned', 'active', 'submitted', 'shortlisted', 'draft', 'on_hold'];
 
