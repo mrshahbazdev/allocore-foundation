@@ -72,6 +72,27 @@ class CorePlatformTest extends TestCase
             ->assertJsonPath('data.0.title', 'Unterweisung planen');
     }
 
+    public function test_list_endpoints_honor_per_page_param_and_cap(): void
+    {
+        $tenant = Tenant::create(['name' => 'Page GmbH']);
+        $this->actingWithTenant($tenant);
+
+        foreach (['C1', 'C2', 'C3'] as $name) {
+            $this->postJson('/api/v1/companies', ['name' => $name], ['X-Tenant' => $tenant->id])->assertCreated();
+        }
+
+        $this->getJson('/api/v1/companies?per_page=2', ['X-Tenant' => $tenant->id])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('total', 3)
+            ->assertJsonPath('per_page', 2);
+
+        // per_page is capped at 200
+        $this->getJson('/api/v1/companies?per_page=9999', ['X-Tenant' => $tenant->id])
+            ->assertOk()
+            ->assertJsonPath('per_page', 200);
+    }
+
     public function test_tenant_routes_require_auth(): void
     {
         $tenant = Tenant::create(['name' => 'Auth GmbH']);
