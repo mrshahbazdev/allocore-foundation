@@ -1757,8 +1757,11 @@ function workspace(initial) {
                 for (const ch of l) { if (ch === '"') { q = !q; continue; } if (ch === delim && !q) { out.push(cur); cur = ''; continue; } cur += ch; }
                 out.push(cur); return out.map(s => s.trim());
             };
-            const heads = splitLine(lines[0]);
-            const valid = new Set(this.createFields().map(f => f.key));
+            const fields = this.createFields();
+            const valid = new Set(fields.map(f => f.key));
+            const byLabel = {};
+            fields.forEach(f => { byLabel[this.label(f.key).toLowerCase()] = f.key; });
+            const heads = splitLine(lines[0]).map(h => valid.has(h) ? h : (byLabel[h.toLowerCase()] || h));
             const unknown = heads.filter(h => !valid.has(h));
             if (unknown.length) { this.importErr = true; this.importResult = 'Unbekannte Spalten: ' + unknown.join(', '); return; }
             this.importing = true; this.importErr = false; this.importResult = ''; this.importProgress = '';
