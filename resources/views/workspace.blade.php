@@ -784,7 +784,7 @@
                     <div x-show="importResult" class="text-xs" :class="importErr ? 'text-[#A6362E]' : 'text-[#2E7D4F]'" x-text="importResult"></div>
                     <div class="flex justify-end gap-2 pt-1">
                         <button type="button" @click="showImport = false" class="text-sm px-4 py-2 text-[#5B6B7E]">Schließen</button>
-                        <button type="button" @click="importCsv()" :disabled="importing" class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-50" x-text="importing ? 'Importiere…' : 'Importieren'"></button>
+                        <button type="button" @click="importCsv()" :disabled="importing" class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-50" x-text="importing ? 'Importiere… ' + importProgress : 'Importieren'"></button>
                     </div>
                 </div>
             </div>
@@ -870,7 +870,7 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], spark: {}, exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, upcoming: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
-        form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, toasts: [],
+        form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'),
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
@@ -1511,15 +1511,16 @@ function workspace(initial) {
             const valid = new Set(this.createFields().map(f => f.key));
             const unknown = heads.filter(h => !valid.has(h));
             if (unknown.length) { this.importErr = true; this.importResult = 'Unbekannte Spalten: ' + unknown.join(', '); return; }
-            this.importing = true; this.importErr = false; this.importResult = '';
-            let ok = 0, fail = 0;
+            this.importing = true; this.importErr = false; this.importResult = ''; this.importProgress = '';
+            let ok = 0, fail = 0; const total = lines.length - 1; let done = 0;
             for (const l of lines.slice(1)) {
                 const cells = splitLine(l); const body = {};
                 heads.forEach((h, i) => { if (cells[i] !== undefined && cells[i] !== '') body[h] = cells[i]; });
                 const r = await this.api(this.item().ep, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}).catch(() => null);
                 if (r && r.ok) ok++; else fail++;
+                this.importProgress = (++done) + '/' + total;
             }
-            this.importing = false;
+            this.importing = false; this.importProgress = '';
             this.importErr = fail > 0;
             this.importResult = ok + ' importiert' + (fail ? ', ' + fail + ' fehlgeschlagen' : '') + '.';
             if (ok) this.loadSection();
