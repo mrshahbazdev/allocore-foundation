@@ -992,7 +992,7 @@ function workspace(initial) {
     ];
     const ICONS = {dashboard:'◈',companies:'▣',persons:'◉',documents:'▤',tasks:'☑',instructions:'ⓘ',inspections:'✓',deadlines:'◷','risk-assessments':'⚠','operating-instructions':'✎','expert-profiles':'◎',questions:'?',tenders:'☰',strategies:'⌘',projects:'◇',measures:'→',portfolios:'▲',investments:'€',participations:'◆',machines:'⚙','production-orders':'▶','leave-requests':'◔','financial-reports':'₣',events:'≋','data-objects':'▦','ai-analyses':'✦','graph-entities':'●','graph-edges':'↔',executive:'∑'};
     const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',assigned_to:'persons',from_entity_id:'graph_entities',to_entity_id:'graph_entities',subject_id:'graph_entities'};
-    const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv',todo:'Offen',overdue:'Überfällig',sent:'Gesendet',paid:'Bezahlt',unpaid:'Unbezahlt',expired:'Abgelaufen',suspended:'Gesperrt',review:'In Prüfung',assigned:'Zugewiesen',requested:'Angefragt',confirmed:'Bestätigt',declined:'Abgelehnt'};
+    const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv',todo:'Offen',overdue:'Überfällig',sent:'Gesendet',paid:'Bezahlt',unpaid:'Unbezahlt',expired:'Abgelaufen',suspended:'Gesperrt',review:'In Prüfung',assigned:'Zugewiesen',requested:'Angefragt',confirmed:'Bestätigt',declined:'Abgelehnt',exited:'Ausgestiegen',candidate:'Kandidat'};
     const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at']);
     const KPI = [
         {key:'companies',label:'Unternehmen',to:'companies'},{key:'persons',label:'Personen',to:'persons'},
@@ -1446,6 +1446,10 @@ function workspace(initial) {
                 'production-orders': [['Starten','running'],['Fertig','done'],['Absagen','cancelled']],
                 'risk-assessments': [['Akzeptieren','accepted'],['Gemindert','mitigated']],
                 'strategies': [['Aktivieren','active'],['Archivieren','archived']],
+                'machines': [['In Wartung','maintenance'],['Aktivieren','active'],['Ausmustern','retired']],
+                'operating-instructions': [['Aktivieren','active'],['Archivieren','archived']],
+                'participations': [['Als Kandidat','candidate'],['Aktivieren','active'],['Ausgestiegen','exited']],
+                'expert-profiles': [['Aktivieren','active'],['Deaktivieren','inactive']],
             };
             return A[this.section] || [];
         },
