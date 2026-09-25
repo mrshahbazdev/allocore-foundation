@@ -62,7 +62,7 @@
 
         <nav class="flex-1 overflow-y-auto py-3 text-[13px]">
             <div class="px-4 pb-2">
-                <input x-model="navQ" placeholder="Module filtern…" class="w-full bg-[#141419] text-[#9CA3AF] text-[11px] px-2.5 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-[#FACC15] placeholder-[#4B5563]">
+                <input x-model="navQ" placeholder="Module filtern…" @keydown.enter.prevent="const m = groups.flatMap(g => g.items).find(i => i.label.toLowerCase().includes(navQ.toLowerCase())); if (m) location.href = '/app/' + m.key + (tenant ? '?tenant=' + tenant : '')" class="w-full bg-[#141419] text-[#9CA3AF] text-[11px] px-2.5 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-[#FACC15] placeholder-[#4B5563]">
             </div>
             <div x-show="pins.length" class="mb-1" style="display:none">
                 <div class="px-5 pt-3 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280]">FAVORITEN</div>
