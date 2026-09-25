@@ -1567,7 +1567,7 @@ function workspace(initial) {
             const fd = new FormData();
             fd.append('file', f);
             this.api('/api/v1/documents/' + this.detail.id + '/versions', {method:'POST', body:fd})
-                .then(r => { if (r.ok) { this.$refs.versionFile.value = ''; this.loadDocVersions(this.detail.id); this.loadSection(); } else this.toast('Upload fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.$refs.versionFile.value = ''; this.loadDocVersions(this.detail.id); this.loadSection(); this.toast('Version hochgeladen.'); } else this.toast('Upload fehlgeschlagen (HTTP '+r.status+')'); });
         },
         dlPath(row) {
             if (this.section === 'data-objects') return '/api/v1/data-objects/' + row.id + '/download';
