@@ -30,6 +30,7 @@
             else if ($event.key === 'e' && detail && !showCreate && canEdit()) openEdit();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
             else if (/^[1-9]$/.test($event.key) && !detail && !showCreate && !palette && sorted(filtered()).length >= +$event.key) detail = sorted(filtered())[$event.key - 1];
+            else if ($event.key === 'l' && !detail && !showCreate && !palette && rows && filtered().length > limit) limit = filtered().length;
             else if ($event.key === 'x' && !detail && !showCreate && !palette && (query || statusFilter || overdueOnly || dueSoonOnly)) { query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; }
             else if ($event.key === 'c' && !detail && !showCreate && !palette && rows) colPicker = !colPicker;
             else if ($event.key === 's' && !detail && !showCreate && !palette && rows.some(r => dueSoon(r))) dueSoonOnly = !dueSoonOnly;
@@ -437,7 +438,7 @@
                         <button @click="limit += 100" class="text-xs text-[#CA8A04] hover:underline">
                             Mehr laden (<span x-text="filtered().length - limit"></span> weitere)
                         </button>
-                        <button x-show="filtered().length - limit > 100" @click="limit = filtered().length" class="text-xs text-[#5B6B7E] hover:text-[#CA8A04] hover:underline">
+                        <button x-show="filtered().length - limit > 100" @click="limit = filtered().length" title="Alle laden (l)" class="text-xs text-[#5B6B7E] hover:text-[#CA8A04] hover:underline">
                             Alle laden
                         </button>
                     </div>
