@@ -213,10 +213,12 @@
                                     x-text="statusLabel(s)"></button>
                         </template>
                     </div>
-                    <div x-show="rows && rows.length === 0" class="px-6 py-12 text-center text-sm text-[#5B6B7E]">
-                        Keine Einträge vorhanden.
+                    <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
+                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
+                        <button x-show="canCreate() && !query && !statusFilter && !overdueOnly" @click="openCreate()"
+                                class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
                     </div>
-                    <table x-show="rows && rows.length" class="w-full text-sm">
+                    <table x-show="rows && filtered().length" class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
                                 <template x-for="c in columns" :key="c">
