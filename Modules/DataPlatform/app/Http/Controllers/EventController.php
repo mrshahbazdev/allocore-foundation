@@ -13,6 +13,8 @@ class EventController extends Controller
         $page = DB::table('stored_events')
             ->where('meta_data->tenant_id', tenant()->getTenantKey())
             ->when($request->type, fn ($q) => $q->where('event_properties->type', $request->type))
+            ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
+            ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
             ->orderByDesc('id')
             ->paginate($request->integer('per_page', 50));
 

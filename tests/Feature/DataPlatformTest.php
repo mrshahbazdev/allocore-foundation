@@ -45,6 +45,25 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertJsonPath('data.0.event_properties.type', 'company.created');
     }
 
+    public function test_events_endpoint_filters_by_subject_id(): void
+    {
+        $tenant = Tenant::create(['name' => 'Sub GmbH']);
+        $this->acting($tenant);
+
+        $this->postJson('/api/v1/companies', ['name' => 'SubA'], ['X-Tenant' => $tenant->id]);
+        $this->postJson('/api/v1/companies', ['name' => 'SubB'], ['X-Tenant' => $tenant->id]);
+
+        $subjectId = DB::table('companies')->where('name', 'SubA')->value('id');
+
+        $res = $this->getJson('/api/v1/events?subject_id='.$subjectId, ['X-Tenant' => $tenant->id])
+            ->assertOk();
+
+        $this->assertNotEmpty($res->json('data'));
+        foreach ($res->json('data') as $row) {
+            $this->assertSame($subjectId, $row['event_properties']['subject']['id']);
+        }
+    }
+
     public function test_events_endpoint_is_tenant_scoped(): void
     {
         $tenantA = Tenant::create(['name' => 'EA GmbH']);
