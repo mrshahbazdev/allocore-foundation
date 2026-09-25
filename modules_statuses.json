@@ -11,6 +11,7 @@
     "Participations": true,
     "Production": true,
     "Tasks": true,
+    "DataLake": true,
     "KnowledgeGraph": true,
-    "DataLake": true
+    "Ai": true
 }

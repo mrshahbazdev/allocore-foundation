@@ -4,6 +4,7 @@ namespace Modules\DataPlatform\Support;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
+use Modules\Ai\Models\AiAnalysis;
 use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\Inspection;
 use Modules\Compliance\Models\Instruction;
@@ -68,6 +69,7 @@ class ActivityRecorder
         Strategy::class => 'strategy',
         Project::class => 'project',
         Measure::class => 'measure',
+        AiAnalysis::class => 'ai_analysis',
     ];
 
     public static function register(): void
