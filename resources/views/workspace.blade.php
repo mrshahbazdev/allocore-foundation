@@ -281,7 +281,7 @@
                             <button x-show="query" @click="query = ''; $refs.search.focus()" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#5B6B7E] text-xs leading-none" aria-label="Suche löschen">&times;</button>
                         </div>
                         <div class="relative shrink-0">
-                            <button @click="colPicker = !colPicker" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten</button>
+                            <button @click="colPicker = !colPicker" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten<span x-show="Object.values(hiddenCols).filter(Boolean).length" class="ml-1 text-[#CA8A04]" x-text="'(' + Object.values(hiddenCols).filter(Boolean).length + ')'"></span></button>
                             <div x-show="colPicker" @click.outside="colPicker = false" class="absolute right-0 mt-1.5 w-48 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20 max-h-64 overflow-y-auto" style="display:none">
                                 <button x-show="Object.values(hiddenCols).some(Boolean)" @click="hiddenCols = {}; saveColPrefs()" class="w-full text-left px-3 py-1.5 text-xs text-[#CA8A04] hover:bg-[#CA8A04]/10 border-b border-[#E4E9F0]">Alle einblenden</button>
                                 <template x-for="c in columns" :key="c">
