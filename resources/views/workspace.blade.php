@@ -910,6 +910,12 @@ function workspace(initial) {
                 if (v && this.section === 'documents') this.loadDocVersions(v.id);
                 if (v && this.section === 'graph-entities') this.loadEntityEdges(v.id);
             });
+            ['detail', 'showCreate', 'palette', 'kbdHelp', 'navOpen'].forEach(p =>
+                this.$watch(p, () => {
+                    const open = !!(this.detail || this.showCreate || this.palette || this.kbdHelp || this.navOpen);
+                    document.body.style.overflow = open ? 'hidden' : '';
+                })
+            );
         },
         syncUrl() {
             const url = new URL(location.href);
