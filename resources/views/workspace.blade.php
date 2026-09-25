@@ -33,13 +33,13 @@
             <span class="font-semibold tracking-tight">ALLO<span class="text-[#FACC15]">CORE</span></span>
         </a>
         <span class="text-[13px] text-[#9CA3AF] truncate"><span class="text-[#FACC15] mr-1.5" x-text="icons[section] || ''"></span><span x-text="title()"></span></span>
-        <button @click="navOpen = !navOpen" class="p-2 -mr-2 text-[#9CA3AF] hover:text-white" title="Menü">
+        <button @click="navOpen = !navOpen" class="p-2 -mr-2 text-[#9CA3AF] hover:text-white" title="Menü" aria-label="Navigation umschalten" :aria-expanded="navOpen">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
     </div>
 
     {{-- Backdrop (mobile) --}}
-    <div x-show="navOpen" @click="navOpen = false" class="lg:hidden fixed inset-0 bg-black/50 z-30" x-transition.opacity></div>
+    <div x-show="navOpen" @click="navOpen = false" class="lg:hidden fixed inset-0 bg-black/50 z-30" x-transition.opacity aria-hidden="true"></div>
 
     {{-- Sidebar --}}
     <aside class="bg-[#0B0B0F] text-white w-64 flex flex-col fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-200 lg:translate-x-0 lg:static lg:min-h-screen lg:sticky lg:top-0 lg:shrink-0 print:hidden"
@@ -62,7 +62,7 @@
             <button @click="createTenant()" class="mt-2 w-full text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]">+ Neuer Mandant</button>
         </div>
 
-        <nav class="flex-1 overflow-y-auto py-3 text-[13px]">
+        <nav class="flex-1 overflow-y-auto py-3 text-[13px]" aria-label="Hauptnavigation">
             <div class="px-4 pb-2">
                 <div class="relative">
                     <input x-model="navQ" placeholder="Module filtern…" @keydown.enter.prevent="const m = groups.flatMap(g => g.items).find(i => i.label.toLowerCase().includes(navQ.toLowerCase())); if (m) location.href = '/app/' + m.key + (tenant ? '?tenant=' + tenant : '')" class="w-full bg-[#141419] text-[#9CA3AF] text-[11px] pl-2.5 pr-6 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-[#FACC15] placeholder-[#4B5563]">
