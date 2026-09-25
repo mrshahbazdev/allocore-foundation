@@ -271,6 +271,13 @@
                                 </div>
                             </a>
                         </template>
+                        <a x-show="overdueSections().length" :href="'/app/' + overdueSections()[0].key + '?tenant=' + tenant + '&overdue=1'"
+                           class="bg-[#A6362E]/5 border border-[#A6362E]/40 rounded-xl px-5 py-4 block transition hover:border-[#A6362E] hover:shadow-sm">
+                            <div class="text-[11px] font-medium text-[#A6362E]">Überfällig gesamt</div>
+                            <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#A6362E]" x-text="overdueSections().reduce((s, x) => s + x.count, 0)"></div>
+                            <div class="mt-0.5 text-[11px] font-mono text-[#A6362E]/70" x-text="overdueSections().length + (overdueSections().length === 1 ? ' Sektion' : ' Sektionen')"></div>
+                            <div class="mt-2 flex items-end"><div class="h-0.5 w-8 rounded-full bg-[#A6362E] mb-1"></div></div>
+                        </a>
                     </div>
                     <div x-show="openTasks.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
                         <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex items-center justify-between gap-2">
