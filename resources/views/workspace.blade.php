@@ -387,6 +387,7 @@
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
                     <button @click="copyLink()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="linkCopied ? 'Kopiert' : 'Link'"></button>
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
+                    <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Duplizieren</button>
                     <button x-show="canEdit()" @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
                     <button x-show="writable()" @click="deleteRow(detail)" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
                 </div>
@@ -765,6 +766,13 @@ function workspace(initial) {
             a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv'}));
             a.download = this.section + '.csv';
             a.click();
+        },
+        openDuplicate() {
+            this.editing = null;
+            const fields = this.createFields();
+            this.form = {};
+            fields.forEach(f => { const v = this.detail[f.key]; this.form[f.key] = v === null ? '' : v; });
+            this.formError = ''; this.showCreate = true;
         },
         openEdit() {
             this.editing = this.detail;
