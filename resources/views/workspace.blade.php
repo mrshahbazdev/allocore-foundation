@@ -56,7 +56,7 @@
             <select x-model="tenant" @change="loadSection()"
                     class="w-full rounded-lg bg-[#1A1A1F] border-[#2A2A31] text-white text-sm py-2 focus:border-[#FACC15] focus:ring-[#FACC15]/30">
                 <option value="">— wählen —</option>
-                <template x-for="t in tenantList" :key="t.id">
+                <template x-for="t in sortedTenants()" :key="t.id">
                     <option :value="t.id" x-text="t.name"></option>
                 </template>
             </select>
@@ -739,6 +739,7 @@ function workspace(initial) {
         },
         insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
+        sortedTenants() { return [...this.tenantList].sort((a, b) => String(a.name).localeCompare(String(b.name), 'de')); },
         execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake'}; return M[k] || k; },
         createExecReport() {
             const title = prompt('Report-Titel', 'Executive Report ' + new Date().toLocaleDateString('de-DE'));
