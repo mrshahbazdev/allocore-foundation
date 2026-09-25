@@ -466,7 +466,7 @@
                                     class="border-b border-[#F0F3F7] last:border-b-0" :title="it.t === 'r' ? 'Doppelklick: Bearbeiten' : 'Klick: einklappen/ausklappen'">
                                     <template x-if="it.t === 'h'">
                                         <td :colspan="visCols().length + 1 + (writable() ? 1 : 0) + (sectionActions().length || canEdit() ? 1 : 0)" class="px-5 py-2 text-[11px] font-semibold text-[#5B6B7E]">
-                                            <span x-text="collapsedGroups[it.label] ? '▸' : '▾'" class="mr-1.5 text-[#CA8A04]"></span><span x-text="it.label || '—'"></span> <span class="font-normal text-[#9CA3AF]" x-text="'· ' + it.count"></span><span x-show="it.overdue" class="ml-1.5 font-normal text-[#A6362E]" x-text="it.overdue + ' überfällig'"></span>
+                                            <span x-text="collapsedGroups[it.label] ? '▸' : '▾'" class="mr-1.5 text-[#CA8A04]"></span><span x-text="it.disp || it.label || '—'"></span> <span class="font-normal text-[#9CA3AF]" x-text="'· ' + it.count"></span><span x-show="it.overdue" class="ml-1.5 font-normal text-[#A6362E]" x-text="it.overdue + ' überfällig'"></span>
                                         </td>
                                     </template>
                                     <template x-if="it.t === 'r'">
@@ -1149,7 +1149,8 @@ function workspace(initial) {
             });
             const out = []; let i = 0;
             for (const [label, rs] of buckets) {
-                out.push({t: 'h', label, count: rs.length, overdue: rs.filter(r => this.overdue(r)).length});
+                const disp = (this.groupBy === 'status' || this.groupBy === 'severity') ? this.statusLabel(label) : (/_id$/.test(this.groupBy) ? (this.resolveId(this.groupBy, label) || label || '—') : (label || '—'));
+                out.push({t: 'h', label, disp, count: rs.length, overdue: rs.filter(r => this.overdue(r)).length});
                 if (!this.collapsedGroups[label]) rs.forEach(r => out.push(mk(r, i++)));
                 else i += rs.length;
             }
