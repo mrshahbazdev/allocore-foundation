@@ -181,7 +181,7 @@
                 <div class="space-y-5">
                     <div x-show="insights.length" class="space-y-2">
                         <template x-for="i in insights" :key="i.code">
-                            <a :href="insightSection(i.code) ? '/app/' + insightSection(i.code) + '?tenant=' + tenant : '#'"
+                            <a :href="insightSection(i.code) ? '/app/' + insightSection(i.code) + '?tenant=' + tenant + (insightFilter(i.code) ? '&' + insightFilter(i.code) : '') : '#'"
                                class="flex items-start gap-3 rounded-lg border bg-white px-4 py-3 text-sm transition"
                                :class="{'border-[#A6362E]/40': i.severity==='critical','border-[#CA8A04]/50': i.severity==='warning','border-[#D6DEE9]': i.severity==='info','hover:shadow-sm': insightSection(i.code)}">
                                 <span class="mt-0.5 inline-block h-2 w-2 rounded-full shrink-0"
@@ -1047,6 +1047,7 @@ function workspace(initial) {
             location.href = '/app/' + it.key + (this.tenant ? '?tenant=' + this.tenant : '');
         },
         insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
+        insightFilter(code) { return ({tasks_overdue:'overdue=1',deadlines_overdue:'overdue=1',high_risks_open:'status=open',tenders_open:'status=open'})[code] || ''; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
         sortedTenants() { return [...this.tenantList].sort((a, b) => String(a.name).localeCompare(String(b.name), 'de')); },
         execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake'}; return M[k] || k; },
