@@ -308,14 +308,14 @@
         {{-- Detail drawer --}}
         <div x-show="detail" class="fixed inset-0 z-40" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="detail = null"></div>
-            <div class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-xl flex flex-col">
+            <div class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-xl flex flex-col" role="dialog" aria-modal="true" :aria-label="title() + ' · Details'">
                 <div class="px-6 py-4 border-b border-[#E4E9F0] flex items-center justify-between">
                     <h2 class="font-semibold text-[#0B0B0F]" x-text="title() + ' · Details'"></h2>
                     <div class="flex items-center gap-1">
                         <button @click="navDetail(-1)" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" title="Vorheriger (←)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
                         <button @click="navDetail(1)" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" title="Nächster (→)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
                     </div>
-                    <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]">&times;</button>
+                    <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]" title="Schließen (Esc)" aria-label="Schließen">&times;</button>
                 </div>
                 <div class="flex-1 overflow-y-auto p-6">
                     <dl class="space-y-3 text-sm">
@@ -448,7 +448,7 @@
         {{-- Create modal --}}
         <div x-show="showCreate" class="fixed inset-0 z-40 flex items-center justify-center" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="showCreate = false"></div>
-            <div class="relative w-full max-w-md bg-white rounded-xl shadow-xl">
+            <div class="relative w-full max-w-md bg-white rounded-xl shadow-xl" role="dialog" aria-modal="true">
                 <div class="px-6 py-4 border-b border-[#E4E9F0]">
                     <h2 class="font-semibold text-[#0B0B0F]" x-text="(editing ? 'Bearbeiten: ' : 'Neu: ') + title()"></h2>
                 </div>
