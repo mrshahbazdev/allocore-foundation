@@ -384,7 +384,7 @@
                         <template x-for="s in statusOpts()" :key="s">
                             <button @click="statusFilter = statusFilter === s ? '' : s" class="text-[11px] px-2.5 py-1 rounded-full border transition inline-flex items-center gap-1.5"
                                     :class="statusFilter === s ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">
-                                <span class="w-1.5 h-1.5 rounded-full" :class="statusColor(s)"></span>
+                                <span class="w-1.5 h-1.5 rounded-full" :style="'background:' + statusColor(s)"></span>
                                 <span x-text="statusLabel(s) + ' · ' + rows.filter(r => String(r.status) === s).length"></span>
                             </button>
                         </template>
