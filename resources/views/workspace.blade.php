@@ -30,6 +30,7 @@
             else if ($event.key === 'e' && detail && !showCreate && canEdit()) openEdit();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
             else if ($event.key === 'l' && !detail && !showCreate && !palette && rows && filtered().length > limit) limit = filtered().length;
+            else if ($event.key === 'x' && !detail && !showCreate && !palette && (query || statusFilter || overdueOnly || dueSoonOnly)) { query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; }
             else if ($event.key === 'c' && !detail && !showCreate && !palette && rows) colPicker = !colPicker;
             else if ($event.key === 's' && !detail && !showCreate && !palette && rows.some(r => dueSoon(r))) dueSoonOnly = !dueSoonOnly;
             else if ($event.key === 'u' && !detail && !showCreate && !palette && rows.some(r => overdue(r))) overdueOnly = !overdueOnly;
@@ -73,14 +74,22 @@
         </div>
 
         <nav class="flex-1 overflow-y-auto py-3 text-[13px]">
+            <div x-show="pins.length" class="mb-1" style="display:none">
+                <div class="px-5 pt-3 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280]">FAVORITEN</div>
+                <template x-for="pk in pins" :key="pk">
+                    <a :href="'/app/' + pk + (tenant ? '?tenant='+tenant : '')"
+                       class="flex items-center gap-3 px-5 py-2 transition"
+                       :class="section === pk ? 'text-white bg-[#1A1A1F] border-r-2 border-[#FACC15]' : 'text-[#9CA3AF] hover:text-white hover:bg-[#141419]'">
+                        <span class="text-[#CA8A04] text-xs">★</span>
+                        <span x-text="(groups.flatMap(g => g.items).find(i => i.key === pk) || {label: pk}).label"></span>
+                    </a>
+                </template>
+            </div>
             <div x-show="recent.length" class="px-5 pb-3">
                 <div class="text-[10px] font-semibold tracking-widest text-[#6B7280] pb-1.5">ZULETZT</div>
                 <div class="flex flex-wrap gap-1.5">
                     <template x-for="r in recent" :key="r">
                         <a :href="'/app/' + r + (tenant ? '?tenant='+tenant : '')" class="px-2 py-1 rounded-full bg-[#1A1A1F] text-[11px] text-[#9CA3AF] hover:text-[#FACC15] transition" x-text="sectionLabel(r)"></a>
-                    </template>
-                </div>
-            </div>
             <template x-for="group in groups" :key="group.label">
                 <div class="mb-1">
                     <button @click="collapsed[group.label] = !collapsed[group.label]"
@@ -121,6 +130,11 @@
     <main class="flex-1 min-w-0">
         <header class="bg-white border-b border-[#E4E9F0] px-6 py-4 flex items-center justify-between">
             <div>
+                <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F] flex items-center gap-2">
+                    <span x-text="title()"></span>
+                    <button @click="togglePin(section)" :title="pins.includes(section) ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'"
+                            class="text-sm transition" :class="pins.includes(section) ? 'text-[#CA8A04]' : 'text-[#D6DEE9] hover:text-[#CA8A04]'">★</button>
+                </h1>
                 <div x-show="groupOf(section)" class="text-[10px] font-semibold tracking-widest text-[#9CA3AF] mb-0.5">
                     <span x-text="groupOf(section)"></span><span class="mx-1.5">›</span><span x-text="title()"></span>
                 </div>
@@ -350,6 +364,10 @@
                         </template>
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
+                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
+                        <button x-show="query || statusFilter || overdueOnly || dueSoonOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false"
+                                title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
+                        <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly" @click="openCreate()"
                         <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly || myOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
                         <button x-show="query || statusFilter || overdueOnly || dueSoonOnly || myOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; myOnly = false"
                                 class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
@@ -773,6 +791,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false,
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, kbdHelp: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, jsonCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
@@ -836,6 +855,10 @@ function workspace(initial) {
             return g ? g.label : '';
         },
         title() { return this.item().label; },
+        togglePin(key) {
+            this.pins = this.pins.includes(key) ? this.pins.filter(k => k !== key) : [...this.pins, key];
+            try { localStorage.setItem('af_pins', JSON.stringify(this.pins)); } catch (e) {}
+        },
         sectionLabel(k) { const i = this.groups.flatMap(g => g.items).find(x => x.key === k); return i ? i.label : k; },
         paletteItems() {
             const q = this.paletteQ.trim().toLowerCase();
