@@ -1153,6 +1153,11 @@ function workspace(initial) {
             if (rn) return `<span title="${v}">${rn}</span>`;
             if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
             if (typeof v === 'number' && c !== 'id' && !c.endsWith('_id') && Number.isFinite(v)) {
+                if (/_?size_?bytes?$|bytes/i.test(c)) {
+                    const u = ['B','KB','MB','GB']; let s = v, i = 0;
+                    while (s >= 1024 && i < 3) { s /= 1024; i++; }
+                    return s.toLocaleString('de-DE', {maximumFractionDigits: i ? 1 : 0}) + ' ' + u[i];
+                }
                 const f = Math.abs(v) % 1 ? v.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : v.toLocaleString('de-DE');
                 return /price|amount|value|cost|rate|budget|revenue|ebitda|salary|euro|eur/i.test(c) ? f + ' €' : f;
             }
