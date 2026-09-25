@@ -1316,6 +1316,11 @@ function workspace(initial) {
                             const more = Array.isArray(d2) ? d2 : (d2.data || []);
                             if (!more.length) return;
                             this.rows = this.rows.concat(more);
+                            if (!this.detail) {
+                                const o2 = new URLSearchParams(location.search).get('open');
+                                const hit = o2 && this.rows.find(x => String(x.id) === o2);
+                                if (hit) this.detail = hit;
+                            }
                             if (this.rows.length < this.rowsTotal) loadRest(page + 1);
                         });
                     };
