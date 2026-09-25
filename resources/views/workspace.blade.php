@@ -737,7 +737,7 @@
                 <div x-show="rowEvents.length" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="flex items-center justify-between mb-2">
                         <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERLAUF</div>
-                        <a :href="'/app/events?tenant=' + tenant" class="text-[10px] text-[#CA8A04] hover:underline">Alle →</a>
+                        <a :href="'/app/events?tenant=' + tenant + '&q=' + encodeURIComponent(detail.id || '')" class="text-[10px] text-[#CA8A04] hover:underline" title="Alle Ereignisse zu diesem Datensatz">Alle →</a>
                     </div>
                     <template x-for="(e, i) in rowEvents" :key="i">
                         <a :href="'/app/events?tenant=' + tenant + '&open=' + e.id" class="flex items-center justify-between text-xs py-1 rounded hover:bg-[#FAFBFC] -mx-1 px-1">
@@ -1497,6 +1497,7 @@ function workspace(initial) {
             if (!q) return rs;
             return rs.filter(r => Object.entries(r).some(([k, v]) => {
                 if (String(v).toLowerCase().includes(q)) return true;
+                if (v && typeof v === 'object' && JSON.stringify(v).toLowerCase().includes(q)) return true;
                 const rn = this.resolveId(k, v);
                 return rn && String(rn).toLowerCase().includes(q);
             }));
