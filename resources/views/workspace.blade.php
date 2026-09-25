@@ -1900,7 +1900,7 @@ function workspace(initial) {
             else if (e.key === 'e') { if (this.detail && !this.showCreate && this.canEdit()) this.openEdit(); }
             else if (e.key === 'f') { if (!this.detail && !this.showCreate && !this.palette && !['dashboard','executive'].includes(this.section)) this.togglePin(this.section); }
             else if (e.key === 'a') { if (!this.detail && !this.showCreate && !this.palette && this.writable() && this.rows) this.toggleAll(this.selCount() < this.sorted(this.filtered()).length); }
-            else if (e.key === 'r') { if (!this.showCreate && !this.palette && this.section !== 'executive') { if (this.detail) this.reloadRow(); else this.loadSection(true); } }
+            else if (e.key === 'r') { if (!this.showCreate && !this.palette) { if (this.detail) this.reloadRow(); else this.loadSection(true); } }
             else if (e.key === 'd') { if (this.detail && !this.showCreate && this.section !== 'documents' && this.canEdit()) this.openDuplicate(); }
             else if (e.key === 'i') { if (!this.detail && !this.showCreate && !this.palette && this.canImport()) { this.showImport = true; this.importText = ''; this.importResult = ''; } }
             else if (e.key === 'p') { if (this.detail && !this.showCreate) this.copyLink(); }
