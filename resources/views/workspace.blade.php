@@ -116,12 +116,14 @@
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                         <template x-for="m in kpiCards" :key="m.key">
-                            <div class="bg-white border border-[#E4E9F0] rounded-xl px-5 py-4">
+                            <a :href="m.to ? '/app/' + m.to + (tenant ? '?tenant='+tenant : '') : '#'"
+                               class="bg-white border border-[#E4E9F0] rounded-xl px-5 py-4 block transition"
+                               :class="m.to ? 'hover:border-[#CA8A04]/60 hover:shadow-sm cursor-pointer' : 'cursor-default'">
                                 <div class="text-[11px] font-medium text-[#5B6B7E]" x-text="m.label"></div>
                                 <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="metric(m.key)"></div>
                                 <div class="mt-0.5 text-[11px] font-mono" :class="trend(m.key).direction === 'up' ? 'text-[#2E7D5B]' : (trend(m.key).direction === 'down' ? 'text-[#A6362E]' : 'text-[#9CA3AF]')" x-text="trend(m.key).delta === null ? '' : (trend(m.key).direction === 'up' ? '▲ +' : (trend(m.key).direction === 'down' ? '▼ ' : '')) + (trend(m.key).delta ?? '')"></div>
                                 <div class="mt-2 h-0.5 w-8 rounded-full bg-[#FACC15]"></div>
-                            </div>
+                            </a>
                         </template>
                     </div>
                     <div x-show="events.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
@@ -455,12 +457,12 @@ function workspace(initial) {
     const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv'};
     const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at']);
     const KPI = [
-        {key:'companies',label:'Unternehmen'},{key:'persons',label:'Personen'},
-        {key:'documents',label:'Dokumente'},{key:'tasks_open',label:'Offene Aufgaben'},
-        {key:'instructions',label:'Unterweisungen'},{key:'compliance_rate',label:'Compliance %'},
-        {key:'deadlines_open',label:'Offene Fristen'},{key:'risk_high',label:'Hohe Risiken'},
-        {key:'tenders_open',label:'Offene Ausschreibungen'},{key:'expert_profiles',label:'Experten'},
-        {key:'questions',label:'Fragen'},{key:'inspections',label:'Prüfungen'},
+        {key:'companies',label:'Unternehmen',to:'companies'},{key:'persons',label:'Personen',to:'persons'},
+        {key:'documents',label:'Dokumente',to:'documents'},{key:'tasks_open',label:'Offene Aufgaben',to:'tasks'},
+        {key:'instructions',label:'Unterweisungen',to:'instructions'},{key:'compliance_rate',label:'Compliance %'},
+        {key:'deadlines_open',label:'Offene Fristen',to:'deadlines'},{key:'risk_high',label:'Hohe Risiken',to:'risk-assessments'},
+        {key:'tenders_open',label:'Offene Ausschreibungen',to:'tenders'},{key:'expert_profiles',label:'Experten',to:'expert-profiles'},
+        {key:'questions',label:'Fragen',to:'questions'},{key:'inspections',label:'Prüfungen',to:'inspections'},
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
