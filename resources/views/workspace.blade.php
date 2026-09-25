@@ -102,6 +102,17 @@
                             </div>
                         </template>
                     </div>
+                    <div x-show="events.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
+                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E]">Letzte Ereignisse</div>
+                        <div class="divide-y divide-[#F0F3F7] max-h-64 overflow-y-auto">
+                            <template x-for="(e, i) in events" :key="i">
+                                <div class="px-5 py-2.5 flex items-center justify-between gap-4">
+                                    <span class="text-sm text-[#1A2433] truncate" x-text="e.event_type"></span>
+                                    <span class="text-[11px] text-[#9CA3AF] font-mono shrink-0" x-text="fmt(e.created_at)"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
             </template>
 
@@ -265,7 +276,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], lookups: {},
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], lookups: {},
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100,
@@ -299,6 +310,8 @@ function workspace(initial) {
                     .then(d => { this.metrics = d; this.loading = false; });
                 this.api('/api/v1/insights').then(r => r.ok ? r.json() : [])
                     .then(d => this.insights = d.filter(i => i.code !== 'all_clear'));
+                this.api('/api/v1/events').then(r => r.ok ? r.json() : [])
+                    .then(d => this.events = (Array.isArray(d) ? d : (d.data || [])).slice(-15).reverse());
                 return;
             }
             this.loadLookups();
