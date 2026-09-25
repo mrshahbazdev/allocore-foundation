@@ -1126,7 +1126,13 @@ function workspace(initial) {
             const rn = this.resolveId(k, row[k]);
             if (rn) return rn;
             if (k === 'status') return this.statusLabel(row[k]);
-            return this.fmt(row[k]);
+            const v = row[k];
+            if (typeof v === 'number' && k !== 'id' && !k.endsWith('_id')) {
+                if (/price|amount|value|budget|revenue|ebitda|cashflow|liquidity|capital|cost|salary|hourly|invested|valuation/i.test(k)) return v.toLocaleString('de-DE', {maximumFractionDigits: 2}) + ' €';
+                if (/pct|percent|progress|rate$|quote/i.test(k)) return v.toLocaleString('de-DE') + ' %';
+                return v.toLocaleString('de-DE');
+            }
+            return this.fmt(v);
         },
         linkOf(v) {
             if (typeof v !== 'string') return null;
@@ -1136,7 +1142,7 @@ function workspace(initial) {
             return null;
         },
         detailKeys() {
-            return Object.keys(this.detail || {}).filter(k => k === 'id' || !HIDE.has(k));
+            return Object.keys(this.detail || {}).filter(k => (k === 'id' || !HIDE.has(k)) && !(typeof this.detail[k] === 'object' && this.detail[k] !== null && this.detail[k + '_id'] !== undefined));
         },
         fmt(v) {
             if (v === null || v === undefined) return '—';
