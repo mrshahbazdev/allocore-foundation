@@ -156,7 +156,7 @@
             </div>
             <div class="flex items-center gap-3">
                 <div class="relative" x-show="tenant">
-                    <button @click="notif = !notif" :title="'Benachrichtigungen' + (overdueTotal() ? ' — ' + overdueTotal() + ' überfällig' : '')" class="relative text-[#9CA3AF] hover:text-[#CA8A04] transition">
+                    <button @click="notif = !notif" aria-label="Benachrichtigungen" :aria-expanded="notif" :title="'Benachrichtigungen' + (overdueTotal() ? ' — ' + overdueTotal() + ' überfällig' : '')" class="relative text-[#9CA3AF] hover:text-[#CA8A04] transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                         <span x-show="overdueTotal() > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#A6362E]"></span>
                         <span x-show="overdueTotal() === 0 && todayTotal() > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#CA8A04]"></span>
@@ -168,11 +168,11 @@
                         <template x-for="o in todaySections()"><a :href="'/app/' + o.key + '?tenant=' + tenant + '&today=1'" class="px-3 py-1.5 flex items-center justify-between gap-3 text-xs hover:bg-[#FAFBFC]"><span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#CA8A04]"></span><span x-text="o.label"></span></span><span class="font-mono text-[#CA8A04]" x-text="o.count"></span></a></template>
                     </div>
                 </div>
-                <button @click="toggleDark()" :title="dark ? 'Helle Darstellung (t)' : 'Dunkle Darstellung (t)'" class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
+                <button @click="toggleDark()" aria-label="Darstellung umschalten" :title="dark ? 'Helle Darstellung (t)' : 'Dunkle Darstellung (t)'" class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
                     <svg x-show="!dark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                     <svg x-show="dark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 </button>
-                <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" title="Aktualisieren (r)"
+                <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" title="Aktualisieren (r)" aria-label="Liste aktualisieren"
                         class="transition" :class="loading ? 'text-[#CA8A04]' : 'text-[#9CA3AF] hover:text-[#CA8A04]'">
                     <svg class="w-4 h-4" :class="loading && 'animate-spin'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 9A8 8 0 0119 7.5M18.5 15A8 8 0 015 16.5"/></svg>
                 </button>
@@ -808,7 +808,7 @@
         </div>
 
         {{-- Shortcuts help (?) --}}
-        <div x-show="kbdHelp" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none">
+        <div x-show="kbdHelp" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none" role="dialog" aria-modal="true" aria-label="Tastenkürzel">
             <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="kbdHelp = false"></div>
             <div class="relative w-full max-w-sm bg-white rounded-xl shadow-2xl p-6 max-h-[80vh] overflow-y-auto">
                 <h2 class="font-semibold text-[#0B0B0F] mb-4">Tastenkürzel</h2>
@@ -824,7 +824,7 @@
         </div>
 
         {{-- Command palette (Ctrl+K) --}}
-        <div x-show="palette" class="fixed inset-0 z-50" style="display:none">
+        <div x-show="palette" class="fixed inset-0 z-50" style="display:none" role="dialog" aria-modal="true" aria-label="Befehlspalette">
             <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="palette = false"></div>
             <div class="relative mx-auto mt-24 w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
                 <input x-ref="paletteInput" x-model="paletteQ" x-init="$watch('palette', v => v && $nextTick(() => $refs.paletteInput.focus())); $watch('paletteQ', () => palIdx = 0)"
@@ -906,7 +906,7 @@
         {{-- CSV import modal --}}
         <div x-show="showImport" class="fixed inset-0 z-40 flex items-center justify-center" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="showImport = false"></div>
-            <div class="relative w-full max-w-lg bg-white rounded-xl shadow-xl">
+            <div class="relative w-full max-w-lg bg-white rounded-xl shadow-xl" role="dialog" aria-modal="true" :aria-label="'CSV Import: ' + title()">
                 <div class="px-6 py-4 border-b border-[#E4E9F0]">
                     <h2 class="font-semibold text-[#0B0B0F]">CSV Import: <span x-text="title()"></span></h2>
                 </div>
