@@ -775,13 +775,17 @@
                             <label class="block text-[13px] font-medium text-[#42536A] mb-1">
                                 <span x-text="label(f.key)"></span><span x-show="f.req" class="text-[#A6362E]"> *</span>
                             </label>
-                            <select x-show="f.type === 'fk'" x-model="form[f.key]"
-                                    class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-                                <option value="">— wählen —</option>
-                                <template x-for="o in fkOptions(f.table)" :key="o[0]">
-                                    <option :value="o[0]" x-text="o[1]"></option>
-                                </template>
-                            </select>
+                            <div x-show="f.type === 'fk'">
+                                <input x-show="fkOptions(f.table).length > 10" x-model="fkQ[f.key]" placeholder="Filtern…"
+                                       class="w-full mb-1 rounded-lg border-[#E4E9F0] text-xs focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                <select x-model="form[f.key]"
+                                        class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                    <option value="">— wählen —</option>
+                                    <template x-for="o in fkOptions(f.table).filter(o => !fkQ[f.key] || String(o[1]).toLowerCase().includes(String(fkQ[f.key]).toLowerCase()))" :key="o[0]">
+                                        <option :value="o[0]" x-text="o[1]"></option>
+                                    </template>
+                                </select>
+                            </div>
                             <label x-show="f.type === 'checkbox'" class="inline-flex items-center gap-2 text-sm text-[#42536A]">
                                 <input type="checkbox" x-model="form[f.key]" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 <span x-text="label(f.key)"></span>
@@ -916,7 +920,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, insightSev: '',
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, insightSev: '', fkQ: {},
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {},
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
