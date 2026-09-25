@@ -863,7 +863,14 @@ function workspace(initial) {
                 'Authorization': 'Bearer {{ $apiToken }}',
                 'X-Tenant': this.tenant, 'Accept': 'application/json',
             }, opts.headers||{});
-            return fetch(path, opts);
+            return fetch(path, opts).then(r => {
+                if ((r.status === 401 || r.status === 419) && !this._authRedirect) {
+                    this._authRedirect = true;
+                    this.toast('Sitzung abgelaufen — bitte neu anmelden.');
+                    setTimeout(() => { location.href = '/login'; }, 1400);
+                }
+                return r;
+            });
         },
         loadNavBadges() {
             const items = this.groups.flatMap(g => g.items).filter(i => i.ep);
