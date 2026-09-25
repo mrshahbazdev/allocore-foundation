@@ -430,6 +430,14 @@
                         <button @click="window.print()" title="Drucken" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">Drucken</button>
                         <button x-show="canCreate()" @click="openCreate()" :title="'Neu anlegen: ' + title() + ' (n)'" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
                     </div>
+                    <div x-show="rows && recentRows().some(r => r.key === section)" class="flex items-center gap-1.5 px-5 py-1.5 border-b border-[#E4E9F0] print:hidden overflow-x-auto">
+                        <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF] shrink-0">ZULETZT</span>
+                        <template x-for="rr in recentRows().filter(r => r.key === section).slice(0, 5)" :key="rr.key + rr.id">
+                            <button @click="const t = (rows || []).find(x => String(x.id) === String(rr.id)); if (t) detail = t"
+                                    :class="detail && String(detail.id) === String(rr.id) ? 'border-[#CA8A04] text-[#CA8A04] bg-[#CA8A04]/5' : 'border-[#E4E9F0] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'"
+                                    class="text-[11px] px-2 py-0.5 border rounded-full transition whitespace-nowrap" x-text="'↻ ' + (rr.name || rr.id)"></button>
+                        </template>
+                    </div>
                     <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
                         <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" title="Überfällig (u)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
