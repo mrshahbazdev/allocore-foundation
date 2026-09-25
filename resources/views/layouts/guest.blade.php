@@ -11,6 +11,8 @@
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
         <link rel="manifest" href="/site.webmanifest">
+        <meta name="theme-color" content="#0B0B0F">
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FACC15">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
