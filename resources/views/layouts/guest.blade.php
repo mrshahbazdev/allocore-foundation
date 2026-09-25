@@ -25,10 +25,7 @@
             <aside class="relative hidden lg:flex lg:w-[42%] flex-col justify-between p-12 bg-[#0B0B0F] text-white overflow-hidden">
                 <div class="absolute inset-0 opacity-[0.07]" style="background-image: linear-gradient(#FACC15 1px, transparent 1px), linear-gradient(90deg, #FACC15 1px, transparent 1px); background-size: 56px 56px;"></div>
                 <div class="relative inline-flex items-center">
-                    <svg viewBox="0 0 32 32" fill="none" class="h-10 w-10">
-                        <rect width="32" height="32" rx="7" fill="#FACC15"/>
-                        <path d="M9 22.5 16 8l7 14.5M11.5 18.5h9" stroke="#0B0B0F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                    <img src="{{ asset('logo-mark.png') }}" alt="ALLOCORE" class="h-12 w-auto">
                     <span class="ml-3 text-2xl font-semibold tracking-tight">ALLOCORE</span>
                 </div>
 
@@ -53,10 +50,7 @@
             {{-- Form panel --}}
             <main class="flex-1 flex flex-col items-center justify-center px-6 py-12">
                 <div class="lg:hidden mb-8 inline-flex items-center">
-                    <svg viewBox="0 0 32 32" fill="none" class="h-9 w-9">
-                        <rect width="32" height="32" rx="7" fill="#0B0B0F"/>
-                        <path d="M9 22.5 16 8l7 14.5M11.5 18.5h9" stroke="#FACC15" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                    <img src="{{ asset('logo-mark.png') }}" alt="ALLOCORE" class="h-10 w-auto">
                     <span class="ml-2.5 text-xl font-semibold tracking-tight text-[#0B0B0F]">ALLO<span class="text-[#CA8A04]">CORE</span></span>
                 </div>
 
