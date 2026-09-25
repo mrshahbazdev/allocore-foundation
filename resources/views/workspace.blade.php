@@ -19,6 +19,7 @@
      @keydown.escape.window="detail = null; showCreate = false; navOpen = false; palette = false; colPicker = false; showImport = false; confirmDel = false"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
+     @keydown.window="kbd($event)">
      @keydown.window="if (($event.ctrlKey || $event.metaKey) && $event.key === 'k') { $event.preventDefault(); palette = !palette; paletteQ = ''; }"
      @beforeprint.window="limit = 100000">
      @keydown.window="
@@ -29,6 +30,7 @@
             else if ($event.key === 'e' && detail && !showCreate && canEdit()) openEdit();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
             else if ($event.key === 'o' && !detail && !showCreate && !palette && filtered().length > 0) detail = filtered()[0];
+            else if ($event.key === 'c' && !detail && !showCreate && !palette && rows) colPicker = !colPicker;
             else if ($event.key === 's' && !detail && !showCreate && !palette && rows.some(r => dueSoon(r))) dueSoonOnly = !dueSoonOnly;
             else if ($event.key === 'u' && !detail && !showCreate && !palette && rows.some(r => overdue(r))) overdueOnly = !overdueOnly;
             else if ($event.key === 'd' && detail && !showCreate && section !== 'documents' && canEdit()) openDuplicate();
@@ -286,6 +288,8 @@
                         </span>
                         <input x-model="query" placeholder="Suchen…" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         <span class="text-xs text-[#5B6B7E] shrink-0" x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
+                        <input x-model="query" x-ref="search" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                        <input x-ref="search" x-model="query" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         <div class="relative">
                             <input x-ref="search" x-model="query" placeholder="Suchen… (/)" class="w-40 sm:w-48 lg:w-64 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                             <input x-ref="search" x-model="query" @keydown.enter="if (filtered().length) { detail = sorted(filtered())[0]; $event.target.blur(); }" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
@@ -293,6 +297,7 @@
                             <button x-show="query" @click="query = ''; $refs.search.focus()" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#5B6B7E] text-xs leading-none" aria-label="Suche löschen">&times;</button>
                         </div>
                         <div class="relative shrink-0">
+                            <button @click="colPicker = !colPicker" title="Spalten (c)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten</button>
                             <button @click="compact = !compact; try { localStorage.setItem('af_density', compact ? '1' : '0'); } catch (e) {}" :title="compact ? 'Normale Zeilenhöhe' : 'Kompakte Zeilenhöhe'"
                                     class="text-xs px-3 py-1.5 border rounded-lg transition shrink-0"
                                     :class="compact ? 'border-[#CA8A04] text-[#CA8A04] bg-[#CA8A04]/5' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'">≡</button>
@@ -585,6 +590,22 @@
             </div>
         </div>
 
+        {{-- Shortcuts help (?) --}}
+        <div x-show="kbdHelp" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none">
+            <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="kbdHelp = false"></div>
+            <div class="relative w-full max-w-sm bg-white rounded-xl shadow-2xl p-6">
+                <h2 class="font-semibold text-[#0B0B0F] mb-4">Tastenkürzel</h2>
+                <dl class="space-y-2 text-sm">
+                    <template x-for="k in [['Ctrl/⌘ + K', 'Befehlspalette öffnen'], ['/', 'Suche fokussieren'], ['n', 'Neuen Eintrag anlegen'], ['← / →', 'Vorheriger / nächster Eintrag (Drawer)'], ['Esc', 'Schließen'], ['?', 'Diese Übersicht']]" :key="k[0]">
+                        <div class="flex justify-between items-center">
+                            <dt class="text-[#5B6B7E]"><kbd class="px-1.5 py-0.5 bg-[#F0F3F7] border border-[#E4E9F0] rounded text-xs font-mono" x-text="k[0]"></kbd></dt>
+                            <dd class="text-[#1A2433]" x-text="k[1]"></dd>
+                        </div>
+                    </template>
+                </dl>
+            </div>
+        </div>
+
         {{-- Command palette (Ctrl+K) --}}
         <div x-show="palette" class="fixed inset-0 z-50" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="palette = false"></div>
@@ -752,6 +773,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false,
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, kbdHelp: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, jsonCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         meId: @js($user->id ?? null),
@@ -1313,6 +1335,15 @@ function workspace(initial) {
             const lk = FKMAP[c];
             if (!lk || !this.lookups[lk]) return null;
             return this.lookups[lk][v] || null;
+        },
+        kbd(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); this.palette = !this.palette; this.paletteQ = ''; return; }
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (['input', 'textarea', 'select'].includes(tag) || e.target.isContentEditable) return;
+            if (e.key === '/') { e.preventDefault(); this.$refs.search && this.$refs.search.focus(); }
+            else if (e.key === 'n') { if (this.canCreate() && !this.showCreate && !this.detail) this.openCreate(); }
+            else if (e.key === '?') { e.preventDefault(); this.kbdHelp = !this.kbdHelp; }
         },
         copyLink() {
             const url = location.origin + '/app/' + this.section + '?tenant=' + this.tenant + '&open=' + this.detail.id;
