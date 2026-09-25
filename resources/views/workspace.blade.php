@@ -15,32 +15,11 @@
 </head>
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
 <div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak
-     @keydown.escape.window="detail = null; closeCreate(); navOpen = false; palette = false"
-     @keydown.escape.window="detail = null; showCreate = false; navOpen = false; palette = false; colPicker = false; showImport = false; confirmDel = false"
+     @keydown.escape.window="detail = null; closeCreate(); showCreate = false; navOpen = false; palette = false; colPicker = false; showImport = false; confirmDel = false"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
-     @keydown.window="kbd($event)">
-     @keydown.window="if (($event.ctrlKey || $event.metaKey) && $event.key === 'k') { $event.preventDefault(); palette = !palette; paletteQ = ''; }"
+     @keydown.window="kbd($event)"
      @beforeprint.window="limit = 100000">
-     @keydown.window="
-        if (($event.ctrlKey || $event.metaKey) && $event.key === 'k') { $event.preventDefault(); palette = !palette; paletteQ = ''; }
-        else if (!$event.ctrlKey && !$event.metaKey && !$event.altKey && !/^(input|textarea|select)$/i.test($event.target.tagName)) {
-            if ($event.key === '/') { $event.preventDefault(); if ($refs.search) $refs.search.focus(); }
-            else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
-            else if ($event.key === 'e' && detail && !showCreate && canEdit()) openEdit();
-            else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
-            else if (/^[1-9]$/.test($event.key) && !detail && !showCreate && !palette && sorted(filtered()).length >= +$event.key) detail = sorted(filtered())[$event.key - 1];
-            else if ($event.key === '.' && !detail && !showCreate && !palette && section !== 'dashboard') window.location.href = '/app/dashboard' + (tenant ? '?tenant=' + tenant : '');
-            else if ($event.key === 'p' && detail && !showCreate) copyLink();
-            else if ($event.key === 'o' && !detail && !showCreate && !palette && filtered().length > 0) detail = filtered()[0];
-            else if ($event.key === 'l' && !detail && !showCreate && !palette && rows && filtered().length > limit) limit = filtered().length;
-            else if ($event.key === 'x' && !detail && !showCreate && !palette && (query || statusFilter || overdueOnly || dueSoonOnly)) { query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; }
-            else if ($event.key === 'c' && !detail && !showCreate && !palette && rows) colPicker = !colPicker;
-            else if ($event.key === 's' && !detail && !showCreate && !palette && rows.some(r => dueSoon(r))) dueSoonOnly = !dueSoonOnly;
-            else if ($event.key === 'u' && !detail && !showCreate && !palette && rows.some(r => overdue(r))) overdueOnly = !overdueOnly;
-            else if ($event.key === 'd' && detail && !showCreate && section !== 'documents' && canEdit()) openDuplicate();
-            else if ($event.key === 'i' && !detail && !showCreate && !palette && canImport()) { showImport = true; importText = ''; importResult = ''; }
-        }">
 
     {{-- Mobile top bar --}}
     <div class="lg:hidden flex items-center justify-between px-4 h-14 bg-[#0B0B0F] text-white sticky top-0 z-30 shrink-0 print:hidden">
@@ -1366,8 +1345,21 @@ function workspace(initial) {
             const tag = (e.target.tagName || '').toLowerCase();
             if (['input', 'textarea', 'select'].includes(tag) || e.target.isContentEditable) return;
             if (e.key === '/') { e.preventDefault(); this.$refs.search && this.$refs.search.focus(); }
-            else if (e.key === 'n') { if (this.canCreate() && !this.showCreate && !this.detail) this.openCreate(); }
             else if (e.key === '?') { e.preventDefault(); this.kbdHelp = !this.kbdHelp; }
+            else if (e.key === 'n') { if (this.canCreate() && !this.showCreate && !this.detail && !this.palette) this.openCreate(); }
+            else if (e.key === 'e') { if (this.detail && !this.showCreate && this.canEdit()) this.openEdit(); }
+            else if (e.key === 'r') { if (!this.detail && !this.showCreate && !this.palette && !['dashboard','executive'].includes(this.section)) this.loadSection(true); }
+            else if (e.key === 'd') { if (this.detail && !this.showCreate && this.section !== 'documents' && this.canEdit()) this.openDuplicate(); }
+            else if (e.key === 'i') { if (!this.detail && !this.showCreate && !this.palette && this.canImport()) { this.showImport = true; this.importText = ''; this.importResult = ''; } }
+            else if (e.key === 'p') { if (this.detail && !this.showCreate) this.copyLink(); }
+            else if (e.key === 'o') { if (!this.detail && !this.showCreate && !this.palette && this.filtered().length) this.detail = this.filtered()[0]; }
+            else if (e.key === 'l') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.filtered().length > this.limit) this.limit = this.filtered().length; }
+            else if (e.key === 'x') { if (!this.detail && !this.showCreate && !this.palette && (this.query || this.statusFilter || this.overdueOnly || this.dueSoonOnly)) { this.query = ''; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; } }
+            else if (e.key === 'c') { if (!this.detail && !this.showCreate && !this.palette && this.rows) this.colPicker = !this.colPicker; }
+            else if (e.key === 's') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.dueSoon(r))) this.dueSoonOnly = !this.dueSoonOnly; }
+            else if (e.key === 'u') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.overdue(r))) this.overdueOnly = !this.overdueOnly; }
+            else if (e.key === '.') { if (!this.detail && !this.showCreate && !this.palette && this.section !== 'dashboard') window.location.href = '/app/dashboard' + (this.tenant ? '?tenant=' + this.tenant : ''); }
+            else if (/^[1-9]$/.test(e.key)) { if (!this.detail && !this.showCreate && !this.palette && this.sorted(this.filtered()).length >= +e.key) this.detail = this.sorted(this.filtered())[e.key - 1]; }
         },
         copyLink() {
             const url = location.origin + '/app/' + this.section + '?tenant=' + this.tenant + '&open=' + this.detail.id;
