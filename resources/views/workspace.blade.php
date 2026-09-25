@@ -416,9 +416,11 @@ function workspace(initial) {
             {key:'events',label:'Events',ep:'/api/v1/events'},
             {key:'data-objects',label:'Data Lake',ep:'/api/v1/data-objects'},
             {key:'ai-analyses',label:'KI-Analysen',ep:'/api/v1/ai-analyses'},
+            {key:'graph-entities',label:'Graphen · Entitäten',ep:'/api/v1/graph-entities'},
+            {key:'graph-edges',label:'Graphen · Kanten',ep:'/api/v1/graph-edges'},
         ]},
     ];
-    const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',assigned_to:'persons'};
+    const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',assigned_to:'persons',from_entity_id:'graph_entities',to_entity_id:'graph_entities',subject_id:'graph_entities'};
     const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv'};
     const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at']);
     const KPI = [
@@ -727,6 +729,7 @@ function workspace(initial) {
                 questions: ['/api/v1/questions', r => r.title],
                 documents: ['/api/v1/documents', r => r.title],
                 expert_profiles: ['/api/v1/expert-profiles', r => r.headline||r.id],
+                graph_entities: ['/api/v1/graph-entities', r => r.name||r.id],
             };
             Object.keys(SPECS).forEach(k => {
                 if (this.lookups[k]) return;
