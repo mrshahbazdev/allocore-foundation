@@ -1334,6 +1334,7 @@ function workspace(initial) {
                 return `<a href="mailto:${v}" @click.stop class="text-[#CA8A04] hover:underline">${v}</a>`;
             if (typeof v === 'string' && /^[+0-9][0-9\s\/()-]{5,}$/.test(v) && /phone|tel|mobile/i.test(c))
                 return `<a href="tel:${v.replace(/[^+0-9]/g,'')}" @click.stop class="text-[#CA8A04] hover:underline">${v}</a>`;
+            if (typeof v === 'string' && v.length > 80) return `<span title="${String(v).replace(/"/g,'&quot;')}">${v.slice(0,80)}…</span>`;
             if (typeof v === 'string' && v.length > 80) v = v.slice(0,80)+'…';
             if (typeof v === 'string' && this.query) {
                 const q = this.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
