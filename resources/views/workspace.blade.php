@@ -108,6 +108,10 @@
                                :href="'/app/' + item.key + '?overdue=1' + (tenant ? '&tenant='+tenant : '')"
                                title="Überfällige Einträge anzeigen"
                                class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#A6362E] text-white min-w-[1.1rem] text-center hover:bg-[#8C2B24]"></a>
+                            <a x-show="navBadgesToday[item.key] > 0" x-text="navBadgesToday[item.key]"
+                               :href="'/app/' + item.key + '?today=1' + (tenant ? '&tenant='+tenant : '')"
+                               title="Heute fällige Einträge anzeigen"
+                               class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#CA8A04] text-black min-w-[1.1rem] text-center hover:bg-[#A16207]"></a>
                         </div>
                     </template>
                 </div>
@@ -879,7 +883,7 @@ function workspace(initial) {
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'), navQ: '',
-        pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {},
+        pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0,
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {},
@@ -1056,9 +1060,9 @@ function workspace(initial) {
             Promise.all(items.map(i =>
                 this.api(i.ep).then(r => r.ok ? r.json() : []).then(d => {
                     const rows = Array.isArray(d) ? d : (d.data || []);
-                    return [i.key, rows.filter(r => this.overdue(r)).length];
-                }).catch(() => [i.key, 0])
-            )).then(pairs => { this.navBadges = Object.fromEntries(pairs); });
+                    return [i.key, [rows.filter(r => this.overdue(r)).length, rows.filter(r => this.dueToday(r)).length]];
+                }).catch(() => [i.key, [0, 0]])
+            )).then(pairs => { this.navBadges = Object.fromEntries(pairs.map(([k, v]) => [k, v[0]])); this.navBadgesToday = Object.fromEntries(pairs.map(([k, v]) => [k, v[1]])); });
         },
         loadSection(soft) {
             if (!this.tenant) { this.rows = null; return; }
@@ -1117,6 +1121,7 @@ function workspace(initial) {
                 const rows = Array.isArray(d) ? d : (d.data || []);
                 this.rows = rows;
                 this.navBadges = {...this.navBadges, [this.section]: rows.filter(r => this.overdue(r)).length};
+                this.navBadgesToday = {...this.navBadgesToday, [this.section]: rows.filter(r => this.dueToday(r)).length};
                 if (rows.length) {
                     const keys = Object.keys(rows[0]).filter(k => !HIDE.has(k) && typeof rows[0][k] !== 'object');
                     this.columns = keys.slice(0, 7);
