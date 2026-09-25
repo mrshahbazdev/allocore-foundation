@@ -213,7 +213,11 @@
                         <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E]">Letzte Ereignisse</div>
                         <div class="divide-y divide-[#F0F3F7] max-h-64 overflow-y-auto">
                             <template x-for="(e, i) in events" :key="i">
-                                <div class="px-5 py-2.5 flex items-center justify-between gap-4">
+                                <a x-show="eventLink(e)" :href="eventLink(e)" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC] transition">
+                                    <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] font-semibold tracking-wide text-[#CA8A04] uppercase" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span><span x-show="e.event_properties && e.event_properties.subject && e.event_properties.subject.title" class="text-[#5B6B7E]" x-text="' · ' + e.event_properties.subject.title"></span></span>
+                                    <span class="text-[11px] text-[#9CA3AF] font-mono shrink-0" x-text="ago(e.created_at)"></span>
+                                </a>
+                                <div x-show="!eventLink(e)" class="px-5 py-2.5 flex items-center justify-between gap-4">
                                     <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] font-semibold tracking-wide text-[#CA8A04] uppercase" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span></span>
                                     <span class="text-[11px] text-[#9CA3AF] font-mono shrink-0" x-text="ago(e.created_at)"></span>
                                 </div>
@@ -1162,6 +1166,13 @@ function workspace(initial) {
             if (s < 3600) return 'vor ' + Math.round(s / 60) + ' Min.';
             if (s < 86400) return 'vor ' + Math.round(s / 3600) + ' Std.';
             return 'vor ' + Math.round(s / 86400) + ' T';
+        },
+        eventLink(e) {
+            const p = e && e.event_properties;
+            if (!p || !p.subject || p.subject.id === undefined || p.subject.id === null) return null;
+            const g = String(e.event_type || '').split('.')[0];
+            const M = {task:'tasks',company:'companies',person:'persons',document:'documents',instruction:'instructions',inspection:'inspections',deadline:'deadlines',tender:'tenders',question:'questions',machine:'machines',production_order:'production-orders',financial_report:'financial-reports',leave_request:'leave-requests',participation:'participations',data_object:'data-objects',portfolio:'portfolios',investment:'investments',graph_entity:'graph-entities',graph_edge:'graph-edges',strategy:'strategies',project:'projects',measure:'measures',ai_analysis:'ai-analyses',risk_assessment:'risk-assessments',operating_instruction:'operating-instructions'};
+            return M[g] ? '/app/' + M[g] + '?tenant=' + this.tenant + '&open=' + p.subject.id : null;
         },
         eventGroup(t) {
             const g = String(t || '').split('.')[0];
