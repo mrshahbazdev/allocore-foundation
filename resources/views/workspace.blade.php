@@ -1691,7 +1691,7 @@ function workspace(initial) {
             }).join(' · ');
         },
         statusColor(v) {
-            const map = {open:'#CA8A04',pending:'#CA8A04',in_progress:'#CA8A04',running:'#CA8A04',queued:'#5B6B7E',scheduled:'#5B6B7E',planned:'#5B6B7E',on_hold:'#CA8A04',warning:'#CA8A04',medium:'#CA8A04',critical:'#A6362E',high:'#A6362E',cancelled:'#A6362E',rejected:'#A6362E',overdue:'#A6362E',done:'#2E7D5B',completed:'#2E7D5B',approved:'#2E7D5B',accepted:'#2E7D5B',mitigated:'#2E7D5B',active:'#2E7D5B',awarded:'#2E7D5B',answered:'#2E7D5B',closed:'#2E7D5B',info:'#5B6B7E',low:'#2E7D5B'};
+            const map = {open:'#CA8A04',pending:'#CA8A04',in_progress:'#CA8A04',running:'#CA8A04',queued:'#5B6B7E',scheduled:'#5B6B7E',planned:'#5B6B7E',on_hold:'#CA8A04',warning:'#CA8A04',medium:'#CA8A04',critical:'#A6362E',high:'#A6362E',cancelled:'#A6362E',rejected:'#A6362E',overdue:'#A6362E',done:'#2E7D5B',completed:'#2E7D5B',approved:'#2E7D5B',accepted:'#2E7D5B',mitigated:'#2E7D5B',active:'#2E7D5B',awarded:'#2E7D5B',answered:'#2E7D5B',closed:'#2E7D5B',info:'#5B6B7E',low:'#2E7D5B',maintenance:'#CA8A04',todo:'#CA8A04',candidate:'#CA8A04',requested:'#CA8A04',review:'#CA8A04',retired:'#5B6B7E',exited:'#5B6B7E',inactive:'#5B6B7E',archived:'#5B6B7E',draft:'#5B6B7E',expired:'#A6362E',unpaid:'#A6362E',suspended:'#A6362E',declined:'#A6362E',paid:'#2E7D5B',sent:'#2E7D5B',assigned:'#2E7D5B',confirmed:'#2E7D5B'};
             return map[String(v).toLowerCase()] || '#5B6B7E';
         },
         linkOf(v) {
