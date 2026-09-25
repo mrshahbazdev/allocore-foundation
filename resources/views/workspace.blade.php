@@ -1530,17 +1530,17 @@ function workspace(initial) {
             const unknown = heads.filter(h => !valid.has(h));
             if (unknown.length) { this.importErr = true; this.importResult = 'Unbekannte Spalten: ' + unknown.join(', '); return; }
             this.importing = true; this.importErr = false; this.importResult = ''; this.importProgress = '';
-            let ok = 0, fail = 0; const total = lines.length - 1; let done = 0;
+            let ok = 0, fail = 0; const total = lines.length - 1; let done = 0; const badRows = [];
             for (const l of lines.slice(1)) {
                 const cells = splitLine(l); const body = {};
                 heads.forEach((h, i) => { if (cells[i] !== undefined && cells[i] !== '') body[h] = cells[i]; });
                 const r = await this.api(this.item().ep, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}).catch(() => null);
-                if (r && r.ok) ok++; else fail++;
+                if (r && r.ok) ok++; else { fail++; badRows.push(done + 2); }
                 this.importProgress = (++done) + '/' + total;
             }
             this.importing = false; this.importProgress = '';
             this.importErr = fail > 0;
-            this.importResult = ok + ' importiert' + (fail ? ', ' + fail + ' fehlgeschlagen' : '') + '.';
+            this.importResult = ok + ' importiert' + (fail ? ', ' + fail + ' fehlgeschlagen (Zeilen: ' + badRows.join(', ') + ')' : '') + '.';
             if (ok) this.loadSection();
         },
         openDuplicate() {
