@@ -62,7 +62,10 @@
 
         <nav class="flex-1 overflow-y-auto py-3 text-[13px]">
             <div class="px-4 pb-2">
-                <input x-model="navQ" placeholder="Module filtern…" @keydown.enter.prevent="const m = groups.flatMap(g => g.items).find(i => i.label.toLowerCase().includes(navQ.toLowerCase())); if (m) location.href = '/app/' + m.key + (tenant ? '?tenant=' + tenant : '')" class="w-full bg-[#141419] text-[#9CA3AF] text-[11px] px-2.5 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-[#FACC15] placeholder-[#4B5563]">
+                <div class="relative">
+                    <input x-model="navQ" placeholder="Module filtern…" @keydown.enter.prevent="const m = groups.flatMap(g => g.items).find(i => i.label.toLowerCase().includes(navQ.toLowerCase())); if (m) location.href = '/app/' + m.key + (tenant ? '?tenant=' + tenant : '')" class="w-full bg-[#141419] text-[#9CA3AF] text-[11px] pl-2.5 pr-6 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-[#FACC15] placeholder-[#4B5563]">
+                    <button x-show="navQ" @click="navQ = ''" title="Filter löschen" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#FACC15] text-xs">&times;</button>
+                </div>
             </div>
             <div x-show="pins.length" class="mb-1" style="display:none">
                 <div class="px-5 pt-3 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280]">FAVORITEN</div>
@@ -1232,7 +1235,7 @@ function workspace(initial) {
         loadNavBadges() {
             const items = this.groups.flatMap(g => g.items).filter(i => i.ep);
             Promise.all(items.map(i =>
-                this.api(i.ep).then(r => r.ok ? r.json() : []).then(d => {
+                this.api(i.ep + '?per_page=200').then(r => r.ok ? r.json() : []).then(d => {
                     const rows = Array.isArray(d) ? d : (d.data || []);
                     return [i.key, [rows.filter(r => this.overdue(r)).length, rows.filter(r => this.dueToday(r)).length]];
                 }).catch(() => [i.key, [0, 0]])
