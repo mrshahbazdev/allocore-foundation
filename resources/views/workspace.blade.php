@@ -29,6 +29,7 @@
             else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
             else if ($event.key === 'e' && detail && !showCreate && canEdit()) openEdit();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
+            else if ($event.key === 'p' && detail && !showCreate) copyLink();
             else if ($event.key === 'o' && !detail && !showCreate && !palette && filtered().length > 0) detail = filtered()[0];
             else if ($event.key === 'l' && !detail && !showCreate && !palette && rows && filtered().length > limit) limit = filtered().length;
             else if ($event.key === 'x' && !detail && !showCreate && !palette && (query || statusFilter || overdueOnly || dueSoonOnly)) { query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; }
@@ -594,6 +595,7 @@
                     <span x-show="detail && detail.updated_at">Geändert: <span x-text="detail && new Date(detail.updated_at).toLocaleString('de-DE')"></span></span>
                 </div>
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
+                    <button @click="copyLink()" title="Link kopieren (p)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="linkCopied ? 'Kopiert' : 'Link'"></button>
                     <button @click="copyLink()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="linkCopied ? 'Kopiert' : 'Link'"></button>
                     <button @click="copyJson()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="jsonCopied ? 'Kopiert' : 'JSON'"></button>
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
