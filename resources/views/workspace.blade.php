@@ -1164,7 +1164,7 @@ function workspace(initial) {
             }
             if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) {
                 const d = new Date(v);
-                let out = d.toLocaleDateString('de-DE');
+                let out = d.toLocaleDateString('de-DE', {weekday: 'short'}) + ', ' + d.toLocaleDateString('de-DE');
                 if (/due|deadline|scheduled/.test(c)) {
                     const days = Math.ceil((d - Date.now()) / 86400000);
                     if (days < 0) out += ` <span class="text-[#A6362E]">(vor ${-days} T)</span>`;
