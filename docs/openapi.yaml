@@ -1732,6 +1732,14 @@ paths:
           in: query
           required: true
           schema: {type: string, minLength: 2}
+        - name: sections
+          in: query
+          required: false
+          schema: {type: string, description: "kommagetrennte Sektionsliste, z. B. tasks,companies"}
+        - name: limit
+          in: query
+          required: false
+          schema: {type: integer, minimum: 1, maximum: 50, default: 20}
         - name: X-Tenant
           in: header
           required: true
