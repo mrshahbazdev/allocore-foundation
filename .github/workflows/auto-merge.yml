@@ -9,16 +9,17 @@ permissions:
   pull-requests: write
 jobs:
   merge:
-    if: github.event.pull_request && contains(github.event.pull_request.labels.*.name, 'automerge') || github.event_name == 'check_suite'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v7
         with:
           script: |
-            const prs = github.event_name === 'check_suite'
-              ? github.event.check_suite.pull_requests
-              : [github.event.pull_request];
+            const payload = context.payload;
+            const prs = context.eventName === 'check_suite'
+              ? (payload.check_suite.pull_requests || [])
+              : [payload.pull_request];
             for (const p of prs) {
+              if (!p) continue;
               const { data: pr } = await github.rest.pulls.get({ owner: context.repo.owner, repo: context.repo.repo, pull_number: p.number });
               if (pr.state !== 'open' || !pr.labels.some(l => l.name === 'automerge')) continue;
               if (pr.mergeable === null) { core.info(`#${pr.number} mergeable unknown — skip`); continue; }
