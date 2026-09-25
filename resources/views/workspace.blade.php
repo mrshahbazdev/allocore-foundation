@@ -29,6 +29,7 @@
             else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
             else if ($event.key === 'e' && detail && !showCreate && canEdit()) openEdit();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
+            else if ($event.key === 'x' && !detail && !showCreate && !palette && (query || statusFilter || overdueOnly || dueSoonOnly)) { query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; }
             else if ($event.key === 'c' && !detail && !showCreate && !palette && rows) colPicker = !colPicker;
             else if ($event.key === 's' && !detail && !showCreate && !palette && rows.some(r => dueSoon(r))) dueSoonOnly = !dueSoonOnly;
             else if ($event.key === 'u' && !detail && !showCreate && !palette && rows.some(r => overdue(r))) overdueOnly = !overdueOnly;
@@ -362,6 +363,10 @@
                         </template>
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
+                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
+                        <button x-show="query || statusFilter || overdueOnly || dueSoonOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false"
+                                title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
+                        <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly" @click="openCreate()"
                         <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly || myOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
                         <button x-show="query || statusFilter || overdueOnly || dueSoonOnly || myOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; myOnly = false"
                                 class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
