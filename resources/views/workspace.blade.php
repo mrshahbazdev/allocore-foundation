@@ -406,7 +406,6 @@ function workspace(initial) {
             if (!row || !row.id || !confirm('Wirklich löschen?')) return;
             this.api(this.item().ep + '/' + row.id, {method: 'DELETE'}).then(() => { this.detail = null; this.loadSection(); });
         },
-        label(c) { return c.replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase()); },
         loadLookups() {
             const SPECS = {
                 persons: ['/api/v1/persons', r => (r.first_name||'')+' '+(r.last_name||'')],
@@ -437,6 +436,10 @@ function workspace(initial) {
             if (!lk || !this.lookups[lk]) return null;
             return this.lookups[lk][v] || null;
         },
+        label(c) {
+            const L = {name:'Name',title:'Titel',first_name:'Vorname',last_name:'Nachname',email:'E-Mail',phone:'Telefon',type:'Typ',status:'Status',description:'Beschreibung',content:'Inhalt',category:'Kategorie',subject:'Betreff',area:'Bereich',hazard:'Gefährdung',risk_level:'Risikostufe',measures:'Maßnahmen',result:'Ergebnis',notes:'Notizen',progress:'Fortschritt',quantity:'Menge',order_no:'Auftrag-Nr.',product:'Produkt',scrap_qty:'Ausschuss',headline:'Schlagzeile',bio:'Bio',skills:'Skills',hourly_rate:'Stundensatz',budget:'Budget',price:'Preis',proposal:'Angebot',stake_pct:'Anteil %',invested_amount:'Investiert',current_valuation:'Bewertung',capital_need:'Kapitalbedarf',revenue:'Umsatz',cashflow:'Cashflow',ebitda:'EBITDA',liquidity:'Liquidität',period:'Periode',legal_form:'Rechtsform',street:'Straße',zip:'PLZ',city:'Stadt',country:'Land',version:'Version',valid_from:'Gültig ab',interval_months:'Intervall (Mon.)',capacity_units_per_day:'Kapazität/Tag',asset_class:'Anlageklasse',cost_basis:'Kostenbasis',current_value:'Aktueller Wert',currency:'Währung',due_at:'Fällig',deadline_at:'Frist',scheduled_at:'Geplant',starts_on:'Von',ends_on:'Bis',starts_at:'Start',ends_at:'Ende',acquired_at:'Erworben',valued_at:'Bewertet am',body:'Inhalt',is_accepted:'Akzeptiert',document_id:'Dokument'};
+            return L[c] || c.replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
+        },
         cell(row, c) {
             let v = row[c];
             if (v === null || v === undefined) return '—';
@@ -444,8 +447,10 @@ function workspace(initial) {
             if (rn) return `<span title="${v}">${rn}</span>`;
             if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
             if (c === 'status' || c === 'severity' || c === 'type') {
-                const map = {open:'#CA8A04',critical:'#A6362E',high:'#A6362E',warning:'#CA8A04',done:'#2E7D5B',approved:'#2E7D5B',active:'#2E7D5B',info:'#5B6B7E'};
+                const map = {open:'#CA8A04',critical:'#A6362E',high:'#A6362E',warning:'#CA8A04',done:'#2E7D5B',approved:'#2E7D5B',active:'#2E7D5B',info:'#5B6B7E',pending:'#CA8A04',in_progress:'#CA8A04',archived:'#5B6B7E',draft:'#5B6B7E',maintenance:'#CA8A04',retired:'#5B6B7E',awarded:'#2E7D5B',completed:'#2E7D5B'};
+                const DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig'};
                 const col = map[String(v).toLowerCase()] || '#5B6B7E';
+                v = DE[v] || v;
                 return `<span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full" style="background:${col}"></span>${v}</span>`;
             }
             if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleDateString('de-DE');
