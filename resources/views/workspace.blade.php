@@ -188,7 +188,13 @@
                                 <div class="text-[11px] font-medium text-[#5B6B7E]" x-text="m.label"></div>
                                 <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="metric(m.key)"></div>
                                 <div class="mt-0.5 text-[11px] font-mono" :class="trend(m.key).direction === 'up' ? 'text-[#2E7D5B]' : (trend(m.key).direction === 'down' ? 'text-[#A6362E]' : 'text-[#9CA3AF]')" x-text="trend(m.key).delta === null ? '' : (trend(m.key).direction === 'up' ? '▲ +' : (trend(m.key).direction === 'down' ? '▼ ' : '')) + (trend(m.key).delta ?? '')"></div>
-                                <div class="mt-2 h-0.5 w-8 rounded-full bg-[#FACC15]"></div>
+                                <div class="mt-2 flex items-end justify-between gap-2">
+                                    <div class="h-0.5 w-8 rounded-full bg-[#FACC15] mb-1"></div>
+                                    <svg x-show="(spark[m.key] || []).length > 1" viewBox="0 0 96 24" preserveAspectRatio="none" class="h-6 w-24"
+                                         :class="trend(m.key).direction === 'up' ? 'text-[#2E7D5B]' : (trend(m.key).direction === 'down' ? 'text-[#A6362E]' : 'text-[#CA8A04]')">
+                                        <path :d="sparkPath(m.key)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
                             </a>
                         </template>
                     </div>
@@ -756,7 +762,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], spark: {}, exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: false, showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, toasts: [],
@@ -840,6 +846,12 @@ function workspace(initial) {
         subtitle() { return (this.section === 'dashboard' ? 'Unternehmenssteuerung' : 'Modul ' + (this.item().label||this.section)) + ' · ' + this.tenantName(); },
         metric(k) { const v = this.metrics && this.metrics[k]; return v ? parseFloat(v.value) : '–'; },
         trend(k) { const t = this.trends.find(x => x.metric === k); return t || {delta: null, direction: 'unknown'}; },
+        sparkPath(k) {
+            const v = this.spark[k] || [];
+            if (v.length < 2) return '';
+            const min = Math.min(...v), max = Math.max(...v), span = max - min || 1;
+            return v.map((p, i) => (i ? 'L' : 'M') + (i * 96 / (v.length - 1)).toFixed(1) + ',' + (22 - (p - min) / span * 20).toFixed(1)).join(' ');
+        },
         toast(msg) {
             const t = {id: Date.now() + Math.random(), msg};
             this.toasts.push(t);
@@ -872,6 +884,12 @@ function workspace(initial) {
             if (this.section === 'dashboard') {
                 this.api('/api/v1/metrics').then(r => r.ok ? r.json() : (this.error='HTTP '+r.status, null))
                     .then(d => { this.metrics = d; this.loading = false; this.lastLoad = new Date(); });
+                const sparkFrom = new Date(Date.now() - 60 * 864e5).toISOString().slice(0, 10);
+                this.spark = {};
+                KPI.forEach(m => {
+                    this.api('/api/v1/metrics/' + m.key + '?from=' + sparkFrom).then(r => r.ok ? r.json() : [])
+                        .then(d => { const v = (Array.isArray(d) ? d : (d.data || [])).map(x => x.value); if (v.length > 1) this.spark[m.key] = v; });
+                });
                 this.api('/api/v1/insights').then(r => r.ok ? r.json() : [])
                     .then(d => this.insights = d.filter(i => i.code !== 'all_clear'));
                 this.api('/api/v1/events').then(r => r.ok ? r.json() : [])
