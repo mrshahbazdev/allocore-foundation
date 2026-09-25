@@ -16,7 +16,7 @@ class EventController extends Controller
             ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
             ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
             ->orderByDesc('id')
-            ->paginate($request->integer('per_page', 50));
+            ->paginate(min($request->integer('per_page', 50), 200));
 
         $page->through(function ($row) {
             $row->event_properties = json_decode($row->event_properties, true);
