@@ -180,11 +180,12 @@
             <template x-if="section === 'dashboard'">
                 <div class="space-y-5">
                     <div x-show="visibleInsights().length" class="space-y-2">
-                        <div x-show="visibleInsights().some(i => i.severity === 'warning' || i.severity === 'info')" class="flex gap-1.5">
+                        <div x-show="visibleInsights().some(i => i.severity === 'warning' || i.severity === 'info') || insDismissed.length" class="flex gap-1.5">
                             <template x-for="s in [['','Alle'],['critical','Kritisch'],['warning','Warnung'],['info','Info']]" :key="s[0]">
                                 <button @click="insightSev = s[0]" class="text-[11px] px-2 py-1 rounded-full border transition"
                                         :class="insightSev === s[0] ? 'bg-[#0B0B0F] text-[#FACC15] border-[#0B0B0F]' : 'bg-white text-[#5B6B7E] border-[#D6DEE9] hover:border-[#CA8A04]'" x-text="s[1]"></button>
                             </template>
+                            <button x-show="insDismissed.length" @click="insDismissed = []; localStorage.removeItem('af_insdismissed')" class="text-[10px] px-2 py-1 rounded-full border border-[#D6DEE9] text-[#9CA3AF] hover:border-[#CA8A04] hover:text-[#CA8A04] transition" x-text="'Ausgeblendete: ' + insDismissed.length + ' ↺'"></button>
                         </div>
                         <template x-for="i in visibleInsights().filter(x => !insightSev || x.severity === insightSev)" :key="i.code">
                             <div class="relative">
@@ -210,6 +211,7 @@
                     <div x-show="tenant && metrics && !visibleInsights().length" class="flex items-center gap-3 rounded-lg border border-[#2E7D5B]/30 bg-[#2E7D5B]/5 px-4 py-3 text-sm text-[#2E7D5B]">
                         <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Alles im grünen Bereich — keine offenen Hinweise.
+                        <button x-show="insDismissed.length" @click="insDismissed = []; localStorage.removeItem('af_insdismissed')" class="ml-auto text-[10px] px-2 py-1 rounded-full border border-[#D6DEE9] text-[#9CA3AF] hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="'Ausgeblendete: ' + insDismissed.length + ' ↺'"></button>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                         <template x-for="m in kpiCards" :key="m.key">
