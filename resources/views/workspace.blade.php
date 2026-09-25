@@ -18,7 +18,12 @@
      @keydown.escape.window="detail = null; showCreate = false; navOpen = false; palette = false"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
-     @keydown.window="if (($event.ctrlKey || $event.metaKey) && $event.key === 'k') { $event.preventDefault(); palette = !palette; paletteQ = ''; }">
+     @keydown.window="
+        if (($event.ctrlKey || $event.metaKey) && $event.key === 'k') { $event.preventDefault(); palette = !palette; paletteQ = ''; }
+        else if (!$event.ctrlKey && !$event.metaKey && !$event.altKey && !/^(input|textarea|select)$/i.test($event.target.tagName)) {
+            if ($event.key === '/') { $event.preventDefault(); if ($refs.search) $refs.search.focus(); }
+            else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
+        }">
 
     {{-- Mobile top bar --}}
     <div class="lg:hidden flex items-center justify-between px-4 h-14 bg-[#0B0B0F] text-white sticky top-0 z-30 shrink-0">
@@ -241,7 +246,7 @@
                     </div>
                     <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0]">
                         <span class="text-xs text-[#5B6B7E] shrink-0" x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
-                        <input x-model="query" placeholder="Suchen…" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                        <input x-ref="search" x-model="query" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         <div class="relative shrink-0">
                             <button @click="colPicker = !colPicker" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten</button>
                             <div x-show="colPicker" @click.outside="colPicker = false" class="absolute right-0 mt-1.5 w-48 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20 max-h-64 overflow-y-auto" style="display:none">
