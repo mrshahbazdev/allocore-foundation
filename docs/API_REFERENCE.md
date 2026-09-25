@@ -87,6 +87,17 @@ Erinnerungen: `compliance:remind` (stündlich).
 | `/executive/overview` | `executive.view` | Holding-Rollup: KPIs über alle Tenants + `totals` |
 | `/exec-reports` | `executive.view` / `executive.manage` | Persistierte Executive-Snapshots |
 
+## Weitere Domänen (CRUD, `{domain}.view`/`{domain}.manage`)
+
+| Domäne | Pfade |
+|---|---|
+| CorporateDev | `/strategies`, `/projects`, `/measures` (+ `/{id}`) |
+| Finance | `/financial-reports` (+ `/{id}`) |
+| Hr | `/leave-requests` (+ `/{id}`) |
+| Investments | `/portfolios`, `/investments` (+ `/{id}`) |
+| Participations | `/participations` (+ `/{id}`) |
+| Production | `/machines`, `/production-orders` (+ `/{id}`) |
+
 ## Fehlerformat
 
 - `401` ohne gültiges Token, `403` ohne Recht auf dem Tenant, `404` cross-tenant Zugriff.
