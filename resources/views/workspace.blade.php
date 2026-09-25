@@ -162,6 +162,7 @@
                     </dl>
                 </div>
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
+                    <button x-show="section === 'documents'" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
                     <button @click="deleteRow(detail)" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
                 </div>
@@ -183,6 +184,10 @@
                                    class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         </div>
                     </template>
+                    <div x-show="section === 'documents' && !editing">
+                        <label class="block text-[13px] font-medium text-[#42536A] mb-1">Datei</label>
+                        <input type="file" x-ref="fileInput" class="w-full text-sm">
+                    </div>
                     <div x-show="formError" class="text-xs text-[#A6362E]" x-text="formError"></div>
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" @click="showCreate = false" class="text-sm px-4 py-2 text-[#5B6B7E]">Abbrechen</button>
@@ -311,6 +316,18 @@ function workspace(initial) {
                 return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'de')) * dir;
             });
         },
+        async downloadDoc(row) {
+            const r = await this.api('/api/v1/documents/' + row.id + '/download');
+            if (!r.ok) { alert('Download fehlgeschlagen'); return; }
+            const blob = await r.blob();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            const dispo = r.headers.get('Content-Disposition') || '';
+            const m = dispo.match(/filename="?([^";]+)/);
+            a.download = m ? m[1] : (row.title || 'document');
+            a.click();
+            URL.revokeObjectURL(a.href);
+        },
         async createTenant() {
             const name = prompt('Name des neuen Mandanten:');
             if (!name || !name.trim()) return;
@@ -357,7 +374,17 @@ function workspace(initial) {
             this.createFields().forEach(f => { if (this.form[f.key] !== undefined && this.form[f.key] !== '') body[f.key] = this.form[f.key]; });
             const method = this.editing ? 'PUT' : 'POST';
             const url = this.item().ep + (this.editing ? '/' + this.editing.id : '');
-            this.api(url, {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+            let fetchOpts = {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)};
+            if (this.section === 'documents' && !this.editing) {
+                const f = this.$refs.fileInput && this.$refs.fileInput.files[0];
+                if (!f) { this.formError = 'Bitte eine Datei wählen.'; return; }
+                const fd = new FormData();
+                fd.append('title', body.title || f.name);
+                if (body.category) fd.append('category', body.category);
+                fd.append('file', f);
+                fetchOpts = {method: 'POST', body: fd};
+            }
+            this.api(url, fetchOpts)
                 .then(r => {
                     if (!r.ok) { this.formError = 'HTTP '+r.status+' — Pflichtfelder fehlen?'; return null; }
                     this.showCreate = false; this.detail = null; this.editing = null; this.loadSection(); return r.json();
