@@ -2,15 +2,16 @@
 
 namespace Modules\Ai\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Ai\Models\AiAnalysis;
 use Modules\Ai\Support\AiService;
 
 class AiAnalysisController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return AiAnalysis::query()->latest('id')->get(['id', 'kind', 'provider', 'status', 'summary', 'created_at']);
+        return AiAnalysis::query()->latest('id')->paginate(min($request->integer('per_page', 50), 200), ['id', 'kind', 'provider', 'status', 'summary', 'created_at']);
     }
 
     public function store(AiService $service)
