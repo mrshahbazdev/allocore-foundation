@@ -1,0 +1,11 @@
+{
+  "name": "ALLOCORE",
+  "short_name": "ALLOCORE",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/favicon-64.png", "sizes": "64x64", "type": "image/png" }
+  ],
+  "theme_color": "#0B0B0F",
+  "background_color": "#0B0B0F",
+  "display": "standalone"
+}

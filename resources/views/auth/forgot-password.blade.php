@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="mb-6">
-        <h2 class="text-xl font-semibold tracking-tight text-[#0C1622]">Passwort zurücksetzen</h2>
+        <h2 class="text-xl font-semibold tracking-tight text-[#0B0B0F]">Passwort zurücksetzen</h2>
         <p class="mt-1 text-sm leading-relaxed text-[#5B6B7E]">
             {{ __('Geben Sie Ihre E-Mail-Adresse ein — wir senden Ihnen einen Link zum Zurücksetzen.') }}
         </p>
@@ -27,6 +27,6 @@
     </form>
 
     <p class="mt-6 text-center text-sm text-[#5B6B7E]">
-        <a href="{{ route('login') }}" class="font-medium text-[#B07C34] hover:text-[#0C1622]">{{ __('Zurück zur Anmeldung') }}</a>
+        <a href="{{ route('login') }}" class="font-medium text-[#CA8A04] hover:text-[#0B0B0F]">{{ __('Zurück zur Anmeldung') }}</a>
     </p>
 </x-guest-layout>

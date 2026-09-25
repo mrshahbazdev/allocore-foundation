@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-lg tracking-tight text-[#0C1622]">Dashboard</h2>
+            <h2 class="font-semibold text-lg tracking-tight text-[#0B0B0F]">Dashboard</h2>
             <span class="text-xs text-[#5B6B7E]">Unternehmenssteuerung</span>
         </div>
     </x-slot>
@@ -13,7 +13,7 @@
             <div class="bg-white border border-[#E4E9F0] rounded-xl px-5 py-4 flex flex-wrap items-center gap-4">
                 <label class="text-[13px] font-medium text-[#42536A]">Mandant</label>
                 <select x-model="tenant" @change="load()"
-                        class="rounded-lg border-[#D6DEE9] text-sm focus:border-[#B07C34] focus:ring-[#B07C34]/30 min-w-56">
+                        class="rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30 min-w-56">
                     <option value="">— wählen —</option>
                     @foreach($tenants as $t)
                         <option value="{{ $t->id }}">{{ $t->name }}</option>
@@ -33,13 +33,13 @@
                     <div class="flex items-start gap-3 rounded-lg border bg-white px-4 py-3 text-sm"
                          :class="{
                             'border-[#A6362E]/40': i.severity === 'critical',
-                            'border-[#B07C34]/50': i.severity === 'warning',
+                            'border-[#CA8A04]/50': i.severity === 'warning',
                             'border-[#D6DEE9]': i.severity === 'info'
                          }">
                         <span class="mt-0.5 inline-block h-2 w-2 rounded-full shrink-0"
                               :class="{
                                 'bg-[#A6362E]': i.severity === 'critical',
-                                'bg-[#B07C34]': i.severity === 'warning',
+                                'bg-[#CA8A04]': i.severity === 'warning',
                                 'bg-[#5B6B7E]': i.severity === 'info'
                               }"></span>
                         <span class="text-[#1A2433]" x-text="i.message"></span>
@@ -52,14 +52,14 @@
                 <template x-for="m in cards" :key="m.key">
                     <div class="bg-white border border-[#E4E9F0] rounded-xl px-5 py-4">
                         <div class="text-[11px] font-medium text-[#5B6B7E]" x-text="m.label"></div>
-                        <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0C1622]" x-text="metric(m.key)"></div>
+                        <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="metric(m.key)"></div>
                     </div>
                 </template>
             </div>
 
             {{-- Team & Rollen --}}
             <div x-show="users" class="bg-white border border-[#E4E9F0] rounded-xl p-5">
-                <h3 class="text-sm font-semibold text-[#0C1622] mb-1">Team &amp; Rollen</h3>
+                <h3 class="text-sm font-semibold text-[#0B0B0F] mb-1">Team &amp; Rollen</h3>
                 <p class="text-[13px] text-[#5B6B7E] mb-4">Rollen gelten pro Mandant (Dokument C).</p>
                 <template x-for="u in users" :key="u.id">
                     <div class="flex flex-wrap items-center gap-x-4 gap-y-2 py-3 border-t border-[#E4E9F0] first:border-t-0">
@@ -70,12 +70,12 @@
                         <template x-for="r in roles" :key="r">
                             <label class="text-xs flex items-center gap-1.5 text-[#42536A]">
                                 <input type="checkbox" :checked="u.roles.includes(r)"
-                                       @change="toggleRole(u, r)" class="rounded border-[#D6DEE9] text-[#B07C34] focus:ring-[#B07C34]/40">
+                                       @change="toggleRole(u, r)" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/40">
                                 <span x-text="r"></span>
                             </label>
                         </template>
                         <button @click="saveRoles(u)"
-                                class="ml-auto text-xs px-3 py-1.5 bg-[#0C1622] text-white rounded-lg hover:bg-[#16283F] transition">
+                                class="ml-auto text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">
                             Speichern
                         </button>
                     </div>

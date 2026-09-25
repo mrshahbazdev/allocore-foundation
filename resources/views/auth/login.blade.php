@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="mb-6">
-        <h2 class="text-xl font-semibold tracking-tight text-[#0C1622]">Anmelden</h2>
+        <h2 class="text-xl font-semibold tracking-tight text-[#0B0B0F]">Anmelden</h2>
         <p class="mt-1 text-sm text-[#5B6B7E]">Zugang zur Plattform der Unternehmensgruppe.</p>
     </div>
 
@@ -30,11 +30,11 @@
         <!-- Remember Me -->
         <div class="flex items-center justify-between">
             <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-[#D6DEE9] text-[#B07C34] shadow-sm focus:ring-[#B07C34]/40" name="remember">
+                <input id="remember_me" type="checkbox" class="rounded border-[#D6DEE9] text-[#CA8A04] shadow-sm focus:ring-[#CA8A04]/40" name="remember">
                 <span class="ms-2 text-sm text-[#5B6B7E]">{{ __('Angemeldet bleiben') }}</span>
             </label>
             @if (Route::has('password.request'))
-                <a class="text-sm font-medium text-[#B07C34] hover:text-[#0C1622] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#B07C34]/40" href="{{ route('password.request') }}">
+                <a class="text-sm font-medium text-[#CA8A04] hover:text-[#0B0B0F] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#CA8A04]/40" href="{{ route('password.request') }}">
                     {{ __('Passwort vergessen?') }}
                 </a>
             @endif
@@ -50,7 +50,7 @@
     @if (Route::has('register'))
         <p class="mt-6 text-center text-sm text-[#5B6B7E]">
             {{ __('Noch kein Zugang?') }}
-            <a href="{{ route('register') }}" class="font-medium text-[#B07C34] hover:text-[#0C1622]">{{ __('Konto erstellen') }}</a>
+            <a href="{{ route('register') }}" class="font-medium text-[#CA8A04] hover:text-[#0B0B0F]">{{ __('Konto erstellen') }}</a>
         </p>
     @endif
 </x-guest-layout>

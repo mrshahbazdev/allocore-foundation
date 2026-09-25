@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="mb-6">
-        <h2 class="text-xl font-semibold tracking-tight text-[#0C1622]">Neues Passwort</h2>
+        <h2 class="text-xl font-semibold tracking-tight text-[#0B0B0F]">Neues Passwort</h2>
         <p class="mt-1 text-sm text-[#5B6B7E]">{{ __('Wählen Sie ein neues Passwort für Ihr Konto.') }}</p>
     </div>
 

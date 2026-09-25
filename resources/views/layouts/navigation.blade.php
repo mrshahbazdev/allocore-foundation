@@ -22,7 +22,7 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-[#5B6B7E] bg-white hover:text-[#0C1622] focus:outline-none transition ease-in-out duration-150">
+                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-[#5B6B7E] bg-white hover:text-[#0B0B0F] focus:outline-none transition ease-in-out duration-150">
                             <div>{{ Auth::user()->name }}</div>
 
                             <div class="ms-1">
@@ -75,7 +75,7 @@
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-[#E4E9F0]">
             <div class="px-4">
-                <div class="font-medium text-base text-[#0C1622]">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-base text-[#0B0B0F]">{{ Auth::user()->name }}</div>
                 <div class="font-medium text-sm text-[#5B6B7E]">{{ Auth::user()->email }}</div>
             </div>
 

@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="mb-6">
-        <h2 class="text-xl font-semibold tracking-tight text-[#0C1622]">Konto erstellen</h2>
+        <h2 class="text-xl font-semibold tracking-tight text-[#0B0B0F]">Konto erstellen</h2>
         <p class="mt-1 text-sm text-[#5B6B7E]">Neuer Zugang zur Plattform.</p>
     </div>
 
@@ -49,6 +49,6 @@
 
     <p class="mt-6 text-center text-sm text-[#5B6B7E]">
         {{ __('Bereits registriert?') }}
-        <a href="{{ route('login') }}" class="font-medium text-[#B07C34] hover:text-[#0C1622]">{{ __('Anmelden') }}</a>
+        <a href="{{ route('login') }}" class="font-medium text-[#CA8A04] hover:text-[#0B0B0F]">{{ __('Anmelden') }}</a>
     </p>
 </x-guest-layout>

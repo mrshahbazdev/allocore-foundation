@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="mb-6">
-        <h2 class="text-xl font-semibold tracking-tight text-[#0C1622]">Geschützter Bereich</h2>
+        <h2 class="text-xl font-semibold tracking-tight text-[#0B0B0F]">Geschützter Bereich</h2>
         <p class="mt-1 text-sm leading-relaxed text-[#5B6B7E]">
             {{ __('Bitte bestätigen Sie Ihr Passwort, um fortzufahren.') }}
         </p>

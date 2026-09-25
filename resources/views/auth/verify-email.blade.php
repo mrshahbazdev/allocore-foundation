@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="mb-6">
-        <h2 class="text-xl font-semibold tracking-tight text-[#0C1622]">E-Mail bestätigen</h2>
+        <h2 class="text-xl font-semibold tracking-tight text-[#0B0B0F]">E-Mail bestätigen</h2>
         <p class="mt-1 text-sm leading-relaxed text-[#5B6B7E]">
             {{ __('Danke für die Registrierung. Bitte bestätigen Sie Ihre E-Mail-Adresse über den Link, den wir Ihnen gesendet haben.') }}
         </p>
@@ -24,7 +24,7 @@
         <form method="POST" action="{{ route('logout') }}">
             @csrf
 
-            <button type="submit" class="text-sm font-medium text-[#B07C34] hover:text-[#0C1622] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#B07C34]/40">
+            <button type="submit" class="text-sm font-medium text-[#CA8A04] hover:text-[#0B0B0F] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#CA8A04]/40">
                 {{ __('Abmelden') }}
             </button>
         </form>
