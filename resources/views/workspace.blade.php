@@ -1424,6 +1424,7 @@ function workspace(initial) {
             all[name] = {query: this.query, statusFilter: this.statusFilter, overdueOnly: this.overdueOnly, dueSoonOnly: this.dueSoonOnly, myOnly: this.myOnly, groupBy: this.groupBy, sortKey: this.sortKey, sortAsc: this.sortAsc, hiddenCols: this.hiddenCols};
             localStorage.setItem('af_views_' + this.section, JSON.stringify(all));
             this.viewPicker = false;
+            this.toast('Ansicht „' + name + '“ gespeichert.');
         },
         applyView(name) {
             const v = this.views()[name];
@@ -1436,6 +1437,7 @@ function workspace(initial) {
             const all = this.views(); delete all[name];
             localStorage.setItem('af_views_' + this.section, JSON.stringify(all));
             this.viewPicker = false; this.viewPicker = true;
+            this.toast('Ansicht „' + name + '“ gelöscht.');
         },
         copySel() {
             const sel = (this.rows || []).filter(r => this.selected[r.id]);
