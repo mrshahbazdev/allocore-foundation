@@ -77,6 +77,15 @@ class DataPlatformTest extends TestCase
         $this->getJson('/api/v1/events', ['X-Tenant' => $tenantB->id])->assertForbidden();
     }
 
+    public function test_events_endpoint_caps_per_page(): void
+    {
+        $tenant = Tenant::create(['name' => 'Cap GmbH']);
+        $this->acting($tenant);
+
+        $this->getJson('/api/v1/events?per_page=999', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonPath('per_page', 200);
+    }
+
     public function test_metrics_aggregation(): void
     {
         $tenant = Tenant::create(['name' => 'Kpi GmbH']);
