@@ -742,7 +742,7 @@
                     <template x-for="(e, i) in rowEvents" :key="i">
                         <a :href="'/app/events?tenant=' + tenant + '&open=' + e.id" class="flex items-center justify-between text-xs py-1 rounded hover:bg-[#FAFBFC] -mx-1 px-1">
                             <span class="text-[#1A2433]"><span class="text-[#CA8A04] font-semibold uppercase text-[10px] tracking-wide" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span></span>
-                            <span class="text-[10px] text-[#9CA3AF] font-mono" x-text="e.created_at ? new Date(e.created_at).toLocaleString('de-DE') : ''"></span>
+                            <span class="text-[10px] text-[#9CA3AF] font-mono" :title="e.created_at ? new Date(e.created_at).toLocaleString('de-DE') : ''" x-text="ago(e.created_at)"></span>
                         </a>
                     </template>
                 </div>
