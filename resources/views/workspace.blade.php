@@ -394,7 +394,7 @@
                                                 <td class="px-5 py-3 font-mono" x-text="t.deadlines_open"></td>
                                                 <td class="px-5 py-3 font-mono" :class="t.high_risks > 0 ? 'text-[#A6362E] font-semibold' : ''" x-text="t.high_risks"></td>
                                                 <td class="px-5 py-3 font-mono" x-text="t.data_objects"></td>
-                                                <td class="px-5 py-3 font-mono" x-text="t.compliance_rate"></td>
+                                                <td class="px-5 py-3 font-mono" :class="t.compliance_rate < 50 ? 'text-[#A6362E] font-semibold' : (t.compliance_rate < 80 ? 'text-[#B45309]' : 'text-[#15803D]')" x-text="t.compliance_rate"></td>
                                             </tr>
                                         </template>
                                     </tbody>
