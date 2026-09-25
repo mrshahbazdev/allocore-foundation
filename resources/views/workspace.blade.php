@@ -1554,6 +1554,7 @@ function workspace(initial) {
             const payload = {status: s};
             const stamp = {completed: 'completed_at', approved: 'approved_at', cancelled: 'cancelled_at'}[s];
             if (stamp && stamp in row && !row[stamp]) payload[stamp] = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            if (s === 'approved' && 'approved_by' in row && !row.approved_by) payload.approved_by = this.meId;
             this.api(this.item().ep + '/' + row.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
                 .then(r => {
                     if (!r.ok) { this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); return; }
@@ -1568,6 +1569,7 @@ function workspace(initial) {
             const payload = {status: s};
             const stamp = {completed: 'completed_at', approved: 'approved_at', cancelled: 'cancelled_at'}[s];
             if (stamp && stamp in this.detail && !this.detail[stamp]) payload[stamp] = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            if (s === 'approved' && 'approved_by' in this.detail && !this.detail.approved_by) payload.approved_by = this.meId;
             this.api(this.item().ep + '/' + id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
                 .then(r => {
                     if (!r.ok) { this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); return; }
