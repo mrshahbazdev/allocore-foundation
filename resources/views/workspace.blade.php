@@ -175,7 +175,10 @@
                                 <span class="mt-0.5 inline-block h-2 w-2 rounded-full shrink-0"
                                       :class="{'bg-[#A6362E]': i.severity==='critical','bg-[#CA8A04]': i.severity==='warning','bg-[#5B6B7E]': i.severity==='info'}"></span>
                                 <span x-text="i.message"></span>
-                                <svg x-show="insightSection(i.code)" class="ml-auto h-4 w-4 shrink-0 text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                                <span x-show="insightSection(i.code)" class="ml-auto shrink-0 flex items-center gap-1.5">
+                                    <span class="text-[11px] text-[#9CA3AF]" x-text="icons[insightSection(i.code)] || ''"></span>
+                                    <svg class="h-4 w-4 text-[#9CA3AF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                                </span>
                             </a>
                         </template>
                     </div>
