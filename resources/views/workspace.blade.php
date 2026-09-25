@@ -207,13 +207,13 @@
                             </template>
                         </div>
                     </div>
-                    <div x-show="dueSoon.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
+                    <div x-show="upcoming.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
                         <a :href="'/app/deadlines?tenant=' + tenant" class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex items-center justify-between hover:text-[#CA8A04]">
                             Nächste Fristen
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                         <div class="divide-y divide-[#F0F3F7]">
-                            <template x-for="d in dueSoon" :key="d.id">
+                            <template x-for="d in upcoming" :key="d.id">
                                 <a :href="'/app/deadlines?tenant=' + tenant + '&open=' + d.id" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
                                     <span class="text-sm text-[#1A2433] truncate" x-text="d.title"></span>
                                     <span class="text-[11px] font-mono shrink-0" :class="new Date(d.due_at) < new Date() ? 'text-[#A6362E]' : 'text-[#9CA3AF]'" x-text="new Date(d.due_at).toLocaleDateString('de-DE')"></span>
@@ -834,7 +834,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], spark: {}, exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], spark: {}, exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, upcoming: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: false, showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, toasts: [],
@@ -1008,7 +1008,7 @@ function workspace(initial) {
                 this.api('/api/v1/deadlines').then(r => r.ok ? r.json() : [])
                     .then(d => {
                         const rs = Array.isArray(d) ? d : (d.data || []);
-                        this.dueSoon = rs.filter(x => x.status !== 'completed' && x.due_at)
+                        this.upcoming = rs.filter(x => x.status !== 'completed' && x.due_at)
                             .sort((a,b) => new Date(a.due_at) - new Date(b.due_at)).slice(0, 5);
                     });
                 this.api('/api/v1/tasks').then(r => r.ok ? r.json() : [])
