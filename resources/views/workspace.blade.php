@@ -612,8 +612,11 @@ function workspace(initial) {
             if (this.tenant) this.loadSection();
             setInterval(() => { if (this.tenant && !this.detail && !this.showCreate && !this.palette) this.loadSection(true); }, 30000);
             this.$watch('detail', v => {
-                this.confirmDel = false;
+                const url = new URL(location.href);
+                if (v && v.id) url.searchParams.set('open', v.id); else url.searchParams.delete('open');
+                history.replaceState(null, '', url);
                 this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = [];
+                this.confirmDel = false;
                 this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null;
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
