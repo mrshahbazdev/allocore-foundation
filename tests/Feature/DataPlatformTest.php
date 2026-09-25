@@ -120,6 +120,7 @@ class DataPlatformTest extends TestCase
         $this->assertContains('tasks_overdue', $codes);
         $this->assertContains('high_risks_open', $codes);
     }
+
     public function test_nav_counts_returns_overdue_and_today(): void
     {
         $tenant = Tenant::create(['name' => 'Nav GmbH']);
