@@ -161,7 +161,10 @@
             </div>
             <div x-show="error" class="bg-white border border-[#A6362E]/40 rounded-xl px-4 py-3 text-sm text-[#A6362E] flex items-start justify-between gap-3">
                 <span x-text="error"></span>
-                <button @click="error = ''" class="shrink-0 text-[#A6362E]/60 hover:text-[#A6362E] leading-none" aria-label="Fehler schließen">&times;</button>
+                <span class="shrink-0 flex items-center gap-3">
+                    <button @click="error = ''; loadSection()" class="text-xs underline underline-offset-2 text-[#A6362E] hover:text-[#0B0B0F] transition">Erneut versuchen</button>
+                    <button @click="error = ''" class="text-[#A6362E]/60 hover:text-[#A6362E] leading-none" aria-label="Fehler schließen">&times;</button>
+                </span>
             </div>
 
             {{-- Dashboard --}}
