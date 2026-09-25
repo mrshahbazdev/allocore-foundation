@@ -381,7 +381,7 @@
                                 <table class="w-full text-sm">
                                     <thead><tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
                                         <template x-for="h in ['Mandant','Unternehmen','Personen','Offene Aufgaben','Offene Fristen','Hohe Risiken','Data Lake','Compliance %']" :key="h">
-                                            <th class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E]" x-text="h"></th>
+                                            <th scope="col" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E]" x-text="h"></th>
                                         </template>
                                     </tr></thead>
                                     <tbody>
@@ -545,21 +545,21 @@
                         <button @click="selected = {}" class="text-xs px-3 py-1.5 text-[#5B6B7E] hover:text-[#0B0B0F]">Auswahl aufheben</button>
                     </div>
                     <div class="max-h-[70vh] overflow-y-auto">
-                    <table x-show="rows && filtered().length" class="w-full text-sm">
+                    <table x-show="rows && filtered().length" class="w-full text-sm" :aria-busy="!rows">
                         <thead>
                             <tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
-                                <th x-show="writable()" class="px-4 py-3 w-10">
+                                <th x-show="writable()" scope="col" class="px-4 py-3 w-10">
                                     <input type="checkbox" aria-label="Alle sichtbaren Zeilen auswählen" @change="toggleAll($event.target.checked)" :checked="sorted(filtered()).length > 0 && selCount() === sorted(filtered()).length"
                                            x-effect="$el.indeterminate = selCount() > 0 && selCount() < sorted(filtered()).length"
                                            class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 </th>
-                                <th class="px-3 py-3 text-[11px] font-semibold tracking-wide text-[#9CA3AF] w-8">#</th>
+                                <th scope="col" class="px-3 py-3 text-[11px] font-semibold tracking-wide text-[#9CA3AF] w-8">#</th>
                                 <template x-for="c in visCols()" :key="c">
-                                    <th @click="sort(c)" :title="'Sortieren: ' + label(c) + (sortKey===c ? (sortAsc ? ' (aufsteigend)' : ' (absteigend)') : '')" class="sticky top-0 z-10 bg-[#FAFBFC] px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] cursor-pointer select-none hover:text-[#0B0B0F]">
+                                    <th scope="col" @click="sort(c)" :title="'Sortieren: ' + label(c) + (sortKey===c ? (sortAsc ? ' (aufsteigend)' : ' (absteigend)') : '')" class="sticky top-0 z-10 bg-[#FAFBFC] px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] cursor-pointer select-none hover:text-[#0B0B0F]">
                                         <span x-text="label(c)"></span><span class="ml-1 text-[#CA8A04]" x-text="sortKey===c ? (sortAsc?'▲':'▼') : ''"></span>
                                     </th>
                                 </template>
-                                <th x-show="sectionActions().length || canEdit()" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] w-28">Aktionen</th>
+                                <th x-show="sectionActions().length || canEdit()" scope="col" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] w-28">Aktionen</th>
                             </tr>
                         </thead>
                         <tbody>
