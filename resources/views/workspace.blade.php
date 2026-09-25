@@ -1475,6 +1475,7 @@ function workspace(initial) {
             a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv'}));
             a.download = this.section + '.csv';
             a.click();
+            this.toast(rows.length + ' ' + this.eintrag(rows.length) + ' exportiert.');
         },
         canImport() { return this.writable() && !['documents','data-objects','ai-analyses','events','metrics'].includes(this.section); },
         async importCsv() {
