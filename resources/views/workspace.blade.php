@@ -1125,6 +1125,7 @@ function workspace(initial) {
         fmtD(row, k) {
             const rn = this.resolveId(k, row[k]);
             if (rn) return rn;
+            if (k === 'status') return this.statusLabel(row[k]);
             return this.fmt(row[k]);
         },
         linkOf(v) {
