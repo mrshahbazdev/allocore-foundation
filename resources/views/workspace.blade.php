@@ -379,6 +379,7 @@
                         <template x-for="a in sectionActions()" :key="a[1]">
                             <button @click="bulkStatus(a[1])" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" x-text="a[0]"></button>
                         </template>
+                        <button @click="copySel()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Als TSV in die Zwischenablage">Kopieren</button>
                         <button @click="exportCsv((this.rows || []).filter(r => selected[r.id]))" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">CSV</button>
                         <button @click="bulkDelete()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
                         <button @click="selected = {}" class="text-xs px-3 py-1.5 text-[#5B6B7E] hover:text-[#0B0B0F]">Auswahl aufheben</button>
@@ -1330,6 +1331,13 @@ function workspace(initial) {
             }
             this.editing = null; this.form = {}; this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
+        },
+        copySel() {
+            const sel = (this.rows || []).filter(r => this.selected[r.id]);
+            if (!sel.length) return;
+            const cols = this.visCols();
+            const tsv = [cols.map(c => this.label(c)).join('\t'), ...sel.map(r => cols.map(c => { let v = r[c]; const rn = this.resolveId(c, v); v = rn || v; return v === null || v === undefined ? '' : String(v).replace(/\t|\n/g, ' '); }).join('\t'))].join('\n');
+            navigator.clipboard.writeText(tsv).then(() => this.toast(sel.length + ' Zeilen kopiert.'));
         },
         exportCsv(only) {
             const rows = only || this.sorted(this.filtered());
