@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Modules\Core\Http\Controllers\CompanyController;
 use Modules\Core\Http\Controllers\PersonController;
@@ -23,8 +25,8 @@ Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(funct
         ->middleware('permission:roles.manage')
         ->name('users.roles.assign');
 
-    Route::post('demo-seed', function (\Illuminate\Http\Request $request) {
-        \Illuminate\Support\Facades\Artisan::call('demo:seed', ['tenant' => (string) $request->header('X-Tenant')]);
+    Route::post('demo-seed', function (Request $request) {
+        Artisan::call('demo:seed', ['tenant' => (string) $request->header('X-Tenant')]);
 
         return response()->json(['status' => 'ok']);
     })->middleware('permission:roles.manage')->name('demo-seed');
