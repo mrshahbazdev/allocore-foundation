@@ -722,6 +722,8 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, lastLoad: null, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
+            const p = new URLSearchParams(location.search);
+            const t = p.get('tenant');
             try { this.recent = JSON.parse(localStorage.getItem('af_recent') || '[]').filter(k => k !== this.section).slice(0, 5); } catch (e) { this.recent = []; }
             if (this.section !== 'dashboard' && this.section !== 'executive') {
                 const next = [this.section, ...this.recent.filter(k => k !== this.section)].slice(0, 5);
@@ -731,6 +733,11 @@ function workspace(initial) {
             if (t) this.tenant = t;
             else if (localStorage.getItem('allocore.tenant')) this.tenant = localStorage.getItem('allocore.tenant');
             if (this.tenant) this.loadSection();
+            if (p.get('q')) this.query = p.get('q');
+            if (p.get('status')) this.statusFilter = p.get('status');
+            this.$watch('query', () => this.syncUrl());
+            this.$watch('statusFilter', () => this.syncUrl());
+            this.$watch('tenant', () => { document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE'; });
             this.$watch('tenant', v => {
                 if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
                 document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE';
@@ -748,6 +755,12 @@ function workspace(initial) {
                 if (v && this.section === 'documents') this.loadDocVersions(v.id);
                 if (v && this.section === 'graph-entities') this.loadEntityEdges(v.id);
             });
+        },
+        syncUrl() {
+            const url = new URL(location.href);
+            if (this.query) url.searchParams.set('q', this.query); else url.searchParams.delete('q');
+            if (this.statusFilter) url.searchParams.set('status', this.statusFilter); else url.searchParams.delete('status');
+            history.replaceState(null, '', url);
         },
         item() {
             return GROUPS.flatMap(g => g.items).find(i => i.key === this.section) || {label:this.section};
