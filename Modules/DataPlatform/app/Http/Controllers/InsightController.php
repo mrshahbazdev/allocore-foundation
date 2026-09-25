@@ -107,6 +107,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'measures_overdue', "{$measuresOverdue} Maßnahme(n) überfällig.", ['count' => $measuresOverdue]);
         }
 
+        $measuresSoon = $count('measures', fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->whereBetween('due_at', [now(), now()->addDays(7)]));
+        if ($measuresSoon) {
+            $insights[] = $this->hit('info', 'measures_due_soon', "{$measuresSoon} Maßnahme(n) — Fälligkeit in ≤7 Tagen.", ['count' => $measuresSoon]);
+        }
+
         $projectsOverdue = $count('projects', fn ($q) => $q->whereIn('status', ['planned', 'active', 'on_hold'])->where('ends_at', '<', now()));
         if ($projectsOverdue) {
             $insights[] = $this->hit('warning', 'projects_overdue', "{$projectsOverdue} Projekt(e) über Enddatum hinaus aktiv.", ['count' => $projectsOverdue]);
