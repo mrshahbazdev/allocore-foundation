@@ -113,7 +113,10 @@
         </header>
 
         <div class="p-6 space-y-5">
-            <div x-show="error" class="bg-white border border-[#A6362E]/40 rounded-xl px-4 py-3 text-sm text-[#A6362E]" x-text="error"></div>
+            <div x-show="error" class="bg-white border border-[#A6362E]/40 rounded-xl px-4 py-3 text-sm text-[#A6362E] flex items-start justify-between gap-3">
+                <span x-text="error"></span>
+                <button @click="error = ''" class="shrink-0 text-[#A6362E]/60 hover:text-[#A6362E] leading-none" aria-label="Fehler schließen">&times;</button>
+            </div>
 
             {{-- Dashboard --}}
             <template x-if="section === 'dashboard'">
