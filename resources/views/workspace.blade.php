@@ -1307,6 +1307,20 @@ function workspace(initial) {
                 const oid = new URLSearchParams(location.search).get('open');
                 if (oid) { const r = rows.find(x => String(x.id) === oid); if (r) this.detail = r; }
                 this.loading = false; this.lastLoad = new Date();
+                if (this.rowsTotal > rows.length && rows.length === 200) {
+                    const sec = this.section;
+                    const loadRest = (page) => {
+                        if (this.section !== sec) return;
+                        this.api(this.item().ep + '?per_page=200&page=' + page).then(r => r.ok ? r.json() : null).then(d2 => {
+                            if (!d2 || this.section !== sec) return;
+                            const more = Array.isArray(d2) ? d2 : (d2.data || []);
+                            if (!more.length) return;
+                            this.rows = this.rows.concat(more);
+                            if (this.rows.length < this.rowsTotal) loadRest(page + 1);
+                        });
+                    };
+                    loadRest(2);
+                }
             });
         },
         sort(c) {
