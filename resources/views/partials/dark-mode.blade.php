@@ -69,6 +69,13 @@ html.dark .hover\:bg-\[\#CA8A04\]:hover{background-color:#CA8A04 !important}
 html.dark .hover\:bg-\[\#B45309\]:hover{background-color:#B45309 !important}
 html.dark .hover\:bg-\[\#A6362E\]:hover{background-color:#A6362E !important}
 html.dark .hover\:bg-\[\#CA8A04\]\/10:hover{background-color:rgba(250,204,21,.14) !important}
+html.dark .hover\:bg-\[\#E4E9F0\]:hover{background-color:#272C36 !important}
+html.dark .hover\:bg-\[\#2E7D5B\]:hover{background-color:#2E7D5B !important}
+html.dark .hover\:bg-\[\#8C2B24\]:hover{background-color:#8C2B24 !important}
+html.dark .hover\:bg-\[\#A16207\]:hover{background-color:#A16207 !important}
+html.dark .hover\:text-\[\#2E7D5B\]:hover{color:#4FC08D !important}
+html.dark .ring-\[\#CA8A04\]{--tw-ring-color:rgba(235,181,74,.5) !important}
+html.dark .ring-\[\#FACC15\]{--tw-ring-color:rgba(250,204,21,.5) !important}
 html.dark .hover\:bg-\[\#A6362E\]\/5:hover{background-color:rgba(228,96,79,.1) !important}
 html.dark .hover\:bg-\[\#B45309\]\/5:hover{background-color:rgba(232,162,63,.1) !important}
 html.dark .hover\:text-\[\#CA8A04\]:hover{color:#F2C24B !important}
