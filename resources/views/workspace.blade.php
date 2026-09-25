@@ -240,7 +240,7 @@
                         <div class="divide-y divide-[#F0F3F7]">
                             <template x-for="o in overdueSections()" :key="o.key">
                                 <a :href="'/app/' + o.key + '?tenant=' + tenant + '&overdue=1'" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC] transition">
-                                    <span class="text-sm text-[#1A2433] truncate" x-text="o.label"></span>
+                                    <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] text-[#9CA3AF] mr-1.5" x-text="icons[o.key] || '·'"></span><span x-text="o.label"></span></span>
                                     <span class="text-[11px] font-mono text-[#A6362E] shrink-0" x-text="o.count + ' überfällig'"></span>
                                 </a>
                             </template>
