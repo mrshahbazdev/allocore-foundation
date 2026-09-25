@@ -1233,13 +1233,22 @@ function workspace(initial) {
             });
         },
         loadNavBadges() {
-            const items = this.groups.flatMap(g => g.items).filter(i => i.ep);
-            Promise.all(items.map(i =>
-                this.api(i.ep + '?per_page=200').then(r => r.ok ? r.json() : []).then(d => {
-                    const rows = Array.isArray(d) ? d : (d.data || []);
-                    return [i.key, [rows.filter(r => this.overdue(r)).length, rows.filter(r => this.dueToday(r)).length]];
-                }).catch(() => [i.key, [0, 0]])
-            )).then(pairs => { this.navBadges = Object.fromEntries(pairs.map(([k, v]) => [k, v[0]])); this.navBadgesToday = Object.fromEntries(pairs.map(([k, v]) => [k, v[1]])); });
+            const apply = pairs => {
+                this.navBadges = Object.fromEntries(pairs.map(([k, v]) => [k, v[0]]));
+                this.navBadgesToday = Object.fromEntries(pairs.map(([k, v]) => [k, v[1]]));
+            };
+            this.api('/api/v1/nav-counts').then(r => {
+                if (!r.ok) throw new Error('no agg');
+                return r.json();
+            }).then(agg => apply(Object.entries(agg))).catch(() => {
+                const items = this.groups.flatMap(g => g.items).filter(i => i.ep);
+                Promise.all(items.map(i =>
+                    this.api(i.ep + '?per_page=200').then(r => r.ok ? r.json() : []).then(d => {
+                        const rows = Array.isArray(d) ? d : (d.data || []);
+                        return [i.key, [rows.filter(r => this.overdue(r)).length, rows.filter(r => this.dueToday(r)).length]];
+                    }).catch(() => [i.key, [0, 0]])
+                )).then(apply);
+            });
         },
         loadSection(soft) {
             if (!this.tenant) { this.rows = null; return; }
