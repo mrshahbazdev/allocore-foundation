@@ -29,6 +29,7 @@
             else if ($event.key === 'e' && detail && !showCreate && canEdit()) openEdit();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
             else if ($event.key === 'o' && !detail && !showCreate && !palette && filtered().length > 0) detail = filtered()[0];
+            else if ($event.key === 's' && !detail && !showCreate && !palette && rows.some(r => dueSoon(r))) dueSoonOnly = !dueSoonOnly;
             else if ($event.key === 'u' && !detail && !showCreate && !palette && rows.some(r => overdue(r))) overdueOnly = !overdueOnly;
             else if ($event.key === 'd' && detail && !showCreate && section !== 'documents' && canEdit()) openDuplicate();
             else if ($event.key === 'i' && !detail && !showCreate && !palette && canImport()) { showImport = true; importText = ''; importResult = ''; }
@@ -320,6 +321,7 @@
                         <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
                                 x-text="'Überfällig · ' + rows.filter(r => overdue(r)).length"></button>
+                        <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" title="≤7 Tage (s)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                         <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'">≤ 7 Tage</button>
                         <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r)" @click="myOnly = !myOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
@@ -379,6 +381,7 @@
                         </thead>
                         <tbody>
                             <template x-for="(row, idx) in sorted(filtered()).slice(0, limit)" :key="idx">
+                                <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())" :class="overdue(row) ? 'bg-[#A6362E]/5' : (idx % 2 ? 'bg-[#FAFBFC]/50' : '')" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#F3F6FA] cursor-pointer" title="Doppelklick: Bearbeiten">
                                 <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())" :class="[overdue(row) ? 'bg-[#A6362E]/5' : '', detail && detail.id === row.id ? 'bg-[#FACC15]/10' : '']" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer" title="Doppelklick: Bearbeiten">
                                 <tr @click="detail = row" :class="[overdue(row) ? 'bg-[#A6362E]/5' : '', selected[row.id] ? 'bg-[#FFFBEB]' : '']" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer">
                                     <td x-show="writable()" @click.stop class="px-4 py-3 w-10">
@@ -568,6 +571,7 @@
                 </div>
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
                     <button @click="copyLink()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="linkCopied ? 'Kopiert' : 'Link'"></button>
+                    <button @click="copyJson()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="jsonCopied ? 'Kopiert' : 'JSON'"></button>
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" title="Duplizieren (d)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Duplizieren</button>
                     <button x-show="canEdit()" @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
@@ -748,6 +752,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false,
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, jsonCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         meId: @js($user->id ?? null),
             this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {};
@@ -1127,6 +1132,7 @@ function workspace(initial) {
             const src = (this.rows && this.rows[0]) || {};
             return Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12).map(k => ({
                 key: k,
+                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$/.test(k) ? 'datetime-local' : (/_date$/.test(k) ? 'date' : 'text'))),
                 type: FKMAP[k] ? 'fk' : (typeof src[k] === 'boolean' ? 'checkbox' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text'))),
                 type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : (LONGTEXT.has(k) ? 'textarea' : 'text'))),
                 table: FKMAP[k] || null,
@@ -1202,6 +1208,8 @@ function workspace(initial) {
             this.editing = null;
             const fields = this.createFields();
             this.form = {};
+            fields.forEach(f => { let v = this.detail[f.key]; if (f.type === 'datetime-local' && v) v = String(v).replace(' ', 'T').slice(0, 16); this.form[f.key] = v === null ? '' : v; });
+            this.formError = ''; this.showCreate = true;
             fields.forEach(f => { const v = this.detail[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
@@ -1210,6 +1218,8 @@ function workspace(initial) {
             this.editing = this.detail;
             const fields = this.createFields();
             this.form = {};
+            fields.forEach(f => { let v = this.editing[f.key]; if (f.type === 'datetime-local' && v) v = String(v).replace(' ', 'T').slice(0, 16); this.form[f.key] = v === null ? '' : v; });
+            this.formError = ''; this.showCreate = true;
             fields.forEach(f => { const v = this.editing[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
@@ -1217,7 +1227,11 @@ function workspace(initial) {
         submitCreate() {
             this.formError = '';
             const body = {};
-            this.createFields().forEach(f => { if (this.form[f.key] !== undefined && this.form[f.key] !== '') body[f.key] = this.form[f.key]; });
+            this.createFields().forEach(f => {
+                let v = this.form[f.key];
+                if (f.type === 'datetime-local' && v) v = String(v).replace('T', ' ') + (String(v).length === 16 ? ':00' : '');
+                if (v !== undefined && v !== '') body[f.key] = v;
+            });
             const method = this.editing ? 'PUT' : 'POST';
             const url = this.item().ep + (this.editing ? '/' + this.editing.id : '');
             let fetchOpts = {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)};
@@ -1303,6 +1317,10 @@ function workspace(initial) {
         copyLink() {
             const url = location.origin + '/app/' + this.section + '?tenant=' + this.tenant + '&open=' + this.detail.id;
             navigator.clipboard.writeText(url).then(() => { this.linkCopied = true; setTimeout(() => this.linkCopied = false, 1500); });
+        },
+        copyJson() {
+            if (!this.detail) return;
+            navigator.clipboard.writeText(JSON.stringify(this.detail, null, 2)).then(() => { this.jsonCopied = true; setTimeout(() => this.jsonCopied = false, 1500); });
         },
         navDetail(dir) {
             const rs = this.sorted(this.filtered());
