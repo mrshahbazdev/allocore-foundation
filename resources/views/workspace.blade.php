@@ -1218,7 +1218,7 @@ function workspace(initial) {
             }
             if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) {
                 const d = new Date(v);
-                let out = d.toLocaleDateString('de-DE');
+                let out = d.toLocaleDateString('de-DE', {weekday: 'short'}) + ', ' + d.toLocaleDateString('de-DE');
                 if (/due|deadline|scheduled/.test(c)) {
                     const days = Math.ceil((d - Date.now()) / 86400000);
                     const rel = days === -1 ? 'gestern' : days === 0 ? 'heute' : days === 1 ? 'morgen' : days < 0 ? `vor ${-days} T` : `in ${days} T`;
