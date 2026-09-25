@@ -380,6 +380,7 @@
                         </thead>
                         <tbody>
                             <template x-for="(row, idx) in sorted(filtered()).slice(0, limit)" :key="idx">
+                                <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())" :class="overdue(row) ? 'bg-[#A6362E]/5' : (idx % 2 ? 'bg-[#FAFBFC]/50' : '')" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#F3F6FA] cursor-pointer" title="Doppelklick: Bearbeiten">
                                 <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())" :class="[overdue(row) ? 'bg-[#A6362E]/5' : '', detail && detail.id === row.id ? 'bg-[#FACC15]/10' : '']" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer" title="Doppelklick: Bearbeiten">
                                 <tr @click="detail = row" :class="[overdue(row) ? 'bg-[#A6362E]/5' : '', selected[row.id] ? 'bg-[#FFFBEB]' : '']" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer">
                                     <td x-show="writable()" @click.stop class="px-4 py-3 w-10">
