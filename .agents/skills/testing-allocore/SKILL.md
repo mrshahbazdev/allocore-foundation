@@ -27,7 +27,8 @@ Then browse `https://localhost:8443/...` (Chrome auto-proceeds or click through 
 ## Credentials / data
 - Login: `demo@allocore.local` / `demo1234`
 - Tenant "ALLOCORE GmbH" id `2f324750-f81d-4127-b903-26aec5633241` — select it in the "Mandant:" dropdown on /dashboard.
-- Tenant name is stored in the `tenants.data` JSON column (`{"name": ...}`), NOT a `name` column — querying `orderBy('name')`/`get(['name'])` 500s.
+- Tenant name is stored in the `tenants.data` JSON column (`{"name": ...}`), NOT a `name` column — querying `orderBy('name')`/`get(['name'])` may 500 on DBs where this hasn't been fixed; use the model's `name` accessor instead.
+- `GET /` may 404 on the central domain: routes/tenant.php also defines `/` and can shadow web.php's `/` redirect — navigate to /login directly.
 
 ## Gotchas
 - `resources/views/dashboard.blade.php` has had a bad merge leaving a truncated duplicate `load()`/`api()` block — check for syntax errors in the inline `<script>` if Alpine sections don't render.
