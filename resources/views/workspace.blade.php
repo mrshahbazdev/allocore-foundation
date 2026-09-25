@@ -255,7 +255,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [],
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], lookups: {},
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true,
@@ -280,6 +280,7 @@ function workspace(initial) {
         },
         loadSection() {
             if (!this.tenant) { this.rows = null; return; }
+            if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
             this.loading = true; this.error = '';
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
             history.replaceState(null,'',url);
@@ -290,6 +291,7 @@ function workspace(initial) {
                     .then(d => this.insights = d.filter(i => i.code !== 'all_clear'));
                 return;
             }
+            this.loadLookups();
             this.api(this.item().ep).then(r => {
                 if (!r.ok) { this.error = 'HTTP '+r.status+' — keine Berechtigung?'; this.rows=[]; this.loading=false; return null; }
                 return r.json();
@@ -394,6 +396,36 @@ function workspace(initial) {
             if (!row || !row.id || !confirm('Wirklich löschen?')) return;
             this.api(this.item().ep + '/' + row.id, {method: 'DELETE'}).then(() => { this.detail = null; this.loadSection(); });
         },
+        loadLookups() {
+            const SPECS = {
+                persons: ['/api/v1/persons', r => (r.first_name||'')+' '+(r.last_name||'')],
+                companies: ['/api/v1/companies', r => r.name],
+                users: ['/api/v1/users', r => r.name],
+                machines: ['/api/v1/machines', r => r.name],
+                projects: ['/api/v1/projects', r => r.name],
+                strategies: ['/api/v1/strategies', r => r.name],
+                portfolios: ['/api/v1/portfolios', r => r.name],
+                tenders: ['/api/v1/tenders', r => r.title],
+                questions: ['/api/v1/questions', r => r.title],
+                documents: ['/api/v1/documents', r => r.title],
+                expert_profiles: ['/api/v1/expert-profiles', r => r.headline||r.id],
+            };
+            Object.keys(SPECS).forEach(k => {
+                if (this.lookups[k]) return;
+                this.api(SPECS[k][0]).then(r => r.ok ? r.json() : (Array.isArray(r)?r:{data:[]})).then(d => {
+                    const rows = Array.isArray(d) ? d : (d.data || []);
+                    const m = {};
+                    rows.forEach(r => { m[r.id] = SPECS[k][1](r); });
+                    this.lookups[k] = m;
+                });
+            });
+        },
+        resolveId(c, v) {
+            const MAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',assigned_to:'persons'};
+            const lk = MAP[c];
+            if (!lk || !this.lookups[lk]) return null;
+            return this.lookups[lk][v] || null;
+        },
         label(c) {
             const L = {name:'Name',title:'Titel',first_name:'Vorname',last_name:'Nachname',email:'E-Mail',phone:'Telefon',type:'Typ',status:'Status',description:'Beschreibung',content:'Inhalt',category:'Kategorie',subject:'Betreff',area:'Bereich',hazard:'Gefährdung',risk_level:'Risikostufe',measures:'Maßnahmen',result:'Ergebnis',notes:'Notizen',progress:'Fortschritt',quantity:'Menge',order_no:'Auftrag-Nr.',product:'Produkt',scrap_qty:'Ausschuss',headline:'Schlagzeile',bio:'Bio',skills:'Skills',hourly_rate:'Stundensatz',budget:'Budget',price:'Preis',proposal:'Angebot',stake_pct:'Anteil %',invested_amount:'Investiert',current_valuation:'Bewertung',capital_need:'Kapitalbedarf',revenue:'Umsatz',cashflow:'Cashflow',ebitda:'EBITDA',liquidity:'Liquidität',period:'Periode',legal_form:'Rechtsform',street:'Straße',zip:'PLZ',city:'Stadt',country:'Land',version:'Version',valid_from:'Gültig ab',interval_months:'Intervall (Mon.)',capacity_units_per_day:'Kapazität/Tag',asset_class:'Anlageklasse',cost_basis:'Kostenbasis',current_value:'Aktueller Wert',currency:'Währung',due_at:'Fällig',deadline_at:'Frist',scheduled_at:'Geplant',starts_on:'Von',ends_on:'Bis',starts_at:'Start',ends_at:'Ende',acquired_at:'Erworben',valued_at:'Bewertet am',body:'Inhalt',is_accepted:'Akzeptiert',document_id:'Dokument'};
             return L[c] || c.replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
@@ -401,6 +433,8 @@ function workspace(initial) {
         cell(row, c) {
             let v = row[c];
             if (v === null || v === undefined) return '—';
+            const rn = this.resolveId(c, v);
+            if (rn) return `<span title="${v}">${rn}</span>`;
             if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
             if (c === 'status' || c === 'severity' || c === 'type') {
                 const map = {open:'#CA8A04',critical:'#A6362E',high:'#A6362E',warning:'#CA8A04',done:'#2E7D5B',approved:'#2E7D5B',active:'#2E7D5B',info:'#5B6B7E',pending:'#CA8A04',in_progress:'#CA8A04',archived:'#5B6B7E',draft:'#5B6B7E',maintenance:'#CA8A04',retired:'#5B6B7E',awarded:'#2E7D5B',completed:'#2E7D5B'};
