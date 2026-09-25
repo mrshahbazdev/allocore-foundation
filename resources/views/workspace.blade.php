@@ -131,6 +131,20 @@
                             </a>
                         </template>
                     </div>
+                    <div x-show="openTasks.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
+                        <a :href="'/app/tasks?tenant=' + tenant" class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex items-center justify-between hover:text-[#CA8A04]">
+                            Offene Aufgaben
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                        <div class="divide-y divide-[#F0F3F7]">
+                            <template x-for="t in openTasks" :key="t.id">
+                                <a :href="'/app/tasks?tenant=' + tenant + '&open=' + t.id" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
+                                    <span class="text-sm text-[#1A2433] truncate" x-text="t.title"></span>
+                                    <span class="text-[11px] font-mono shrink-0" :class="t.due_at && new Date(t.due_at) < new Date() ? 'text-[#A6362E]' : 'text-[#9CA3AF]'" x-text="t.due_at ? new Date(t.due_at).toLocaleDateString('de-DE') : ''"></span>
+                                </a>
+                            </template>
+                        </div>
+                    </div>
                     <div x-show="dueSoon.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
                         <a :href="'/app/deadlines?tenant=' + tenant" class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex items-center justify-between hover:text-[#CA8A04]">
                             Nächste Fristen
@@ -233,7 +247,7 @@
                             <div x-show="colPicker" @click.outside="colPicker = false" class="absolute right-0 mt-1.5 w-48 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20 max-h-64 overflow-y-auto" style="display:none">
                                 <template x-for="c in columns" :key="c">
                                     <label class="flex items-center gap-2 px-3 py-1.5 text-xs text-[#1A2433] hover:bg-[#FAFBFC] cursor-pointer">
-                                        <input type="checkbox" :checked="!hiddenCols[c]" @change="hiddenCols[c] = !hiddenCols[c]" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                        <input type="checkbox" :checked="!hiddenCols[c]" @change="toggleCol(c)" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                         <span x-text="label(c)"></span>
                                     </label>
                                 </template>
@@ -529,7 +543,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [],
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
@@ -579,7 +593,7 @@ function workspace(initial) {
         loadSection() {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
-            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = {}; this.colPicker = false;
+            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false;
             try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
             history.replaceState(null,'',url);
@@ -597,6 +611,12 @@ function workspace(initial) {
                         const rs = Array.isArray(d) ? d : (d.data || []);
                         this.dueSoon = rs.filter(x => x.status !== 'completed' && x.due_at)
                             .sort((a,b) => new Date(a.due_at) - new Date(b.due_at)).slice(0, 5);
+                    });
+                this.api('/api/v1/tasks').then(r => r.ok ? r.json() : [])
+                    .then(d => {
+                        const rs = Array.isArray(d) ? d : (d.data || []);
+                        this.openTasks = rs.filter(x => ['open','in_progress'].includes(String(x.status)))
+                            .sort((a,b) => new Date(a.due_at || '9999') - new Date(b.due_at || '9999')).slice(0, 5);
                     });
                 return;
             }
@@ -748,6 +768,13 @@ function workspace(initial) {
             this.tenantList.push({id: t.id, name: t.name});
             this.tenant = t.id;
             this.loadSection();
+        },
+        loadColPrefs() {
+            try { return JSON.parse(localStorage.getItem('af_cols_' + this.section) || '{}'); } catch (e) { return {}; }
+        },
+        toggleCol(c) {
+            this.hiddenCols[c] = !this.hiddenCols[c];
+            try { localStorage.setItem('af_cols_' + this.section, JSON.stringify(this.hiddenCols)); } catch (e) {}
         },
         visCols() { return this.columns.filter(c => !this.hiddenCols[c]); },
         filtered() {
