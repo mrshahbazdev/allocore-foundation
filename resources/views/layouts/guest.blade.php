@@ -18,6 +18,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @include('partials.dark-mode')
     </head>
     <body class="font-sans text-[#1A2433] antialiased bg-[#F6F7F9]">
         <div class="min-h-screen lg:flex">
@@ -59,5 +60,8 @@
                 </div>
             </main>
         </div>
+        <button onclick="(function(){var d=!document.documentElement.classList.contains('dark');document.documentElement.classList.toggle('dark',d);try{localStorage.setItem('af_dark',d?'1':'0')}catch(e){}})()" title="Darstellung wechseln" class="fixed bottom-5 right-5 z-50 p-2 rounded-full border border-[#D6DEE9] bg-white text-[#5B6B7E] shadow hover:text-[#CA8A04]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
     </body>
 </html>
