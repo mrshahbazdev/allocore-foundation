@@ -1,0 +1,31 @@
+name: auto-merge
+on:
+  pull_request:
+    types: [labeled, synchronize, opened, reopened]
+  check_suite:
+    types: [completed]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const payload = context.payload;
+            const prs = context.eventName === 'check_suite'
+              ? (payload.check_suite.pull_requests || [])
+              : [payload.pull_request];
+            for (const p of prs) {
+              if (!p) continue;
+              const { data: pr } = await github.rest.pulls.get({ owner: context.repo.owner, repo: context.repo.repo, pull_number: p.number });
+              if (pr.state !== 'open' || !pr.labels.some(l => l.name === 'automerge')) continue;
+              if (pr.mergeable === null) { core.info(`#${pr.number} mergeable unknown — skip`); continue; }
+              if (!pr.mergeable) { core.info(`#${pr.number} conflicting — skip`); continue; }
+              const { data: checks } = await github.rest.checks.listForRef({ owner: context.repo.owner, repo: context.repo.repo, ref: pr.head.sha });
+              if (checks.check_runs.some(c => c.conclusion === 'failure' || c.status !== 'completed')) { core.info(`#${pr.number} checks not green — skip`); continue; }
+              await github.rest.pulls.merge({ owner: context.repo.owner, repo: context.repo.repo, pull_number: pr.number, merge_method: 'squash' });
+              core.info(`#${pr.number} merged`);
+            }
