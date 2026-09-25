@@ -1786,7 +1786,7 @@ function workspace(initial) {
             const i = rs.findIndex(r => String(r.id) === String(this.detail.id));
             return i < 0 ? '' : (i + 1) + ' / ' + rs.length;
         },
-        dueKey(row) { return ['due_at','deadline','ends_on','due_date','end_date','next_due_at'].find(k => row[k]); },
+        dueKey(row) { return ['due_at','deadline','deadline_at','ends_on','ends_at','due_date','end_date','next_due_at','review_at'].find(k => row[k]); },
         isOpenStatus(row) {
             const OPEN = ['open','pending','in_progress','running','queued','scheduled','planned','active','submitted','shortlisted','draft','on_hold'];
             return !row.status || OPEN.includes(String(row.status));
