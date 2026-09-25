@@ -158,7 +158,8 @@
                         </template>
                     </dl>
                 </div>
-                <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end">
+                <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
+                    <button @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
                     <button @click="deleteRow(detail)" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
                 </div>
             </div>
@@ -169,7 +170,7 @@
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="showCreate = false"></div>
             <div class="relative w-full max-w-md bg-white rounded-xl shadow-xl">
                 <div class="px-6 py-4 border-b border-[#E4E9F0]">
-                    <h2 class="font-semibold text-[#0B0B0F]" x-text="'Neu: ' + title()"></h2>
+                    <h2 class="font-semibold text-[#0B0B0F]" x-text="(editing ? 'Bearbeiten: ' : 'Neu: ') + title()"></h2>
                 </div>
                 <form @submit.prevent="submitCreate" class="p-6 space-y-4">
                     <template x-for="f in createFields()" :key="f.key">
@@ -247,7 +248,7 @@ function workspace(initial) {
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
         tenant: '', rows: null, columns: [], metrics: null, insights: [],
-        loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '',
+        loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -311,15 +312,24 @@ function workspace(initial) {
                 type: typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text'),
             }));
         },
-        openCreate() { this.form = {}; this.formError = ''; this.showCreate = true; },
+        openCreate() { this.editing = null; this.form = {}; this.formError = ''; this.showCreate = true; },
+        openEdit() {
+            this.editing = this.detail;
+            const fields = this.createFields();
+            this.form = {};
+            fields.forEach(f => { const v = this.editing[f.key]; this.form[f.key] = v === null ? '' : v; });
+            this.formError = ''; this.showCreate = true;
+        },
         submitCreate() {
             this.formError = '';
             const body = {};
             this.createFields().forEach(f => { if (this.form[f.key] !== undefined && this.form[f.key] !== '') body[f.key] = this.form[f.key]; });
-            this.api(this.item().ep, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+            const method = this.editing ? 'PUT' : 'POST';
+            const url = this.item().ep + (this.editing ? '/' + this.editing.id : '');
+            this.api(url, {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)})
                 .then(r => {
                     if (!r.ok) { this.formError = 'HTTP '+r.status+' — Pflichtfelder fehlen?'; return null; }
-                    this.showCreate = false; this.loadSection(); return r.json();
+                    this.showCreate = false; this.detail = null; this.editing = null; this.loadSection(); return r.json();
                 });
         },
         deleteRow(row) {
