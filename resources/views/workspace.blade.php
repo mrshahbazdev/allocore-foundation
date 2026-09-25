@@ -1137,7 +1137,12 @@ function workspace(initial) {
             }
             this.api(url, fetchOpts)
                 .then(r => {
-                    if (!r.ok) { this.formError = 'HTTP '+r.status+' — Pflichtfelder fehlen?'; return null; }
+                    if (!r.ok) {
+                        return r.json().then(d => {
+                            const errs = d && d.errors ? Object.entries(d.errors).map(([k, ms]) => this.label(k) + ': ' + (Array.isArray(ms) ? ms[0] : ms)).join(' · ') : null;
+                            this.formError = errs || (d && d.message ? d.message : 'HTTP ' + r.status + ' — Pflichtfelder fehlen?');
+                        }).catch(() => { this.formError = 'HTTP ' + r.status + ' — Pflichtfelder fehlen?'; });
+                    }
                     this.showCreate = false; this.detail = null; this.editing = null; this.loadSection(); return r.json();
                 });
         },
