@@ -600,7 +600,7 @@
                         <button @click="navDetail(1)" :disabled="!hasNav(1)" :class="hasNav(1) ? 'text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7]' : 'text-[#E4E9F0] cursor-not-allowed'" class="p-1.5 rounded-lg transition" title="Nächster (→)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
                         <span class="text-[11px] font-mono text-[#9CA3AF] px-1" x-text="detailPos()"></span>
                     </div>
-                    <button x-show="!['dashboard','executive'].includes(section)" @click="reloadRow()" class="text-[#5B6B7E] hover:text-[#CA8A04]" title="Aktualisieren">&#8635;</button>
+                    <button x-show="!['dashboard','executive'].includes(section)" @click="reloadRow()" class="text-[#5B6B7E] hover:text-[#CA8A04] inline-block" :class="rowLoading && 'animate-spin'" title="Aktualisieren">&#8635;</button>
                     <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]" title="Schließen (Esc)" aria-label="Schließen">&times;</button>
                 </div>
                 <div class="flex-1 overflow-y-auto p-6">
@@ -962,7 +962,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'), navQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [],
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
@@ -2018,6 +2018,7 @@ function workspace(initial) {
         },
         reloadRow() {
             if (!this.detail || !this.detail.id || ['dashboard','executive'].includes(this.section)) return;
+            this.rowLoading = true;
             this.api(this.item().ep + '/' + this.detail.id).then(r => {
                 if (!r.ok) { this.toast('Aktualisieren fehlgeschlagen (HTTP ' + r.status + ').'); return null; }
                 return r.json();
@@ -2026,8 +2027,9 @@ function workspace(initial) {
                 const row = d.data || d;
                 this.detail = row;
                 this.rows = (this.rows || []).map(r => String(r.id) === String(row.id) ? row : r);
+                this.rowLoading = false;
                 this.toast('Datensatz aktualisiert.');
-            });
+            }).finally(() => { this.rowLoading = false; });
         },
         cell(row, c) {
             let v = row[c];
