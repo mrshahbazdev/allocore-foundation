@@ -487,7 +487,8 @@
                             <div class="flex gap-3 group">
                                 <dt class="w-36 shrink-0 text-[#5B6B7E]" :title="k" x-text="label(k)"></dt>
                                 <dd class="min-w-0 flex-1 font-mono text-[13px] text-[#1A2433] break-words">
-                                    <span x-show="!linkOf(detail[k])" x-text="fmtD(detail, k)"></span>
+                                    <span x-show="!linkOf(detail[k]) && !(k === 'status' || k === 'severity')" x-text="fmtD(detail, k)"></span>
+                                    <span x-show="(k === 'status' || k === 'severity')" class="inline-flex items-center gap-1.5 font-sans text-[13px]"><span class="h-2 w-2 rounded-full" :style="'background:' + statusColor(detail[k])"></span><span x-text="statusLabel(detail[k])"></span></span>
                                     <a x-show="linkOf(detail[k])" :href="linkOf(detail[k])" :target="/^https?:/.test(linkOf(detail[k]) || '') ? '_blank' : null" rel="noopener"
                                        class="text-[#CA8A04] hover:underline break-all" x-text="fmtD(detail, k)"></a>
                                     <a x-show="refSection(k) && detail[k]" :href="'/app/' + refSection(k) + '?tenant=' + tenant + '&open=' + detail[k]"
@@ -1260,6 +1261,10 @@ function workspace(initial) {
                 const sum = sel.reduce((a, r) => a + (Number(r[c]) || 0), 0);
                 return 'Σ ' + this.label(c) + ' ' + sum.toLocaleString('de-DE', {maximumFractionDigits: 2}) + (/price|amount|value|budget|revenue|ebitda|cashflow|liquidity|capital|cost|salary|hourly|invested|valuation/i.test(c) ? ' €' : '');
             }).join(' · ');
+        },
+        statusColor(v) {
+            const map = {open:'#CA8A04',pending:'#CA8A04',in_progress:'#CA8A04',running:'#CA8A04',queued:'#5B6B7E',scheduled:'#5B6B7E',planned:'#5B6B7E',on_hold:'#CA8A04',warning:'#CA8A04',medium:'#CA8A04',critical:'#A6362E',high:'#A6362E',cancelled:'#A6362E',rejected:'#A6362E',overdue:'#A6362E',done:'#2E7D5B',completed:'#2E7D5B',approved:'#2E7D5B',accepted:'#2E7D5B',mitigated:'#2E7D5B',active:'#2E7D5B',awarded:'#2E7D5B',answered:'#2E7D5B',closed:'#2E7D5B',info:'#5B6B7E',low:'#2E7D5B'};
+            return map[String(v).toLowerCase()] || '#5B6B7E';
         },
         linkOf(v) {
             if (typeof v !== 'string') return null;
