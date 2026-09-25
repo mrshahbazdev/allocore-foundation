@@ -1496,16 +1496,16 @@ function workspace(initial) {
         submitApp() {
             if (!this.appForm.expert_profile_id || !this.detail) return;
             this.api('/api/v1/tenders/' + this.detail.id + '/applications', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(this.appForm)})
-                .then(r => { if (r.ok) { this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.loadApps(this.detail.id); this.loadSection(); } else this.toast('Bewerbung fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.loadApps(this.detail.id); this.loadSection(); this.toast('Bewerbung eingereicht.'); } else this.toast('Bewerbung fehlgeschlagen (HTTP '+r.status+')'); });
         },
         setAppStatus(id, s) {
             this.api('/api/v1/tender-applications/' + id, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
-                .then(r => { if (r.ok) { this.loadApps(this.detail.id); this.loadSection(); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.loadApps(this.detail.id); this.loadSection(); this.toast(this.statusLabel(s) + '.'); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
         },
         deleteApp(id) {
             if (!confirm('Bewerbung löschen?')) return;
             this.api('/api/v1/tender-applications/' + id, {method:'DELETE'})
-                .then(() => this.loadApps(this.detail.id));
+                .then(() => { this.loadApps(this.detail.id); this.toast('Bewerbung gelöscht.'); });
         },
         loadRowEvents(id) {
             this.api('/api/v1/events?per_page=100&subject_id=' + encodeURIComponent(id)).then(r => r.ok ? r.json() : {data: []})
@@ -1521,11 +1521,11 @@ function workspace(initial) {
             const body = this.answerText.trim();
             if (!body || !this.detail) return;
             this.api('/api/v1/questions/' + this.detail.id + '/answers', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({body})})
-                .then(r => { if (r.ok) { this.answerText = ''; this.loadAnswers(this.detail.id); this.loadSection(); } else this.toast('Antwort fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.answerText = ''; this.loadAnswers(this.detail.id); this.loadSection(); this.toast('Antwort gespeichert.'); } else this.toast('Antwort fehlgeschlagen (HTTP '+r.status+')'); });
         },
         acceptAnswer(id) {
             this.api('/api/v1/answers/' + id + '/accept', {method:'POST'})
-                .then(r => { if (r.ok) { this.loadAnswers(this.detail.id); this.loadSection(); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.loadAnswers(this.detail.id); this.loadSection(); this.toast('Antwort akzeptiert.'); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
         },
         deleteAnswer(id) {
             if (!confirm('Antwort löschen?')) return;
