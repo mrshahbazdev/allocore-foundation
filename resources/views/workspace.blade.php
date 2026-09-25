@@ -444,7 +444,7 @@
                         </thead>
                         <tbody>
                             <template x-for="it in renderRows()" :key="it.t === 'h' ? 'h-'+it.label : it.r.id">
-                                <tr @click="it.t === 'r' ? (detail = it.r) : (collapsedGroups[it.label] = !collapsedGroups[it.label])" @dblclick="it.t === 'r' && canEdit() && (detail = it.r, openEdit())"
+                                <tr @click="it.t === 'r' ? (detail = it.r) : toggleGroupHeader(it.label)" @dblclick="it.t === 'r' && canEdit() && (detail = it.r, openEdit())"
                                     :class="it.t === 'h' ? 'bg-[#F0F3F7] hover:bg-[#E4E9F0] cursor-pointer' : ([overdue(it.r) ? 'bg-[#A6362E]/5' : '', selected[it.r.id] ? 'bg-[#FFFBEB]' : '', detail && detail.id === it.r.id ? 'bg-[#FACC15]/10' : '', it.i % 2 ? 'bg-[#FAFBFC]/50' : ''].join(' ') + ' hover:bg-[#F3F6FA] cursor-pointer')"
                                     class="border-b border-[#F0F3F7] last:border-b-0" :title="it.t === 'r' ? 'Doppelklick: Bearbeiten' : 'Klick: einklappen/ausklappen'">
                                     <template x-if="it.t === 'h'">
@@ -931,6 +931,7 @@ function workspace(initial) {
         allCollapsed() { return this.groups.every(g => this.collapsed[g.label]); },
         toggleAllGroups() { const v = !this.allCollapsed(); this.groups.forEach(g => { this.collapsed[g.label] = v; }); this.saveCollapsed(); },
         toggleGroup(k) { this.collapsed[k] = !this.collapsed[k]; this.saveCollapsed(); },
+        toggleGroupHeader(label) { this.collapsedGroups[label] = !this.collapsedGroups[label]; try { localStorage.setItem('af_gc_' + this.section, JSON.stringify(this.collapsedGroups)); } catch (e) {} },
         saveCollapsed() { try { localStorage.setItem('af_navgroups', JSON.stringify(this.collapsed)); } catch (e) {} },
         overdueSections() {
             return Object.entries(this.navBadges || {}).filter(([k, n]) => n > 0)
@@ -1006,7 +1007,7 @@ function workspace(initial) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
             this.loading = true; this.error = '';
-            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; }
+            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; try { this.collapsedGroups = JSON.parse(localStorage.getItem('af_gc_' + this.section) || '{}') || {}; } catch (e) { this.collapsedGroups = {}; } }
             try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             if (this._urlSort) { const m = this._urlSort.match(/^(.+?)(?::(asc|desc))?$/); this.sortKey = m[1]; this.sortAsc = m[2] !== 'desc'; this._urlSort = null; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
