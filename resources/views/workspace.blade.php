@@ -387,7 +387,7 @@
                                     <tbody>
                                         <template x-for="t in exec.tenants" :key="t.id">
                                             <tr class="border-b border-[#F0F3F7] last:border-b-0">
-                                                <td class="px-5 py-3 font-medium text-[#0B0B0F]" x-text="t.name"></td>
+                                                <td class="px-5 py-3 font-medium"><a :href="'/app/dashboard?tenant=' + t.id" :title="'Zu ' + t.name + ' wechseln'" class="text-[#0B0B0F] hover:text-[#CA8A04] transition" x-text="t.name"></a></td>
                                                 <td class="px-5 py-3 font-mono" x-text="t.companies"></td>
                                                 <td class="px-5 py-3 font-mono" x-text="t.persons"></td>
                                                 <td class="px-5 py-3 font-mono" x-text="t.tasks_open"></td>
