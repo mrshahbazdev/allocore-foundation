@@ -1283,7 +1283,7 @@ function workspace(initial) {
                 return;
             }
             this.loadLookups();
-            this.api(this.item().ep + (this.section === 'events' ? '?per_page=200' : '')).then(r => {
+            this.api(this.item().ep + '?per_page=200').then(r => {
                 if (!r.ok) { this.error = 'HTTP '+r.status+' — keine Berechtigung?'; this.rows=[]; this.loading=false; return null; }
                 return r.json();
             }).then(d => {

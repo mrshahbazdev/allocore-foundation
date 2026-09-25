@@ -16,7 +16,7 @@ class InvestmentController extends Controller
             ->when($request->asset_class, fn ($q) => $q->where('asset_class', $request->asset_class))
             ->when($request->active === '1', fn ($q) => $q->whereNull('disposed_at'))
             ->with('portfolio:id,name')
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

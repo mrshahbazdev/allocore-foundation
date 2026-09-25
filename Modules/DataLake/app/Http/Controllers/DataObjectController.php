@@ -19,7 +19,7 @@ class DataObjectController extends Controller
         return DataObject::query()
             ->when($request->category, fn ($q, $c) => $q->where('category', $c))
             ->latest()
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

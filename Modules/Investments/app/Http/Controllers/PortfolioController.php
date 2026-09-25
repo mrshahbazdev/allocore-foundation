@@ -14,7 +14,7 @@ class PortfolioController extends Controller
         return Portfolio::query()
             ->when($request->type, fn ($q) => $q->where('type', $request->type))
             ->withCount('investments')
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

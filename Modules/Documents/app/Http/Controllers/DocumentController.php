@@ -13,7 +13,7 @@ class DocumentController extends Controller
 {
     public function index()
     {
-        return Document::with('currentVersion')->paginate();
+        return Document::with('currentVersion')->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

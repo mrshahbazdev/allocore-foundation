@@ -11,7 +11,7 @@ class PersonController extends Controller
 {
     public function index()
     {
-        return Person::with('company')->paginate();
+        return Person::with('company')->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

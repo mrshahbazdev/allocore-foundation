@@ -18,7 +18,7 @@ class LeaveRequestController extends Controller
                 ->where('starts_on', '<=', today())->where('ends_on', '>=', today()))
             ->with('person:id,first_name,last_name')
             ->orderByDesc('starts_on')
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

@@ -10,7 +10,7 @@ class CompanyController extends Controller
 {
     public function index()
     {
-        return Company::withCount('persons')->paginate();
+        return Company::withCount('persons')->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

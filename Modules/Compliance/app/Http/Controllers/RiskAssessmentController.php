@@ -15,7 +15,7 @@ class RiskAssessmentController extends Controller
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->risk_level, fn ($q) => $q->where('risk_level', $request->risk_level))
             ->with('assessor:id,first_name,last_name')
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

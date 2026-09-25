@@ -14,7 +14,7 @@ class InstructionController extends Controller
         return Instruction::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->with('person:id,first_name,last_name', 'responsible:id,name')
-            ->paginate();
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)
