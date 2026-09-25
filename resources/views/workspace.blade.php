@@ -430,6 +430,7 @@
                             <tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
                                 <th x-show="writable()" class="px-4 py-3 w-10">
                                     <input type="checkbox" @change="toggleAll($event.target.checked)" :checked="sorted(filtered()).length > 0 && selCount() === sorted(filtered()).length"
+                                           x-effect="$el.indeterminate = selCount() > 0 && selCount() < sorted(filtered()).length"
                                            class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 </th>
                                 <th class="px-3 py-3 text-[11px] font-semibold tracking-wide text-[#9CA3AF] w-8">#</th>
