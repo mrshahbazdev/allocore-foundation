@@ -56,6 +56,8 @@ Erinnerungen: `compliance:remind` (stündlich).
 | `/events` | `metrics.view` | Event-Stream aus `stored_events` (R5) |
 | `/metrics`, `/metrics/{metric}` | `metrics.view` | KPI-Snapshots aus `analytics:aggregate` (daily) |
 | `/analytics/trends` | `metrics.view` | Layer 7: Trend je Metrik — letzter Wert, Vorgänger, `delta`, `direction` (up/down/flat/unknown) |
+| `/insights` | `metrics.view` | Regelbasierte Hinweise (KI-Steuerung): `code`, `severity` (critical/warning/info), `message`, `module` |
+| POST `/demo-seed` | `roles.manage` | Demodaten für den aktuellen Tenant laden (idempotent; wie `php artisan demo:seed {tenant}`) |
 
 ## DataLake (`datalake`) — Layer 4
 
