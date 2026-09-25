@@ -4,6 +4,9 @@ on:
     types: [labeled, synchronize, opened, reopened]
   check_suite:
     types: [completed]
+  workflow_dispatch:
+  schedule:
+    - cron: '*/10 * * * *'
 permissions:
   contents: write
   pull-requests: write
@@ -17,7 +20,9 @@ jobs:
             const payload = context.payload;
             const prs = context.eventName === 'check_suite'
               ? (payload.check_suite.pull_requests || [])
-              : [payload.pull_request];
+              : ['pull_request', 'pull_request_target'].includes(context.eventName)
+              ? [payload.pull_request]
+              : (await github.rest.pulls.list({ owner: context.repo.owner, repo: context.repo.repo, state: 'open', per_page: 100 })).data;
             for (const p of prs) {
               if (!p) continue;
               const { data: pr } = await github.rest.pulls.get({ owner: context.repo.owner, repo: context.repo.repo, pull_number: p.number });
