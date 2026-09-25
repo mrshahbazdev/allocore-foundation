@@ -122,6 +122,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'tenders_open', "{$openTenders} Ausschreibung(en) offen — Experten-Matching prüfen.", ['count' => $openTenders]);
         }
 
+        $tendersSoon = $count('tenders', fn ($q) => $q->where('status', 'open')->whereBetween('deadline_at', [now(), now()->addDays(7)]));
+        if ($tendersSoon) {
+            $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
+        }
+
         $openQuestions = $count('questions', fn ($q) => $q->where('status', 'open'));
         if ($openQuestions) {
             $insights[] = $this->hit('info', 'questions_open', "{$openQuestions} offene Frage(n) im Expertennetzwerk.", ['count' => $openQuestions]);
