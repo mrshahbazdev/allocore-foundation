@@ -70,12 +70,8 @@ class ActivityRecorder
         Strategy::class => 'strategy',
         Project::class => 'project',
         Measure::class => 'measure',
-<<<<<<< HEAD
-        ExecReport::class => 'exec_report',
-||||||| a4ac835
-=======
         AiAnalysis::class => 'ai_analysis',
->>>>>>> origin/main
+        ExecReport::class => 'exec_report',
     ];
 
     public static function register(): void
