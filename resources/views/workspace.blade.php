@@ -302,10 +302,10 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                         <div class="divide-y divide-[#F0F3F7]">
-                            <template x-for="d in upcoming" :key="d.id">
-                                <a :href="'/app/deadlines?tenant=' + tenant + '&open=' + d.id" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
-                                    <span class="text-sm text-[#1A2433] truncate" x-text="d.title"></span>
-                                    <span class="text-[11px] font-mono shrink-0" x-html="dueRel(d.due_at)"></span>
+                            <template x-for="d in upcoming" :key="d.sec + '-' + d.id">
+                                <a :href="'/app/' + d.sec + '?tenant=' + tenant + '&open=' + d.id" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
+                                    <span class="text-sm text-[#1A2433] truncate flex items-center gap-1.5"><span class="text-[10px] text-[#9CA3AF]" x-text="icons[d.sec] || ''"></span><span class="truncate" x-text="d.title"></span></span>
+                                    <span class="text-[11px] font-mono shrink-0" x-html="dueRel(d.due)"></span>
                                 </a>
                             </template>
                         </div>
@@ -1396,12 +1396,13 @@ function workspace(initial) {
                     .then(d => this.events = (Array.isArray(d) ? d : (d.data || [])).slice(0, 15));
                 this.api('/api/v1/analytics/trends').then(r => r.ok ? r.json() : [])
                     .then(d => this.trends = Array.isArray(d) ? d : (d.data || []));
-                this.api('/api/v1/deadlines').then(r => r.ok ? r.json() : [])
-                    .then(d => {
-                        const rs = Array.isArray(d) ? d : (d.data || []);
-                        this.upcoming = rs.filter(x => x.status !== 'completed' && x.due_at)
-                            .sort((a,b) => new Date(a.due_at) - new Date(b.due_at)).slice(0, 5);
-                    });
+                Promise.all([
+                    this.api('/api/v1/deadlines').then(r => r.ok ? r.json() : []).then(d => (Array.isArray(d) ? d : (d.data || [])).filter(x => x.status !== 'completed' && x.due_at).map(x => ({sec: 'deadlines', id: x.id, title: x.title, due: x.due_at}))),
+                    this.api('/api/v1/tasks').then(r => r.ok ? r.json() : []).then(d => (Array.isArray(d) ? d : (d.data || [])).filter(x => ['open','in_progress'].includes(String(x.status)) && x.due_at).map(x => ({sec: 'tasks', id: x.id, title: x.title, due: x.due_at}))),
+                    this.api('/api/v1/inspections').then(r => r.ok ? r.json() : []).then(d => (Array.isArray(d) ? d : (d.data || [])).filter(x => x.status === 'scheduled' && x.scheduled_at).map(x => ({sec: 'inspections', id: x.id, title: x.title, due: x.scheduled_at}))),
+                ]).then(list => {
+                    this.upcoming = list.flat().sort((a, b) => new Date(a.due) - new Date(b.due)).slice(0, 6);
+                });
                 this.api('/api/v1/tasks').then(r => r.ok ? r.json() : [])
                     .then(d => {
                         const rs = Array.isArray(d) ? d : (d.data || []);
