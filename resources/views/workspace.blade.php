@@ -14,10 +14,25 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
-<div class="min-h-screen lg:flex" x-data="workspace(@js($section))" x-cloak>
+<div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak>
+
+    {{-- Mobile top bar --}}
+    <div class="lg:hidden flex items-center justify-between px-4 h-14 bg-[#0B0B0F] text-white sticky top-0 z-30 shrink-0">
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
+            <img src="{{ asset('logo-mark.png') }}" alt="ALLOCORE" class="h-7 w-auto">
+            <span class="font-semibold tracking-tight">ALLO<span class="text-[#FACC15]">CORE</span></span>
+        </a>
+        <button @click="navOpen = !navOpen" class="p-2 -mr-2 text-[#9CA3AF] hover:text-white" title="Menü">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+    </div>
+
+    {{-- Backdrop (mobile) --}}
+    <div x-show="navOpen" @click="navOpen = false" class="lg:hidden fixed inset-0 bg-black/50 z-30" x-transition.opacity></div>
 
     {{-- Sidebar --}}
-    <aside class="bg-[#0B0B0F] text-white lg:w-64 lg:min-h-screen lg:sticky lg:top-0 flex flex-col">
+    <aside class="bg-[#0B0B0F] text-white w-64 flex flex-col fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-200 lg:translate-x-0 lg:static lg:min-h-screen lg:sticky lg:top-0 lg:shrink-0"
+           :class="navOpen ? 'translate-x-0' : '-translate-x-full'">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-5 h-16 border-b border-[#1A1A1F]">
             <img src="{{ asset('logo-mark.png') }}" alt="ALLOCORE" class="h-9 w-auto">
             <span class="font-semibold tracking-tight text-[17px]">ALLO<span class="text-[#FACC15]">CORE</span></span>
@@ -345,7 +360,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {},
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false,
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100,
