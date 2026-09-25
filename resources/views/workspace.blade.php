@@ -438,6 +438,16 @@
                                 </tr>
                             </template>
                         </tbody>
+                        <tfoot x-show="hasSums()">
+                            <tr class="border-t-2 border-[#E4E9F0] bg-[#FAFBFC]">
+                                <td x-show="writable()" class="px-4 py-2.5 w-10"></td>
+                                <td class="px-3 py-2.5"></td>
+                                <template x-for="c in visCols()" :key="'f-'+c">
+                                    <td class="px-5 py-2.5 text-xs font-semibold text-[#1A2433] tabular-nums" x-text="colSum(c)"></td>
+                                </template>
+                                <td x-show="sectionActions().length" class="px-5 py-2.5 w-28"></td>
+                            </tr>
+                        </tfoot>
                     </table>
                     </div>
                     <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center flex items-center justify-center gap-4 print:hidden">
@@ -1223,6 +1233,20 @@ function workspace(initial) {
             }
             return this.fmt(v);
         },
+        numericCol(c) {
+            const rows = this.filtered();
+            const vals = rows.map(r => r[c]).filter(v => v !== null && v !== undefined && v !== '');
+            if (!vals.length || vals.length < 2) return false;
+            return vals.every(v => typeof v === 'number' || (typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v.trim())));
+        },
+        colSum(c) {
+            if (!this.numericCol(c)) return '';
+            const sum = this.filtered().reduce((a, r) => a + (Number(r[c]) || 0), 0);
+            if (/price|amount|value|budget|revenue|ebitda|cashflow|liquidity|capital|cost|salary|hourly|invested|valuation/i.test(c)) return 'Σ ' + sum.toLocaleString('de-DE', {maximumFractionDigits: 2}) + ' €';
+            if (/pct|percent|progress|rate$|quote/i.test(c)) return 'Ø ' + (sum / this.filtered().length).toLocaleString('de-DE', {maximumFractionDigits: 1}) + ' %';
+            return 'Σ ' + sum.toLocaleString('de-DE', {maximumFractionDigits: 2});
+        },
+        hasSums() { return this.visCols().some(c => this.numericCol(c)); },
         linkOf(v) {
             if (typeof v !== 'string') return null;
             if (/^https?:\/\/\S+$/.test(v)) return v;
