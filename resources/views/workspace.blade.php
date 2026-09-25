@@ -1504,8 +1504,12 @@ function workspace(initial) {
         },
         deleteApp(id) {
             if (!confirm('Bewerbung löschen?')) return;
+            const row = (this.apps || []).find(a => String(a.id) === String(id));
             this.api('/api/v1/tender-applications/' + id, {method:'DELETE'})
-                .then(() => { this.loadApps(this.detail.id); this.toast('Bewerbung gelöscht.'); });
+                .then(() => { this.loadApps(this.detail.id); this.toast('Bewerbung gelöscht.', row ? {label: 'Rückgängig', fn: () => {
+                    const {id: _i, created_at: _c, updated_at: _u, tenant_id: _t, tender_id, ...rest} = row;
+                    return this.api('/api/v1/tenders/' + tender_id + '/applications', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(rest)}).then(() => this.loadApps(this.detail.id));
+                }} : undefined); });
         },
         loadRowEvents(id) {
             this.api('/api/v1/events?per_page=100&subject_id=' + encodeURIComponent(id)).then(r => r.ok ? r.json() : {data: []})
@@ -1529,8 +1533,11 @@ function workspace(initial) {
         },
         deleteAnswer(id) {
             if (!confirm('Antwort löschen?')) return;
+            const row = (this.answers || []).find(a => String(a.id) === String(id));
             this.api('/api/v1/answers/' + id, {method:'DELETE'})
-                .then(() => this.loadAnswers(this.detail.id));
+                .then(() => { this.loadAnswers(this.detail.id); this.toast('Antwort gelöscht.', row ? {label: 'Rückgängig', fn: () =>
+                    this.api('/api/v1/questions/' + this.detail.id + '/answers', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({body: row.body})}).then(() => this.loadAnswers(this.detail.id))
+                } : undefined); });
         },
         edgeNeighbors(id) {
             const names = this.lookups.graph_entities || {};
