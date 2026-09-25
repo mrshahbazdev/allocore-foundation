@@ -12,6 +12,89 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&family=jetbrains-mono:500,600&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+html.dark{color-scheme:dark}
+html.dark body{background-color:#0E1013}
+html.dark .bg-white{background-color:#15171C !important}
+html.dark .bg-black{background-color:#0B0B0F !important}
+html.dark .bg-[\#FAFBFC]{background-color:#0F1114 !important}
+html.dark .bg-[\#F6F7F9]{background-color:#0E1013 !important}
+html.dark .bg-[\#F3F6FA]{background-color:#1B1F26 !important}
+html.dark .bg-[\#F0F3F7]{background-color:#21252D !important}
+html.dark .bg-[\#E8ECF2]{background-color:#22262E !important}
+html.dark .bg-[\#E4E9F0]{background-color:#262B34 !important}
+html.dark .bg-[\#FFFBEB]{background-color:#28200C !important}
+html.dark .bg-[\#1A2433]{background-color:#1B1F26 !important}
+html.dark .bg-[\#0B0B0F]{background-color:#0B0B0F !important}
+html.dark .bg-[\#FAFBFC]\/50{background-color:rgba(15,17,20,.5) !important}
+html.dark .bg-[\#0B0B0F]\/40{background-color:rgba(11,11,15,.5) !important}
+html.dark .bg-[\#0B0B0F]\/50{background-color:rgba(11,11,15,.55) !important}
+html.dark .bg-[\#CA8A04]\/5{background-color:rgba(250,204,21,.07) !important}
+html.dark .bg-[\#CA8A04]\/10{background-color:rgba(250,204,21,.12) !important}
+html.dark .bg-[\#CA8A04]\/50{background-color:rgba(250,204,21,.4) !important}
+html.dark .bg-[\#A6362E]\/5{background-color:rgba(228,96,79,.08) !important}
+html.dark .bg-[\#2E7D5B]\/5{background-color:rgba(79,192,141,.08) !important}
+html.dark .bg-[\#FACC15]\/10{background-color:rgba(250,204,21,.14) !important}
+html.dark .bg-[\#FACC15]\/40{background-color:rgba(250,204,21,.4) !important}
+html.dark .bg-[\#B45309]\/5{background-color:rgba(232,162,63,.08) !important}
+html.dark .text-[\#0B0B0F]{color:#F2F5F8 !important}
+html.dark .text-[\#1A2433]{color:#E5EAF0 !important}
+html.dark .text-[\#1A1A1F]{color:#E8EAEF !important}
+html.dark .text-[\#141419]{color:#E8EAEF !important}
+html.dark .text-[\#2A2A31]{color:#E8EAEF !important}
+html.dark .text-[\#42536A]{color:#96A4BB !important}
+html.dark .text-[\#5B6B7E]{color:#9BA5B6 !important}
+html.dark .text-[\#9CA3AF]{color:#8B95A5 !important}
+html.dark .text-[\#6B7280]{color:#98A1AE !important}
+html.dark .text-[\#D6DEE9]{color:#D6DEE9 !important}
+html.dark .text-[\#CA8A04]{color:#EBB54A !important}
+html.dark .text-[\#FACC15]{color:#FACC15 !important}
+html.dark .text-[\#B45309]{color:#E8A23F !important}
+html.dark .text-[\#A6362E]{color:#E4604F !important}
+html.dark .text-[\#2E7D5B]{color:#4FC08D !important}
+html.dark .text-[\#2E7D4F]{color:#4FC08D !important}
+html.dark .text-white{color:#FFFFFF !important}
+html.dark .text-black{color:#F2F5F8 !important}
+html.dark .text-[\#A6362E]\/60{color:rgba(228,96,79,.6) !important}
+html.dark .border-[\#E4E9F0]{border-color:#272C36 !important}
+html.dark .border-[\#D6DEE9]{border-color:#30363F !important}
+html.dark .border-[\#F0F3F7]{border-color:#232830 !important}
+html.dark .border-[\#1A1A1F]{border-color:#3B424E !important}
+html.dark .border-[\#0B0B0F]{border-color:#3B424E !important}
+html.dark .border-[\#2A2A31]{border-color:#3B424E !important}
+html.dark .border-[\#CA8A04]{border-color:#EBB54A !important}
+html.dark .border-[\#FACC15]{border-color:#FACC15 !important}
+html.dark .border-[\#A6362E]{border-color:#C24B42 !important}
+html.dark .border-[\#B45309]{border-color:#8A5A1F !important}
+html.dark .border-[\#2E7D5B]{border-color:#4FC08D !important}
+html.dark .border-[\#CA8A04]\/50{border-color:rgba(235,181,74,.5) !important}
+html.dark .border-[\#CA8A04]\/60{border-color:rgba(235,181,74,.6) !important}
+html.dark .border-[\#A6362E]\/40{border-color:rgba(228,96,79,.45) !important}
+html.dark .border-[\#B45309]\/40{border-color:rgba(232,162,63,.4) !important}
+html.dark .border-[\#2E7D5B]\/30{border-color:rgba(79,192,141,.3) !important}
+html.dark .border-[\#2E7D5B]\/50{border-color:rgba(79,192,141,.5) !important}
+html.dark .divide-[\#F0F3F7]>*+*{border-color:#232830 !important}
+html.dark .hover\:bg-[\#FAFBFC]:hover{background-color:#1A1E25 !important}
+html.dark .hover\:bg-[\#F0F3F7]:hover{background-color:#222730 !important}
+html.dark .hover\:bg-[\#F3F6FA]:hover{background-color:#1D2229 !important}
+html.dark .hover\:bg-[\#1A1A1F]:hover{background-color:#2A2D36 !important}
+html.dark .hover\:bg-[\#141419]:hover{background-color:#262932 !important}
+html.dark .hover\:bg-[\#CA8A04]:hover{background-color:#CA8A04 !important}
+html.dark .hover\:bg-[\#B45309]:hover{background-color:#B45309 !important}
+html.dark .hover\:bg-[\#A6362E]:hover{background-color:#A6362E !important}
+html.dark .hover\:bg-[\#CA8A04]\/10:hover{background-color:rgba(250,204,21,.14) !important}
+html.dark .hover\:bg-[\#A6362E]\/5:hover{background-color:rgba(228,96,79,.1) !important}
+html.dark .hover\:bg-[\#B45309]\/5:hover{background-color:rgba(232,162,63,.1) !important}
+html.dark .hover\:text-[\#CA8A04]:hover{color:#F2C24B !important}
+html.dark .hover\:text-[\#0B0B0F]:hover{color:#FFFFFF !important}
+html.dark .hover\:text-[\#FACC15]:hover{color:#FACC15 !important}
+html.dark .hover\:text-[\#A6362E]:hover{color:#E4604F !important}
+html.dark .hover\:text-[\#9CA3AF]:hover{color:#B3BCC9 !important}
+html.dark .hover\:text-[\#5B6B7E]:hover{color:#B7C1D0 !important}
+html.dark .hover\:border-[\#CA8A04]:hover{border-color:#EBB54A !important}
+html.dark .hover\:border-[\#CA8A04]\/60:hover{border-color:rgba(235,181,74,.6) !important}
+    </style>
+    <script>if(localStorage.getItem('af_dark')==='1'||(localStorage.getItem('af_dark')===null&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');</script>
 </head>
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
 <div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak
@@ -131,6 +214,10 @@
                 <span x-show="!loading && lastLoad" class="text-[11px] text-[#9CA3AF]" x-text="lastLoad ? 'Stand ' + lastLoad.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'}) : ''"></span>
             </div>
             <div class="flex items-center gap-3">
+                <button @click="toggleDark()" :title="dark ? 'Helle Darstellung (t)' : 'Dunkle Darstellung (t)'" class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
+                    <svg x-show="!dark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                    <svg x-show="dark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                </button>
                 <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" title="Aktualisieren (r)"
                         class="transition" :class="loading ? 'text-[#CA8A04]' : 'text-[#9CA3AF] hover:text-[#CA8A04]'">
                     <svg class="w-4 h-4" :class="loading && 'animate-spin'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 9A8 8 0 0119 7.5M18.5 15A8 8 0 015 16.5"/></svg>
@@ -585,7 +672,7 @@
             <div class="relative w-full max-w-sm bg-white rounded-xl shadow-2xl p-6 max-h-[80vh] overflow-y-auto">
                 <h2 class="font-semibold text-[#0B0B0F] mb-4">Tastenkürzel</h2>
                 <dl class="space-y-2 text-sm">
-                    <template x-for="k in [['Ctrl/⌘ + K', 'Befehlspalette öffnen'], ['/', 'Suche fokussieren'], ['n', 'Neuen Eintrag anlegen'], ['e', 'Eintrag bearbeiten (Drawer)'], ['d', 'Eintrag duplizieren (Drawer)'], ['p', 'Deep-Link kopieren (Drawer)'], ['o', 'Erste gefilterte Zeile öffnen'], ['l', 'Alle Zeilen laden'], ['r', 'Liste neu laden'], ['i', 'CSV-Import öffnen'], ['c', 'Spalten-Picker'], ['x', 'Filter zurücksetzen'], ['u', 'Überfällig-Filter'], ['s', '≤7-Tage-Filter'], ['.', 'Zum Dashboard'], ['1–9', 'n-te Zeile öffnen'], ['← / →', 'Vorheriger / nächster Eintrag (Drawer)'], ['Ctrl + Enter', 'Formular absenden'], ['Esc', 'Schließen'], ['?', 'Diese Übersicht']]" :key="k[0]">
+                    <template x-for="k in [['Ctrl/⌘ + K', 'Befehlspalette öffnen'], ['/', 'Suche fokussieren'], ['n', 'Neuen Eintrag anlegen'], ['e', 'Eintrag bearbeiten (Drawer)'], ['d', 'Eintrag duplizieren (Drawer)'], ['p', 'Deep-Link kopieren (Drawer)'], ['o', 'Erste gefilterte Zeile öffnen'], ['l', 'Alle Zeilen laden'], ['r', 'Liste neu laden'], ['i', 'CSV-Import öffnen'], ['c', 'Spalten-Picker'], ['x', 'Filter zurücksetzen'], ['u', 'Überfällig-Filter'], ['s', '≤7-Tage-Filter'], ['.', 'Zum Dashboard'], ['1–9', 'n-te Zeile öffnen'], ['← / →', 'Vorheriger / nächster Eintrag (Drawer)'], ['Ctrl + Enter', 'Formular absenden'], ['t', 'Dunkel/Hell umschalten'], ['Esc', 'Schließen'], ['?', 'Diese Übersicht']]" :key="k[0]">
                         <div class="flex justify-between items-center">
                             <dt class="text-[#5B6B7E]"><kbd class="px-1.5 py-0.5 bg-[#F0F3F7] border border-[#E4E9F0] rounded text-xs font-mono" x-text="k[0]"></kbd></dt>
                             <dd class="text-[#1A2433]" x-text="k[1]"></dd>
@@ -753,7 +840,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: false, showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, lastLoad: null,
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'),
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, selected: {}, recent: [], navBadges: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
@@ -1389,12 +1476,18 @@ function workspace(initial) {
             else if (e.key === 'p') { if (this.detail && !this.showCreate) this.copyLink(); }
             else if (e.key === 'o') { if (!this.detail && !this.showCreate && !this.palette && this.filtered().length) this.detail = this.filtered()[0]; }
             else if (e.key === 'l') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.filtered().length > this.limit) this.limit = this.filtered().length; }
+            else if (e.key === 't') { this.toggleDark(); }
             else if (e.key === 'x') { if (!this.detail && !this.showCreate && !this.palette && (this.query || this.statusFilter || this.overdueOnly || this.dueSoonOnly)) { this.query = ''; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; } }
             else if (e.key === 'c') { if (!this.detail && !this.showCreate && !this.palette && this.rows) this.colPicker = !this.colPicker; }
             else if (e.key === 's') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.dueSoon(r))) this.dueSoonOnly = !this.dueSoonOnly; }
             else if (e.key === 'u') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.overdue(r))) this.overdueOnly = !this.overdueOnly; }
             else if (e.key === '.') { if (!this.detail && !this.showCreate && !this.palette && this.section !== 'dashboard') window.location.href = '/app/dashboard' + (this.tenant ? '?tenant=' + this.tenant : ''); }
             else if (/^[1-9]$/.test(e.key)) { if (!this.detail && !this.showCreate && !this.palette && this.sorted(this.filtered()).length >= +e.key) this.detail = this.sorted(this.filtered())[e.key - 1]; }
+        },
+        toggleDark() {
+            this.dark = !this.dark;
+            document.documentElement.classList.toggle('dark', this.dark);
+            try { localStorage.setItem('af_dark', this.dark ? '1' : '0'); } catch (e) {}
         },
         copyLink() {
             const url = location.origin + '/app/' + this.section + '?tenant=' + this.tenant + '&open=' + this.detail.id;
