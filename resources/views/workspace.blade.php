@@ -40,7 +40,7 @@
                 <div class="mb-1">
                     <div class="px-5 pt-4 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280]" x-text="group.label"></div>
                     <template x-for="item in group.items" :key="item.key">
-                        <a :href="'/app/' + item.key"
+                        <a :href="'/app/' + item.key + (tenant ? '?tenant='+tenant : '')"
                            class="flex items-center gap-3 px-5 py-2 transition"
                            :class="section === item.key
                                ? 'text-white bg-[#1A1A1F] border-r-2 border-[#FACC15]'
