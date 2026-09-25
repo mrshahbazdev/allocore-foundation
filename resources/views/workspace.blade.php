@@ -1895,7 +1895,11 @@ function workspace(initial) {
             if (v === null || v === undefined) return '—';
             if (c === 'id' && typeof v === 'string' && v.length > 8) return `<button onclick="event.stopPropagation();navigator.clipboard.writeText('${v}')" title="ID kopieren: ${v}" class="font-mono text-[11px] text-[#5B6B7E] hover:text-[#CA8A04]">${v.slice(0, 8)}…</button>`;
             const rn = this.resolveId(c, v);
-            if (rn) return `<span title="${v}">${rn}</span>`;
+            if (rn) {
+                const t = FKMAP[c];
+                const href = t && this.groups.flatMap(g => g.items).some(i => i.key === t) ? `/app/${t}?tenant=${this.tenant}&open=${encodeURIComponent(v)}` : null;
+                return href ? `<a href="${href}" onclick="event.stopPropagation()" title="${v}" class="text-[#1A2433] underline decoration-[#D6DEE9] underline-offset-2 hover:text-[#CA8A04] hover:decoration-[#CA8A04]">${rn}</a>` : `<span title="${v}">${rn}</span>`;
+            }
             if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
             if (typeof v === 'string' && /^\d+(\.\d+)?$/.test(v) && c !== 'id' && !c.endsWith('_id') && !/_date|_at|no$|number|phone|zip/i.test(c)) v = parseFloat(v);
             if (typeof v === 'number' && c !== 'id' && !c.endsWith('_id') && Number.isFinite(v)) {
