@@ -194,7 +194,7 @@
                                 <div class="mt-0.5 text-[11px] font-mono" :class="trend(m.key).direction === 'up' ? 'text-[#2E7D5B]' : (trend(m.key).direction === 'down' ? 'text-[#A6362E]' : 'text-[#9CA3AF]')" x-text="trend(m.key).delta === null ? '' : (trend(m.key).direction === 'up' ? '▲ +' : (trend(m.key).direction === 'down' ? '▼ ' : '')) + (trend(m.key).delta ?? '')"></div>
                                 <div class="mt-2 flex items-end justify-between gap-2">
                                     <div class="h-0.5 w-8 rounded-full bg-[#FACC15] mb-1"></div>
-                                    <svg x-show="(spark[m.key] || []).length > 1" viewBox="0 0 96 24" preserveAspectRatio="none" class="h-6 w-24"
+                                    <svg x-show="(spark[m.key] || []).length > 1" :title="'60-Tage-Verlauf: ' + spark[m.key][0] + ' → ' + spark[m.key][spark[m.key].length - 1]" viewBox="0 0 96 24" preserveAspectRatio="none" class="h-6 w-24"
                                          :class="trend(m.key).direction === 'up' ? 'text-[#2E7D5B]' : (trend(m.key).direction === 'down' ? 'text-[#A6362E]' : 'text-[#CA8A04]')">
                                         <path :d="sparkPath(m.key)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
                                     </svg>
