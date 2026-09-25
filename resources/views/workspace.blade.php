@@ -507,7 +507,9 @@
                 <form @submit.prevent="submitCreate" class="p-6 space-y-4" id="createForm">
                     <template x-for="f in createFields()" :key="f.key">
                         <div>
-                            <label class="block text-[13px] font-medium text-[#42536A] mb-1" x-text="label(f.key)"></label>
+                            <label class="block text-[13px] font-medium text-[#42536A] mb-1">
+                                <span x-text="label(f.key)"></span><span x-show="f.req" class="text-[#A6362E]"> *</span>
+                            </label>
                             <select x-show="f.type === 'fk'" x-model="form[f.key]"
                                     class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 <option value="">— wählen —</option>
@@ -526,7 +528,8 @@
                     <div x-show="formError" class="text-xs text-[#A6362E]" x-text="formError"></div>
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" @click="showCreate = false" class="text-sm px-4 py-2 text-[#5B6B7E]">Abbrechen</button>
-                        <button type="submit" class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Speichern</button>
+                        <button type="submit" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
+                                class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 disabled:cursor-not-allowed">Speichern</button>
                     </div>
                 </form>
             </div>
@@ -901,6 +904,7 @@ function workspace(initial) {
                 key: k,
                 type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text')),
                 table: FKMAP[k] || null,
+                req: ['name', 'title'].includes(k),
             }));
         },
         fkOptions(table) {
