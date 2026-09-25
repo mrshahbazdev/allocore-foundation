@@ -137,4 +137,21 @@ class DataPlatformTest extends TestCase
         $this->assertSame(1, $res['tasks'][1]);
         $this->assertArrayNotHasKey('events', $res);
     }
+
+    public function test_global_search_finds_across_sections(): void
+    {
+        $tenant = Tenant::create(['name' => 'S GmbH']);
+        $this->acting($tenant);
+
+        $this->postJson('/api/v1/companies', ['name' => 'Acme Zahn GmbH'], ['X-Tenant' => $tenant->id]);
+        $this->postJson('/api/v1/tasks', ['title' => 'Acme Bericht prüfen'], ['X-Tenant' => $tenant->id]);
+
+        $res = $this->getJson('/api/v1/search?q=Acme', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $sections = collect($res)->pluck('section')->all();
+        $this->assertContains('companies', $sections);
+        $this->assertContains('tasks', $sections);
+
+        $this->getJson('/api/v1/search?q=a', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson([]);
+    }
 }

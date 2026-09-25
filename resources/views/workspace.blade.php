@@ -988,7 +988,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [], evShown: 6,
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null,
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
@@ -1023,6 +1023,16 @@ function workspace(initial) {
             this.$watch('myOnly', () => this.syncUrl());
             this.$watch('unassignedOnly', () => this.syncUrl());
             this.$watch('evGroup', () => this.syncUrl());
+            this.$watch('paletteQ', q => {
+                clearTimeout(this.globTimer); this.globHits = [];
+                const t = (q || '').trim();
+                if (t.length < 3) return;
+                this.globTimer = setTimeout(() => {
+                    this.api('/api/v1/search?q=' + encodeURIComponent(t)).then(r => r.ok ? r.json() : [])
+                        .then(d => { if (this.paletteQ.trim() === t) this.globHits = d || []; }).catch(() => {});
+                }, 300);
+            });
+            this.$watch('palette', v => { if (!v) this.globHits = []; });
             this.$watch('groupBy', v => { try { localStorage.setItem('af_group_' + this.section, v); localStorage.removeItem('af_gc_' + this.section); } catch (e) {} this.collapsedGroups = {}; this.syncUrl(); });
             this.$watch('tenant', v => {
                 if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
@@ -1153,7 +1163,8 @@ function workspace(initial) {
             if (q && this.rows && this.rows.length) this.rows.filter(r => JSON.stringify(r).toLowerCase().includes(q)).slice(0, 5).forEach(r => acts.push({key: null, action: 'openrowcur', id: r.id, label: '→ ' + (r.name || r.title || r.headline || r.id) + ' (' + this.title() + ')', group: 'Eintrag'}));
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
             mods.sort((a, b) => ((this.pins || []).includes(b.key) ? 1 : 0) - ((this.pins || []).includes(a.key) ? 1 : 0));
-            return [...acts.filter(a => !q || a.label.toLowerCase().includes(q)), ...mods];
+            const globals = this.globHits.map(h => ({key: null, action: 'gsearch', section: h.section, id: h.id, label: '⇉ ' + (h.label || h.id) + ' (' + this.sectionLabel(h.section) + ')', group: 'Global'}));
+            return [...acts.filter(a => !q || a.label.toLowerCase().includes(q)), ...globals, ...mods];
         },
         paletteGo() {
             this.paletteRun(this.paletteItems()[this.palIdx] || this.paletteItems()[0]);
@@ -1172,6 +1183,7 @@ function workspace(initial) {
             if (it.action === 'tenant') { this.tenant = it.tenant; this.loadSection(); this.loadNavBadges(); return; }
             if (it.action === 'view') { this.applyView(it.view); return; }
             if (it.action === 'openrow') { location.href = '/app/' + it.row.key + '?tenant=' + this.tenant + '&open=' + encodeURIComponent(it.row.id); return; }
+            if (it.action === 'gsearch') { location.href = '/app/' + it.section + '?tenant=' + this.tenant + '&open=' + encodeURIComponent(it.id); return; }
             if (it.action === 'openrowcur') { const r = (this.rows || []).find(x => String(x.id) === String(it.id)); if (r) this.detail = r; return; }
             if (it.action === 'filter') {
                 if (it.filter === '_reset') { this.query = ''; this.statusFilter = ''; this.evGroup = ''; this.overdueOnly = this.dueSoonOnly = this.dueTodayOnly = this.myOnly = this.unassignedOnly = false; }
