@@ -85,15 +85,18 @@
                         <svg class="w-2.5 h-2.5 transition-transform" :class="collapsed[group.label] && !group.items.some(i => i.key === section) ? '-rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <template x-for="item in group.items" :key="item.key">
-                        <a x-show="!collapsed[group.label] || group.items.some(i => i.key === section)"
-                           :href="'/app/' + item.key + (tenant ? '?tenant='+tenant : '')"
-                           class="flex items-center gap-3 px-5 py-2 transition"
+                        <div x-show="!collapsed[group.label] || group.items.some(i => i.key === section)"
+                           class="flex items-center gap-1 transition pr-2"
                            :class="section === item.key
                                ? 'text-white bg-[#1A1A1F] border-r-2 border-[#FACC15]'
                                : 'text-[#9CA3AF] hover:text-white hover:bg-[#141419]'">
-                            <span x-text="item.label"></span>
-                            <span x-show="navBadges[item.key] > 0" x-text="navBadges[item.key]" class="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#A6362E] text-white min-w-[1.1rem] text-center"></span>
-                        </a>
+                            <a :href="'/app/' + item.key + (tenant ? '?tenant='+tenant : '')"
+                               class="flex-1 px-5 py-2"><span x-text="item.label"></span></a>
+                            <a x-show="navBadges[item.key] > 0" x-text="navBadges[item.key]"
+                               :href="'/app/' + item.key + '?overdue=1' + (tenant ? '&tenant='+tenant : '')"
+                               title="Überfällige Einträge anzeigen"
+                               class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#A6362E] text-white min-w-[1.1rem] text-center hover:bg-[#8C2B24]"></a>
+                        </div>
                     </template>
                 </div>
             </template>
@@ -786,6 +789,7 @@ function workspace(initial) {
             if (p.get('new')) this.$nextTick(() => { if (this.tenant && this.canCreate()) this.openCreate(); });
             if (p.get('q')) this.query = p.get('q');
             if (p.get('status')) this.statusFilter = p.get('status');
+            if (p.get('overdue')) this.overdueOnly = true;
             this._urlSort = p.get('sort') || null;
             this.$watch('query', () => this.syncUrl());
             this.$watch('statusFilter', () => this.syncUrl());
