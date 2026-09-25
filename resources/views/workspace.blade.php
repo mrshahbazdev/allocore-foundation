@@ -361,6 +361,7 @@
                                 <option :value="c" x-text="label(c)"></option>
                             </template>
                         </select>
+                        <button x-show="groupBy && Object.keys(collapsedGroups).length" @click="collapsedGroups = {}; localStorage.removeItem('af_gc_' + section)" title="Alle Gruppen aufklappen" class="text-[11px] px-2 py-1.5 text-[#9CA3AF] hover:text-[#CA8A04] transition shrink-0">alle auf</button>
                         <div class="relative shrink-0">
                             <button @click="viewPicker = !viewPicker" title="Gespeicherte Ansichten" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Ansichten<span x-show="Object.keys(views()).length" class="ml-1 text-[#CA8A04]" x-text="'(' + Object.keys(views()).length + ')'"></span></button>
                             <div x-show="viewPicker" @click.outside="viewPicker = false" class="absolute right-0 mt-1.5 w-56 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20" style="display:none">
