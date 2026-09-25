@@ -161,8 +161,8 @@
                 <div class="relative" x-show="tenant">
                     <button @click="notif = !notif" aria-label="Benachrichtigungen" :aria-expanded="notif" :title="'Benachrichtigungen' + (overdueTotal() ? ' — ' + overdueTotal() + ' überfällig' : '')" class="relative text-[#9CA3AF] hover:text-[#CA8A04] transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                        <span x-show="overdueTotal() > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#A6362E]"></span>
-                        <span x-show="overdueTotal() === 0 && todayTotal() > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#CA8A04]"></span>
+                        <span x-show="overdueTotal() > 0" x-text="overdueTotal()" class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#A6362E] text-white text-[9px] font-bold leading-4 text-center"></span>
+                        <span x-show="overdueTotal() === 0 && todayTotal() > 0" x-text="todayTotal()" class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#CA8A04] text-[#0B0B0F] text-[9px] font-bold leading-4 text-center"></span>
                     </button>
                     <div x-show="notif" @click.outside="notif = false" class="absolute right-0 mt-1.5 w-72 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-2 z-30" style="display:none">
                         <div class="px-3 pb-1.5 text-[10px] font-semibold tracking-widest text-[#9CA3AF]">BENACHRICHTIGUNGEN</div>
