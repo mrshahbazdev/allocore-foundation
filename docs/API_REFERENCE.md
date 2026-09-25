@@ -53,7 +53,7 @@ Erinnerungen: `compliance:remind` (stündlich).
 
 | Pfad | Recht | Zweck |
 |---|---|---|
-| `/events` | `metrics.view` | Event-Stream aus `stored_events` (R5) |
+| `/events` | `metrics.view` | Event-Stream aus `stored_events` (R5) — Query: `type`, `subject_id`, `subject_type`, `per_page` (max. 200), neueste zuerst |
 | `/metrics`, `/metrics/{metric}` | `metrics.view` | KPI-Snapshots aus `analytics:aggregate` (daily) |
 | `/analytics/trends` | `metrics.view` | Layer 7: Trend je Metrik — letzter Wert, Vorgänger, `delta`, `direction` (up/down/flat/unknown) |
 | `/insights` | `metrics.view` | Regelbasierte Hinweise (KI-Steuerung): `code`, `severity` (critical/warning/info), `message`, `module` |
