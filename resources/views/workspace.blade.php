@@ -369,6 +369,18 @@
                         <button type="submit" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] shrink-0">Neue Version</button>
                     </form>
                 </div>
+                <div x-show="section === 'graph-entities'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERKNÜPFUNGEN</div>
+                    <template x-for="e in entityEdges" :key="e.relation + e.other">
+                        <a :href="'/app/graph-entities?tenant=' + tenant + '&open=' + e.other"
+                           class="flex items-center gap-2 rounded-lg border border-[#E4E9F0] px-3 py-2 text-xs hover:border-[#CA8A04]/60 transition">
+                            <span class="font-mono text-[#9CA3AF] w-4 shrink-0" x-text="e.dir"></span>
+                            <span class="text-[#5B6B7E]" x-text="e.relation"></span>
+                            <span class="ml-auto font-medium text-[#1A2433] truncate" x-text="e.name"></span>
+                        </a>
+                    </template>
+                    <div x-show="entityEdges.length === 0" class="text-xs text-[#9CA3AF]">Keine Kanten zu dieser Entität.</div>
+                </div>
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
                     <button @click="copyLink()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="linkCopied ? 'Kopiert' : 'Link'"></button>
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
@@ -479,16 +491,17 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {},
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, linkCopied: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''},
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, linkCopied: false, docVersions: [], entityEdges: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''},
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
             if (this.tenant) this.loadSection();
             this.$watch('detail', v => {
-                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = [];
+                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = [];
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
                 if (v && this.section === 'documents') this.loadDocVersions(v.id);
+                if (v && this.section === 'graph-entities') this.loadEntityEdges(v.id);
             });
         },
         item() {
@@ -634,6 +647,18 @@ function workspace(initial) {
             if (!confirm('Antwort löschen?')) return;
             this.api('/api/v1/answers/' + id, {method:'DELETE'})
                 .then(() => this.loadAnswers(this.detail.id));
+        },
+        loadEntityEdges(id) {
+            this.api('/api/v1/graph-edges').then(r => r.ok ? r.json() : []).then(d => {
+                const rs = Array.isArray(d) ? d : (d.data || []);
+                this.entityEdges = rs.filter(e => String(e.from_entity_id) === String(id) || String(e.to_entity_id) === String(id))
+                    .map(e => {
+                        const out = String(e.from_entity_id) === String(id);
+                        const other = out ? e.to_entity_id : e.from_entity_id;
+                        const names = this.lookups.graph_entities || {};
+                        return {dir: out ? '→' : '←', relation: e.relation, other, name: names[other] || other};
+                    });
+            }).catch(() => this.entityEdges = []);
         },
         loadDocVersions(id) {
             this.api('/api/v1/documents/' + id).then(r => r.ok ? r.json() : {versions: []}).then(d => {
