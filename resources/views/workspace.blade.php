@@ -117,8 +117,68 @@
                 </div>
             </template>
 
+            {{-- Executive (Holding rollup) --}}
+            <template x-if="section === 'executive'">
+                <div class="space-y-5">
+                    <div x-show="!exec" class="bg-white border border-[#E4E9F0] rounded-xl px-6 py-12 text-center text-sm text-[#5B6B7E]">
+                        Wählen Sie links einen Mandanten, um die Holding-Übersicht zu laden.
+                    </div>
+                    <template x-if="exec">
+                        <div class="space-y-5">
+                            <div class="flex items-center justify-between">
+                                <div class="text-xs text-[#5B6B7E]" x-text="exec.totals.tenants + ' Mandanten im Konzern'"></div>
+                                <button @click="createExecReport()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">+ Report erstellen</button>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+                                <template x-for="(v, k) in exec.totals" :key="k">
+                                    <div x-show="k !== 'tenants'" class="bg-white border border-[#E4E9F0] rounded-xl px-5 py-4">
+                                        <div class="text-[11px] font-medium text-[#5B6B7E]" x-text="execLabel(k)"></div>
+                                        <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="v"></div>
+                                        <div class="mt-2 h-0.5 w-8 rounded-full bg-[#FACC15]"></div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
+                                <table class="w-full text-sm">
+                                    <thead><tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
+                                        <template x-for="h in ['Mandant','Unternehmen','Personen','Offene Aufgaben','Offene Fristen','Hohe Risiken','Data Lake','Compliance %']" :key="h">
+                                            <th class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E]" x-text="h"></th>
+                                        </template>
+                                    </tr></thead>
+                                    <tbody>
+                                        <template x-for="t in exec.tenants" :key="t.id">
+                                            <tr class="border-b border-[#F0F3F7] last:border-b-0">
+                                                <td class="px-5 py-3 font-medium text-[#0B0B0F]" x-text="t.name"></td>
+                                                <td class="px-5 py-3 font-mono" x-text="t.companies"></td>
+                                                <td class="px-5 py-3 font-mono" x-text="t.persons"></td>
+                                                <td class="px-5 py-3 font-mono" x-text="t.tasks_open"></td>
+                                                <td class="px-5 py-3 font-mono" x-text="t.deadlines_open"></td>
+                                                <td class="px-5 py-3 font-mono" :class="t.high_risks > 0 ? 'text-[#A6362E] font-semibold' : ''" x-text="t.high_risks"></td>
+                                                <td class="px-5 py-3 font-mono" x-text="t.data_objects"></td>
+                                                <td class="px-5 py-3 font-mono" x-text="t.compliance_rate"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div x-show="execReports.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
+                                <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E]">Reports</div>
+                                <div class="divide-y divide-[#F0F3F7]">
+                                    <template x-for="r in execReports" :key="r.id">
+                                        <div class="px-5 py-2.5 flex items-center justify-between gap-4">
+                                            <span class="text-sm text-[#1A2433]" x-text="r.title"></span>
+                                            <span class="text-[11px] text-[#9CA3AF] font-mono" x-text="fmt(r.created_at)"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
             {{-- Generic list --}}
-            <template x-if="section !== 'dashboard'">
+            <template x-if="section !== 'dashboard' && section !== 'executive'">
                 <div class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
                     <div x-show="!rows" class="px-6 py-12 text-center text-sm text-[#5B6B7E]">
                         Wählen Sie links einen Mandanten, um Daten zu laden.
@@ -231,7 +291,7 @@
 <script>
 function workspace(initial) {
     const GROUPS = [
-        {label:'START', items:[{key:'dashboard',label:'Dashboard'}]},
+        {label:'START', items:[{key:'dashboard',label:'Dashboard'},{key:'executive',label:'Executive'}]},
         {label:'STAMMDATEN', items:[
             {key:'companies',label:'Unternehmen',ep:'/api/v1/companies'},
             {key:'persons',label:'Personen',ep:'/api/v1/persons'},
@@ -285,7 +345,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], lookups: {},
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {},
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100,
@@ -299,6 +359,13 @@ function workspace(initial) {
         },
         title() { return this.item().label; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
+        execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake'}; return M[k] || k; },
+        createExecReport() {
+            const title = prompt('Report-Titel', 'Executive Report ' + new Date().toLocaleDateString('de-DE'));
+            if (!title) return;
+            this.api('/api/v1/exec-reports', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title})})
+                .then(r => { if (r.ok) this.loadSection(); else alert('Report fehlgeschlagen (HTTP '+r.status+')'); });
+        },
         subtitle() { return (this.section === 'dashboard' ? 'Unternehmenssteuerung' : 'Modul ' + (this.item().label||this.section)) + ' · ' + this.tenantName(); },
         metric(k) { const v = this.metrics && this.metrics[k]; return v ? parseFloat(v.value) : '–'; },
         trend(k) { const t = this.trends.find(x => x.metric === k); return t || {delta: null, direction: 'unknown'}; },
@@ -324,6 +391,15 @@ function workspace(initial) {
                     .then(d => this.events = (Array.isArray(d) ? d : (d.data || [])).slice(-15).reverse());
                 this.api('/api/v1/analytics/trends').then(r => r.ok ? r.json() : [])
                     .then(d => this.trends = Array.isArray(d) ? d : (d.data || []));
+                return;
+            }
+            if (this.section === 'executive') {
+                this.api('/api/v1/executive/overview').then(r => {
+                    if (!r.ok) { this.error = 'HTTP '+r.status+' — keine Berechtigung (executive.view)?'; this.exec = null; this.loading=false; return null; }
+                    return r.json();
+                }).then(d => { if (d) this.exec = d; this.loading = false; });
+                this.api('/api/v1/exec-reports').then(r => r.ok ? r.json() : [])
+                    .then(d => this.execReports = Array.isArray(d) ? d : (d.data || []));
                 return;
             }
             this.loadLookups();
