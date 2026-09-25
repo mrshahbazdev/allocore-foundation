@@ -110,6 +110,10 @@
                     <div x-show="!rows" class="px-6 py-12 text-center text-sm text-[#5B6B7E]">
                         Wählen Sie links einen Mandanten, um Daten zu laden.
                     </div>
+                    <div x-show="rows !== null" class="flex items-center justify-between px-5 py-3 border-b border-[#E4E9F0]">
+                        <span class="text-xs text-[#5B6B7E]" x-text="(rows ? rows.length : 0) + ' Einträge'"></span>
+                        <button @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Neu</button>
+                    </div>
                     <div x-show="rows && rows.length === 0" class="px-6 py-12 text-center text-sm text-[#5B6B7E]">
                         Keine Einträge vorhanden.
                     </div>
@@ -123,7 +127,7 @@
                         </thead>
                         <tbody>
                             <template x-for="(row, idx) in rows" :key="idx">
-                                <tr class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC]">
+                                <tr @click="detail = row" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer">
                                     <template x-for="c in columns" :key="c">
                                         <td class="px-5 py-3 text-[#1A2433]" x-html="cell(row, c)"></td>
                                     </template>
@@ -133,6 +137,54 @@
                     </table>
                 </div>
             </template>
+        </div>
+
+        {{-- Detail drawer --}}
+        <div x-show="detail" class="fixed inset-0 z-40" style="display:none">
+            <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="detail = null"></div>
+            <div class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-xl flex flex-col">
+                <div class="px-6 py-4 border-b border-[#E4E9F0] flex items-center justify-between">
+                    <h2 class="font-semibold text-[#0B0B0F]" x-text="title() + ' · Details'"></h2>
+                    <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]">&times;</button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-6">
+                    <dl class="space-y-3 text-sm">
+                        <template x-for="k in Object.keys(detail || {})" :key="k">
+                            <div class="flex gap-3">
+                                <dt class="w-36 shrink-0 text-[#5B6B7E]" x-text="label(k)"></dt>
+                                <dd class="min-w-0 font-mono text-[13px] text-[#1A2433] break-words" x-text="fmt(detail[k])"></dd>
+                            </div>
+                        </template>
+                    </dl>
+                </div>
+                <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end">
+                    <button @click="deleteRow(detail)" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Create modal --}}
+        <div x-show="showCreate" class="fixed inset-0 z-40 flex items-center justify-center" style="display:none">
+            <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="showCreate = false"></div>
+            <div class="relative w-full max-w-md bg-white rounded-xl shadow-xl">
+                <div class="px-6 py-4 border-b border-[#E4E9F0]">
+                    <h2 class="font-semibold text-[#0B0B0F]" x-text="'Neu: ' + title()"></h2>
+                </div>
+                <form @submit.prevent="submitCreate" class="p-6 space-y-4">
+                    <template x-for="f in createFields()" :key="f.key">
+                        <div>
+                            <label class="block text-[13px] font-medium text-[#42536A] mb-1" x-text="label(f.key)"></label>
+                            <input x-model="form[f.key]" :type="f.type"
+                                   class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                        </div>
+                    </template>
+                    <div x-show="formError" class="text-xs text-[#A6362E]" x-text="formError"></div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" @click="showCreate = false" class="text-sm px-4 py-2 text-[#5B6B7E]">Abbrechen</button>
+                        <button type="submit" class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Speichern</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </main>
 </div>
@@ -194,7 +246,7 @@ function workspace(initial) {
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
         tenant: '', rows: null, columns: [], metrics: null, insights: [],
-        loading: false, error: '',
+        loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -238,6 +290,34 @@ function workspace(initial) {
                 } else this.columns = [];
                 this.loading = false;
             });
+        },
+        fmt(v) {
+            if (v === null || v === undefined) return '—';
+            if (typeof v === 'object') return JSON.stringify(v);
+            return String(v);
+        },
+        createFields() {
+            const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes']);
+            const src = (this.rows && this.rows[0]) || {};
+            return Object.keys(src).filter(k => !SKIP.has(k) && !k.endsWith('_id')).slice(0, 10).map(k => ({
+                key: k,
+                type: typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text'),
+            }));
+        },
+        openCreate() { this.form = {}; this.formError = ''; this.showCreate = true; },
+        submitCreate() {
+            this.formError = '';
+            const body = {};
+            this.createFields().forEach(f => { if (this.form[f.key] !== undefined && this.form[f.key] !== '') body[f.key] = this.form[f.key]; });
+            this.api(this.item().ep, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)})
+                .then(r => {
+                    if (!r.ok) { this.formError = 'HTTP '+r.status+' — Pflichtfelder fehlen?'; return null; }
+                    this.showCreate = false; this.loadSection(); return r.json();
+                });
+        },
+        deleteRow(row) {
+            if (!row || !row.id || !confirm('Wirklich löschen?')) return;
+            this.api(this.item().ep + '/' + row.id, {method: 'DELETE'}).then(() => { this.detail = null; this.loadSection(); });
         },
         label(c) { return c.replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase()); },
         cell(row, c) {
