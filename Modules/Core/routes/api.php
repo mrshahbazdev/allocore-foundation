@@ -22,4 +22,10 @@ Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(funct
     Route::put('users/{user}/roles', [RoleController::class, 'assign'])
         ->middleware('permission:roles.manage')
         ->name('users.roles.assign');
+
+    Route::post('demo-seed', function (\Illuminate\Http\Request $request) {
+        \Illuminate\Support\Facades\Artisan::call('demo:seed', ['tenant' => (string) $request->header('X-Tenant')]);
+
+        return response()->json(['status' => 'ok']);
+    })->middleware('permission:roles.manage')->name('demo-seed');
 });
