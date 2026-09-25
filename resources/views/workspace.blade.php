@@ -618,6 +618,7 @@ function workspace(initial) {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
             if (this.tenant) this.loadSection();
+            this.$watch('tenant', () => { document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE'; });
             setInterval(() => { if (this.tenant && !this.detail && !this.showCreate && !this.palette) this.loadSection(true); }, 30000);
             this.$watch('detail', v => {
                 const url = new URL(location.href);
