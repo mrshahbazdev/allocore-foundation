@@ -672,8 +672,8 @@
                     <div x-show="entityEdges.length === 0" class="text-xs text-[#9CA3AF]">Keine Kanten zu dieser Entität.</div>
                 </div>
                 <div x-show="detail && (detail.created_at || detail.updated_at)" class="px-6 py-2.5 border-t border-[#F0F3F7] text-[10px] text-[#9CA3AF] flex gap-4">
-                    <span x-show="detail && detail.created_at">Erstellt: <span x-text="detail && new Date(detail.created_at).toLocaleString('de-DE')"></span></span>
-                    <span x-show="detail && detail.updated_at">Geändert: <span x-text="detail && new Date(detail.updated_at).toLocaleString('de-DE')"></span></span>
+                    <span x-show="detail && detail.created_at">Erstellt: <span x-text="detail && new Date(detail.created_at).toLocaleString('de-DE')"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.created_at) + ')'"></span></span>
+                    <span x-show="detail && detail.updated_at">Geändert: <span x-text="detail && new Date(detail.updated_at).toLocaleString('de-DE')"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.updated_at) + ')'"></span></span>
                 </div>
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
                     <button @click="copyLink()" title="Link kopieren (p)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="linkCopied ? 'Kopiert' : 'Link'"></button>
@@ -1738,6 +1738,14 @@ function workspace(initial) {
         copyLink() {
             const url = location.origin + '/app/' + this.section + '?tenant=' + this.tenant + '&open=' + this.detail.id;
             navigator.clipboard.writeText(url).then(() => { this.linkCopied = true; setTimeout(() => this.linkCopied = false, 1500); });
+        },
+        relAgo(iso) {
+            const d = new Date(iso); if (isNaN(d)) return '';
+            const s = Math.round((Date.now() - d.getTime()) / 1000);
+            if (s < 60) return 'gerade eben';
+            const m = Math.round(s / 60); if (m < 60) return 'vor ' + m + ' Min';
+            const h = Math.round(m / 60); if (h < 24) return 'vor ' + h + ' Std';
+            const t = Math.round(h / 24); return 'vor ' + t + ' ' + (t === 1 ? 'Tag' : 'Tagen');
         },
         copyText() {
             if (!this.detail) return;
