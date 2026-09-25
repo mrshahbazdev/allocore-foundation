@@ -278,6 +278,13 @@
                             <div class="mt-0.5 text-[11px] font-mono text-[#A6362E]/70" x-text="overdueSections().length + (overdueSections().length === 1 ? ' Sektion' : ' Sektionen')"></div>
                             <div class="mt-2 flex items-end"><div class="h-0.5 w-8 rounded-full bg-[#A6362E] mb-1"></div></div>
                         </a>
+                        <a x-show="todaySections().length" :href="'/app/' + todaySections()[0].key + '?tenant=' + tenant + '&today=1'"
+                           class="bg-[#FACC15]/10 border border-[#CA8A04]/40 rounded-xl px-5 py-4 block transition hover:border-[#CA8A04] hover:shadow-sm">
+                            <div class="text-[11px] font-medium text-[#B45309]">Heute fällig</div>
+                            <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="todaySections().reduce((s, x) => s + x.count, 0)"></div>
+                            <div class="mt-0.5 text-[11px] font-mono text-[#B45309]/80" x-text="todaySections().length + (todaySections().length === 1 ? ' Sektion' : ' Sektionen')"></div>
+                            <div class="mt-2 flex items-end"><div class="h-0.5 w-8 rounded-full bg-[#CA8A04] mb-1"></div></div>
+                        </a>
                     </div>
                     <div x-show="openTasks.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
                         <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex items-center justify-between gap-2">
