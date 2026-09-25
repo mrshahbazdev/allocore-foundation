@@ -421,6 +421,7 @@
                             <button @click="bulkStatus(a[1])" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" x-text="a[0]"></button>
                         </template>
                         <button @click="copySel()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Als TSV in die Zwischenablage">Kopieren</button>
+                        <button @click="invertSel()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Auswahl umkehren (sichtbare Zeilen)">Invertieren</button>
                         <button @click="exportCsv((this.rows || []).filter(r => selected[r.id]))" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">CSV</button>
                         <button @click="bulkDelete()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
                         <button @click="selected = {}" class="text-xs px-3 py-1.5 text-[#5B6B7E] hover:text-[#0B0B0F]">Auswahl aufheben</button>
@@ -1560,6 +1561,11 @@ function workspace(initial) {
         toggleAll(on) {
             const s = {};
             if (on) this.sorted(this.filtered()).forEach(r => s[r.id] = true);
+            this.selected = s;
+        },
+        invertSel() {
+            const s = {...this.selected};
+            this.sorted(this.filtered()).forEach(r => { if (s[r.id]) delete s[r.id]; else s[r.id] = true; });
             this.selected = s;
         },
         selCount() { return Object.keys(this.selected).length; },
