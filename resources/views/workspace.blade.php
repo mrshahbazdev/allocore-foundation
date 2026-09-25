@@ -29,10 +29,11 @@
             <select x-model="tenant" @change="loadSection()"
                     class="w-full rounded-lg bg-[#1A1A1F] border-[#2A2A31] text-white text-sm py-2 focus:border-[#FACC15] focus:ring-[#FACC15]/30">
                 <option value="">— wählen —</option>
-                @foreach($tenants as $t)
-                    <option value="{{ $t->id }}">{{ $t->name }}</option>
-                @endforeach
+                <template x-for="t in tenantList" :key="t.id">
+                    <option :value="t.id" x-text="t.name"></option>
+                </template>
             </select>
+            <button @click="createTenant()" class="mt-2 w-full text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]">+ Neuer Mandant</button>
         </div>
 
         <nav class="flex-1 overflow-y-auto py-3 text-[13px]">
@@ -250,6 +251,7 @@ function workspace(initial) {
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
         tenant: '', rows: null, columns: [], metrics: null, insights: [],
+        tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true,
         init() {
@@ -307,6 +309,19 @@ function workspace(initial) {
                 if (y === null || y === undefined) return -1;
                 return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'de')) * dir;
             });
+        },
+        async createTenant() {
+            const name = prompt('Name des neuen Mandanten:');
+            if (!name || !name.trim()) return;
+            const r = await fetch('/api/v1/tenants', {method:'POST', headers:{
+                'Authorization': 'Bearer {{ $apiToken }}', 'Accept':'application/json',
+                'Content-Type':'application/json'},
+                body: JSON.stringify({name: name.trim()})});
+            if (!r.ok) { alert('Anlegen fehlgeschlagen (HTTP '+r.status+')'); return; }
+            const t = await r.json();
+            this.tenantList.push({id: t.id, name: t.name});
+            this.tenant = t.id;
+            this.loadSection();
         },
         filtered() {
             if (!this.rows) return [];
