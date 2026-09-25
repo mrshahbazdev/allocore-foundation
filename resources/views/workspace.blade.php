@@ -603,7 +603,16 @@ function workspace(initial) {
             const rows = this.sorted(this.filtered());
             if (!rows.length) return;
             const esc = v => '"' + String(v === null || v === undefined ? '' : v).replace(/"/g, '""') + '"';
-            const lines = [this.columns.map(esc).join(';'), ...rows.map(r => this.columns.map(c => esc(r[c])).join(';'))];
+            const csvVal = (r, c) => {
+                let v = r[c];
+                const rn = this.resolveId(c, v);
+                if (rn) return rn;
+                if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
+                if (['status','severity','type'].includes(c) && v) return STATUS_DE[String(v).toLowerCase()] || v;
+                if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleDateString('de-DE');
+                return v;
+            };
+            const lines = [this.columns.map(c => esc(this.label(c))).join(';'), ...rows.map(r => this.columns.map(c => esc(csvVal(r, c))).join(';'))];
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv'}));
             a.download = this.section + '.csv';
