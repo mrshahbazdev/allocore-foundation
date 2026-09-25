@@ -261,6 +261,8 @@
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'">Überfällig</button>
                         <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'">≤ 7 Tage</button>
+                        <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r)" @click="myOnly = !myOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                                :class="myOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Mir zugewiesen</button>
                         <button @click="statusFilter = ''" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="statusFilter === '' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Alle</button>
                         <template x-for="s in statusOpts()" :key="s">
@@ -270,10 +272,10 @@
                         </template>
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
-                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
-                        <button x-show="query || statusFilter || overdueOnly || dueSoonOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false"
+                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly || myOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
+                        <button x-show="query || statusFilter || overdueOnly || dueSoonOnly || myOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; myOnly = false"
                                 class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
-                        <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly" @click="openCreate()"
+                        <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly && !myOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
                     </div>
                     <table x-show="rows && filtered().length" class="w-full text-sm">
@@ -546,7 +548,8 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        meId: @js($user->id ?? null),
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -593,7 +596,7 @@ function workspace(initial) {
         loadSection() {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
-            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false;
+            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false;
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
             history.replaceState(null,'',url);
             if (this.section === 'dashboard') {
@@ -778,6 +781,7 @@ function workspace(initial) {
             let rs = this.rows;
             if (this.overdueOnly) rs = rs.filter(r => this.overdue(r));
             if (this.dueSoonOnly) rs = rs.filter(r => this.dueSoon(r));
+            if (this.myOnly) rs = rs.filter(r => String(r.assignee_id || r.responsible_id || '') === String(this.meId));
             if (this.statusFilter) rs = rs.filter(r => String(r.status || '') === this.statusFilter);
             const q = this.query.trim().toLowerCase();
             if (!q) return rs;
