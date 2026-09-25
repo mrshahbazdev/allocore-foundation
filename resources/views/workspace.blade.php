@@ -507,7 +507,7 @@
                 <div class="px-6 py-4 border-b border-[#E4E9F0]">
                     <h2 class="font-semibold text-[#0B0B0F]" x-text="(editing ? 'Bearbeiten: ' : 'Neu: ') + title()"></h2>
                 </div>
-                <form @submit.prevent="submitCreate" class="p-6 space-y-4" id="createForm">
+                <form @submit.prevent="submitCreate" @keydown.ctrl.enter.prevent="submitCreate" class="p-6 space-y-4" id="createForm">
                     <template x-for="f in createFields()" :key="f.key">
                         <div>
                             <label class="block text-[13px] font-medium text-[#42536A] mb-1">
@@ -532,7 +532,7 @@
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" @click="showCreate = false" class="text-sm px-4 py-2 text-[#5B6B7E]">Abbrechen</button>
                         <button type="submit" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
-                                class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 disabled:cursor-not-allowed">Speichern</button>
+                                class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 disabled:cursor-not-allowed" title="Speichern (Strg+↵)">Speichern</button>
                     </div>
                 </form>
             </div>
