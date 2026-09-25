@@ -122,6 +122,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'projects_overdue', "{$projectsOverdue} Projekt(e) über Enddatum hinaus aktiv.", ['count' => $projectsOverdue]);
         }
 
+        $projectsSoon = $count('projects', fn ($q) => $q->whereIn('status', ['planned', 'active', 'on_hold'])->whereBetween('ends_at', [now(), now()->addDays(7)]));
+        if ($projectsSoon) {
+            $insights[] = $this->hit('info', 'projects_ending_soon', "{$projectsSoon} Projekt(e) — Enddatum in ≤7 Tagen.", ['count' => $projectsSoon]);
+        }
+
         $machinesDown = $count('machines', fn ($q) => $q->where('status', 'maintenance'));
         if ($machinesDown) {
             $insights[] = $this->hit('warning', 'machines_in_maintenance', "{$machinesDown} Maschine(n) in Wartung — Produktionskapazität prüfen.", ['count' => $machinesDown]);
