@@ -433,7 +433,7 @@
                 </div>
                 <div class="flex-1 overflow-y-auto p-6">
                     <dl class="space-y-3 text-sm">
-                        <template x-for="k in Object.keys(detail || {})" :key="k">
+                        <template x-for="k in detailKeys()" :key="k">
                             <div class="flex gap-3">
                                 <dt class="w-36 shrink-0 text-[#5B6B7E]" :title="k" x-text="label(k)"></dt>
                                 <dd class="min-w-0 font-mono text-[13px] text-[#1A2433] break-words">
@@ -1134,9 +1134,18 @@ function workspace(initial) {
             if (/^[+\d][\d\s\/()-]{5,}$/.test(v)) return 'tel:' + v.replace(/\s/g, '');
             return null;
         },
+        detailKeys() {
+            return Object.keys(this.detail || {}).filter(k => k === 'id' || !HIDE.has(k));
+        },
         fmt(v) {
             if (v === null || v === undefined) return '—';
-            if (typeof v === 'object') return JSON.stringify(v);
+            if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
+            if (Array.isArray(v)) return v.length ? v.join(', ') : '—';
+            if (typeof v === 'object') return Object.entries(v).map(([k2, v2]) => k2 + ': ' + (v2 === null || v2 === undefined ? '—' : (typeof v2 === 'object' ? JSON.stringify(v2) : String(v2)))).join(' · ');
+            if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v)) {
+                const d = new Date(v);
+                if (!isNaN(d)) return d.toLocaleString('de-DE', {dateStyle: 'medium', timeStyle: 'short'});
+            }
             return String(v);
         },
         ago(ts) {
