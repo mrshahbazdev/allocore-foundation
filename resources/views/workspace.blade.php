@@ -24,6 +24,7 @@
             if ($event.key === '/') { $event.preventDefault(); if ($refs.search) $refs.search.focus(); }
             else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
+            else if ($event.key === 'l' && !detail && !showCreate && !palette && rows && filtered().length > limit) limit = filtered().length;
         }">
 
     {{-- Mobile top bar --}}
@@ -342,7 +343,7 @@
                         <button @click="limit += 100" class="text-xs text-[#CA8A04] hover:underline">
                             Mehr laden (<span x-text="filtered().length - limit"></span> weitere)
                         </button>
-                        <button x-show="filtered().length - limit > 100" @click="limit = filtered().length" class="text-xs text-[#5B6B7E] hover:text-[#CA8A04] hover:underline">
+                        <button x-show="filtered().length - limit > 100" @click="limit = filtered().length" title="Alle laden (l)" class="text-xs text-[#5B6B7E] hover:text-[#CA8A04] hover:underline">
                             Alle laden
                         </button>
                     </div>
