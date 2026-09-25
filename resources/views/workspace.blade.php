@@ -594,7 +594,7 @@
         {{-- Detail drawer --}}
         <div x-show="detail" class="fixed inset-0 z-40" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="detail = null"></div>
-            <div class="absolute inset-y-0 right-0 w-full bg-white shadow-xl flex flex-col transition-[max-width] duration-200" :class="drawerWide ? 'max-w-2xl' : 'max-w-md'" role="dialog" aria-modal="true" :aria-label="title() + ' · Details'">
+            <div x-ref="drawer" tabindex="-1" class="absolute inset-y-0 right-0 w-full bg-white shadow-xl flex flex-col transition-[max-width] duration-200 outline-none" :class="drawerWide ? 'max-w-2xl' : 'max-w-md'" role="dialog" aria-modal="true" :aria-label="title() + ' · Details'">
                 <div class="px-6 py-4 border-b border-[#E4E9F0] flex items-center justify-between">
                     <h2 class="font-semibold text-[#0B0B0F] flex items-center gap-2 min-w-0"><span class="shrink-0 text-[#CA8A04] text-sm" x-text="icons[section] || ''"></span><span class="truncate" x-text="detailTitle()"></span><span x-show="overdue(detail)" class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#A6362E] text-white">ÜBERFÄLLIG</span></h2>
                     <div class="flex items-center gap-1">
@@ -1011,7 +1011,16 @@ function workspace(initial) {
                 this.setDocTitle();
             });
             this.$watch('rows', () => this.setDocTitle());
-            this.$watch('detail', d => { if (d && d.id) this.pushRecentRow(d); });
+            this.$watch('detail', d => {
+                if (d && d.id) {
+                    this.pushRecentRow(d);
+                    if (!this._prevFocus) this._prevFocus = document.activeElement;
+                    this.$nextTick(() => { this.$refs.drawer && this.$refs.drawer.focus(); });
+                } else if (this._prevFocus) {
+                    try { this._prevFocus.focus(); } catch (e) {}
+                    this._prevFocus = null;
+                }
+            });
             this.$watch('section', () => this.setDocTitle());
             setInterval(() => { if (this.tenant && !this.detail && !this.showCreate && !this.palette) this.loadSection(true); }, 30000);
             this.$watch('detail', v => {
