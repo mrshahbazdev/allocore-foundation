@@ -24,6 +24,7 @@
             if ($event.key === '/') { $event.preventDefault(); if ($refs.search) $refs.search.focus(); }
             else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
+            else if ($event.key === 'u' && !detail && !showCreate && !palette && rows.some(r => overdue(r))) overdueOnly = !overdueOnly;
         }">
 
     {{-- Mobile top bar --}}
@@ -281,7 +282,7 @@
                         <button x-show="canCreate()" @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
                     </div>
                     <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0]">
-                        <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                        <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" title="Überfällig (u)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
                                 x-text="'Überfällig · ' + rows.filter(r => overdue(r)).length"></button>
                         <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
