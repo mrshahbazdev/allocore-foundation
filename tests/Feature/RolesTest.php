@@ -70,6 +70,9 @@ class RolesTest extends TestCase
         $this->assertContains($admin->id, $ids);
         $this->assertContains($member->id, $ids);
         $this->assertNotContains($outsider->id, $ids);
+
+        $memberRow = collect($this->getJson('/api/v1/users', ['X-Tenant' => $tenant])->json())->firstWhere('id', $member->id);
+        $this->assertSame(['mitarbeiter'], $memberRow['role_names']);
     }
 
     public function test_roleless_user_cannot_assign_roles(): void
