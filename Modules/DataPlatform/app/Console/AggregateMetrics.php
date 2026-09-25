@@ -84,6 +84,13 @@ class AggregateMetrics extends Command
             );
             $written++;
 
+            // Team-Größe: Mitglieder mit Rolle im Tenant (model_has_roles hat kein tenant_id-Feld, team_id entspricht)
+            MetricSnapshot::withoutGlobalScopes()->updateOrCreate(
+                ['tenant_id' => $tenant->getTenantKey(), 'metric' => 'team_members', 'captured_on' => $date],
+                ['value' => DB::table('model_has_roles')->where('team_id', $tenant->getTenantKey())->distinct()->count('model_id')],
+            );
+            $written++;
+
             // Finanz-KPIs: Summen der Berichtsperiode aus financial_reports
             $period = substr($date, 0, 7);
             foreach (['revenue', 'ebitda', 'cashflow', 'liquidity'] as $col) {
