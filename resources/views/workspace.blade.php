@@ -1068,8 +1068,11 @@ function workspace(initial) {
                     {key: null, action: 'filter', filter: 'overdueOnly', label: 'Filter: Überfällig ' + (this.overdueOnly ? '(an)' : '(aus)'), group: 'Aktion'},
                     {key: null, action: 'filter', filter: 'dueSoonOnly', label: 'Filter: ≤7 Tage ' + (this.dueSoonOnly ? '(an)' : '(aus)'), group: 'Aktion'},
                     {key: null, action: 'filter', filter: 'dueTodayOnly', label: 'Filter: Heute ' + (this.dueTodayOnly ? '(an)' : '(aus)'), group: 'Aktion'});
-                if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)) acts.push({key: null, action: 'filter', filter: 'myOnly', label: 'Filter: Mir zugewiesen ' + (this.myOnly ? '(an)' : '(aus)'), group: 'Aktion'});
-                if (this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.statusFilter || this.query) acts.push({key: null, action: 'filter', filter: '_reset', label: 'Filter zurücksetzen', group: 'Aktion'});
+                if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)) {
+                    acts.push({key: null, action: 'filter', filter: 'myOnly', label: 'Filter: Mir zugewiesen ' + (this.myOnly ? '(an)' : '(aus)'), group: 'Aktion'});
+                    if (this.rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id))) acts.push({key: null, action: 'filter', filter: 'unassignedOnly', label: 'Filter: Ohne Verantwortlichen ' + (this.unassignedOnly ? '(an)' : '(aus)'), group: 'Aktion'});
+                }
+                if (this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.unassignedOnly || this.statusFilter || this.query) acts.push({key: null, action: 'filter', filter: '_reset', label: 'Filter zurücksetzen', group: 'Aktion'});
             }
             this.recentRows().forEach(r => acts.push({key: null, action: 'openrow', row: r, label: '↻ ' + (r.name || r.id) + ' (' + this.sectionLabel(r.key) + ')', group: 'Zuletzt'}));
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
