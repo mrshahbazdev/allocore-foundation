@@ -23,6 +23,7 @@
         else if (!$event.ctrlKey && !$event.metaKey && !$event.altKey && !/^(input|textarea|select)$/i.test($event.target.tagName)) {
             if ($event.key === '/') { $event.preventDefault(); if ($refs.search) $refs.search.focus(); }
             else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
+            else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
         }">
 
     {{-- Mobile top bar --}}
@@ -104,7 +105,7 @@
                 <p class="text-xs text-[#5B6B7E]" x-text="subtitle()"></p>
             </div>
             <div class="flex items-center gap-3">
-                <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" title="Refresh"
+                <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" title="Aktualisieren (r)"
                         class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 9A8 8 0 0119 7.5M18.5 15A8 8 0 015 16.5"/></svg>
                 </button>
