@@ -327,6 +327,22 @@
                         </div>
                     </form>
                 </div>
+                <div x-show="section === 'documents'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERSIONEN</div>
+                    <template x-for="v in docVersions" :key="v.id">
+                        <div class="flex items-center justify-between gap-2 rounded-lg border border-[#E4E9F0] px-3 py-2">
+                            <div class="min-w-0">
+                                <span class="text-xs font-semibold text-[#0B0B0F]">v<span x-text="v.version"></span></span>
+                                <span class="ml-2 text-xs text-[#42536A] truncate" x-text="v.original_name"></span>
+                            </div>
+                            <a :href="'/api/v1/documents/' + detail.id + '/download/' + v.id" class="text-[11px] font-medium text-[#CA8A04] hover:underline shrink-0">Download</a>
+                        </div>
+                    </template>
+                    <form x-show="writable()" @submit.prevent="uploadVersion()" class="flex items-center gap-2">
+                        <input type="file" x-ref="versionFile" class="min-w-0 flex-1 text-xs text-[#42536A]">
+                        <button type="submit" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] shrink-0">Neue Version</button>
+                    </form>
+                </div>
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button x-show="canEdit()" @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
@@ -434,15 +450,16 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false,
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''},
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''},
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
             if (this.tenant) this.loadSection();
             this.$watch('detail', v => {
-                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''};
+                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = [];
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
+                if (v && this.section === 'documents') this.loadDocVersions(v.id);
             });
         },
         item() {
@@ -585,6 +602,19 @@ function workspace(initial) {
             if (!confirm('Antwort löschen?')) return;
             this.api('/api/v1/answers/' + id, {method:'DELETE'})
                 .then(() => this.loadAnswers(this.detail.id));
+        },
+        loadDocVersions(id) {
+            this.api('/api/v1/documents/' + id).then(r => r.ok ? r.json() : {versions: []}).then(d => {
+                this.docVersions = (d.versions || []).slice().sort((a,b) => b.version - a.version);
+            });
+        },
+        uploadVersion() {
+            const f = this.$refs.versionFile && this.$refs.versionFile.files[0];
+            if (!f || !this.detail) return;
+            const fd = new FormData();
+            fd.append('file', f);
+            this.api('/api/v1/documents/' + this.detail.id + '/versions', {method:'POST', body:fd})
+                .then(r => { if (r.ok) { this.$refs.versionFile.value = ''; this.loadDocVersions(this.detail.id); this.loadSection(); } else alert('Upload fehlgeschlagen (HTTP '+r.status+')'); });
         },
         dlPath(row) {
             if (this.section === 'data-objects') return '/api/v1/data-objects/' + row.id + '/download';
