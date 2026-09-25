@@ -552,6 +552,9 @@ function workspace(initial) {
             if (t) this.tenant = t;
             if (this.tenant) this.loadSection();
             this.$watch('detail', v => {
+                const url = new URL(location.href);
+                if (v && v.id) url.searchParams.set('open', v.id); else url.searchParams.delete('open');
+                history.replaceState(null, '', url);
                 this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = [];
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
