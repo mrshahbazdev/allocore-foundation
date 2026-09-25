@@ -153,8 +153,8 @@
             </div>
             <div class="flex items-center gap-3">
                 <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" title="Aktualisieren (r)"
-                        class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 9A8 8 0 0119 7.5M18.5 15A8 8 0 015 16.5"/></svg>
+                        class="transition" :class="loading ? 'text-[#CA8A04]' : 'text-[#9CA3AF] hover:text-[#CA8A04]'">
+                    <svg class="w-4 h-4" :class="loading && 'animate-spin'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 9A8 8 0 0119 7.5M18.5 15A8 8 0 015 16.5"/></svg>
                 </button>
             </div>
         </header>
