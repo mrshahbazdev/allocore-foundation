@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64">
+  <path d="M32 2 58 17v30L32 62 6 47V17Z" fill="#0B0B0F"/>
+  <path d="M32 14 18 44h6l8-19 8 19h6Z" fill="#FACC15"/>
+  <path d="M23 42h18l3 6H20Z" fill="#EAB308"/>
+  <path d="M20 52h24" stroke="#FACC15" stroke-width="4" stroke-linecap="round"/>
+  <text x="76" y="42" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="-0.5"><tspan fill="#0B0B0F">ALLO</tspan><tspan fill="#CA8A04">CORE</tspan></text>
+</svg>
