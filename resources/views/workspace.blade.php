@@ -691,8 +691,12 @@ function workspace(initial) {
             }
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
+            else if (localStorage.getItem('allocore.tenant')) this.tenant = localStorage.getItem('allocore.tenant');
             if (this.tenant) this.loadSection();
-            this.$watch('tenant', () => { document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE'; });
+            this.$watch('tenant', v => {
+                if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
+                document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE';
+            });
             setInterval(() => { if (this.tenant && !this.detail && !this.showCreate && !this.palette) this.loadSection(true); }, 30000);
             this.$watch('detail', v => {
                 const url = new URL(location.href);
