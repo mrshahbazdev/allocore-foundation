@@ -1254,7 +1254,7 @@ function workspace(initial) {
                     .then(d => this.insights = d.filter(i => i.code !== 'all_clear')
                         .sort((a, b) => ({critical: 0, warning: 1, info: 2}[a.severity] ?? 3) - ({critical: 0, warning: 1, info: 2}[b.severity] ?? 3)));
                 this.api('/api/v1/events').then(r => r.ok ? r.json() : [])
-                    .then(d => this.events = (Array.isArray(d) ? d : (d.data || [])).slice(-15).reverse());
+                    .then(d => this.events = (Array.isArray(d) ? d : (d.data || [])).slice(0, 15));
                 this.api('/api/v1/analytics/trends').then(r => r.ok ? r.json() : [])
                     .then(d => this.trends = Array.isArray(d) ? d : (d.data || []));
                 this.api('/api/v1/deadlines').then(r => r.ok ? r.json() : [])
