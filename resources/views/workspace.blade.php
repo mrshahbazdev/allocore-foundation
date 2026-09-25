@@ -131,6 +131,20 @@
                             </a>
                         </template>
                     </div>
+                    <div x-show="dueSoon.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
+                        <a :href="'/app/deadlines?tenant=' + tenant" class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex items-center justify-between hover:text-[#CA8A04]">
+                            Nächste Fristen
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                        <div class="divide-y divide-[#F0F3F7]">
+                            <template x-for="d in dueSoon" :key="d.id">
+                                <a :href="'/app/deadlines?tenant=' + tenant + '&open=' + d.id" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
+                                    <span class="text-sm text-[#1A2433] truncate" x-text="d.title"></span>
+                                    <span class="text-[11px] font-mono shrink-0" :class="new Date(d.due_at) < new Date() ? 'text-[#A6362E]' : 'text-[#9CA3AF]'" x-text="new Date(d.due_at).toLocaleDateString('de-DE')"></span>
+                                </a>
+                            </template>
+                        </div>
+                    </div>
                     <div x-show="events.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
                         <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E]">Letzte Ereignisse</div>
                         <div class="divide-y divide-[#F0F3F7] max-h-64 overflow-y-auto">
@@ -513,7 +527,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {},
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
@@ -575,6 +589,12 @@ function workspace(initial) {
                     .then(d => this.events = (Array.isArray(d) ? d : (d.data || [])).slice(-15).reverse());
                 this.api('/api/v1/analytics/trends').then(r => r.ok ? r.json() : [])
                     .then(d => this.trends = Array.isArray(d) ? d : (d.data || []));
+                this.api('/api/v1/deadlines').then(r => r.ok ? r.json() : [])
+                    .then(d => {
+                        const rs = Array.isArray(d) ? d : (d.data || []);
+                        this.dueSoon = rs.filter(x => x.status !== 'completed' && x.due_at)
+                            .sort((a,b) => new Date(a.due_at) - new Date(b.due_at)).slice(0, 5);
+                    });
                 return;
             }
             if (this.section === 'executive') {
