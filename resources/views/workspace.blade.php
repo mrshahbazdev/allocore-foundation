@@ -1511,8 +1511,6 @@ function workspace(initial) {
             const fields = this.createFields();
             this.form = {};
             fields.forEach(f => { let v = this.detail[f.key]; if (f.type === 'datetime-local' && v) v = String(v).replace(' ', 'T').slice(0, 16); this.form[f.key] = v === null ? '' : v; });
-            this.formError = ''; this.showCreate = true;
-            fields.forEach(f => { const v = this.detail[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
@@ -1521,8 +1519,6 @@ function workspace(initial) {
             const fields = this.createFields();
             this.form = {};
             fields.forEach(f => { let v = this.editing[f.key]; if (f.type === 'datetime-local' && v) v = String(v).replace(' ', 'T').slice(0, 16); this.form[f.key] = v === null ? '' : v; });
-            this.formError = ''; this.showCreate = true;
-            fields.forEach(f => { const v = this.editing[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
