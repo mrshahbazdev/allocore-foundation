@@ -548,15 +548,26 @@ function workspace(initial) {
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
-            const t = new URLSearchParams(location.search).get('tenant');
+            const p = new URLSearchParams(location.search);
+            const t = p.get('tenant');
             if (t) this.tenant = t;
             if (this.tenant) this.loadSection();
+            if (p.get('q')) this.query = p.get('q');
+            if (p.get('status')) this.statusFilter = p.get('status');
+            this.$watch('query', () => this.syncUrl());
+            this.$watch('statusFilter', () => this.syncUrl());
             this.$watch('detail', v => {
                 this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = [];
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
                 if (v && this.section === 'documents') this.loadDocVersions(v.id);
             });
+        },
+        syncUrl() {
+            const url = new URL(location.href);
+            if (this.query) url.searchParams.set('q', this.query); else url.searchParams.delete('q');
+            if (this.statusFilter) url.searchParams.set('status', this.statusFilter); else url.searchParams.delete('status');
+            history.replaceState(null, '', url);
         },
         item() {
             return GROUPS.flatMap(g => g.items).find(i => i.key === this.section) || {label:this.section};
