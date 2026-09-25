@@ -142,6 +142,13 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $drawdown = DB::table('investments')->where('tenant_id', $t)
+            ->whereNotNull('current_value')->whereNull('disposed_at')
+            ->whereColumn('current_value', '<', 'cost_basis')->count();
+        if ($drawdown) {
+            $insights[] = $this->hit('warning', 'investments_drawdown', "{$drawdown} Investition(en) unter Einstandskurs — Bewertung prüfen.", ['count' => $drawdown]);
+        }
+
         $openQuestions = $count('questions', fn ($q) => $q->where('status', 'open'));
         if ($openQuestions) {
             $insights[] = $this->hit('info', 'questions_open', "{$openQuestions} offene Frage(n) im Expertennetzwerk.", ['count' => $openQuestions]);
