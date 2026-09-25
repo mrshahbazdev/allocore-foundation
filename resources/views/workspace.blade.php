@@ -254,6 +254,7 @@
                             </div>
                         </div>
                         <button @click="exportCsv()" title="CSV exportieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
+                        <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
                         <button x-show="canCreate()" @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
                     </div>
                     <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0]">
@@ -479,6 +480,25 @@
                 </form>
             </div>
         </div>
+
+        {{-- CSV import modal --}}
+        <div x-show="showImport" class="fixed inset-0 z-40 flex items-center justify-center" style="display:none">
+            <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="showImport = false"></div>
+            <div class="relative w-full max-w-lg bg-white rounded-xl shadow-xl">
+                <div class="px-6 py-4 border-b border-[#E4E9F0]">
+                    <h2 class="font-semibold text-[#0B0B0F]">CSV Import: <span x-text="title()"></span></h2>
+                </div>
+                <div class="p-6 space-y-3">
+                    <p class="text-xs text-[#5B6B7E]">Erste Zeile = Spaltennamen (<span x-text="createFields().map(f => f.key).join(', ')"></span>). Trennzeichen ; oder ,</p>
+                    <textarea x-model="importText" rows="8" class="w-full rounded-lg border-[#D6DEE9] text-xs font-mono focus:border-[#CA8A04] focus:ring-[#CA8A04]/30" placeholder="title;status&#10;Beispiel;open"></textarea>
+                    <div x-show="importResult" class="text-xs" :class="importErr ? 'text-[#A6362E]' : 'text-[#2E7D4F]'" x-text="importResult"></div>
+                    <div class="flex justify-end gap-2 pt-1">
+                        <button type="button" @click="showImport = false" class="text-sm px-4 py-2 text-[#5B6B7E]">Schließen</button>
+                        <button type="button" @click="importCsv()" :disabled="importing" class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-50" x-text="importing ? 'Importiere…' : 'Importieren'"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 </div>
 
@@ -545,7 +565,7 @@ function workspace(initial) {
         section: initial, groups: GROUPS, kpiCards: KPI,
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
-        loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
+        loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false,
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
@@ -846,6 +866,35 @@ function workspace(initial) {
             a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv'}));
             a.download = this.section + '.csv';
             a.click();
+        },
+        canImport() { return this.writable() && !['documents','data-objects','ai-analyses','events','metrics'].includes(this.section); },
+        async importCsv() {
+            const text = this.importText.trim();
+            if (!text) return;
+            const lines = text.split(/\r?\n/).filter(l => l.trim());
+            if (lines.length < 2) { this.importErr = true; this.importResult = 'Mindestens Kopfzeile + eine Datenzeile nötig.'; return; }
+            const delim = lines[0].includes(';') ? ';' : ',';
+            const splitLine = l => {
+                const out = []; let cur = '', q = false;
+                for (const ch of l) { if (ch === '"') { q = !q; continue; } if (ch === delim && !q) { out.push(cur); cur = ''; continue; } cur += ch; }
+                out.push(cur); return out.map(s => s.trim());
+            };
+            const heads = splitLine(lines[0]);
+            const valid = new Set(this.createFields().map(f => f.key));
+            const unknown = heads.filter(h => !valid.has(h));
+            if (unknown.length) { this.importErr = true; this.importResult = 'Unbekannte Spalten: ' + unknown.join(', '); return; }
+            this.importing = true; this.importErr = false; this.importResult = '';
+            let ok = 0, fail = 0;
+            for (const l of lines.slice(1)) {
+                const cells = splitLine(l); const body = {};
+                heads.forEach((h, i) => { if (cells[i] !== undefined && cells[i] !== '') body[h] = cells[i]; });
+                const r = await this.api(this.item().ep, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)}).catch(() => null);
+                if (r && r.ok) ok++; else fail++;
+            }
+            this.importing = false;
+            this.importErr = fail > 0;
+            this.importResult = ok + ' importiert' + (fail ? ', ' + fail + ' fehlgeschlagen' : '') + '.';
+            if (ok) this.loadSection();
         },
         openDuplicate() {
             this.editing = null;
