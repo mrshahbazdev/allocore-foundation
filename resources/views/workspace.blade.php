@@ -94,6 +94,9 @@
                 <div class="flex flex-wrap gap-1.5">
                     <template x-for="r in recent" :key="r">
                         <a :href="'/app/' + r + (tenant ? '?tenant='+tenant : '')" class="px-2 py-1 rounded-full bg-[#1A1A1F] text-[11px] text-[#9CA3AF] hover:text-[#FACC15] transition" x-text="sectionLabel(r)"></a>
+                    </template>
+                </div>
+            </div>
             <template x-for="group in groups" :key="group.label">
                 <div class="mb-1">
                     <button @click="collapsed[group.label] = !collapsed[group.label]"
@@ -142,7 +145,6 @@
                 <div x-show="groupOf(section)" class="text-[10px] font-semibold tracking-widest text-[#9CA3AF] mb-0.5">
                     <span x-text="groupOf(section)"></span><span class="mx-1.5">›</span><span x-text="title()"></span>
                 </div>
-                <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F]" x-text="title()"></h1>
                 <p class="text-xs text-[#5B6B7E]" x-text="subtitle()"></p>
             </div>
             <div class="text-right">
@@ -154,6 +156,7 @@
                         class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 9A8 8 0 0119 7.5M18.5 15A8 8 0 015 16.5"/></svg>
                 </button>
+            </div>
         </header>
 
         <div class="p-6 space-y-5">
@@ -298,29 +301,20 @@
                         Wählen Sie links einen Mandanten, um Daten zu laden.
                     </div>
                     <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0] print:hidden">
-                    <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0]">
                         <span class="text-xs text-[#5B6B7E] shrink-0 flex items-center gap-2">
                             <span x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
                             <span x-show="rows && rows.some(r => overdue(r))" class="text-[#A6362E]" x-text="'· ' + rows.filter(r => overdue(r)).length + ' überfällig'"></span>
                             <span x-show="rows && rows.some(r => dueSoon(r))" class="text-[#B45309]" x-text="'· ' + rows.filter(r => dueSoon(r)).length + ' ≤ 7 Tage'"></span>
                         </span>
-                        <input x-model="query" placeholder="Suchen…" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-                        <span class="text-xs text-[#5B6B7E] shrink-0" x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
-                        <input x-model="query" x-ref="search" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-                        <input x-ref="search" x-model="query" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         <div class="relative">
-                            <input x-ref="search" x-model="query" placeholder="Suchen… (/)" class="w-40 sm:w-48 lg:w-64 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-                            <input x-ref="search" x-model="query" @keydown.enter="if (filtered().length) { detail = sorted(filtered())[0]; $event.target.blur(); }" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-                            <input x-ref="search" x-model.debounce.200ms="query" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                            <input x-ref="search" x-model.debounce.200ms="query" @keydown.enter="if (filtered().length) { detail = sorted(filtered())[0]; $event.target.blur(); }" placeholder="Suchen… (/)" class="w-40 sm:w-48 lg:w-64 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                             <button x-show="query" @click="query = ''; $refs.search.focus()" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#5B6B7E] text-xs leading-none" aria-label="Suche löschen">&times;</button>
                         </div>
                         <div class="relative shrink-0">
-                            <button @click="colPicker = !colPicker" title="Spalten (c)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten</button>
+                            <button @click="colPicker = !colPicker" title="Spalten (c)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten<span x-show="Object.values(hiddenCols).filter(Boolean).length" class="ml-1 text-[#CA8A04]" x-text="'(' + Object.values(hiddenCols).filter(Boolean).length + ')'"></span></button>
                             <button @click="compact = !compact; try { localStorage.setItem('af_density', compact ? '1' : '0'); } catch (e) {}" :title="compact ? 'Normale Zeilenhöhe' : 'Kompakte Zeilenhöhe'"
                                     class="text-xs px-3 py-1.5 border rounded-lg transition shrink-0"
                                     :class="compact ? 'border-[#CA8A04] text-[#CA8A04] bg-[#CA8A04]/5' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'">≡</button>
-                            <button @click="colPicker = !colPicker" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten</button>
-                            <button @click="colPicker = !colPicker" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten<span x-show="Object.values(hiddenCols).filter(Boolean).length" class="ml-1 text-[#CA8A04]" x-text="'(' + Object.values(hiddenCols).filter(Boolean).length + ')'"></span></button>
                             <div x-show="colPicker" @click.outside="colPicker = false" class="absolute right-0 mt-1.5 w-48 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20 max-h-64 overflow-y-auto" style="display:none">
                                 <button x-show="Object.values(hiddenCols).some(Boolean)" @click="hiddenCols = {}; saveColPrefs()" class="w-full text-left px-3 py-1.5 text-xs text-[#CA8A04] hover:bg-[#CA8A04]/10 border-b border-[#E4E9F0]">Alle einblenden</button>
                                 <template x-for="c in columns" :key="c">
@@ -332,25 +326,19 @@
                             </div>
                         </div>
                         <button @click="exportCsv()" title="CSV exportieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
-                        <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
-                        <button x-show="canCreate()" @click="openCreate()" :title="'Neu anlegen: ' + title() + ' (n)'" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
-                        <button @click="window.print()" title="Drucken" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">Drucken</button>
                         <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren (i)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
-                        <button x-show="canCreate()" @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
+                        <button @click="window.print()" title="Drucken" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">Drucken</button>
+                        <button x-show="canCreate()" @click="openCreate()" :title="'Neu anlegen: ' + title() + ' (n)'" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
                     </div>
-                    <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0]">
-                        <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" title="Überfällig (u)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                     <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
-                        <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                        <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" title="Überfällig (u)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
                                 x-text="'Überfällig · ' + rows.filter(r => overdue(r)).length"></button>
                         <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" title="≤7 Tage (s)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
-                        <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
-                                :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'">≤ 7 Tage</button>
-                        <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r)" @click="myOnly = !myOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
-                                :class="myOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Mir zugewiesen</button>
                                 :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'"
                                 x-text="'≤ 7 Tage · ' + rows.filter(r => dueSoon(r)).length"></button>
+                        <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r)" @click="myOnly = !myOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                                :class="myOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Mir zugewiesen</button>
                         <button @click="statusFilter = ''" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="statusFilter === '' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
                                 x-text="'Alle · ' + rows.length"></button>
@@ -368,18 +356,12 @@
                         </template>
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
-                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
-                        <button x-show="query || statusFilter || overdueOnly || dueSoonOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false"
-                                title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
-                        <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly" @click="openCreate()"
                         <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly || myOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
                         <button x-show="query || statusFilter || overdueOnly || dueSoonOnly || myOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; myOnly = false"
-                                class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
+                                title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
                         <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly && !myOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
                     </div>
-                    <div x-show="rows && filtered().length" class="overflow-x-auto">
-                    <table class="w-full text-sm min-w-max">
                     <div x-show="selCount() > 0" class="flex flex-wrap items-center gap-2 px-5 py-2.5 border-b border-[#E4E9F0] bg-[#FFFBEB]">
                         <span class="text-xs font-semibold text-[#0B0B0F]"><span x-text="selCount()"></span> ausgewählt</span>
                         <template x-for="a in sectionActions()" :key="a[1]">
@@ -398,8 +380,7 @@
                                 </th>
                                 <th class="px-3 py-3 text-[11px] font-semibold tracking-wide text-[#9CA3AF] w-8">#</th>
                                 <template x-for="c in visCols()" :key="c">
-                                    <th @click="sort(c)" :title="'Sortieren: ' + label(c) + (sortKey===c ? (sortAsc ? ' (aufsteigend)' : ' (absteigend)') : '')" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] cursor-pointer select-none hover:text-[#0B0B0F]">
-                                    <th @click="sort(c)" class="sticky top-0 z-10 bg-[#FAFBFC] px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] cursor-pointer select-none hover:text-[#0B0B0F]">
+                                    <th @click="sort(c)" :title="'Sortieren: ' + label(c) + (sortKey===c ? (sortAsc ? ' (aufsteigend)' : ' (absteigend)') : '')" class="sticky top-0 z-10 bg-[#FAFBFC] px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] cursor-pointer select-none hover:text-[#0B0B0F]">
                                         <span x-text="label(c)"></span><span class="ml-1 text-[#CA8A04]" x-text="sortKey===c ? (sortAsc?'▲':'▼') : ''"></span>
                                     </th>
                                 </template>
@@ -408,19 +389,17 @@
                         </thead>
                         <tbody>
                             <template x-for="(row, idx) in sorted(filtered()).slice(0, limit)" :key="idx">
-                                <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())" :class="overdue(row) ? 'bg-[#A6362E]/5' : (idx % 2 ? 'bg-[#FAFBFC]/50' : '')" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#F3F6FA] cursor-pointer" title="Doppelklick: Bearbeiten">
-                                <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())" :class="[overdue(row) ? 'bg-[#A6362E]/5' : '', detail && detail.id === row.id ? 'bg-[#FACC15]/10' : '']" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer" title="Doppelklick: Bearbeiten">
-                                <tr @click="detail = row" :class="[overdue(row) ? 'bg-[#A6362E]/5' : '', selected[row.id] ? 'bg-[#FFFBEB]' : '']" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer">
+                                <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())"
+                                    :class="[overdue(row) ? 'bg-[#A6362E]/5' : '', selected[row.id] ? 'bg-[#FFFBEB]' : '', detail && detail.id === row.id ? 'bg-[#FACC15]/10' : '', idx % 2 ? 'bg-[#FAFBFC]/50' : '']"
+                                    class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#F3F6FA] cursor-pointer" title="Doppelklick: Bearbeiten">
                                     <td x-show="writable()" @click.stop class="px-4 py-3 w-10">
                                         <input type="checkbox" @change="toggleSel(row.id)" :checked="!!selected[row.id]"
                                                class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                     </td>
-                                <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())" :class="overdue(row) ? 'bg-[#A6362E]/5' : ''" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer" title="Doppelklick: Bearbeiten">
                                     <td class="px-3 py-3 text-[#9CA3AF] text-xs tabular-nums" x-text="idx + 1"></td>
                                     <template x-for="c in visCols()" :key="c">
-                                        <td class="px-5 text-[#1A2433]" :class="compact ? 'py-1.5 text-xs' : 'py-3'" x-html="cell(row, c)"></td>
-                                        <td class="px-5 py-3 text-[#1A2433]">
-                                            <span x-html="cell(row, c)"></span><span x-show="c === visCols()[0] && isNew(row)" class="ml-1.5 text-[9px] font-bold px-1 py-0.5 rounded bg-[#FACC15] text-[#0B0B0F] align-middle" style="display:none">NEU</span>
+                                        <td class="px-5 text-[#1A2433]" :class="compact ? 'py-1.5 text-xs' : 'py-3'">
+                                            <span x-html="cell(row, c)"></span><span x-show="c === visCols()[0] && isNew(row)" class="ml-1.5 text-[9px] font-bold px-1 py-0.5 rounded bg-[#FACC15] text-[#0B0B0F] align-middle">NEU</span>
                                         </td>
                                     </template>
                                     <td x-show="sectionActions().length" @click.stop class="px-5 py-3">
@@ -434,10 +413,8 @@
                             </template>
                         </tbody>
                     </table>
-                    <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center print:hidden">
                     </div>
-                    <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center">
-                    <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center flex items-center justify-center gap-4">
+                    <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center flex items-center justify-center gap-4 print:hidden">
                         <button @click="limit += 100" class="text-xs text-[#CA8A04] hover:underline">
                             Mehr laden (<span x-text="filtered().length - limit"></span> weitere)
                         </button>
@@ -452,8 +429,7 @@
         {{-- Detail drawer --}}
         <div x-show="detail" class="fixed inset-0 z-40" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="detail = null"></div>
-            <div class="absolute inset-y-0 right-0 w-full bg-white shadow-xl flex flex-col transition-[max-width] duration-200" :class="drawerWide ? 'max-w-2xl' : 'max-w-md'">
-            <div class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-xl flex flex-col" role="dialog" aria-modal="true" :aria-label="title() + ' · Details'">
+            <div class="absolute inset-y-0 right-0 w-full bg-white shadow-xl flex flex-col transition-[max-width] duration-200" :class="drawerWide ? 'max-w-2xl' : 'max-w-md'" role="dialog" aria-modal="true" :aria-label="title() + ' · Details'">
                 <div class="px-6 py-4 border-b border-[#E4E9F0] flex items-center justify-between">
                     <h2 class="font-semibold text-[#0B0B0F]" x-text="title() + ' · Details'"></h2>
                     <div class="flex items-center gap-1">
@@ -598,12 +574,9 @@
                 </div>
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
                     <button @click="copyLink()" title="Link kopieren (p)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="linkCopied ? 'Kopiert' : 'Link'"></button>
-                    <button @click="copyLink()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="linkCopied ? 'Kopiert' : 'Link'"></button>
                     <button @click="copyJson()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="jsonCopied ? 'Kopiert' : 'JSON'"></button>
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" title="Duplizieren (d)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Duplizieren</button>
-                    <button x-show="canEdit()" @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
-                    <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Duplizieren</button>
                     <button x-show="canEdit()" @click="openEdit()" title="Bearbeiten (e)" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
                     <button x-show="writable()" @click="confirmDel ? deleteRow(detail) : (confirmDel = true, setTimeout(() => confirmDel = false, 3000))"
                             class="text-xs px-3 py-1.5 border rounded-lg transition"
@@ -656,8 +629,7 @@
                 <div class="px-6 py-4 border-b border-[#E4E9F0]">
                     <h2 class="font-semibold text-[#0B0B0F]" x-text="(editing ? 'Bearbeiten: ' : 'Neu: ') + title()"></h2>
                 </div>
-                <form @submit.prevent="submitCreate" @input="formDirty = true" class="p-6 space-y-4" id="createForm">
-                <form @submit.prevent="submitCreate" @keydown.ctrl.enter.prevent="submitCreate" class="p-6 space-y-4" id="createForm">
+                <form @submit.prevent="submitCreate" @input="formDirty = true" @keydown.ctrl.enter.prevent="submitCreate" class="p-6 space-y-4" id="createForm">
                     <template x-for="f in createFields()" :key="f.key">
                         <div>
                             <label class="block text-[13px] font-medium text-[#42536A] mb-1">
@@ -674,10 +646,9 @@
                                 <input type="checkbox" x-model="form[f.key]" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 <span x-text="label(f.key)"></span>
                             </label>
-                            <input x-show="f.type !== 'fk' && f.type !== 'checkbox'" x-model="form[f.key]" :type="f.type"
                             <textarea x-show="f.type === 'textarea'" x-model="form[f.key]" rows="3"
                                       class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30"></textarea>
-                            <input x-show="f.type !== 'fk' && f.type !== 'textarea'" x-model="form[f.key]" :type="f.type"
+                            <input x-show="f.type !== 'fk' && f.type !== 'checkbox' && f.type !== 'textarea'" x-model="form[f.key]" :type="f.type"
                                    class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         </div>
                     </template>
@@ -787,29 +758,13 @@ function workspace(initial) {
         section: initial, groups: GROUPS, kpiCards: KPI,
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
-        loading: false, error: '', detail: null, showCreate: false, compact: localStorage.getItem('af_density') === '1', form: {}, formError: '', query: '', editing: null,
-        loading: false, error: '', detail: null, drawerWide: false, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        loading: false, error: '', detail: null, drawerWide: false, showCreate: false, compact: localStorage.getItem('af_density') === '1',
+        form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, toasts: [],
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, lastLoad: null,
+        pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, selected: {}, recent: [], navBadges: {},
+        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         meId: @js($user->id ?? null),
-        loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false,
-        loading: false, error: '', detail: null, toasts: [], showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false,
-        loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, kbdHelp: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, jsonCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        meId: @js($user->id ?? null),
-            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {};
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', recent: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', formDirty: false,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, lastLoad: null, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', navBadges: {},
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, lastLoad: null, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
             const p = new URLSearchParams(location.search);
             const t = p.get('tenant');
@@ -818,11 +773,9 @@ function workspace(initial) {
                 const next = [this.section, ...this.recent.filter(k => k !== this.section)].slice(0, 5);
                 try { localStorage.setItem('af_recent', JSON.stringify(next)); } catch (e) {}
             }
-            const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
-            if (this.tenant) { this.loadSection(); this.loadNavBadges(); }
             else if (localStorage.getItem('allocore.tenant')) this.tenant = localStorage.getItem('allocore.tenant');
-            if (this.tenant) this.loadSection();
+            if (this.tenant) { this.loadSection(); this.loadNavBadges(); }
             if (p.get('q')) this.query = p.get('q');
             if (p.get('status')) this.statusFilter = p.get('status');
             this.$watch('query', () => this.syncUrl());
@@ -911,12 +864,9 @@ function workspace(initial) {
         loadSection(soft) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
-            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false;
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], selected: {}, appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false;
-            try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             this.loading = true; this.error = '';
-            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; }
+            if (!soft) { this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; }
+            try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
             history.replaceState(null,'',url);
             if (this.section === 'dashboard') {
@@ -1004,9 +954,11 @@ function workspace(initial) {
         statusActions() {
             if (!this.detail || !('status' in this.detail)) return [];
             return this.sectionActions().filter(a => a[1] !== this.detail.status);
+        },
         rowActions(row) {
             if (!row || !('status' in row)) return [];
             return this.sectionActions().filter(a => a[1] !== row.status);
+        },
         applyRowStatus(row, s) {
             this.api(this.item().ep + '/' + row.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
                 .then(r => { if (r.ok) this.loadSection(true); else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
@@ -1315,21 +1267,25 @@ function workspace(initial) {
             const s = Object.assign({}, this.selected);
             if (s[id]) delete s[id]; else s[id] = true;
             this.selected = s;
+        },
         toggleAll(on) {
             const s = {};
             if (on) this.sorted(this.filtered()).forEach(r => s[r.id] = true);
             this.selected = s;
+        },
         selCount() { return Object.keys(this.selected).length; },
         bulkStatus(s) {
             const ids = Object.keys(this.selected);
             if (!ids.length) return;
             Promise.all(ids.map(id => this.api(this.item().ep + '/' + id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})))
                 .then(() => { this.selected = {}; this.loadSection(); });
+        },
         bulkDelete() {
             const ids = Object.keys(this.selected);
             if (!ids.length || !confirm(ids.length + ' Einträge wirklich löschen?')) return;
             Promise.all(ids.map(id => this.api(this.item().ep + '/' + id, {method:'DELETE'})))
                 .then(() => { this.selected = {}; this.loadSection(); });
+        },
         deleteRow(row) {
             if (!row || !row.id || !confirm('Wirklich löschen?')) return;
             this.api(this.item().ep + '/' + row.id, {method: 'DELETE'}).then(() => { this.detail = null; this.loadSection(); });
@@ -1431,6 +1387,7 @@ function workspace(initial) {
                 if (/progress|pct|percent|rate$|quote|completion/i.test(c) && v >= 0 && v <= 100) {
                     const col = v >= 100 ? '#2E7D5B' : v >= 50 ? '#CA8A04' : '#A6362E';
                     return `<span class="inline-flex items-center gap-2"><span class="inline-block w-16 h-1.5 rounded-full bg-[#E4E9F0] overflow-hidden"><span class="block h-full rounded-full" style="width:${Math.min(100,v)}%;background:${col}"></span></span><span>${v}%</span></span>`;
+                }
                 const f = Math.abs(v) % 1 ? v.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : v.toLocaleString('de-DE');
                 return /price|amount|value|cost|rate|budget|revenue|ebitda|salary|euro|eur/i.test(c) ? f + ' €' : f;
             }
@@ -1442,9 +1399,8 @@ function workspace(initial) {
             }
             if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) {
                 const d = new Date(v);
-                let out = d.toLocaleDateString('de-DE');
-                if (d.getHours() !== 0 || d.getMinutes() !== 0) out += ' ' + d.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
                 let out = d.toLocaleDateString('de-DE', {weekday: 'short'}) + ', ' + d.toLocaleDateString('de-DE');
+                if (d.getHours() !== 0 || d.getMinutes() !== 0) out += ' ' + d.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
                 if (/due|deadline|scheduled/.test(c)) {
                     const days = Math.ceil((d - Date.now()) / 86400000);
                     const rel = days === -1 ? 'gestern' : days === 0 ? 'heute' : days === 1 ? 'morgen' : days < 0 ? `vor ${-days} T` : `in ${days} T`;
@@ -1459,9 +1415,7 @@ function workspace(initial) {
                 return `<a href="tel:${v.replace(/[^+0-9]/g,'')}" @click.stop class="text-[#CA8A04] hover:underline">${v}</a>`;
             if (typeof v === 'string' && /^https?:\/\/\S+$/.test(v))
                 return `<a href="${v}" target="_blank" rel="noopener" @click.stop class="text-[#CA8A04] hover:underline">${v.length > 60 ? v.slice(0,60)+'…' : v}</a>`;
-            if (typeof v === 'string' && v.length > 80) return v.slice(0,80)+'…';
             if (typeof v === 'string' && v.length > 80) return `<span title="${String(v).replace(/"/g,'&quot;')}">${v.slice(0,80)}…</span>`;
-            if (typeof v === 'string' && v.length > 80) v = v.slice(0,80)+'…';
             if (typeof v === 'string' && this.query) {
                 const q = this.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 v = String(v).replace(new RegExp('(' + q + ')', 'ig'), '<mark class="bg-[#FACC15]/40 rounded-sm px-0.5">$1</mark>');
