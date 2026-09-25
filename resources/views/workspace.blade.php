@@ -131,7 +131,7 @@
                         </thead>
                         <tbody>
                             <template x-for="(row, idx) in sorted(filtered()).slice(0, limit)" :key="idx">
-                                <tr @click="detail = row" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer">
+                                <tr @click="detail = row" :class="overdue(row) ? 'bg-[#A6362E]/5' : ''" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer">
                                     <template x-for="c in columns" :key="c">
                                         <td class="px-5 py-3 text-[#1A2433]" x-html="cell(row, c)"></td>
                                     </template>
@@ -463,6 +463,13 @@ function workspace(initial) {
             const lk = MAP[c];
             if (!lk || !this.lookups[lk]) return null;
             return this.lookups[lk][v] || null;
+        },
+        overdue(row) {
+            const OPEN = ['open','pending','in_progress','running','queued','scheduled','planned','active','submitted','shortlisted','draft','on_hold'];
+            const key = ['due_at','deadline','ends_on','due_date','end_date','next_due_at'].find(k => row[k]);
+            if (!key || (row.status && !OPEN.includes(String(row.status)))) return false;
+            const d = new Date(row[key]);
+            return !isNaN(d) && d < new Date();
         },
         cell(row, c) {
             let v = row[c];
