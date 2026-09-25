@@ -121,6 +121,7 @@
         <header class="bg-white border-b border-[#E4E9F0] px-6 py-4 flex items-center justify-between">
             <div>
                 <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F] flex items-center gap-2">
+                    <span class="text-[#CA8A04] text-base" x-text="icons[section] || ''"></span>
                     <span x-text="title()"></span>
                     <button @click="togglePin(section)" :title="pins.includes(section) ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'"
                             class="text-sm transition" :class="pins.includes(section) ? 'text-[#CA8A04]' : 'text-[#D6DEE9] hover:text-[#CA8A04]'">★</button>
