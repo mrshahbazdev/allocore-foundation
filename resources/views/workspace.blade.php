@@ -600,6 +600,7 @@
                         <button @click="navDetail(1)" :disabled="!hasNav(1)" :class="hasNav(1) ? 'text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7]' : 'text-[#E4E9F0] cursor-not-allowed'" class="p-1.5 rounded-lg transition" title="Nächster (→)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
                         <span class="text-[11px] font-mono text-[#9CA3AF] px-1" x-text="detailPos()"></span>
                     </div>
+                    <button x-show="!['dashboard','executive'].includes(section)" @click="reloadRow()" class="text-[#5B6B7E] hover:text-[#CA8A04]" title="Aktualisieren">&#8635;</button>
                     <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]" title="Schließen (Esc)" aria-label="Schließen">&times;</button>
                 </div>
                 <div class="flex-1 overflow-y-auto p-6">
@@ -2014,6 +2015,19 @@ function workspace(initial) {
             const rel = days === -1 ? 'gestern' : days === 0 ? 'heute' : days === 1 ? 'morgen' : days < 0 ? `vor ${-days} T` : `in ${days} T`;
             const col = days < 0 ? 'text-[#A6362E]' : days <= 7 ? 'text-[#CA8A04]' : 'text-[#9CA3AF]';
             return `<span class="${col}">${d.toLocaleDateString('de-DE')} (${rel})</span>`;
+        },
+        reloadRow() {
+            if (!this.detail || !this.detail.id || ['dashboard','executive'].includes(this.section)) return;
+            this.api(this.item().ep + '/' + this.detail.id).then(r => {
+                if (!r.ok) { this.toast('Aktualisieren fehlgeschlagen (HTTP ' + r.status + ').'); return null; }
+                return r.json();
+            }).then(d => {
+                if (!d) return;
+                const row = d.data || d;
+                this.detail = row;
+                this.rows = (this.rows || []).map(r => String(r.id) === String(row.id) ? row : r);
+                this.toast('Datensatz aktualisiert.');
+            });
         },
         cell(row, c) {
             let v = row[c];
