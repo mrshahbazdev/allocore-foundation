@@ -741,7 +741,7 @@
                 </div>
                 <div x-show="rowEvents.length" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="flex items-center justify-between mb-2">
-                        <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERLAUF</div>
+                        <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERLAUF <span class="text-[#9CA3AF] font-normal" x-text="'(' + rowEvents.length + ')'"></span></div>
                         <a :href="'/app/events?tenant=' + tenant + '&q=' + encodeURIComponent(detail.id || '')" class="text-[10px] text-[#CA8A04] hover:underline" title="Alle Ereignisse zu diesem Datensatz">Alle →</a>
                     </div>
                     <template x-for="(e, i) in rowEvents" :key="i">
