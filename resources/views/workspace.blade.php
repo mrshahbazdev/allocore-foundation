@@ -723,10 +723,10 @@
                 <div x-show="rowEvents.length" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-2">VERLAUF</div>
                     <template x-for="(e, i) in rowEvents" :key="i">
-                        <div class="flex items-center justify-between text-xs py-1">
+                        <a :href="'/app/events?tenant=' + tenant + '&open=' + e.id" class="flex items-center justify-between text-xs py-1 rounded hover:bg-[#FAFBFC] -mx-1 px-1">
                             <span class="text-[#1A2433]"><span class="text-[#CA8A04] font-semibold uppercase text-[10px] tracking-wide" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span></span>
                             <span class="text-[10px] text-[#9CA3AF] font-mono" x-text="e.created_at ? new Date(e.created_at).toLocaleString('de-DE') : ''"></span>
-                        </div>
+                        </a>
                     </template>
                 </div>
                 <div x-show="detail && (detail.created_at || detail.updated_at)" class="px-6 py-2.5 border-t border-[#F0F3F7] text-[10px] text-[#9CA3AF] flex gap-4">
