@@ -82,8 +82,11 @@
                 <div class="mb-1">
                     <button @click="collapsed[group.label] = !collapsed[group.label]"
                             class="w-full flex items-center justify-between px-5 pt-4 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280] hover:text-[#9CA3AF] transition">
-                        <span x-text="group.label"></span>
-                        <svg class="w-2.5 h-2.5 transition-transform" :class="collapsed[group.label] && !group.items.some(i => i.key === section) ? '-rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        <span><span x-text="group.label"></span><span class="ml-1.5 font-normal text-[#4B5563]" x-text="'· ' + group.items.length"></span></span>
+                        <span class="flex items-center gap-1.5">
+                            <span x-show="collapsed[group.label] && group.items.some(i => navBadges[i.key] > 0)" class="w-1.5 h-1.5 rounded-full bg-[#A6362E]"></span>
+                            <svg class="w-2.5 h-2.5 transition-transform" :class="collapsed[group.label] && !group.items.some(i => i.key === section) ? '-rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </span>
                     </button>
                     <template x-for="item in group.items" :key="item.key">
                         <div x-show="!collapsed[group.label] || group.items.some(i => i.key === section)"
