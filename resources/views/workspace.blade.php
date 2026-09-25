@@ -29,6 +29,7 @@
             else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
             else if ($event.key === 'e' && detail && !showCreate && canEdit()) openEdit();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
+            else if ($event.key === '.' && !detail && !showCreate && !palette && section !== 'dashboard') window.location.href = '/app/dashboard' + (tenant ? '?tenant=' + tenant : '');
             else if ($event.key === 'p' && detail && !showCreate) copyLink();
             else if ($event.key === 'o' && !detail && !showCreate && !palette && filtered().length > 0) detail = filtered()[0];
             else if ($event.key === 'l' && !detail && !showCreate && !palette && rows && filtered().length > limit) limit = filtered().length;
