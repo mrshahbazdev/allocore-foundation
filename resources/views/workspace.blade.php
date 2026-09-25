@@ -268,6 +268,12 @@
                         Wählen Sie links einen Mandanten, um Daten zu laden.
                     </div>
                     <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0]">
+                        <span class="text-xs text-[#5B6B7E] shrink-0 flex items-center gap-2">
+                            <span x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
+                            <span x-show="rows && rows.some(r => overdue(r))" class="text-[#A6362E]" x-text="'· ' + rows.filter(r => overdue(r)).length + ' überfällig'"></span>
+                            <span x-show="rows && rows.some(r => dueSoon(r))" class="text-[#B45309]" x-text="'· ' + rows.filter(r => dueSoon(r)).length + ' ≤ 7 Tage'"></span>
+                        </span>
+                        <input x-model="query" placeholder="Suchen…" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         <span class="text-xs text-[#5B6B7E] shrink-0" x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
                         <div class="relative">
                             <input x-ref="search" x-model="query" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
