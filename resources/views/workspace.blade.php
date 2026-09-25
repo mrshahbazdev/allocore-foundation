@@ -699,8 +699,9 @@
                        @keydown.arrow-up.prevent="palIdx = Math.max(palIdx - 1, 0)"
                        @keydown.enter.prevent="paletteGo()">
                 <div class="max-h-72 overflow-y-auto py-1">
-                    <template x-for="(it, pi) in paletteItems()" :key="it.key">
+                    <template x-for="(it, pi) in paletteItems()" :key="it.key || it.action">
                         <a :href="'/app/' + it.key + (tenant ? '?tenant='+tenant : '')"
+                           @click="it.action ? (function(){ $event.preventDefault(); paletteRun(it); })() : null"
                            :class="pi === palIdx ? 'bg-[#CA8A04]/10' : ''"
                            class="block px-5 py-2.5 text-sm text-[#1A2433] hover:bg-[#FAFBFC] transition">
                             <span class="inline-block w-4 text-center text-[11px] text-[#9CA3AF] mr-2" x-text="icons[it.key] || '·'"></span><span x-text="it.label"></span>
@@ -945,11 +946,22 @@ function workspace(initial) {
         paletteItems() {
             const q = this.paletteQ.trim().toLowerCase();
             const all = this.groups.flatMap(g => g.items.map(i => ({key: i.key, label: i.label, group: g.label})));
-            return q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
+            const acts = [];
+            if (this.canCreate()) acts.push({key: null, action: 'create', label: '+ Neu: ' + this.title(), group: 'Aktion'});
+            if (this.rows && this.section !== 'dashboard') acts.push({key: null, action: 'export', label: 'CSV exportieren', group: 'Aktion'}, {key: null, action: 'reload', label: 'Liste neu laden', group: 'Aktion'});
+            const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
+            return [...acts.filter(a => !q || a.label.toLowerCase().includes(q)), ...mods];
         },
         paletteGo() {
-            const it = this.paletteItems()[this.palIdx] || this.paletteItems()[0];
-            if (it) location.href = '/app/' + it.key + (this.tenant ? '?tenant=' + this.tenant : '');
+            this.paletteRun(this.paletteItems()[this.palIdx] || this.paletteItems()[0]);
+        },
+        paletteRun(it) {
+            if (!it) return;
+            this.palette = false;
+            if (it.action === 'create') { this.openCreate(); return; }
+            if (it.action === 'export') { this.exportCsv(); return; }
+            if (it.action === 'reload') { this.loadSection(true); return; }
+            location.href = '/app/' + it.key + (this.tenant ? '?tenant=' + this.tenant : '');
         },
         insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
