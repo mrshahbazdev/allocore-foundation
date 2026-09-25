@@ -731,6 +731,20 @@
                         </div>
                     </form>
                 </div>
+                <div x-show="section === 'users'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">ROLLEN</div>
+                    <template x-for="r in allRoles" :key="r.id">
+                        <label class="flex items-center gap-2.5 text-sm text-[#1A2433]">
+                            <input type="checkbox" :value="r.name" x-model="userRoles" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                            <span x-text="r.name"></span>
+                            <span class="text-[11px] text-[#9CA3AF]" x-text="'(' + (r.permissions || []).length + ' Rechte)'"></span>
+                        </label>
+                    </template>
+                    <div x-show="!allRoles.length" class="text-xs text-[#9CA3AF]">Keine Rollen für diesen Mandanten.</div>
+                    <div class="flex justify-end" x-show="allRoles.length">
+                        <button @click="saveUserRoles()" :disabled="!userRoles.length" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40">Rollen speichern</button>
+                    </div>
+                </div>
                 <div x-show="section === 'documents'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERSIONEN</div>
                     <template x-for="v in docVersions" :key="v.id">
@@ -981,6 +995,7 @@ function workspace(initial) {
         {label:'ORGANISATION', items:[
             {key:'leave-requests',label:'Abwesenheiten',ep:'/api/v1/leave-requests'},
             {key:'financial-reports',label:'Finanzen',ep:'/api/v1/financial-reports'},
+            {key:'users',label:'Team',ep:'/api/v1/users'},
         ]},
         {label:'PLATTFORM', items:[
             {key:'events',label:'Events',ep:'/api/v1/events'},
@@ -990,7 +1005,7 @@ function workspace(initial) {
             {key:'graph-edges',label:'Graphen · Kanten',ep:'/api/v1/graph-edges'},
         ]},
     ];
-    const ICONS = {dashboard:'◈',companies:'▣',persons:'◉',documents:'▤',tasks:'☑',instructions:'ⓘ',inspections:'✓',deadlines:'◷','risk-assessments':'⚠','operating-instructions':'✎','expert-profiles':'◎',questions:'?',tenders:'☰',strategies:'⌘',projects:'◇',measures:'→',portfolios:'▲',investments:'€',participations:'◆',machines:'⚙','production-orders':'▶','leave-requests':'◔','financial-reports':'₣',events:'≋','data-objects':'▦','ai-analyses':'✦','graph-entities':'●','graph-edges':'↔',executive:'∑'};
+    const ICONS = {dashboard:'◈',companies:'▣',persons:'◉',documents:'▤',tasks:'☑',instructions:'ⓘ',inspections:'✓',deadlines:'◷','risk-assessments':'⚠','operating-instructions':'✎','expert-profiles':'◎',questions:'?',tenders:'☰',strategies:'⌘',projects:'◇',measures:'→',portfolios:'▲',investments:'€',participations:'◆',machines:'⚙','production-orders':'▶','leave-requests':'◔','financial-reports':'₣',events:'≋','data-objects':'▦','ai-analyses':'✦','graph-entities':'●','graph-edges':'↔',executive:'∑',users:'☺'};
     const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',assigned_to:'persons',from_entity_id:'graph_entities',to_entity_id:'graph_entities',subject_id:'graph_entities'};
     const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv',todo:'Offen',overdue:'Überfällig',sent:'Gesendet',paid:'Bezahlt',unpaid:'Unbezahlt',expired:'Abgelaufen',suspended:'Gesperrt',review:'In Prüfung',assigned:'Zugewiesen',requested:'Angefragt',confirmed:'Bestätigt',declined:'Abgelehnt',exited:'Ausgestiegen',candidate:'Kandidat'};
     const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at']);
@@ -1010,7 +1025,7 @@ function workspace(initial) {
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
-        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [], evShown: 6,
+        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [],
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
@@ -1087,11 +1102,12 @@ function workspace(initial) {
                 const url = new URL(location.href);
                 if (v && v.id) url.searchParams.set('open', v.id); else url.searchParams.delete('open');
                 history.replaceState(null, '', url);
-                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null;
+                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null; this.userRoles = [];
                 this.confirmDel = false; this.rowEvents = []; this.evShown = 6;
                 if (v && v.id && !['events','metrics','ai-analyses','executive','dashboard'].includes(this.section)) this.loadRowEvents(v.id);
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
+                if (v && this.section === 'users') this.loadUserRoles(v.id);
                 if (v && this.section === 'documents') this.loadDocVersions(v.id);
                 if (v && this.section === 'graph-entities') this.loadEntityEdges(v.id);
             });
@@ -1516,6 +1532,15 @@ function workspace(initial) {
                 .then(d => { const es = (d.data || d || []); this.rowEvents = es.filter(e => e.event_properties && e.event_properties.subject && String(e.event_properties.subject.id) === String(id)).slice(0, 25); })
                 .catch(() => this.rowEvents = []);
         },
+        loadUserRoles(id) {
+            this.api('/api/v1/roles').then(r => r.ok ? r.json() : []).then(d => { this.allRoles = Array.isArray(d) ? d : (d.data || []); });
+            this.api('/api/v1/users/' + id + '/roles').then(r => r.ok ? r.json() : {roles: []}).then(d => { this.userRoles = d.roles || []; });
+        },
+        saveUserRoles() {
+            if (!this.detail) return;
+            this.api('/api/v1/users/' + this.detail.id + '/roles', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({roles: this.userRoles})})
+                .then(r => { this.toast(r.ok ? 'Rollen gespeichert.' : 'Speichern fehlgeschlagen (HTTP ' + r.status + ')'); });
+        },
         loadAnswers(qid) {
             this.api('/api/v1/questions/' + qid).then(r => r.ok ? r.json() : {answers: []}).then(d => {
                 this.answers = d.answers || [];
@@ -1768,7 +1793,7 @@ function workspace(initial) {
             const m = this.lookups[table] || {};
             return Object.entries(m).sort((a,b) => String(a[1]).localeCompare(String(b[1]), 'de'));
         },
-        writable() { return !['events','ai-analyses','metrics'].includes(this.section); },
+        writable() { return !['events','ai-analyses','metrics','users'].includes(this.section); },
         canEdit() { return this.writable() && this.section !== 'data-objects'; },
         canCreate() { return this.section === 'ai-analyses' || this.writable(); },
         openCreate(prefill) {
