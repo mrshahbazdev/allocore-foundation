@@ -1397,7 +1397,7 @@ function workspace(initial) {
                 .then(() => this.loadApps(this.detail.id));
         },
         loadRowEvents(id) {
-            this.api('/api/v1/events?per_page=100').then(r => r.ok ? r.json() : {data: []})
+            this.api('/api/v1/events?per_page=100&subject_id=' + encodeURIComponent(id)).then(r => r.ok ? r.json() : {data: []})
                 .then(d => { const es = (d.data || d || []); this.rowEvents = es.filter(e => e.event_properties && e.event_properties.subject && String(e.event_properties.subject.id) === String(id)).slice(0, 6); })
                 .catch(() => this.rowEvents = []);
         },
