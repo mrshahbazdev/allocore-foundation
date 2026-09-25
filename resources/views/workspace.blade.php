@@ -15,7 +15,7 @@
 </head>
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
 <div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak
-     @keydown.escape.window="detail = null; showCreate = false; navOpen = false; palette = false"
+     @keydown.escape.window="detail = null; closeCreate(); navOpen = false; palette = false"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
      @keydown.window="
@@ -502,12 +502,12 @@
 
         {{-- Create modal --}}
         <div x-show="showCreate" class="fixed inset-0 z-40 flex items-center justify-center" style="display:none">
-            <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="showCreate = false"></div>
+            <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="closeCreate()"></div>
             <div class="relative w-full max-w-md bg-white rounded-xl shadow-xl" role="dialog" aria-modal="true">
                 <div class="px-6 py-4 border-b border-[#E4E9F0]">
                     <h2 class="font-semibold text-[#0B0B0F]" x-text="(editing ? 'Bearbeiten: ' : 'Neu: ') + title()"></h2>
                 </div>
-                <form @submit.prevent="submitCreate" class="p-6 space-y-4" id="createForm">
+                <form @submit.prevent="submitCreate" @input="formDirty = true" class="p-6 space-y-4" id="createForm">
                     <template x-for="f in createFields()" :key="f.key">
                         <div>
                             <label class="block text-[13px] font-medium text-[#42536A] mb-1">
@@ -530,7 +530,7 @@
                     </div>
                     <div x-show="formError" class="text-xs text-[#A6362E]" x-text="formError"></div>
                     <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" @click="showCreate = false" class="text-sm px-4 py-2 text-[#5B6B7E]">Abbrechen</button>
+                        <button type="button" @click="closeCreate()" class="text-sm px-4 py-2 text-[#5B6B7E]">Abbrechen</button>
                         <button type="submit" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
                                 class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 disabled:cursor-not-allowed">Speichern</button>
                     </div>
@@ -605,7 +605,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', formDirty: false,
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -926,7 +926,7 @@ function workspace(initial) {
                     .then(r => { if (r.ok) this.loadSection(); else alert('Analyse fehlgeschlagen (HTTP '+r.status+')'); });
                 return;
             }
-            this.editing = null; this.form = {}; this.formError = ''; this.showCreate = true;
+            this.editing = null; this.form = {}; this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         exportCsv() {
@@ -953,7 +953,7 @@ function workspace(initial) {
             const fields = this.createFields();
             this.form = {};
             fields.forEach(f => { const v = this.detail[f.key]; this.form[f.key] = v === null ? '' : v; });
-            this.formError = ''; this.showCreate = true;
+            this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         openEdit() {
@@ -961,7 +961,7 @@ function workspace(initial) {
             const fields = this.createFields();
             this.form = {};
             fields.forEach(f => { const v = this.editing[f.key]; this.form[f.key] = v === null ? '' : v; });
-            this.formError = ''; this.showCreate = true;
+            this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         submitCreate() {
@@ -983,8 +983,12 @@ function workspace(initial) {
             this.api(url, fetchOpts)
                 .then(r => {
                     if (!r.ok) { this.formError = 'HTTP '+r.status+' — Pflichtfelder fehlen?'; return null; }
-                    this.showCreate = false; this.detail = null; this.editing = null; this.loadSection(); return r.json();
+                    this.showCreate = false; this.formDirty = false; this.detail = null; this.editing = null; this.loadSection(); return r.json();
                 });
+        },
+        closeCreate() {
+            if (this.showCreate && this.formDirty && !confirm('Ungespeicherte Änderungen verwerfen?')) return;
+            this.showCreate = false; this.formDirty = false;
         },
         deleteRow(row) {
             if (!row || !row.id || !confirm('Wirklich löschen?')) return;
