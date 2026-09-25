@@ -233,7 +233,7 @@
                             <div x-show="colPicker" @click.outside="colPicker = false" class="absolute right-0 mt-1.5 w-48 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20 max-h-64 overflow-y-auto" style="display:none">
                                 <template x-for="c in columns" :key="c">
                                     <label class="flex items-center gap-2 px-3 py-1.5 text-xs text-[#1A2433] hover:bg-[#FAFBFC] cursor-pointer">
-                                        <input type="checkbox" :checked="!hiddenCols[c]" @change="hiddenCols[c] = !hiddenCols[c]" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                        <input type="checkbox" :checked="!hiddenCols[c]" @change="toggleCol(c)" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                         <span x-text="label(c)"></span>
                                     </label>
                                 </template>
@@ -579,7 +579,7 @@ function workspace(initial) {
         loadSection() {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
-            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = {}; this.colPicker = false;
+            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false;
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
             history.replaceState(null,'',url);
             if (this.section === 'dashboard') {
@@ -744,6 +744,13 @@ function workspace(initial) {
             this.tenantList.push({id: t.id, name: t.name});
             this.tenant = t.id;
             this.loadSection();
+        },
+        loadColPrefs() {
+            try { return JSON.parse(localStorage.getItem('af_cols_' + this.section) || '{}'); } catch (e) { return {}; }
+        },
+        toggleCol(c) {
+            this.hiddenCols[c] = !this.hiddenCols[c];
+            try { localStorage.setItem('af_cols_' + this.section, JSON.stringify(this.hiddenCols)); } catch (e) {}
         },
         visCols() { return this.columns.filter(c => !this.hiddenCols[c]); },
         filtered() {
