@@ -24,6 +24,7 @@
             if ($event.key === '/') { $event.preventDefault(); if ($refs.search) $refs.search.focus(); }
             else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
+            else if ($event.key === 'x' && !detail && !showCreate && !palette && (query || statusFilter || overdueOnly || dueSoonOnly)) { query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false; }
         }">
 
     {{-- Mobile top bar --}}
@@ -306,7 +307,7 @@
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
                         <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
                         <button x-show="query || statusFilter || overdueOnly || dueSoonOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false"
-                                class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
+                                title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
                         <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
                     </div>
