@@ -202,7 +202,14 @@
                     <template x-for="f in createFields()" :key="f.key">
                         <div>
                             <label class="block text-[13px] font-medium text-[#42536A] mb-1" x-text="label(f.key)"></label>
-                            <input x-model="form[f.key]" :type="f.type"
+                            <select x-show="f.type === 'fk'" x-model="form[f.key]"
+                                    class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                <option value="">— wählen —</option>
+                                <template x-for="o in fkOptions(f.table)" :key="o[0]">
+                                    <option :value="o[0]" x-text="o[1]"></option>
+                                </template>
+                            </select>
+                            <input x-show="f.type !== 'fk'" x-model="form[f.key]" :type="f.type"
                                    class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         </div>
                     </template>
@@ -266,6 +273,7 @@ function workspace(initial) {
             {key:'data-objects',label:'Data Lake',ep:'/api/v1/data-objects'},
         ]},
     ];
+    const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',assigned_to:'persons'};
     const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at']);
     const KPI = [
         {key:'companies',label:'Unternehmen'},{key:'persons',label:'Personen'},
@@ -411,10 +419,15 @@ function workspace(initial) {
         createFields() {
             const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes']);
             const src = (this.rows && this.rows[0]) || {};
-            return Object.keys(src).filter(k => !SKIP.has(k) && !k.endsWith('_id')).slice(0, 10).map(k => ({
+            return Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12).map(k => ({
                 key: k,
-                type: typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text'),
+                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text')),
+                table: FKMAP[k] || null,
             }));
+        },
+        fkOptions(table) {
+            const m = this.lookups[table] || {};
+            return Object.entries(m).sort((a,b) => String(a[1]).localeCompare(String(b[1]), 'de'));
         },
         openCreate() { this.editing = null; this.form = {}; this.formError = ''; this.showCreate = true; },
         openEdit() {
@@ -476,8 +489,7 @@ function workspace(initial) {
             });
         },
         resolveId(c, v) {
-            const MAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',assigned_to:'persons'};
-            const lk = MAP[c];
+            const lk = FKMAP[c];
             if (!lk || !this.lookups[lk]) return null;
             return this.lookups[lk][v] || null;
         },
