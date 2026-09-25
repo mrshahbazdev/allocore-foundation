@@ -773,7 +773,7 @@
                     <div x-show="formError" class="text-xs text-[#A6362E]" x-text="formError"></div>
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" @click="closeCreate()" class="text-sm px-4 py-2 text-[#5B6B7E]">Abbrechen</button>
-                        <button type="button" x-show="!editing" @click="submitCreate(true)" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
+                        <button type="button" x-show="!editing && !['documents','data-objects'].includes(section)" @click="submitCreate(true)" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
                                 class="text-sm px-4 py-2 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10 disabled:opacity-40 disabled:cursor-not-allowed" title="Speichern und nächsten Eintrag anlegen">Speichern &amp; neu</button>
                         <button type="submit" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
                                 class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 disabled:cursor-not-allowed" title="Speichern (Strg+↵)">Speichern</button>
