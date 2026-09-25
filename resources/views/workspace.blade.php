@@ -504,8 +504,8 @@
                         <button @click="drawerWide = !drawerWide" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" :title="drawerWide ? 'Schmal' : 'Breit'">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 3v3m0 0l-3-3m3 3l3-3M16 21v-3m0 0l-3 3m3-3l3 3"/></svg>
                         </button>
-                        <button @click="navDetail(-1)" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" title="Vorheriger (←)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
-                        <button @click="navDetail(1)" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" title="Nächster (→)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+                        <button @click="navDetail(-1)" :disabled="!hasNav(-1)" :class="hasNav(-1) ? 'text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7]' : 'text-[#E4E9F0] cursor-not-allowed'" class="p-1.5 rounded-lg transition" title="Vorheriger (←)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
+                        <button @click="navDetail(1)" :disabled="!hasNav(1)" :class="hasNav(1) ? 'text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7]' : 'text-[#E4E9F0] cursor-not-allowed'" class="p-1.5 rounded-lg transition" title="Nächster (→)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
                         <span class="text-[11px] font-mono text-[#9CA3AF] px-1" x-text="detailPos()"></span>
                     </div>
                     <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]" title="Schließen (Esc)" aria-label="Schließen">&times;</button>
@@ -1639,6 +1639,12 @@ function workspace(initial) {
         copyJson() {
             if (!this.detail) return;
             navigator.clipboard.writeText(JSON.stringify(this.detail, null, 2)).then(() => { this.jsonCopied = true; setTimeout(() => this.jsonCopied = false, 1500); });
+        },
+        hasNav(dir) {
+            if (!this.detail) return false;
+            const rs = this.sorted(this.filtered());
+            const i = rs.findIndex(r => String(r.id) === String(this.detail.id));
+            return i >= 0 && !!rs[i + dir];
         },
         navDetail(dir) {
             const rs = this.sorted(this.filtered());
