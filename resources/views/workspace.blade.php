@@ -1595,17 +1595,14 @@ function workspace(initial) {
             }
             this.api(url, fetchOpts)
                 .then(r => {
-                    if (!r.ok) { this.formError = 'HTTP '+r.status+' — Pflichtfelder fehlen?'; return null; }
-                    if (keepOpen && !this.editing) { this.form = {}; this.formDirty = false; this.toast('Eintrag angelegt.'); this.loadSection(); return r.json(); }
-                    this.showCreate = false; this.formDirty = false; this.detail = null; this.editing = null; this.loadSection(); return r.json();
                     if (!r.ok) {
                         return r.json().then(d => {
                             const errs = d && d.errors ? Object.entries(d.errors).map(([k, ms]) => this.label(k) + ': ' + (Array.isArray(ms) ? ms[0] : ms)).join(' · ') : null;
                             this.formError = errs || (d && d.message ? d.message : 'HTTP ' + r.status + ' — Pflichtfelder fehlen?');
                         }).catch(() => { this.formError = 'HTTP ' + r.status + ' — Pflichtfelder fehlen?'; });
                     }
-                    if (keepOpen && !this.editing) { this.form = {}; this.formDirty = false; this.toast('Eintrag angelegt.'); this.loadSection(); return r.json(); }
-                    this.showCreate = false; this.detail = null; this.editing = null; this.loadSection(); return r.json();
+                    if (keepOpen && !this.editing) { this.form = {}; this.formDirty = false; this.formError = ''; this.toast('Eintrag angelegt.'); this.loadSection(); this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select, #createForm textarea'); if (el) el.focus(); }); return r.json(); }
+                    this.showCreate = false; this.formDirty = false; this.detail = null; this.editing = null; this.loadSection(); return r.json();
                 });
         },
         closeCreate() {
