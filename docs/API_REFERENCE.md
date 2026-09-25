@@ -90,4 +90,4 @@ Erinnerungen: `compliance:remind` (stündlich).
 ## Fehlerformat
 
 - `401` ohne gültiges Token, `403` ohne Recht auf dem Tenant, `404` cross-tenant Zugriff.
-- Paginierung: Laravel `paginate()` — `data[]`, `meta`, `links`.
+- Paginierung: Laravel `paginate()` — `data[]`, `meta`, `links`. Alle paginierten List-Endpunkte akzeptieren `?per_page=N` (Default 200, Max 200).
