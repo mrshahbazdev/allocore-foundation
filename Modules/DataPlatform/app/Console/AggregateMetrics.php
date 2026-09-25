@@ -35,7 +35,7 @@ class AggregateMetrics extends Command
             'questions' => 'questions',
             'tenders_open' => ['tenders', "status = 'open'"],
             'financial_reports' => 'financial_reports',
-            'persons_on_leave' => ['leave_requests', fn ($q) => $q->where('status', 'approved')->whereDate('starts_on', '<=', now())->whereDate('ends_on', '>=', now())],
+            'persons_on_leave' => ['leave_requests', fn ($q) => $q->where('status', 'approved')->whereDate('starts_on', '<=', today())->whereDate('ends_on', '>=', today())],
             'leave_requests_pending' => ['leave_requests', "status = 'pending'"],
             'machines_active' => ['machines', "status = 'active'"],
             'production_orders_open' => ['production_orders', "status IN ('queued','running')"],
@@ -48,6 +48,8 @@ class AggregateMetrics extends Command
             'projects_open' => ['projects', "status IN ('planned','active','on_hold')"],
             'measures' => 'measures',
             'measures_open' => ['measures', "status IN ('open','in_progress')"],
+            'graph_entities' => 'graph_entities',
+            'graph_edges' => 'graph_edges',
             'data_objects' => 'data_objects',
         ];
     }

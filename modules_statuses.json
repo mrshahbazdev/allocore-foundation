@@ -12,5 +12,6 @@
     "Production": true,
     "Tasks": true,
     "DataLake": true,
+    "KnowledgeGraph": true,
     "Executive": true
 }
