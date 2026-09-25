@@ -653,8 +653,13 @@
                             </label>
                             <textarea x-show="f.type === 'textarea'" x-model="form[f.key]" rows="3"
                                       class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30"></textarea>
-                            <input x-show="f.type !== 'fk' && f.type !== 'checkbox' && f.type !== 'textarea'" x-model="form[f.key]" :type="f.type"
-                                   class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                            <div x-show="f.type !== 'fk' && f.type !== 'checkbox' && f.type !== 'textarea'" class="relative">
+                                <input x-model="form[f.key]" :type="f.type"
+                                       class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                <button x-show="f.type === 'date' || f.type === 'datetime-local'" type="button"
+                                        @click="form[f.key] = f.type === 'date' ? new Date().toISOString().slice(0,10) : new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16)"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-[#CA8A04] hover:underline">Heute</button>
+                            </div>
                         </div>
                     </template>
                     <div x-show="['documents','data-objects'].includes(section) && !editing">
