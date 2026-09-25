@@ -155,6 +155,10 @@ class DataPlatformTest extends TestCase
         $this->assertContains('data-objects', $sections);
         $this->assertContains('graph-entities', $sections);
 
+        $res = $this->getJson('/api/v1/search?q=Acme&sections=tasks', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertNotEmpty($res);
+        $this->assertSame(['tasks'], array_unique(collect($res)->pluck('section')->all()));
+
         $this->getJson('/api/v1/search?q=a', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson([]);
     }

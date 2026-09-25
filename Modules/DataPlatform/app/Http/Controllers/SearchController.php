@@ -52,9 +52,13 @@ class SearchController extends Controller
         }
         $tid = tenancy()->initialized ? tenant()->getTenantKey() : null;
         $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $q).'%';
+        $max = min(max((int) request('limit', 20), 1), 50);
+        $sections = collect(explode(',', (string) request('sections', '')))
+            ->map(fn ($s) => trim($s))->filter()->all();
+        $tables = $sections ? array_intersect_key(self::TABLES, array_flip($sections)) : self::TABLES;
         $out = [];
 
-        foreach (self::TABLES as $key => $table) {
+        foreach ($tables as $key => $table) {
             if (! Schema::hasTable($table)) {
                 continue;
             }
@@ -77,7 +81,7 @@ class SearchController extends Controller
 
             foreach ($hits as $h) {
                 $out[] = ['section' => $key, 'id' => $h->id, 'label' => $h->{$label}];
-                if (count($out) >= 20) {
+                if (count($out) >= $max) {
                     return $out;
                 }
             }
