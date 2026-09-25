@@ -433,12 +433,30 @@
                 <div x-show="section === 'graph-entities'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERKNÜPFUNGEN</div>
                     <template x-for="e in entityEdges" :key="e.relation + e.other">
-                        <a :href="'/app/graph-entities?tenant=' + tenant + '&open=' + e.other"
-                           class="flex items-center gap-2 rounded-lg border border-[#E4E9F0] px-3 py-2 text-xs hover:border-[#CA8A04]/60 transition">
-                            <span class="font-mono text-[#9CA3AF] w-4 shrink-0" x-text="e.dir"></span>
-                            <span class="text-[#5B6B7E]" x-text="e.relation"></span>
-                            <span class="ml-auto font-medium text-[#1A2433] truncate" x-text="e.name"></span>
-                        </a>
+                        <div>
+                            <div class="flex items-center gap-2 rounded-lg border border-[#E4E9F0] px-3 py-2 text-xs hover:border-[#CA8A04]/60 transition">
+                                <a :href="'/app/graph-entities?tenant=' + tenant + '&open=' + e.other" class="flex items-center gap-2 flex-1 min-w-0">
+                                    <span class="font-mono text-[#9CA3AF] w-4 shrink-0" x-text="e.dir"></span>
+                                    <span class="text-[#5B6B7E]" x-text="e.relation"></span>
+                                    <span class="ml-auto font-medium text-[#1A2433] truncate" x-text="e.name"></span>
+                                </a>
+                                <button @click="expandedEdge = expandedEdge === e.relation + e.other ? null : e.relation + e.other"
+                                        class="shrink-0 text-[#9CA3AF] hover:text-[#CA8A04] px-1" title="Nachbarn zeigen">
+                                    <span x-text="expandedEdge === e.relation + e.other ? '−' : '+'"></span>
+                                </button>
+                            </div>
+                            <div x-show="expandedEdge === e.relation + e.other" class="ml-6 mt-1 space-y-1">
+                                <template x-for="n in edgeNeighbors(e.other)" :key="n.relation + n.other">
+                                    <a :href="'/app/graph-entities?tenant=' + tenant + '&open=' + n.other"
+                                       class="flex items-center gap-2 rounded-md bg-[#FAFBFC] px-3 py-1.5 text-[11px] hover:bg-[#F0F3F7] transition">
+                                        <span class="font-mono text-[#9CA3AF] w-4 shrink-0" x-text="n.dir"></span>
+                                        <span class="text-[#5B6B7E]" x-text="n.relation"></span>
+                                        <span class="ml-auto font-medium text-[#1A2433] truncate" x-text="n.name"></span>
+                                    </a>
+                                </template>
+                                <div x-show="edgeNeighbors(e.other).length === 0" class="text-[11px] text-[#9CA3AF] px-3 py-1">Keine weiteren Kanten.</div>
+                            </div>
+                        </div>
                     </template>
                     <div x-show="entityEdges.length === 0" class="text-xs text-[#9CA3AF]">Keine Kanten zu dieser Entität.</div>
                 </div>
@@ -577,14 +595,14 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
             if (this.tenant) this.loadSection();
             setInterval(() => { if (this.tenant && !this.detail && !this.showCreate && !this.palette) this.loadSection(true); }, 30000);
             this.$watch('detail', v => {
-                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = [];
+                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null;
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
                 if (v && this.section === 'documents') this.loadDocVersions(v.id);
@@ -768,9 +786,21 @@ function workspace(initial) {
             this.api('/api/v1/answers/' + id, {method:'DELETE'})
                 .then(() => this.loadAnswers(this.detail.id));
         },
+        edgeNeighbors(id) {
+            const names = this.lookups.graph_entities || {};
+            return this.allEdges
+                .filter(e => (String(e.from_entity_id) === String(id) || String(e.to_entity_id) === String(id))
+                    && String(e.from_entity_id) !== String(this.detail && this.detail.id) && String(e.to_entity_id) !== String(this.detail && this.detail.id))
+                .map(e => {
+                    const out = String(e.from_entity_id) === String(id);
+                    const other = out ? e.to_entity_id : e.from_entity_id;
+                    return {dir: out ? '→' : '←', relation: e.relation, other, name: names[other] || other};
+                });
+        },
         loadEntityEdges(id) {
             this.api('/api/v1/graph-edges').then(r => r.ok ? r.json() : []).then(d => {
                 const rs = Array.isArray(d) ? d : (d.data || []);
+                this.allEdges = rs;
                 this.entityEdges = rs.filter(e => String(e.from_entity_id) === String(id) || String(e.to_entity_id) === String(id))
                     .map(e => {
                         const out = String(e.from_entity_id) === String(id);
