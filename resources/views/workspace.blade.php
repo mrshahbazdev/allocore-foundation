@@ -1210,6 +1210,10 @@ function workspace(initial) {
             if (rn) return `<span title="${v}">${rn}</span>`;
             if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
             if (typeof v === 'number' && c !== 'id' && !c.endsWith('_id') && Number.isFinite(v)) {
+                if (/progress|pct|percent|rate$|quote|completion/i.test(c) && v >= 0 && v <= 100) {
+                    const col = v >= 100 ? '#2E7D5B' : v >= 50 ? '#CA8A04' : '#A6362E';
+                    return `<span class="inline-flex items-center gap-2"><span class="inline-block w-16 h-1.5 rounded-full bg-[#E4E9F0] overflow-hidden"><span class="block h-full rounded-full" style="width:${Math.min(100,v)}%;background:${col}"></span></span><span>${v}%</span></span>`;
+                }
                 const f = Math.abs(v) % 1 ? v.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : v.toLocaleString('de-DE');
                 return /price|amount|value|cost|rate|budget|revenue|ebitda|salary|euro|eur/i.test(c) ? f + ' €' : f;
             }
