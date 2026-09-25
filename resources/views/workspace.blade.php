@@ -110,9 +110,10 @@
                     <div x-show="!rows" class="px-6 py-12 text-center text-sm text-[#5B6B7E]">
                         Wählen Sie links einen Mandanten, um Daten zu laden.
                     </div>
-                    <div x-show="rows !== null" class="flex items-center justify-between px-5 py-3 border-b border-[#E4E9F0]">
-                        <span class="text-xs text-[#5B6B7E]" x-text="(rows ? rows.length : 0) + ' Einträge'"></span>
-                        <button @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Neu</button>
+                    <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0]">
+                        <span class="text-xs text-[#5B6B7E] shrink-0" x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
+                        <input x-model="query" placeholder="Suchen…" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                        <button @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
                     </div>
                     <div x-show="rows && rows.length === 0" class="px-6 py-12 text-center text-sm text-[#5B6B7E]">
                         Keine Einträge vorhanden.
@@ -126,7 +127,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <template x-for="(row, idx) in rows" :key="idx">
+                            <template x-for="(row, idx) in filtered()" :key="idx">
                                 <tr @click="detail = row" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer">
                                     <template x-for="c in columns" :key="c">
                                         <td class="px-5 py-3 text-[#1A2433]" x-html="cell(row, c)"></td>
@@ -246,7 +247,7 @@ function workspace(initial) {
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
         tenant: '', rows: null, columns: [], metrics: null, insights: [],
-        loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '',
+        loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -290,6 +291,12 @@ function workspace(initial) {
                 } else this.columns = [];
                 this.loading = false;
             });
+        },
+        filtered() {
+            if (!this.rows) return [];
+            const q = this.query.trim().toLowerCase();
+            if (!q) return this.rows;
+            return this.rows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
         },
         fmt(v) {
             if (v === null || v === undefined) return '—';
