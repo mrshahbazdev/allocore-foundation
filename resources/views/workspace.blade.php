@@ -78,6 +78,9 @@
                     </template>
                 </div>
             </div>
+            <div class="flex justify-end pr-4 -mb-1">
+                <button @click="toggleAllGroups()" class="text-[10px] text-[#4B5563] hover:text-[#9CA3AF] transition" :title="allCollapsed() ? 'Alle Gruppen aufklappen' : 'Alle Gruppen einklappen'" x-text="allCollapsed() ? '▸ alle auf' : '▾ alle zu'"></button>
+            </div>
             <template x-for="group in groups" :key="group.label">
                 <div class="mb-1">
                     <button @click="collapsed[group.label] = !collapsed[group.label]"
@@ -920,6 +923,8 @@ function workspace(initial) {
             try { localStorage.setItem('af_pins', JSON.stringify(this.pins)); } catch (e) {}
         },
         sectionLabel(k) { const i = this.groups.flatMap(g => g.items).find(x => x.key === k); return i ? i.label : k; },
+        allCollapsed() { return this.groups.every(g => this.collapsed[g.label]); },
+        toggleAllGroups() { const v = !this.allCollapsed(); this.groups.forEach(g => { this.collapsed[g.label] = v; }); },
         overdueSections() {
             return Object.entries(this.navBadges || {}).filter(([k, n]) => n > 0)
                 .map(([k, n]) => ({key: k, label: this.sectionLabel(k), count: n}))
