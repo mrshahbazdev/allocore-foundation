@@ -18,6 +18,7 @@ use Modules\CorporateDev\Models\Strategy;
 use Modules\DataLake\Models\DataObject;
 use Modules\DataPlatform\Events\DomainEvent;
 use Modules\Documents\Models\Document;
+use Modules\Executive\Models\ExecReport;
 use Modules\ExpertNetwork\Models\Answer;
 use Modules\ExpertNetwork\Models\ExpertProfile;
 use Modules\ExpertNetwork\Models\Question;
@@ -69,7 +70,12 @@ class ActivityRecorder
         Strategy::class => 'strategy',
         Project::class => 'project',
         Measure::class => 'measure',
+<<<<<<< HEAD
+        ExecReport::class => 'exec_report',
+||||||| a4ac835
+=======
         AiAnalysis::class => 'ai_analysis',
+>>>>>>> origin/main
     ];
 
     public static function register(): void
