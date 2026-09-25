@@ -327,10 +327,22 @@
                         <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
                     </div>
+                    <div x-show="selCount() > 0" class="flex flex-wrap items-center gap-2 px-5 py-2.5 border-b border-[#E4E9F0] bg-[#FFFBEB]">
+                        <span class="text-xs font-semibold text-[#0B0B0F]"><span x-text="selCount()"></span> ausgewählt</span>
+                        <template x-for="a in sectionActions()" :key="a[1]">
+                            <button @click="bulkStatus(a[1])" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" x-text="a[0]"></button>
+                        </template>
+                        <button @click="bulkDelete()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
+                        <button @click="selected = {}" class="text-xs px-3 py-1.5 text-[#5B6B7E] hover:text-[#0B0B0F]">Auswahl aufheben</button>
+                    </div>
                     <div class="max-h-[70vh] overflow-y-auto">
                     <table x-show="rows && filtered().length" class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
+                                <th x-show="writable()" class="px-4 py-3 w-10">
+                                    <input type="checkbox" @change="toggleAll($event.target.checked)" :checked="sorted(filtered()).length > 0 && selCount() === sorted(filtered()).length"
+                                           class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                </th>
                                 <th class="px-3 py-3 text-[11px] font-semibold tracking-wide text-[#9CA3AF] w-8">#</th>
                                 <template x-for="c in visCols()" :key="c">
                                     <th @click="sort(c)" class="sticky top-0 z-10 bg-[#FAFBFC] px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] cursor-pointer select-none hover:text-[#0B0B0F]">
@@ -342,6 +354,11 @@
                         </thead>
                         <tbody>
                             <template x-for="(row, idx) in sorted(filtered()).slice(0, limit)" :key="idx">
+                                <tr @click="detail = row" :class="[overdue(row) ? 'bg-[#A6362E]/5' : '', selected[row.id] ? 'bg-[#FFFBEB]' : '']" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer">
+                                    <td x-show="writable()" @click.stop class="px-4 py-3 w-10">
+                                        <input type="checkbox" @change="toggleSel(row.id)" :checked="!!selected[row.id]"
+                                               class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                    </td>
                                 <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())" :class="overdue(row) ? 'bg-[#A6362E]/5' : ''" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer" title="Doppelklick: Bearbeiten">
                                     <td class="px-3 py-3 text-[#9CA3AF] text-xs tabular-nums" x-text="idx + 1"></td>
                                     <template x-for="c in visCols()" :key="c">
@@ -686,6 +703,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false,
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
+            this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {};
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', recent: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
@@ -765,6 +783,7 @@ function workspace(initial) {
         loadSection(soft) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], selected: {}, appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
             this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false;
             try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             this.loading = true; this.error = '';
@@ -855,11 +874,9 @@ function workspace(initial) {
         statusActions() {
             if (!this.detail || !('status' in this.detail)) return [];
             return this.sectionActions().filter(a => a[1] !== this.detail.status);
-        },
         rowActions(row) {
             if (!row || !('status' in row)) return [];
             return this.sectionActions().filter(a => a[1] !== row.status);
-        },
         applyRowStatus(row, s) {
             this.api(this.item().ep + '/' + row.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
                 .then(r => { if (r.ok) this.loadSection(true); else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
@@ -1146,6 +1163,29 @@ function workspace(initial) {
                     }
                     this.showCreate = false; this.detail = null; this.editing = null; this.loadSection(); return r.json();
                 });
+        },
+        toggleSel(id) {
+            const s = Object.assign({}, this.selected);
+            if (s[id]) delete s[id]; else s[id] = true;
+            this.selected = s;
+        },
+        toggleAll(on) {
+            const s = {};
+            if (on) this.sorted(this.filtered()).forEach(r => s[r.id] = true);
+            this.selected = s;
+        },
+        selCount() { return Object.keys(this.selected).length; },
+        bulkStatus(s) {
+            const ids = Object.keys(this.selected);
+            if (!ids.length) return;
+            Promise.all(ids.map(id => this.api(this.item().ep + '/' + id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})))
+                .then(() => { this.selected = {}; this.loadSection(); });
+        },
+        bulkDelete() {
+            const ids = Object.keys(this.selected);
+            if (!ids.length || !confirm(ids.length + ' Einträge wirklich löschen?')) return;
+            Promise.all(ids.map(id => this.api(this.item().ep + '/' + id, {method:'DELETE'})))
+                .then(() => { this.selected = {}; this.loadSection(); });
         },
         deleteRow(row) {
             if (!row || !row.id || !confirm('Wirklich löschen?')) return;
