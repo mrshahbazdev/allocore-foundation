@@ -975,6 +975,7 @@ function workspace(initial) {
             if (this.rows && this.canImport()) acts.push({key: null, action: 'import', label: 'CSV importieren', group: 'Aktion'});
             acts.push({key: null, action: 'dark', label: 'Dunkel/Hell umschalten', group: 'Aktion'});
             if (this.tenantList.length > 1) this.sortedTenants().filter(t => t.id !== this.tenant).forEach(t => acts.push({key: null, action: 'tenant', tenant: t.id, label: 'Mandant: ' + t.name, group: 'Aktion'}));
+            if (this.rows) Object.keys(this.views()).forEach(vn => acts.push({key: null, action: 'view', view: vn, label: 'Ansicht: ' + vn, group: 'Aktion'}));
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
             mods.sort((a, b) => ((this.pins || []).includes(b.key) ? 1 : 0) - ((this.pins || []).includes(a.key) ? 1 : 0));
             return [...acts.filter(a => !q || a.label.toLowerCase().includes(q)), ...mods];
@@ -992,6 +993,7 @@ function workspace(initial) {
             if (it.action === 'print') { window.print(); return; }
             if (it.action === 'dark') { this.toggleDark(); return; }
             if (it.action === 'tenant') { this.tenant = it.tenant; this.loadSection(); this.loadNavBadges(); return; }
+            if (it.action === 'view') { this.applyView(it.view); return; }
             location.href = '/app/' + it.key + (this.tenant ? '?tenant=' + this.tenant : '');
         },
         insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
