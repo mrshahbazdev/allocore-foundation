@@ -402,7 +402,7 @@
                         <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" title="≤7 Tage (s)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'"
                                 x-text="'≤ 7 Tage · ' + rows.filter(r => dueSoon(r)).length"></button>
-                        <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r)" @click="myOnly = !myOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                        <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)" @click="myOnly = !myOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="myOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Mir zugewiesen</button>
                         <button @click="statusFilter = ''" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="statusFilter === '' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
@@ -991,7 +991,7 @@ function workspace(initial) {
                     {key: null, action: 'filter', filter: 'overdueOnly', label: 'Filter: Überfällig ' + (this.overdueOnly ? '(an)' : '(aus)'), group: 'Aktion'},
                     {key: null, action: 'filter', filter: 'dueSoonOnly', label: 'Filter: ≤7 Tage ' + (this.dueSoonOnly ? '(an)' : '(aus)'), group: 'Aktion'},
                     {key: null, action: 'filter', filter: 'dueTodayOnly', label: 'Filter: Heute ' + (this.dueTodayOnly ? '(an)' : '(aus)'), group: 'Aktion'});
-                if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r)) acts.push({key: null, action: 'filter', filter: 'myOnly', label: 'Filter: Mir zugewiesen ' + (this.myOnly ? '(an)' : '(aus)'), group: 'Aktion'});
+                if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)) acts.push({key: null, action: 'filter', filter: 'myOnly', label: 'Filter: Mir zugewiesen ' + (this.myOnly ? '(an)' : '(aus)'), group: 'Aktion'});
                 if (this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.statusFilter || this.query) acts.push({key: null, action: 'filter', filter: '_reset', label: 'Filter zurücksetzen', group: 'Aktion'});
             }
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
@@ -1341,7 +1341,7 @@ function workspace(initial) {
             if (this.overdueOnly) rs = rs.filter(r => this.overdue(r));
             if (this.dueSoonOnly) rs = rs.filter(r => this.dueSoon(r));
             if (this.dueTodayOnly) rs = rs.filter(r => this.dueToday(r));
-            if (this.myOnly) rs = rs.filter(r => String(r.assignee_id || r.responsible_id || '') === String(this.meId));
+            if (this.myOnly) rs = rs.filter(r => String(r.assignee_id || r.responsible_id || r.owner_id || '') === String(this.meId));
             if (this.statusFilter) rs = rs.filter(r => String(r.status || '') === this.statusFilter);
             const q = this.query.trim().toLowerCase();
             if (!q) return rs;
@@ -1736,7 +1736,7 @@ function workspace(initial) {
             else if (e.key === 'w') { if (this.detail && !this.showCreate) { this.drawerWide = !this.drawerWide; try { localStorage.setItem('af_drawer_wide', this.drawerWide ? '1' : '0'); } catch (err) {} } }
             else if (e.key === 'g') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.length) { const opts = ['status', ...this.visCols().filter(c => /_id$/.test(c)), '']; const cyc = opts.filter(o => o === '' || this.rows.some(r => o in r)); const i = cyc.indexOf(this.groupBy); this.groupBy = cyc[(i + 1) % cyc.length]; } }
             else if (e.key === 'b') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.dueToday(r))) this.dueTodayOnly = !this.dueTodayOnly; }
-            else if (e.key === 'm') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r)) this.myOnly = !this.myOnly; }
+            else if (e.key === 'm') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)) this.myOnly = !this.myOnly; }
             else if (e.key === 'u') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.overdue(r))) this.overdueOnly = !this.overdueOnly; }
             else if (e.key === '.') { if (!this.detail && !this.showCreate && !this.palette && this.section !== 'dashboard') window.location.href = '/app/dashboard' + (this.tenant ? '?tenant=' + this.tenant : ''); }
             else if (/^[1-9]$/.test(e.key)) { if (!this.detail && !this.showCreate && !this.palette && this.sorted(this.filtered()).length >= +e.key) this.detail = this.sorted(this.filtered())[e.key - 1]; }
