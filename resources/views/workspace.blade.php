@@ -345,7 +345,7 @@
                             <span x-show="rows && rows.some(r => dueSoon(r))" class="text-[#B45309]" x-text="'· ' + rows.filter(r => dueSoon(r)).length + ' ≤ 7 Tage'"></span>
                         </span>
                         <div class="relative">
-                            <input x-ref="search" x-model.debounce.200ms="query" @keydown.enter="if (filtered().length) { detail = sorted(filtered())[0]; $event.target.blur(); }" placeholder="Suchen… (/)" class="w-40 sm:w-48 lg:w-64 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                            <input x-ref="search" x-model.debounce.200ms="query" @keydown.enter="if (filtered().length) { detail = sorted(filtered())[0]; $event.target.blur(); }" :placeholder="'Suchen in ' + title() + '… (/)'" class="w-40 sm:w-48 lg:w-64 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                             <button x-show="query" @click="query = ''; $refs.search.focus()" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#5B6B7E] text-xs leading-none" aria-label="Suche löschen">&times;</button>
                         </div>
                         <div class="relative shrink-0">
