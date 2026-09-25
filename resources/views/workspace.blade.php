@@ -1067,7 +1067,8 @@ function workspace(initial) {
                 if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleDateString('de-DE');
                 return v;
             };
-            const lines = [this.columns.map(c => esc(this.label(c))).join(';'), ...rows.map(r => this.columns.map(c => esc(csvVal(r, c))).join(';'))];
+            const cols = this.visCols();
+            const lines = [cols.map(c => esc(this.label(c))).join(';'), ...rows.map(r => cols.map(c => esc(csvVal(r, c))).join(';'))];
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv'}));
             a.download = this.section + '.csv';
