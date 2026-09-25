@@ -1176,6 +1176,8 @@ function workspace(initial) {
                 return `<a href="mailto:${v}" @click.stop class="text-[#CA8A04] hover:underline">${v}</a>`;
             if (typeof v === 'string' && /^[+0-9][0-9\s\/()-]{5,}$/.test(v) && /phone|tel|mobile/i.test(c))
                 return `<a href="tel:${v.replace(/[^+0-9]/g,'')}" @click.stop class="text-[#CA8A04] hover:underline">${v}</a>`;
+            if (typeof v === 'string' && /^https?:\/\/\S+$/.test(v))
+                return `<a href="${v}" target="_blank" rel="noopener" @click.stop class="text-[#CA8A04] hover:underline">${v.length > 60 ? v.slice(0,60)+'…' : v}</a>`;
             if (typeof v === 'string' && v.length > 80) return v.slice(0,80)+'…';
             return v;
         },
