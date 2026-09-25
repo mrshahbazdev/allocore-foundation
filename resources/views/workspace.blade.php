@@ -917,13 +917,22 @@
                                     </template>
                                 </select>
                             </div>
+                            <div x-show="f.type === 'enum'">
+                                <select x-model="form[f.key]"
+                                        class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                    <option value="">— wählen —</option>
+                                    <template x-for="o in f.opts" :key="o">
+                                        <option :value="o" x-text="typeLabel(o)"></option>
+                                    </template>
+                                </select>
+                            </div>
                             <label x-show="f.type === 'checkbox'" class="inline-flex items-center gap-2 text-sm text-[#42536A]">
                                 <input type="checkbox" x-model="form[f.key]" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 <span x-text="label(f.key)"></span>
                             </label>
                             <textarea x-show="f.type === 'textarea'" x-model="form[f.key]" rows="3"
                                       class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30"></textarea>
-                            <div x-show="f.type !== 'fk' && f.type !== 'checkbox' && f.type !== 'textarea'" class="relative">
+                            <div x-show="f.type !== 'fk' && f.type !== 'enum' && f.type !== 'checkbox' && f.type !== 'textarea'" class="relative">
                                 <input x-model="form[f.key]" :type="f.type"
                                        class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 <button x-show="f.type === 'date' || f.type === 'datetime-local'" type="button"
@@ -1704,7 +1713,7 @@ function workspace(initial) {
             return [...new Set(this.rows.map(r => r.status).filter(Boolean))].sort();
         },
         statusLabel(s) { return STATUS_DE[String(s).toLowerCase()] || s; },
-        typeLabel(t) { const M = {vacation:'Urlaub',sick:'Krank',other:'Sonstiges',question:'Frage',feedback:'Feedback',maintenance:'Wartung',safety:'Sicherheit',general:'Allgemein',external:'Extern',internal:'Intern',onboarding:'Onboarding',video:'Video',document:'Dokument',workshop:'Workshop',audit:'Audit',inspection:'Prüfung',training:'Schulung',financial:'Finanzen',quality:'Qualität',environment:'Umwelt',risk:'Risiko',strategic:'Strategisch',operational:'Operativ'}; return M[String(t).toLowerCase()] || t; },
+        typeLabel(t) { const M = {vacation:'Urlaub',sick:'Krank',other:'Sonstiges',question:'Frage',feedback:'Feedback',maintenance:'Wartung',safety:'Sicherheit',general:'Allgemein',external:'Extern',internal:'Intern',onboarding:'Onboarding',video:'Video',document:'Dokument',workshop:'Workshop',audit:'Audit',inspection:'Prüfung',training:'Schulung',financial:'Finanzen',quality:'Qualität',environment:'Umwelt',risk:'Risiko',strategic:'Strategisch',operational:'Operativ',low:'Niedrig',medium:'Mittel',high:'Hoch',analysis:'Analyse'}; return M[String(t).toLowerCase()] || t; },
         insightKey(i) { return (this.tenant || '') + '|' + (i.code || '') + '|' + (i.message || ''); },
         visibleInsights() { return (this.insights || []).filter(i => !this.insDismissed.includes(this.insightKey(i))); },
         dismissInsight(i) {
@@ -1820,10 +1829,16 @@ function workspace(initial) {
             const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes']);
             const LONGTEXT = new Set(['description','content','notes','measures','bio','body','proposal','result','message','answer','question','summary','goal','scope','rationale','findings']);
             const src = (this.rows && this.rows[0]) || {};
+            const ENUMS = {
+                'leave-requests': {type: ['vacation','sick','other']},
+                'risk-assessments': {risk_level: ['low','medium','high']},
+            };
+            const enums = ENUMS[this.section] || {};
             return Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12).map(k => ({
                 key: k,
-                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'boolean' ? 'checkbox' : (typeof src[k] === 'number' ? 'number' : (/_at$/.test(k) ? 'datetime-local' : (/_date$/.test(k) ? 'date' : (LONGTEXT.has(k) ? 'textarea' : 'text'))))),
+                type: FKMAP[k] ? 'fk' : (enums[k] ? 'enum' : (typeof src[k] === 'boolean' ? 'checkbox' : (typeof src[k] === 'number' ? 'number' : (/_at$/.test(k) ? 'datetime-local' : (/_date$/.test(k) ? 'date' : (LONGTEXT.has(k) ? 'textarea' : 'text')))))),
                 table: FKMAP[k] || null,
+                opts: enums[k] || null,
                 req: ['name', 'title'].includes(k),
             }));
         },
