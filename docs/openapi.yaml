@@ -53,6 +53,7 @@ paths:
     get:
       tags: [companies]
       summary: GET /api/v1/companies
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -67,6 +68,7 @@ paths:
     post:
       tags: [companies]
       summary: POST /api/v1/companies
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -159,6 +161,7 @@ paths:
     get:
       tags: [context]
       summary: GET /api/v1/context
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -174,6 +177,7 @@ paths:
     get:
       tags: [deadlines]
       summary: GET /api/v1/deadlines
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -188,6 +192,7 @@ paths:
     post:
       tags: [deadlines]
       summary: POST /api/v1/deadlines
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -280,6 +285,7 @@ paths:
     get:
       tags: [documents]
       summary: GET /api/v1/documents
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -294,6 +300,7 @@ paths:
     post:
       tags: [documents]
       summary: POST /api/v1/documents
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -426,6 +433,7 @@ paths:
     get:
       tags: [events]
       summary: GET /api/v1/events
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -441,6 +449,7 @@ paths:
     get:
       tags: [expert-profiles]
       summary: GET /api/v1/expert-profiles
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -455,6 +464,7 @@ paths:
     post:
       tags: [expert-profiles]
       summary: POST /api/v1/expert-profiles
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -470,6 +480,7 @@ paths:
     get:
       tags: [expert-profiles]
       summary: GET /api/v1/expert-profiles/match
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -562,6 +573,7 @@ paths:
     get:
       tags: [health]
       summary: GET /api/v1/health
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -577,6 +589,7 @@ paths:
     get:
       tags: [inspections]
       summary: GET /api/v1/inspections
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -591,6 +604,7 @@ paths:
     post:
       tags: [inspections]
       summary: POST /api/v1/inspections
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -683,6 +697,7 @@ paths:
     get:
       tags: [instructions]
       summary: GET /api/v1/instructions
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -697,6 +712,7 @@ paths:
     post:
       tags: [instructions]
       summary: POST /api/v1/instructions
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -789,6 +805,7 @@ paths:
     get:
       tags: [metrics]
       summary: GET /api/v1/metrics
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -824,6 +841,7 @@ paths:
     get:
       tags: [operating-instructions]
       summary: GET /api/v1/operating-instructions
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -838,6 +856,7 @@ paths:
     post:
       tags: [operating-instructions]
       summary: POST /api/v1/operating-instructions
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -930,6 +949,7 @@ paths:
     get:
       tags: [persons]
       summary: GET /api/v1/persons
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -944,6 +964,7 @@ paths:
     post:
       tags: [persons]
       summary: POST /api/v1/persons
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -1036,6 +1057,7 @@ paths:
     get:
       tags: [questions]
       summary: GET /api/v1/questions
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -1050,6 +1072,7 @@ paths:
     post:
       tags: [questions]
       summary: POST /api/v1/questions
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -1162,6 +1185,7 @@ paths:
     get:
       tags: [risk-assessments]
       summary: GET /api/v1/risk-assessments
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -1176,6 +1200,7 @@ paths:
     post:
       tags: [risk-assessments]
       summary: POST /api/v1/risk-assessments
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -1268,6 +1293,7 @@ paths:
     get:
       tags: [roles]
       summary: GET /api/v1/roles
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -1283,6 +1309,7 @@ paths:
     get:
       tags: [tasks]
       summary: GET /api/v1/tasks
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -1297,6 +1324,7 @@ paths:
     post:
       tags: [tasks]
       summary: POST /api/v1/tasks
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -1389,6 +1417,7 @@ paths:
     post:
       tags: [tenants]
       summary: POST /api/v1/tenants
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -1403,6 +1432,7 @@ paths:
     get:
       tags: [tenants]
       summary: GET /api/v1/tenants
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -1457,6 +1487,7 @@ paths:
     get:
       tags: [tenders]
       summary: GET /api/v1/tenders
+      parameters:
         - name: X-Tenant
           in: header
           required: true
@@ -1471,6 +1502,7 @@ paths:
     post:
       tags: [tenders]
       summary: POST /api/v1/tenders
+      parameters:
         - name: X-Tenant
           in: header
           required: true
