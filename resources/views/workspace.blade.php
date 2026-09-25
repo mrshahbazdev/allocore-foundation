@@ -318,9 +318,12 @@
                             </template>
                         </tbody>
                     </table>
-                    <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center">
+                    <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center flex items-center justify-center gap-4">
                         <button @click="limit += 100" class="text-xs text-[#CA8A04] hover:underline">
                             Mehr laden (<span x-text="filtered().length - limit"></span> weitere)
+                        </button>
+                        <button x-show="filtered().length - limit > 100" @click="limit = filtered().length" class="text-xs text-[#5B6B7E] hover:text-[#CA8A04] hover:underline">
+                            Alle laden
                         </button>
                     </div>
                 </div>
