@@ -284,6 +284,13 @@
                                     x-text="statusLabel(s) + ' · ' + rows.filter(r => String(r.status) === s).length"></button>
                         </template>
                     </div>
+                    <div x-show="loading && !rows" class="px-6 py-6 space-y-3" aria-hidden="true">
+                        <template x-for="i in 6" :key="i">
+                            <div class="flex gap-4">
+                                <div class="h-3.5 rounded bg-[#E8ECF2] animate-pulse" :style="'width:' + ([38,62,45,55,70,30][i-1] || 50) + '%'"></div>
+                            </div>
+                        </template>
+                    </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
                         <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || overdueOnly || dueSoonOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
                         <button x-show="query || statusFilter || overdueOnly || dueSoonOnly" @click="query = ''; statusFilter = ''; overdueOnly = false; dueSoonOnly = false"
