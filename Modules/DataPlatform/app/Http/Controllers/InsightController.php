@@ -72,6 +72,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'inspections_due_soon', "{$inspSoon} Prüfung(en) innerhalb von 7 Tagen geplant.", ['count' => $inspSoon]);
         }
 
+        $instrSoon = $count('instructions', fn ($q) => $q->where('status', 'pending')->whereBetween('due_at', [now(), now()->addDays(7)]));
+        if ($instrSoon) {
+            $insights[] = $this->hit('info', 'instructions_due_soon', "{$instrSoon} Unterweisung(en) innerhalb von 7 Tagen fällig.", ['count' => $instrSoon]);
+        }
+
+        $instrOverdue = $count('instructions', fn ($q) => $q->where('status', 'pending')->where('due_at', '<', now()));
+        if ($instrOverdue) {
+            $insights[] = $this->hit('warning', 'instructions_overdue', "{$instrOverdue} Unterweisung(en) überfällig.", ['count' => $instrOverdue]);
+        }
+
         $reviewsDue = $count('risk_assessments', fn ($q) => $q->where('status', 'open')->where('review_at', '<', now()));
         if ($reviewsDue) {
             $insights[] = $this->hit('warning', 'risk_reviews_overdue', "{$reviewsDue} Gefährdungsbeurteilung(en) — Reviews überfällig.", ['count' => $reviewsDue]);
