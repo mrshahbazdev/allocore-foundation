@@ -1130,6 +1130,7 @@ function workspace(initial) {
             const src = (this.rows && this.rows[0]) || {};
             return Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12).map(k => ({
                 key: k,
+                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$/.test(k) ? 'datetime-local' : (/_date$/.test(k) ? 'date' : 'text'))),
                 type: FKMAP[k] ? 'fk' : (typeof src[k] === 'boolean' ? 'checkbox' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text'))),
                 type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : (LONGTEXT.has(k) ? 'textarea' : 'text'))),
                 table: FKMAP[k] || null,
@@ -1205,6 +1206,8 @@ function workspace(initial) {
             this.editing = null;
             const fields = this.createFields();
             this.form = {};
+            fields.forEach(f => { let v = this.detail[f.key]; if (f.type === 'datetime-local' && v) v = String(v).replace(' ', 'T').slice(0, 16); this.form[f.key] = v === null ? '' : v; });
+            this.formError = ''; this.showCreate = true;
             fields.forEach(f => { const v = this.detail[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
@@ -1213,6 +1216,8 @@ function workspace(initial) {
             this.editing = this.detail;
             const fields = this.createFields();
             this.form = {};
+            fields.forEach(f => { let v = this.editing[f.key]; if (f.type === 'datetime-local' && v) v = String(v).replace(' ', 'T').slice(0, 16); this.form[f.key] = v === null ? '' : v; });
+            this.formError = ''; this.showCreate = true;
             fields.forEach(f => { const v = this.editing[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
@@ -1220,7 +1225,11 @@ function workspace(initial) {
         submitCreate() {
             this.formError = '';
             const body = {};
-            this.createFields().forEach(f => { if (this.form[f.key] !== undefined && this.form[f.key] !== '') body[f.key] = this.form[f.key]; });
+            this.createFields().forEach(f => {
+                let v = this.form[f.key];
+                if (f.type === 'datetime-local' && v) v = String(v).replace('T', ' ') + (String(v).length === 16 ? ':00' : '');
+                if (v !== undefined && v !== '') body[f.key] = v;
+            });
             const method = this.editing ? 'PUT' : 'POST';
             const url = this.item().ep + (this.editing ? '/' + this.editing.id : '');
             let fetchOpts = {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)};
