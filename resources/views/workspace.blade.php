@@ -166,6 +166,11 @@
                         </template>
                     </dl>
                 </div>
+                <div x-show="statusActions().length" class="px-6 py-3 border-t border-[#E4E9F0] flex flex-wrap gap-2">
+                    <template x-for="a in statusActions()" :key="a[0]">
+                        <button @click="applyStatus(a[1])" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" x-text="a[0]"></button>
+                    </template>
+                </div>
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
                     <button x-show="section === 'documents'" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
@@ -323,6 +328,28 @@ function workspace(initial) {
                 return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'de')) * dir;
             });
         },
+        statusActions() {
+            if (!this.detail || !('status' in this.detail)) return [];
+            const A = {
+                'leave-requests': [['Genehmigen','approved'],['Ablehnen','rejected']],
+                'tasks': [['Starten','in_progress'],['Erledigen','done'],['Absagen','cancelled'],['Wieder öffnen','open']],
+                'instructions': [['Erledigt','completed']],
+                'inspections': [['Abschließen','completed'],['Absagen','cancelled']],
+                'deadlines': [['Erledigt','completed']],
+                'tenders': [['Schließen','closed']],
+                'questions': [['Schließen','closed']],
+                'projects': [['Aktivieren','active'],['Abschließen','done'],['Absagen','cancelled']],
+                'measures': [['Starten','in_progress'],['Erledigt','done'],['Absagen','cancelled']],
+                'production-orders': [['Starten','running'],['Fertig','done'],['Absagen','cancelled']],
+                'risk-assessments': [['Akzeptieren','accepted'],['Gemindert','mitigated']],
+                'strategies': [['Aktivieren','active'],['Archivieren','archived']],
+            };
+            return (A[this.section] || []).filter(a => a[1] !== this.detail.status);
+        },
+        applyStatus(s) {
+            this.api(this.item().ep + '/' + this.detail.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
+                .then(r => { if (r.ok) { this.detail = null; this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+        },
         async downloadDoc(row) {
             const r = await this.api('/api/v1/documents/' + row.id + '/download');
             if (!r.ok) { alert('Download fehlgeschlagen'); return; }
@@ -447,11 +474,11 @@ function workspace(initial) {
             if (rn) return `<span title="${v}">${rn}</span>`;
             if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
             if (c === 'status' || c === 'severity' || c === 'type') {
-                const map = {open:'#CA8A04',critical:'#A6362E',high:'#A6362E',warning:'#CA8A04',done:'#2E7D5B',approved:'#2E7D5B',active:'#2E7D5B',info:'#5B6B7E',pending:'#CA8A04',in_progress:'#CA8A04',archived:'#5B6B7E',draft:'#5B6B7E',maintenance:'#CA8A04',retired:'#5B6B7E',awarded:'#2E7D5B',completed:'#2E7D5B'};
-                const DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig'};
+                const map = {open:'#CA8A04',pending:'#CA8A04',in_progress:'#CA8A04',running:'#CA8A04',queued:'#5B6B7E',scheduled:'#5B6B7E',planned:'#5B6B7E',on_hold:'#CA8A04',critical:'#A6362E',high:'#A6362E',warning:'#CA8A04',cancelled:'#A6362E',rejected:'#A6362E',done:'#2E7D5B',completed:'#2E7D5B',approved:'#2E7D5B',accepted:'#2E7D5B',mitigated:'#2E7D5B',active:'#2E7D5B',awarded:'#2E7D5B',info:'#5B6B7E'};
                 const col = map[String(v).toLowerCase()] || '#5B6B7E';
-                v = DE[v] || v;
-                return `<span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full" style="background:${col}"></span>${v}</span>`;
+                const DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv'};
+                const txt = DE[String(v).toLowerCase()] || v;
+                return `<span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full" style="background:${col}"></span>${txt}</span>`;
             }
             if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleDateString('de-DE');
             if (typeof v === 'string' && v.length > 80) return v.slice(0,80)+'…';
