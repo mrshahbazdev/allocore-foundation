@@ -1323,7 +1323,7 @@ function workspace(initial) {
             });
             const out = []; let i = 0;
             for (const [label, rs] of buckets) {
-                const disp = this.groupBy === '__period' ? label : ((this.groupBy === 'status' || this.groupBy === 'severity') ? this.statusLabel(label) : (/_id$/.test(this.groupBy) ? (this.resolveId(this.groupBy, label) || label || '—') : (label || '—')));
+                const disp = this.groupBy === '__period' ? label : ((this.groupBy === 'status' || this.groupBy === 'severity') ? (label ? this.statusLabel(label) : 'Ohne Status') : (/_id$/.test(this.groupBy) ? (label ? (this.resolveId(this.groupBy, label) || label) : 'Nicht zugewiesen') : (label || '—')));
                 out.push({t: 'h', label, disp, count: rs.length, overdue: rs.filter(r => this.overdue(r)).length});
                 if (!this.collapsedGroups[label]) rs.forEach(r => out.push(mk(r, i++)));
                 else i += rs.length;
