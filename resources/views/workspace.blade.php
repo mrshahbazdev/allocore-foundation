@@ -798,6 +798,8 @@
                 <span x-text="t.msg" class="flex-1"></span>
                 <button x-show="t.action" @click="t.action.fn(); toasts = toasts.filter(x => x.id !== t.id)"
                         class="text-[#FACC15] font-semibold hover:underline shrink-0" x-text="t.action ? t.action.label : ''"></button>
+                <button @click="toasts = toasts.filter(x => x.id !== t.id)" aria-label="Schließen"
+                        class="text-white/40 hover:text-white shrink-0 leading-none">×</button>
             </div>
         </template>
     </div>
