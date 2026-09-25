@@ -145,11 +145,15 @@ class DataPlatformTest extends TestCase
 
         $this->postJson('/api/v1/companies', ['name' => 'Acme Zahn GmbH'], ['X-Tenant' => $tenant->id]);
         $this->postJson('/api/v1/tasks', ['title' => 'Acme Bericht prüfen'], ['X-Tenant' => $tenant->id]);
+        DB::table('data_objects')->insert(['tenant_id' => $tenant->id, 'name' => 'Acme Vertrag.pdf', 'path' => 'acme/vertrag.pdf']);
+        DB::table('graph_entities')->insert(['tenant_id' => $tenant->id, 'type' => 'company', 'name' => 'Acme Zahn GmbH']);
 
         $res = $this->getJson('/api/v1/search?q=Acme', ['X-Tenant' => $tenant->id])->assertOk()->json();
         $sections = collect($res)->pluck('section')->all();
         $this->assertContains('companies', $sections);
         $this->assertContains('tasks', $sections);
+        $this->assertContains('data-objects', $sections);
+        $this->assertContains('graph-entities', $sections);
 
         $this->getJson('/api/v1/search?q=a', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson([]);
