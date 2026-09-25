@@ -18,7 +18,7 @@
      @keydown.escape.window="detail = null; showCreate = false; navOpen = false; palette = false"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
-     @keydown.window="if (($event.ctrlKey || $event.metaKey) && $event.key === 'k') { $event.preventDefault(); palette = !palette; paletteQ = ''; }">
+     @keydown.window="kbd($event)">
 
     {{-- Mobile top bar --}}
     <div class="lg:hidden flex items-center justify-between px-4 h-14 bg-[#0B0B0F] text-white sticky top-0 z-30 shrink-0">
@@ -241,7 +241,7 @@
                     </div>
                     <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0]">
                         <span class="text-xs text-[#5B6B7E] shrink-0" x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
-                        <input x-model="query" placeholder="Suchen…" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                        <input x-model="query" x-ref="search" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         <div class="relative shrink-0">
                             <button @click="colPicker = !colPicker" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten</button>
                             <div x-show="colPicker" @click.outside="colPicker = false" class="absolute right-0 mt-1.5 w-48 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20 max-h-64 overflow-y-auto" style="display:none">
@@ -425,6 +425,22 @@
             </div>
         </div>
 
+        {{-- Shortcuts help (?) --}}
+        <div x-show="kbdHelp" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none">
+            <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="kbdHelp = false"></div>
+            <div class="relative w-full max-w-sm bg-white rounded-xl shadow-2xl p-6">
+                <h2 class="font-semibold text-[#0B0B0F] mb-4">Tastenkürzel</h2>
+                <dl class="space-y-2 text-sm">
+                    <template x-for="k in [['Ctrl/⌘ + K', 'Befehlspalette öffnen'], ['/', 'Suche fokussieren'], ['n', 'Neuen Eintrag anlegen'], ['← / →', 'Vorheriger / nächster Eintrag (Drawer)'], ['Esc', 'Schließen'], ['?', 'Diese Übersicht']]" :key="k[0]">
+                        <div class="flex justify-between items-center">
+                            <dt class="text-[#5B6B7E]"><kbd class="px-1.5 py-0.5 bg-[#F0F3F7] border border-[#E4E9F0] rounded text-xs font-mono" x-text="k[0]"></kbd></dt>
+                            <dd class="text-[#1A2433]" x-text="k[1]"></dd>
+                        </div>
+                    </template>
+                </dl>
+            </div>
+        </div>
+
         {{-- Command palette (Ctrl+K) --}}
         <div x-show="palette" class="fixed inset-0 z-50" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="palette = false"></div>
@@ -546,7 +562,7 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, kbdHelp: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -916,6 +932,15 @@ function workspace(initial) {
             const lk = FKMAP[c];
             if (!lk || !this.lookups[lk]) return null;
             return this.lookups[lk][v] || null;
+        },
+        kbd(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); this.palette = !this.palette; this.paletteQ = ''; return; }
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (['input', 'textarea', 'select'].includes(tag) || e.target.isContentEditable) return;
+            if (e.key === '/') { e.preventDefault(); this.$refs.search && this.$refs.search.focus(); }
+            else if (e.key === 'n') { if (this.canCreate() && !this.showCreate && !this.detail) this.openCreate(); }
+            else if (e.key === '?') { e.preventDefault(); this.kbdHelp = !this.kbdHelp; }
         },
         copyLink() {
             const url = location.origin + '/app/' + this.section + '?tenant=' + this.tenant + '&open=' + this.detail.id;
