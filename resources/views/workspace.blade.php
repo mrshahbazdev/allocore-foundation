@@ -28,6 +28,7 @@
             else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
             else if ($event.key === 'e' && detail && !showCreate && canEdit()) openEdit();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
+            else if ($event.key === 'u' && !detail && !showCreate && !palette && rows.some(r => overdue(r))) overdueOnly = !overdueOnly;
             else if ($event.key === 'd' && detail && !showCreate && section !== 'documents' && canEdit()) openDuplicate();
             else if ($event.key === 'i' && !detail && !showCreate && !palette && canImport()) { showImport = true; importText = ''; importResult = ''; }
         }">
@@ -310,6 +311,8 @@
                         <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren (i)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
                         <button x-show="canCreate()" @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
                     </div>
+                    <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0]">
+                        <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" title="Überfällig (u)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                     <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
                         <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
