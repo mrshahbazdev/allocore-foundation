@@ -1117,6 +1117,7 @@ function workspace(initial) {
             if (this.rows && this.section !== 'dashboard') acts.push({key: null, action: 'export', label: 'CSV exportieren', group: 'Aktion'}, {key: null, action: 'exportJson', label: 'JSON exportieren', group: 'Aktion'}, {key: null, action: 'reload', label: 'Liste neu laden', group: 'Aktion'}, {key: null, action: 'print', label: 'Liste drucken', group: 'Aktion'});
             if (this.rows && this.canImport()) acts.push({key: null, action: 'import', label: 'CSV importieren', group: 'Aktion'});
             acts.push({key: null, action: 'dark', label: 'Dunkel/Hell umschalten', group: 'Aktion'});
+            acts.push({key: null, action: 'newtenant', label: '+ Neuer Mandant', group: 'Aktion'});
             if (this.tenantList.length > 1) this.sortedTenants().filter(t => t.id !== this.tenant).forEach(t => acts.push({key: null, action: 'tenant', tenant: t.id, label: 'Mandant: ' + t.name, group: 'Aktion'}));
             if (this.rows) Object.keys(this.views()).forEach(vn => acts.push({key: null, action: 'view', view: vn, label: 'Ansicht: ' + vn, group: 'Aktion'}));
             if (this.rows && this.rows.length) {
@@ -1149,6 +1150,7 @@ function workspace(initial) {
             if (it.action === 'import') { if (this.canImport()) this.showImport = true; return; }
             if (it.action === 'print') { window.print(); return; }
             if (it.action === 'dark') { this.toggleDark(); return; }
+            if (it.action === 'newtenant') { this.createTenant(); return; }
             if (it.action === 'tenant') { this.tenant = it.tenant; this.loadSection(); this.loadNavBadges(); return; }
             if (it.action === 'view') { this.applyView(it.view); return; }
             if (it.action === 'openrow') { location.href = '/app/' + it.row.key + '?tenant=' + this.tenant + '&open=' + encodeURIComponent(it.row.id); return; }
@@ -1499,7 +1501,9 @@ function workspace(initial) {
             const t = await r.json();
             this.tenantList.push({id: t.id, name: t.name});
             this.tenant = t.id;
+            this.toast('Mandant angelegt: ' + t.name);
             this.loadSection();
+            this.loadNavBadges();
         },
         loadColPrefs() {
             try { return JSON.parse(localStorage.getItem('af_cols_' + this.section) || '{}'); } catch (e) { return {}; }
