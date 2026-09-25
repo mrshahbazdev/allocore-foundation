@@ -98,6 +98,7 @@
                             <div class="bg-white border border-[#E4E9F0] rounded-xl px-5 py-4">
                                 <div class="text-[11px] font-medium text-[#5B6B7E]" x-text="m.label"></div>
                                 <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="metric(m.key)"></div>
+                                <div class="mt-0.5 text-[11px] font-mono" :class="trend(m.key).direction === 'up' ? 'text-[#2E7D5B]' : (trend(m.key).direction === 'down' ? 'text-[#A6362E]' : 'text-[#9CA3AF]')" x-text="trend(m.key).delta === null ? '' : (trend(m.key).direction === 'up' ? '▲ +' : (trend(m.key).direction === 'down' ? '▼ ' : '')) + (trend(m.key).delta ?? '')"></div>
                                 <div class="mt-2 h-0.5 w-8 rounded-full bg-[#FACC15]"></div>
                             </div>
                         </template>
@@ -276,7 +277,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], lookups: {},
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], lookups: {},
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100,
@@ -292,6 +293,7 @@ function workspace(initial) {
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
         subtitle() { return (this.section === 'dashboard' ? 'Unternehmenssteuerung' : 'Modul ' + (this.item().label||this.section)) + ' · ' + this.tenantName(); },
         metric(k) { const v = this.metrics && this.metrics[k]; return v ? parseFloat(v.value) : '–'; },
+        trend(k) { const t = this.trends.find(x => x.metric === k); return t || {delta: null, direction: 'unknown'}; },
         api(path, opts={}) {
             opts.headers = Object.assign({
                 'Authorization': 'Bearer {{ $apiToken }}',
@@ -312,6 +314,8 @@ function workspace(initial) {
                     .then(d => this.insights = d.filter(i => i.code !== 'all_clear'));
                 this.api('/api/v1/events').then(r => r.ok ? r.json() : [])
                     .then(d => this.events = (Array.isArray(d) ? d : (d.data || [])).slice(-15).reverse());
+                this.api('/api/v1/analytics/trends').then(r => r.ok ? r.json() : [])
+                    .then(d => this.trends = Array.isArray(d) ? d : (d.data || []));
                 return;
             }
             this.loadLookups();
