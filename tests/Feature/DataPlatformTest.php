@@ -159,6 +159,14 @@ class DataPlatformTest extends TestCase
         $this->assertNotEmpty($res);
         $this->assertSame(['tasks'], array_unique(collect($res)->pluck('section')->all()));
 
+        $other = Tenant::create(['name' => 'Fremd GmbH']);
+        $fremdId = DB::table('graph_entities')->insertGetId(['tenant_id' => $other->id, 'type' => 'company', 'name' => 'Acme Fremd GmbH']);
+        $fremdObj = DB::table('data_objects')->insertGetId(['tenant_id' => $other->id, 'name' => 'Acme Fremd.pdf', 'path' => 'fremd.pdf']);
+        $res = $this->getJson('/api/v1/search?q=Acme', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $ids = collect($res)->pluck('id')->all();
+        $this->assertNotContains($fremdId, $ids);
+        $this->assertNotContains($fremdObj, $ids);
+
         $this->getJson('/api/v1/search?q=a', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson([]);
     }
