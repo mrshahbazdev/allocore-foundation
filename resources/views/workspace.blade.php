@@ -195,6 +195,24 @@
             {{-- Dashboard --}}
             <template x-if="section === 'dashboard'">
                 <div class="space-y-5">
+                    <div class="relative bg-white border border-[#E4E9F0] rounded-xl px-4 py-3">
+                        <div class="flex items-center gap-2.5">
+                            <svg class="w-4 h-4 text-[#9CA3AF] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+                            <input x-model.debounce.300ms="dashQ" placeholder="Globale Suche — Firma, Aufgabe, Dokument…"
+                                   class="w-full text-sm outline-none placeholder-[#9CA3AF] bg-transparent">
+                            <button x-show="dashQ" @click="dashQ = ''; dashHits = []" title="Suche löschen" class="text-[#9CA3AF] hover:text-[#CA8A04] text-sm leading-none shrink-0">&times;</button>
+                        </div>
+                        <div x-show="dashHits.length" class="mt-2 pt-2 border-t border-[#EEF1F5] space-y-0.5" x-cloak>
+                            <template x-for="h in dashHits" :key="h.section + '-' + h.id">
+                                <a :href="'/app/' + h.section + '?tenant=' + tenant + '&open=' + encodeURIComponent(h.id)"
+                                   class="flex items-center justify-between gap-3 px-2 py-1.5 rounded-lg text-sm hover:bg-[#FAFBFC] transition">
+                                    <span class="truncate" x-text="h.label || h.id"></span>
+                                    <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF] shrink-0" x-text="sectionLabel(h.section)"></span>
+                                </a>
+                            </template>
+                        </div>
+                        <div x-show="dashQ && dashQ.trim().length >= 3 && !dashHits.length" class="mt-2 pt-2 border-t border-[#EEF1F5] text-xs text-[#9CA3AF]" x-cloak>Keine Treffer.</div>
+                    </div>
                     <div x-show="visibleInsights().length || insDismissed.length" class="space-y-2">
                         <div x-show="visibleInsights().some(i => i.severity === 'warning' || i.severity === 'info') || insDismissed.length" class="flex gap-1.5">
                         <button x-show="insDismissed.length" @click="insDismissed = []; localStorage.removeItem('af_insdismissed')"
@@ -989,7 +1007,7 @@ function workspace(initial) {
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [], evShown: 6,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
-        meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null,
+        meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
             window.addEventListener('offline', () => { this.offline = true; });
@@ -1033,6 +1051,15 @@ function workspace(initial) {
                 }, 300);
             });
             this.$watch('palette', v => { if (!v) this.globHits = []; });
+            this.$watch('dashQ', q => {
+                clearTimeout(this.dashTimer); this.dashHits = [];
+                const t = (q || '').trim();
+                if (t.length < 3) return;
+                this.dashTimer = setTimeout(() => {
+                    this.api('/api/v1/search?q=' + encodeURIComponent(t)).then(r => r.ok ? r.json() : [])
+                        .then(d => { if (this.dashQ.trim() === t) this.dashHits = d || []; }).catch(() => {});
+                }, 300);
+            });
             this.$watch('groupBy', v => { try { localStorage.setItem('af_group_' + this.section, v); localStorage.removeItem('af_gc_' + this.section); } catch (e) {} this.collapsedGroups = {}; this.syncUrl(); });
             this.$watch('tenant', v => {
                 if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
