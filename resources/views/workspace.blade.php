@@ -686,7 +686,19 @@
                             <div class="flex gap-3 group">
                                 <dt class="w-36 shrink-0 text-[#5B6B7E]" :title="k" x-text="label(k)"></dt>
                                 <dd class="min-w-0 flex-1 font-mono text-[13px] text-[#1A2433] break-words">
-                                    <span x-show="!linkOf(detail[k]) && !(k === 'status' || k === 'severity' || k === 'risk_level')" x-text="fmtD(detail, k)"></span>
+                                    <div x-show="section === 'ai-analyses' && k === 'findings' && Array.isArray(detail[k])" class="space-y-1.5 font-sans">
+                                        <template x-for="(f, i) in detail[k]" :key="i">
+                                            <div class="flex items-start gap-2">
+                                                <span class="mt-1 h-2 w-2 rounded-full shrink-0" :style="'background:' + statusColor(f.severity)"></span>
+                                                <div class="min-w-0">
+                                                    <span class="text-[#1A2433]" x-text="f.message"></span>
+                                                    <a x-show="insightSection(f.code)" :href="'/app/' + insightSection(f.code) + '?tenant=' + tenant + (insightFilter(f.code) ? '&' + insightFilter(f.code) : '')"
+                                                       class="ml-1.5 text-[11px] text-[#CA8A04] hover:underline whitespace-nowrap" x-text="'→ ' + sectionLabel(insightSection(f.code) || '')"></a>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <span x-show="!linkOf(detail[k]) && !(k === 'status' || k === 'severity' || k === 'risk_level') && !(section === 'ai-analyses' && k === 'findings' && Array.isArray(detail[k]))" x-text="fmtD(detail, k)"></span>
                                     <span x-show="(k === 'status' || k === 'severity' || k === 'risk_level')" class="inline-flex items-center gap-1.5 font-sans text-[13px]"><span class="h-2 w-2 rounded-full" :style="'background:' + statusColor(detail[k])"></span><span x-text="statusLabel(detail[k])"></span></span>
                                     <a x-show="linkOf(detail[k])" :href="linkOf(detail[k])" :target="/^https?:/.test(linkOf(detail[k]) || '') ? '_blank' : null" rel="noopener"
                                        class="text-[#CA8A04] hover:underline break-all" x-text="fmtD(detail, k)"></a>
