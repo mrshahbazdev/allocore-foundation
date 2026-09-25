@@ -186,7 +186,8 @@
                     <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0]">
                         <span class="text-xs text-[#5B6B7E] shrink-0" x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
                         <input x-model="query" placeholder="Suchen…" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-                        <button @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
+                        <button @click="exportCsv()" title="CSV exportieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
+                        <button x-show="canCreate()" @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
                     </div>
                     <div x-show="rows && rows.length === 0" class="px-6 py-12 text-center text-sm text-[#5B6B7E]">
                         Keine Einträge vorhanden.
@@ -244,9 +245,9 @@
                     </template>
                 </div>
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
-                    <button x-show="section === 'documents'" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
-                    <button @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
-                    <button @click="deleteRow(detail)" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
+                    <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
+                    <button x-show="canEdit()" @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
+                    <button x-show="writable()" @click="deleteRow(detail)" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
                 </div>
             </div>
         </div>
@@ -331,6 +332,7 @@ function workspace(initial) {
         {label:'PLATTFORM', items:[
             {key:'events',label:'Events',ep:'/api/v1/events'},
             {key:'data-objects',label:'Data Lake',ep:'/api/v1/data-objects'},
+            {key:'ai-analyses',label:'KI-Analysen',ep:'/api/v1/ai-analyses'},
         ]},
     ];
     const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',assigned_to:'persons'};
@@ -451,8 +453,12 @@ function workspace(initial) {
             this.api(this.item().ep + '/' + this.detail.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
                 .then(r => { if (r.ok) { this.detail = null; this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
         },
+        dlPath(row) {
+            if (this.section === 'data-objects') return '/api/v1/data-objects/' + row.id + '/download';
+            return '/api/v1/documents/' + row.id + '/download';
+        },
         async downloadDoc(row) {
-            const r = await this.api('/api/v1/documents/' + row.id + '/download');
+            const r = await this.api(this.dlPath(row));
             if (!r.ok) { alert('Download fehlgeschlagen'); return; }
             const blob = await r.blob();
             const a = document.createElement('a');
@@ -505,7 +511,27 @@ function workspace(initial) {
             const m = this.lookups[table] || {};
             return Object.entries(m).sort((a,b) => String(a[1]).localeCompare(String(b[1]), 'de'));
         },
-        openCreate() { this.editing = null; this.form = {}; this.formError = ''; this.showCreate = true; },
+        writable() { return !['events','ai-analyses','metrics'].includes(this.section); },
+        canEdit() { return this.writable() && this.section !== 'data-objects'; },
+        canCreate() { return this.section === 'ai-analyses' || this.writable(); },
+        openCreate() {
+            if (this.section === 'ai-analyses') {
+                this.api('/api/v1/ai-analyses', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'})
+                    .then(r => { if (r.ok) this.loadSection(); else alert('Analyse fehlgeschlagen (HTTP '+r.status+')'); });
+                return;
+            }
+            this.editing = null; this.form = {}; this.formError = ''; this.showCreate = true;
+        },
+        exportCsv() {
+            const rows = this.sorted(this.filtered());
+            if (!rows.length) return;
+            const esc = v => '"' + String(v === null || v === undefined ? '' : v).replace(/"/g, '""') + '"';
+            const lines = [this.columns.map(esc).join(';'), ...rows.map(r => this.columns.map(c => esc(r[c])).join(';'))];
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv'}));
+            a.download = this.section + '.csv';
+            a.click();
+        },
         openEdit() {
             this.editing = this.detail;
             const fields = this.createFields();
