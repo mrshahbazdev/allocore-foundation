@@ -375,6 +375,7 @@
                     </div>
                     <div x-show="selCount() > 0" class="flex flex-wrap items-center gap-2 px-5 py-2.5 border-b border-[#E4E9F0] bg-[#FFFBEB]">
                         <span class="text-xs font-semibold text-[#0B0B0F]"><span x-text="selCount()"></span> ausgewählt</span>
+                        <span x-show="selSums()" class="text-[11px] text-[#5B6B7E]" x-text="selSums()"></span>
                         <template x-for="a in sectionActions()" :key="a[1]">
                             <button @click="bulkStatus(a[1])" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" x-text="a[0]"></button>
                         </template>
@@ -1247,6 +1248,17 @@ function workspace(initial) {
             return 'Σ ' + sum.toLocaleString('de-DE', {maximumFractionDigits: 2});
         },
         hasSums() { return this.visCols().some(c => this.numericCol(c)); },
+        selSums() {
+            const sel = (this.rows || []).filter(r => this.selected[r.id]);
+            if (!sel.length) return '';
+            return this.visCols().filter(c => {
+                const vals = sel.map(r => r[c]).filter(v => v !== null && v !== undefined && v !== '');
+                return vals.length && vals.every(v => typeof v === 'number' || (typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v.trim())));
+            }).slice(0, 2).map(c => {
+                const sum = sel.reduce((a, r) => a + (Number(r[c]) || 0), 0);
+                return 'Σ ' + this.label(c) + ' ' + sum.toLocaleString('de-DE', {maximumFractionDigits: 2}) + (/price|amount|value|budget|revenue|ebitda|cashflow|liquidity|capital|cost|salary|hourly|invested|valuation/i.test(c) ? ' €' : '');
+            }).join(' · ');
+        },
         linkOf(v) {
             if (typeof v !== 'string') return null;
             if (/^https?:\/\/\S+$/.test(v)) return v;
