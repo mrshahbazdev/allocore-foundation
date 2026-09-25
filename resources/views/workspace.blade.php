@@ -769,6 +769,7 @@ function workspace(initial) {
             if (t) this.tenant = t;
             else if (localStorage.getItem('allocore.tenant')) this.tenant = localStorage.getItem('allocore.tenant');
             if (this.tenant) { this.loadSection(); this.loadNavBadges(); }
+            if (p.get('new')) this.$nextTick(() => { if (this.tenant && this.canCreate()) this.openCreate(); });
             if (p.get('q')) this.query = p.get('q');
             if (p.get('status')) this.statusFilter = p.get('status');
             this.$watch('query', () => this.syncUrl());
@@ -783,9 +784,8 @@ function workspace(initial) {
                 const url = new URL(location.href);
                 if (v && v.id) url.searchParams.set('open', v.id); else url.searchParams.delete('open');
                 history.replaceState(null, '', url);
-                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = [];
-                this.confirmDel = false;
                 this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null;
+                this.confirmDel = false;
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
                 if (v && this.section === 'documents') this.loadDocVersions(v.id);
