@@ -291,7 +291,7 @@
                     </div>
                     <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0] print:hidden">
                         <span class="text-xs text-[#5B6B7E] shrink-0 flex items-center gap-2">
-                            <span x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
+                            <span x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' ' + eintrag(rows ? rows.length : 0)"></span>
                             <span x-show="rows && rows.some(r => overdue(r))" class="text-[#A6362E]" x-text="'· ' + rows.filter(r => overdue(r)).length + ' überfällig'"></span>
                             <span x-show="rows && rows.some(r => dueSoon(r))" class="text-[#B45309]" x-text="'· ' + rows.filter(r => dueSoon(r)).length + ' ≤ 7 Tage'"></span>
                         </span>
@@ -832,7 +832,7 @@ function workspace(initial) {
             if (this.section === 'executive') return base;
             if (this.rows && this.rows.length) {
                 const od = this.rows.filter(r => this.overdue(r)).length;
-                return base + ' · ' + this.rows.length + ' Einträge' + (od ? ' · ' + od + ' überfällig' : '');
+                return base + ' · ' + this.rows.length + ' ' + this.eintrag(this.rows.length) + (od ? ' · ' + od + ' überfällig' : '');
             }
             return base;
         },
@@ -1405,8 +1405,14 @@ function workspace(initial) {
             const d = new Date(row[key]), now = new Date();
             return !isNaN(d) && d >= now && d <= new Date(now.getTime() + 7*864e5);
         },
+        eintrag(n) { return n === 1 ? 'Eintrag' : 'Einträge'; },
         label(c) {
             const L = {name:'Name',title:'Titel',first_name:'Vorname',last_name:'Nachname',email:'E-Mail',phone:'Telefon',type:'Typ',status:'Status',description:'Beschreibung',content:'Inhalt',category:'Kategorie',subject:'Betreff',area:'Bereich',hazard:'Gefährdung',risk_level:'Risikostufe',measures:'Maßnahmen',result:'Ergebnis',notes:'Notizen',progress:'Fortschritt',quantity:'Menge',order_no:'Auftrag-Nr.',product:'Produkt',scrap_qty:'Ausschuss',headline:'Schlagzeile',bio:'Bio',skills:'Skills',hourly_rate:'Stundensatz',budget:'Budget',price:'Preis',proposal:'Angebot',stake_pct:'Anteil %',invested_amount:'Investiert',current_valuation:'Bewertung',capital_need:'Kapitalbedarf',revenue:'Umsatz',cashflow:'Cashflow',ebitda:'EBITDA',liquidity:'Liquidität',period:'Periode',legal_form:'Rechtsform',street:'Straße',zip:'PLZ',city:'Stadt',country:'Land',version:'Version',valid_from:'Gültig ab',interval_months:'Intervall (Mon.)',capacity_units_per_day:'Kapazität/Tag',asset_class:'Anlageklasse',cost_basis:'Kostenbasis',current_value:'Aktueller Wert',currency:'Währung',due_at:'Fällig',deadline_at:'Frist',scheduled_at:'Geplant',starts_on:'Von',ends_on:'Bis',starts_at:'Start',ends_at:'Ende',acquired_at:'Erworben',valued_at:'Bewertet am',body:'Inhalt',is_accepted:'Akzeptiert',document_id:'Dokument'};
+            if (!L[c] && c.endsWith('_id')) {
+                const F = {person_id:'Person',company_id:'Unternehmen',machine_id:'Maschine',task_id:'Aufgabe',question_id:'Frage',answer_id:'Antwort',tender_id:'Ausschreibung',project_id:'Projekt',strategy_id:'Strategie',measure_id:'Maßnahme',portfolio_id:'Portfolio',investment_id:'Investment',participation_id:'Beteiligung',expert_profile_id:'Experte',instruction_id:'Unterweisung',inspection_id:'Prüfung',risk_assessment_id:'Gefährdungsbeurteilung',financial_report_id:'Finanzbericht',leave_request_id:'Abwesenheit',parent_id:'Übergeordnet',responsible_id:'Verantwortlich',assignee_id:'Zugewiesen',created_by:'Erstellt von',updated_by:'Geändert von',approved_by:'Genehmigt von',awarded_by:'Vergeben von',user_id:'Benutzer',document_id:'Dokument'};
+                if (F[c]) return F[c];
+                return c.slice(0, -3).replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
+            }
             return L[c] || c.replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
         },
         cell(row, c) {
