@@ -323,7 +323,7 @@
                         </thead>
                         <tbody>
                             <template x-for="(row, idx) in sorted(filtered()).slice(0, limit)" :key="idx">
-                                <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())" :class="overdue(row) ? 'bg-[#A6362E]/5' : ''" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer" title="Doppelklick: Bearbeiten">
+                                <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())" :class="[overdue(row) ? 'bg-[#A6362E]/5' : '', detail && detail.id === row.id ? 'bg-[#FACC15]/10' : '']" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer" title="Doppelklick: Bearbeiten">
                                     <template x-for="c in visCols()" :key="c">
                                         <td class="px-5 py-3 text-[#1A2433]" x-html="cell(row, c)"></td>
                                     </template>
