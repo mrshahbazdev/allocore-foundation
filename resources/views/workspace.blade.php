@@ -1001,7 +1001,7 @@ function workspace(initial) {
             const all = this.groups.flatMap(g => g.items.map(i => ({key: i.key, label: i.label, group: g.label})));
             const acts = [];
             if (this.canCreate()) acts.push({key: null, action: 'create', label: '+ Neu: ' + this.title(), group: 'Aktion'});
-            if (this.rows && this.section !== 'dashboard') acts.push({key: null, action: 'export', label: 'CSV exportieren', group: 'Aktion'}, {key: null, action: 'reload', label: 'Liste neu laden', group: 'Aktion'}, {key: null, action: 'print', label: 'Liste drucken', group: 'Aktion'});
+            if (this.rows && this.section !== 'dashboard') acts.push({key: null, action: 'export', label: 'CSV exportieren', group: 'Aktion'}, {key: null, action: 'exportJson', label: 'JSON exportieren', group: 'Aktion'}, {key: null, action: 'reload', label: 'Liste neu laden', group: 'Aktion'}, {key: null, action: 'print', label: 'Liste drucken', group: 'Aktion'});
             if (this.rows && this.canImport()) acts.push({key: null, action: 'import', label: 'CSV importieren', group: 'Aktion'});
             acts.push({key: null, action: 'dark', label: 'Dunkel/Hell umschalten', group: 'Aktion'});
             if (this.tenantList.length > 1) this.sortedTenants().filter(t => t.id !== this.tenant).forEach(t => acts.push({key: null, action: 'tenant', tenant: t.id, label: 'Mandant: ' + t.name, group: 'Aktion'}));
@@ -1026,6 +1026,7 @@ function workspace(initial) {
             this.palette = false;
             if (it.action === 'create') { this.openCreate(); return; }
             if (it.action === 'export') { this.exportCsv(); return; }
+            if (it.action === 'exportJson') { this.exportJson(); return; }
             if (it.action === 'reload') { this.loadSection(true); return; }
             if (it.action === 'import') { if (this.canImport()) this.showImport = true; return; }
             if (it.action === 'print') { window.print(); return; }
