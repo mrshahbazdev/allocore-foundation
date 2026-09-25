@@ -687,8 +687,11 @@
     {{-- Toasts --}}
     <div class="fixed bottom-4 right-4 z-50 space-y-2">
         <template x-for="t in toasts" :key="t.id">
-            <div class="bg-[#0B0B0F] text-white text-xs px-4 py-3 rounded-lg shadow-lg border-l-2 border-[#A6362E] max-w-xs"
-                 x-text="t.msg"></div>
+            <div class="bg-[#0B0B0F] text-white text-xs px-4 py-3 rounded-lg shadow-lg border-l-2 border-[#A6362E] max-w-xs flex items-center gap-3">
+                <span x-text="t.msg" class="flex-1"></span>
+                <button x-show="t.action" @click="t.action.fn(); toasts = toasts.filter(x => x.id !== t.id)"
+                        class="text-[#FACC15] font-semibold hover:underline shrink-0" x-text="t.action ? t.action.label : ''"></button>
+            </div>
         </template>
     </div>
 </div>
@@ -853,8 +856,8 @@ function workspace(initial) {
             const min = Math.min(...v), max = Math.max(...v), span = max - min || 1;
             return v.map((p, i) => (i ? 'L' : 'M') + (i * 96 / (v.length - 1)).toFixed(1) + ',' + (22 - (p - min) / span * 20).toFixed(1)).join(' ');
         },
-        toast(msg) {
-            const t = {id: Date.now() + Math.random(), msg};
+        toast(msg, action) {
+            const t = {id: Date.now() + Math.random(), msg, action};
             this.toasts.push(t);
             setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== t.id); }, 4500);
         },
@@ -1354,7 +1357,21 @@ function workspace(initial) {
         },
         deleteRow(row) {
             if (!row || !row.id || !confirm('Wirklich löschen?')) return;
-            this.api(this.item().ep + '/' + row.id, {method: 'DELETE'}).then(() => { this.detail = null; this.loadSection(); });
+            const snapshot = {...row};
+            this.api(this.item().ep + '/' + row.id, {method: 'DELETE'}).then(() => {
+                this.detail = null; this.loadSection();
+                this.toast('Gelöscht.', {label: 'Rückgängig', fn: () => this.restoreRow(snapshot)});
+            });
+        },
+        restoreRow(row) {
+            const p = {};
+            Object.keys(row).forEach(k => {
+                const v = row[k];
+                if (['id', 'tenant_id', 'created_at', 'updated_at', 'deleted_at'].includes(k)) return;
+                if (v === null || typeof v !== 'object') p[k] = v;
+            });
+            this.api(this.item().ep, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p)})
+                .then(r => { this.toast(r.ok ? 'Wiederhergestellt.' : 'Wiederherstellen fehlgeschlagen.'); if (r.ok) this.loadSection(); });
         },
         loadLookups() {
             const SPECS = {
