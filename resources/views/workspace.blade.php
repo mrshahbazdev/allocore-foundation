@@ -1370,8 +1370,26 @@ function workspace(initial) {
         bulkDelete() {
             const ids = Object.keys(this.selected);
             if (!ids.length || !confirm(ids.length + ' Einträge wirklich löschen?')) return;
+            const snapshots = (this.rows || []).filter(r => this.selected[r.id]).map(r => ({...r}));
             Promise.all(ids.map(id => this.api(this.item().ep + '/' + id, {method:'DELETE'})))
-                .then(() => { this.selected = {}; this.loadSection(); });
+                .then(() => {
+                    this.selected = {}; this.loadSection();
+                    this.toast(ids.length + ' gelöscht.', {label: 'Rückgängig', fn: () => this.restoreRows(snapshots)});
+                });
+        },
+        restoreRows(rows) {
+            Promise.all(rows.map(r => {
+                const p = {};
+                Object.keys(r).forEach(k => {
+                    const v = r[k];
+                    if (['id', 'tenant_id', 'created_at', 'updated_at', 'deleted_at'].includes(k)) return;
+                    if (v === null || typeof v !== 'object') p[k] = v;
+                });
+                return this.api(this.item().ep, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p)});
+            })).then(rs => {
+                this.toast(rs.every(r => r.ok) ? 'Wiederhergestellt.' : 'Teilweise fehlgeschlagen.');
+                this.loadSection();
+            });
         },
         deleteRow(row) {
             if (!row || !row.id || !confirm('Wirklich löschen?')) return;
