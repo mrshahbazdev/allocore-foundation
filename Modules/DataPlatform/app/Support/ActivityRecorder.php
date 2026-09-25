@@ -26,6 +26,8 @@ use Modules\Finance\Models\FinancialReport;
 use Modules\Hr\Models\LeaveRequest;
 use Modules\Investments\Models\Investment;
 use Modules\Investments\Models\Portfolio;
+use Modules\KnowledgeGraph\Models\GraphEdge;
+use Modules\KnowledgeGraph\Models\GraphEntity;
 use Modules\Participations\Models\Participation;
 use Modules\Production\Models\Machine;
 use Modules\Production\Models\ProductionOrder;
@@ -61,6 +63,8 @@ class ActivityRecorder
         DataObject::class => 'data_object',
         Portfolio::class => 'portfolio',
         Investment::class => 'investment',
+        GraphEntity::class => 'graph_entity',
+        GraphEdge::class => 'graph_edge',
         Strategy::class => 'strategy',
         Project::class => 'project',
         Measure::class => 'measure',
