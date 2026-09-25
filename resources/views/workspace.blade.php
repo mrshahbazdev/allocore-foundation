@@ -849,7 +849,13 @@ function workspace(initial) {
         },
         subtitle() {
             const base = (this.section === 'dashboard' ? 'Unternehmenssteuerung' : 'Modul ' + (this.item().label||this.section)) + ' · ' + this.tenantName();
-            return this.section === 'dashboard' ? base + ' · ' + new Date().toLocaleDateString('de-DE', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}) : base;
+            if (this.section === 'dashboard') return base + ' · ' + new Date().toLocaleDateString('de-DE', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
+            if (this.section === 'executive') return base;
+            if (this.rows && this.rows.length) {
+                const od = this.rows.filter(r => this.overdue(r)).length;
+                return base + ' · ' + this.rows.length + ' Einträge' + (od ? ' · ' + od + ' überfällig' : '');
+            }
+            return base;
         },
         metric(k) { const v = this.metrics && this.metrics[k]; return v ? parseFloat(v.value) : '–'; },
         trend(k) { const t = this.trends.find(x => x.metric === k); return t || {delta: null, direction: 'unknown'}; },
