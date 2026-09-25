@@ -1446,7 +1446,15 @@ function workspace(initial) {
             return null;
         },
         detailKeys() {
-            return Object.keys(this.detail || {}).filter(k => (k === 'id' || !HIDE.has(k)) && !(typeof this.detail[k] === 'object' && this.detail[k] !== null && this.detail[k + '_id'] !== undefined));
+            const keys = Object.keys(this.detail || {}).filter(k => (k === 'id' || !HIDE.has(k)) && !(typeof this.detail[k] === 'object' && this.detail[k] !== null && this.detail[k + '_id'] !== undefined));
+            const rank = k => {
+                if (k === 'id') return 0;
+                if (/^(title|name|subject|question|company|label|description)$/.test(k)) return 1;
+                if (k === 'status' || k === 'severity' || k === 'type') return 2;
+                if (k === 'created_at' || k === 'updated_at' || k === 'deleted_at') return 4;
+                return 3;
+            };
+            return keys.sort((a, b) => rank(a) - rank(b));
         },
         fmt(v) {
             if (v === null || v === undefined) return '—';
