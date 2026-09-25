@@ -966,6 +966,7 @@ function workspace(initial) {
             if (this.rows && this.canImport()) acts.push({key: null, action: 'import', label: 'CSV importieren', group: 'Aktion'});
             acts.push({key: null, action: 'dark', label: 'Dunkel/Hell umschalten', group: 'Aktion'});
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
+            mods.sort((a, b) => ((this.pins || []).includes(b.key) ? 1 : 0) - ((this.pins || []).includes(a.key) ? 1 : 0));
             return [...acts.filter(a => !q || a.label.toLowerCase().includes(q)), ...mods];
         },
         paletteGo() {
