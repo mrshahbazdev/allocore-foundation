@@ -67,6 +67,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'inspections_overdue', "{$insp} geplante Prüfung(en) überfällig.", ['count' => $insp]);
         }
 
+        $inspSoon = $count('inspections', fn ($q) => $q->where('status', 'scheduled')->whereBetween('scheduled_at', [now(), now()->addDays(7)]));
+        if ($inspSoon) {
+            $insights[] = $this->hit('info', 'inspections_due_soon', "{$inspSoon} Prüfung(en) innerhalb von 7 Tagen geplant.", ['count' => $inspSoon]);
+        }
+
         $leave = $count('leave_requests', fn ($q) => $q->where('status', 'pending'));
         if ($leave) {
             $insights[] = $this->hit('info', 'leave_requests_pending', "{$leave} Urlaubs-/Fehlzeitenantrag/-anträge zur Genehmigung offen.", ['count' => $leave]);
