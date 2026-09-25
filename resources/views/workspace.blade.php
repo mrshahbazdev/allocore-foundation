@@ -929,8 +929,10 @@ function workspace(initial) {
         },
         title() { return this.item().label; },
         togglePin(key) {
-            this.pins = this.pins.includes(key) ? this.pins.filter(k => k !== key) : [...this.pins, key];
+            const was = this.pins.includes(key);
+            this.pins = was ? this.pins.filter(k => k !== key) : [...this.pins, key];
             try { localStorage.setItem('af_pins', JSON.stringify(this.pins)); } catch (e) {}
+            this.toast(was ? 'Aus Favoriten entfernt' : 'Zu Favoriten hinzugefügt');
         },
         sectionLabel(k) { const i = this.groups.flatMap(g => g.items).find(x => x.key === k); return i ? i.label : k; },
         allCollapsed() { return this.groups.every(g => this.collapsed[g.label]); },
