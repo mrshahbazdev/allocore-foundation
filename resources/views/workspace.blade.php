@@ -433,6 +433,9 @@
                                 x-text="'≤ 7 Tage · ' + rows.filter(r => dueSoon(r)).length"></button>
                         <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)" @click="myOnly = !myOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="myOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Mir zugewiesen</button>
+                        <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r) && rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id))" @click="unassignedOnly = !unassignedOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                                :class="unassignedOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
+                                x-text="'Ohne Verantwortlichen · ' + rows.filter(r => !(r.assignee_id || r.responsible_id || r.owner_id)).length"></button>
                         <template x-for="g in [...new Set(rows.map(r => eventGroup(r.event_type)))]" :key="'eg'+g">
                             <button x-show="section === 'events'" @click="evGroup = evGroup === g ? '' : g" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="evGroup === g ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
@@ -458,7 +461,7 @@
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
                         <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || evGroup || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
-                        <button x-show="query || statusFilter || evGroup || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly" @click="query = ''; statusFilter = ''; evGroup = ''; overdueOnly = false; dueSoonOnly = false; dueTodayOnly = false; myOnly = false"
+                        <button x-show="query || statusFilter || evGroup || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly" @click="query = ''; statusFilter = ''; evGroup = ''; overdueOnly = false; dueSoonOnly = false; dueTodayOnly = false; myOnly = false; unassignedOnly = false"
                                 title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
                         <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly && !dueTodayOnly && !myOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
@@ -932,7 +935,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'), navQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [],
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, insightSev: '', fkQ: {},
@@ -1086,7 +1089,7 @@ function workspace(initial) {
             if (it.action === 'view') { this.applyView(it.view); return; }
             if (it.action === 'openrow') { location.href = '/app/' + it.row.key + '?tenant=' + this.tenant + '&open=' + encodeURIComponent(it.row.id); return; }
             if (it.action === 'filter') {
-                if (it.filter === '_reset') { this.query = ''; this.statusFilter = ''; this.evGroup = ''; this.overdueOnly = this.dueSoonOnly = this.dueTodayOnly = this.myOnly = false; }
+                if (it.filter === '_reset') { this.query = ''; this.statusFilter = ''; this.evGroup = ''; this.overdueOnly = this.dueSoonOnly = this.dueTodayOnly = this.myOnly = this.unassignedOnly = false; }
                 else this[it.filter] = !this[it.filter];
                 return;
             }
@@ -1172,7 +1175,7 @@ function workspace(initial) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
             this.loading = true; this.error = '';
-            if (!soft) { this.limit = 100; this.statusFilter = ''; this.evGroup = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; try { this.collapsedGroups = JSON.parse(localStorage.getItem('af_gc_' + this.section) || '{}') || {}; } catch (e) { this.collapsedGroups = {}; } }
+            if (!soft) { this.limit = 100; this.statusFilter = ''; this.evGroup = ''; this.unassignedOnly = false; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; try { this.collapsedGroups = JSON.parse(localStorage.getItem('af_gc_' + this.section) || '{}') || {}; } catch (e) { this.collapsedGroups = {}; } }
             try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             if (this._urlSort) { const m = this._urlSort.match(/^(.+?)(?::(asc|desc))?$/); this.sortKey = m[1]; this.sortAsc = m[2] !== 'desc'; this._urlSort = null; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
@@ -1451,6 +1454,7 @@ function workspace(initial) {
             if (this.dueSoonOnly) rs = rs.filter(r => this.dueSoon(r));
             if (this.dueTodayOnly) rs = rs.filter(r => this.dueToday(r));
             if (this.myOnly) rs = rs.filter(r => String(r.assignee_id || r.responsible_id || r.owner_id || '') === String(this.meId));
+            if (this.unassignedOnly) rs = rs.filter(r => !(r.assignee_id || r.responsible_id || r.owner_id));
             if (this.statusFilter) rs = rs.filter(r => String(r.status || '') === this.statusFilter);
             if (this.evGroup) rs = rs.filter(r => this.eventGroup(r.event_type) === this.evGroup);
             const q = this.query.trim().toLowerCase();
@@ -1859,7 +1863,7 @@ function workspace(initial) {
             else if (e.key === 'o') { if (!this.detail && !this.showCreate && !this.palette && this.filtered().length) this.detail = this.filtered()[0]; }
             else if (e.key === 'l') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.filtered().length > this.limit) this.limit = this.filtered().length; }
             else if (e.key === 't') { this.toggleDark(); }
-            else if (e.key === 'x') { if (!this.detail && !this.showCreate && !this.palette && (this.query || this.statusFilter || this.evGroup || this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly)) { this.query = ''; this.statusFilter = ''; this.evGroup = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; } }
+            else if (e.key === 'x') { if (!this.detail && !this.showCreate && !this.palette && (this.query || this.statusFilter || this.evGroup || this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.unassignedOnly)) { this.query = ''; this.statusFilter = ''; this.evGroup = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.unassignedOnly = false; } }
             else if (e.key === 'c') { if (!this.detail && !this.showCreate && !this.palette && this.rows) this.colPicker = !this.colPicker; }
             else if (e.key === 'v') { if (!this.detail && !this.showCreate && !this.palette && this.rows) this.viewPicker = !this.viewPicker; }
             else if (e.key === 's') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.dueSoon(r))) this.dueSoonOnly = !this.dueSoonOnly; }
