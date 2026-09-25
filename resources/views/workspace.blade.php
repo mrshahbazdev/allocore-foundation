@@ -55,7 +55,7 @@
         {{-- Tenant picker --}}
         <div class="px-4 py-4 border-b border-[#1A1A1F]">
             <label class="block text-[10px] font-medium tracking-wide text-[#9CA3AF] mb-1.5">MANDANT</label>
-            <select x-model="tenant" @change="loadSection()"
+            <select x-model="tenant" @change="loadSection(); loadNavBadges()"
                     class="w-full rounded-lg bg-[#1A1A1F] border-[#2A2A31] text-white text-sm py-2 focus:border-[#FACC15] focus:ring-[#FACC15]/30">
                 <option value="">— wählen —</option>
                 <template x-for="t in sortedTenants()" :key="t.id">
@@ -89,6 +89,7 @@
                                ? 'text-white bg-[#1A1A1F] border-r-2 border-[#FACC15]'
                                : 'text-[#9CA3AF] hover:text-white hover:bg-[#141419]'">
                             <span x-text="item.label"></span>
+                            <span x-show="navBadges[item.key] > 0" x-text="navBadges[item.key]" class="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#A6362E] text-white min-w-[1.1rem] text-center"></span>
                         </a>
                     </template>
                 </div>
@@ -718,6 +719,8 @@ function workspace(initial) {
             this.loading = true; this.error = ''; this.limit = 100; this.statusFilter = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {};
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', recent: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', navBadges: {},
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, lastLoad: null, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, lastLoad: null, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
@@ -731,6 +734,7 @@ function workspace(initial) {
             }
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
+            if (this.tenant) { this.loadSection(); this.loadNavBadges(); }
             else if (localStorage.getItem('allocore.tenant')) this.tenant = localStorage.getItem('allocore.tenant');
             if (this.tenant) this.loadSection();
             if (p.get('q')) this.query = p.get('q');
@@ -805,6 +809,15 @@ function workspace(initial) {
             }, opts.headers||{});
             return fetch(path, opts);
         },
+        loadNavBadges() {
+            const items = this.groups.flatMap(g => g.items).filter(i => i.ep);
+            Promise.all(items.map(i =>
+                this.api(i.ep).then(r => r.ok ? r.json() : []).then(d => {
+                    const rows = Array.isArray(d) ? d : (d.data || []);
+                    return [i.key, rows.filter(r => this.overdue(r)).length];
+                }).catch(() => [i.key, 0])
+            )).then(pairs => { this.navBadges = Object.fromEntries(pairs); });
+        },
         loadSection(soft) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
@@ -855,6 +868,7 @@ function workspace(initial) {
                 if (d === null) return;
                 const rows = Array.isArray(d) ? d : (d.data || []);
                 this.rows = rows;
+                this.navBadges = {...this.navBadges, [this.section]: rows.filter(r => this.overdue(r)).length};
                 if (rows.length) {
                     const keys = Object.keys(rows[0]).filter(k => !HIDE.has(k) && typeof rows[0][k] !== 'object');
                     this.columns = keys.slice(0, 7);
