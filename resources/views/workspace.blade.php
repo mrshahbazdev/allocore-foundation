@@ -269,17 +269,21 @@
                     </div>
                     <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0]">
                         <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
-                                :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'">Überfällig</button>
+                                :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
+                                x-text="'Überfällig · ' + rows.filter(r => overdue(r)).length"></button>
                         <button x-show="rows.some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'">≤ 7 Tage</button>
                         <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r)" @click="myOnly = !myOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="myOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Mir zugewiesen</button>
+                                :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'"
+                                x-text="'≤ 7 Tage · ' + rows.filter(r => dueSoon(r)).length"></button>
                         <button @click="statusFilter = ''" class="text-[11px] px-2.5 py-1 rounded-full border transition"
-                                :class="statusFilter === '' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Alle</button>
+                                :class="statusFilter === '' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
+                                x-text="'Alle · ' + rows.length"></button>
                         <template x-for="s in statusOpts()" :key="s">
                             <button @click="statusFilter = statusFilter === s ? '' : s" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="statusFilter === s ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
-                                    x-text="statusLabel(s)"></button>
+                                    x-text="statusLabel(s) + ' · ' + rows.filter(r => String(r.status) === s).length"></button>
                         </template>
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
@@ -329,14 +333,14 @@
         {{-- Detail drawer --}}
         <div x-show="detail" class="fixed inset-0 z-40" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="detail = null"></div>
-            <div class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-xl flex flex-col">
+            <div class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-xl flex flex-col" role="dialog" aria-modal="true" :aria-label="title() + ' · Details'">
                 <div class="px-6 py-4 border-b border-[#E4E9F0] flex items-center justify-between">
                     <h2 class="font-semibold text-[#0B0B0F]" x-text="title() + ' · Details'"></h2>
                     <div class="flex items-center gap-1">
                         <button @click="navDetail(-1)" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" title="Vorheriger (←)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
                         <button @click="navDetail(1)" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" title="Nächster (→)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
                     </div>
-                    <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]">&times;</button>
+                    <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]" title="Schließen (Esc)" aria-label="Schließen">&times;</button>
                 </div>
                 <div class="flex-1 overflow-y-auto p-6">
                     <dl class="space-y-3 text-sm">
@@ -471,7 +475,10 @@
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Duplizieren</button>
                     <button x-show="canEdit()" @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
-                    <button x-show="writable()" @click="deleteRow(detail)" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
+                    <button x-show="writable()" @click="confirmDel ? deleteRow(detail) : (confirmDel = true, setTimeout(() => confirmDel = false, 3000))"
+                            class="text-xs px-3 py-1.5 border rounded-lg transition"
+                            :class="confirmDel ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
+                            x-text="confirmDel ? 'Wirklich löschen?' : 'Löschen'"></button>
                 </div>
             </div>
         </div>
@@ -499,14 +506,16 @@
         {{-- Create modal --}}
         <div x-show="showCreate" class="fixed inset-0 z-40 flex items-center justify-center" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="showCreate = false"></div>
-            <div class="relative w-full max-w-md bg-white rounded-xl shadow-xl">
+            <div class="relative w-full max-w-md bg-white rounded-xl shadow-xl" role="dialog" aria-modal="true">
                 <div class="px-6 py-4 border-b border-[#E4E9F0]">
                     <h2 class="font-semibold text-[#0B0B0F]" x-text="(editing ? 'Bearbeiten: ' : 'Neu: ') + title()"></h2>
                 </div>
-                <form @submit.prevent="submitCreate" class="p-6 space-y-4">
+                <form @submit.prevent="submitCreate" class="p-6 space-y-4" id="createForm">
                     <template x-for="f in createFields()" :key="f.key">
                         <div>
-                            <label class="block text-[13px] font-medium text-[#42536A] mb-1" x-text="label(f.key)"></label>
+                            <label class="block text-[13px] font-medium text-[#42536A] mb-1">
+                                <span x-text="label(f.key)"></span><span x-show="f.req" class="text-[#A6362E]"> *</span>
+                            </label>
                             <select x-show="f.type === 'fk'" x-model="form[f.key]"
                                     class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 <option value="">— wählen —</option>
@@ -525,7 +534,8 @@
                     <div x-show="formError" class="text-xs text-[#A6362E]" x-text="formError"></div>
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" @click="showCreate = false" class="text-sm px-4 py-2 text-[#5B6B7E]">Abbrechen</button>
-                        <button type="submit" class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Speichern</button>
+                        <button type="submit" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
+                                class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 disabled:cursor-not-allowed">Speichern</button>
                     </div>
                 </form>
             </div>
@@ -599,6 +609,7 @@ function workspace(initial) {
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         meId: @js($user->id ?? null),
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
@@ -606,6 +617,8 @@ function workspace(initial) {
             if (this.tenant) this.loadSection();
             setInterval(() => { if (this.tenant && !this.detail && !this.showCreate && !this.palette) this.loadSection(true); }, 30000);
             this.$watch('detail', v => {
+                this.confirmDel = false;
+                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = [];
                 this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null;
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
@@ -904,6 +917,7 @@ function workspace(initial) {
                 key: k,
                 type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text')),
                 table: FKMAP[k] || null,
+                req: ['name', 'title'].includes(k),
             }));
         },
         fkOptions(table) {
@@ -920,6 +934,7 @@ function workspace(initial) {
                 return;
             }
             this.editing = null; this.form = {}; this.formError = ''; this.showCreate = true;
+            this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         exportCsv() {
             const rows = this.sorted(this.filtered());
@@ -946,6 +961,7 @@ function workspace(initial) {
             this.form = {};
             fields.forEach(f => { const v = this.detail[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.showCreate = true;
+            this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         openEdit() {
             this.editing = this.detail;
@@ -953,6 +969,7 @@ function workspace(initial) {
             this.form = {};
             fields.forEach(f => { const v = this.editing[f.key]; this.form[f.key] = v === null ? '' : v; });
             this.formError = ''; this.showCreate = true;
+            this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         submitCreate() {
             this.formError = '';
