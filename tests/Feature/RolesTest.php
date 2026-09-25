@@ -54,6 +54,24 @@ class RolesTest extends TestCase
         $this->assertContains('compliance.view', $this->getJson("/api/v1/users/{$target->id}/roles", ['X-Tenant' => $tenant])->json('permissions'));
     }
 
+    public function test_users_endpoint_returns_only_tenant_members(): void
+    {
+        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Members GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+        $member = User::factory()->create();
+        $outsider = User::factory()->create();
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+        $member->assignRole('mitarbeiter');
+
+        $ids = collect($this->getJson('/api/v1/users', ['X-Tenant' => $tenant])->assertOk()->json())->pluck('id');
+
+        $this->assertContains($admin->id, $ids);
+        $this->assertContains($member->id, $ids);
+        $this->assertNotContains($outsider->id, $ids);
+    }
+
     public function test_roleless_user_cannot_assign_roles(): void
     {
         $tenant = $this->postJson('/api/v1/tenants', ['name' => 'NoPerm GmbH'])->json('id');
