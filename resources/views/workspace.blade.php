@@ -235,8 +235,8 @@
                         <div class="divide-y divide-[#F0F3F7] max-h-64 overflow-y-auto">
                             <template x-for="(e, i) in events" :key="i">
                                 <div class="px-5 py-2.5 flex items-center justify-between gap-4">
-                                    <span class="text-sm text-[#1A2433] truncate" x-text="e.event_type"></span>
-                                    <span class="text-[11px] text-[#9CA3AF] font-mono shrink-0" x-text="fmt(e.created_at)"></span>
+                                    <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] font-semibold tracking-wide text-[#CA8A04] uppercase" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span></span>
+                                    <span class="text-[11px] text-[#9CA3AF] font-mono shrink-0" x-text="ago(e.created_at)"></span>
                                 </div>
                             </template>
                         </div>
@@ -1154,15 +1154,29 @@ function workspace(initial) {
             if (typeof v === 'object') return JSON.stringify(v);
             return String(v);
         },
+        ago(ts) {
+            if (!ts) return '';
+            const s = (Date.now() - new Date(ts)) / 1000;
+            if (s < 90) return 'gerade eben';
+            if (s < 3600) return 'vor ' + Math.round(s / 60) + ' Min.';
+            if (s < 86400) return 'vor ' + Math.round(s / 3600) + ' Std.';
+            return 'vor ' + Math.round(s / 86400) + ' T';
+        },
+        eventGroup(t) {
+            const g = String(t || '').split('.')[0];
+            return {task: 'Aufgabe', company: 'Unternehmen', person: 'Person', document: 'Dokument', instruction: 'Unterweisung', inspection: 'Prüfung', deadline: 'Frist', tender: 'Ausschreibung', question: 'Frage', user: 'Benutzer'}[g] || g;
+        },
+        eventLabel(t) {
+            const a = String(t || '').split('.').pop();
+            return {created: 'erstellt', updated: 'aktualisiert', deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: 'hochgeladen', answered: 'beantwortet', created_event: 'erstellt'}[a] || a;
+        },
         createFields() {
             const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes']);
             const LONGTEXT = new Set(['description','content','notes','measures','bio','body','proposal','result','message','answer','question','summary','goal','scope','rationale','findings']);
             const src = (this.rows && this.rows[0]) || {};
             return Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12).map(k => ({
                 key: k,
-                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$/.test(k) ? 'datetime-local' : (/_date$/.test(k) ? 'date' : 'text'))),
-                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'boolean' ? 'checkbox' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text'))),
-                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : (LONGTEXT.has(k) ? 'textarea' : 'text'))),
+                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'boolean' ? 'checkbox' : (typeof src[k] === 'number' ? 'number' : (/_at$/.test(k) ? 'datetime-local' : (/_date$/.test(k) ? 'date' : (LONGTEXT.has(k) ? 'textarea' : 'text'))))),
                 table: FKMAP[k] || null,
                 req: ['name', 'title'].includes(k),
             }));
