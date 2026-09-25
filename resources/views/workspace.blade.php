@@ -679,7 +679,7 @@
             <div class="relative w-full max-w-sm bg-white rounded-xl shadow-2xl p-6 max-h-[80vh] overflow-y-auto">
                 <h2 class="font-semibold text-[#0B0B0F] mb-4">Tastenkürzel</h2>
                 <dl class="space-y-2 text-sm">
-                    <template x-for="k in [['Ctrl/⌘ + K', 'Befehlspalette öffnen'], ['/', 'Suche fokussieren'], ['n', 'Neuen Eintrag anlegen'], ['e', 'Eintrag bearbeiten (Drawer)'], ['d', 'Eintrag duplizieren (Drawer)'], ['p', 'Deep-Link kopieren (Drawer)'], ['o', 'Erste gefilterte Zeile öffnen'], ['l', 'Alle Zeilen laden'], ['r', 'Liste neu laden'], ['i', 'CSV-Import öffnen'], ['c', 'Spalten-Picker'], ['x', 'Filter zurücksetzen'], ['u', 'Überfällig-Filter'], ['s', '≤7-Tage-Filter'], ['.', 'Zum Dashboard'], ['1–9', 'n-te Zeile öffnen'], ['← / →', 'Vorheriger / nächster Eintrag (Drawer)'], ['Ctrl + Enter', 'Formular absenden'], ['t', 'Dunkel/Hell umschalten'], ['Esc', 'Schließen'], ['?', 'Diese Übersicht']]" :key="k[0]">
+                    <template x-for="k in [['Ctrl/⌘ + K', 'Befehlspalette öffnen (↑/↓ wählen, Enter öffnen)'], ['/', 'Suche fokussieren'], ['n', 'Neuen Eintrag anlegen'], ['e', 'Eintrag bearbeiten (Drawer)'], ['d', 'Eintrag duplizieren (Drawer)'], ['p', 'Deep-Link kopieren (Drawer)'], ['o', 'Erste gefilterte Zeile öffnen'], ['l', 'Alle Zeilen laden'], ['r', 'Liste neu laden'], ['i', 'CSV-Import öffnen'], ['c', 'Spalten-Picker'], ['x', 'Filter zurücksetzen'], ['u', 'Überfällig-Filter'], ['s', '≤7-Tage-Filter'], ['.', 'Zum Dashboard'], ['1–9', 'n-te Zeile öffnen'], ['← / →', 'Vorheriger / nächster Eintrag (Drawer)'], ['Ctrl + Enter', 'Formular absenden'], ['t', 'Dunkel/Hell umschalten'], ['Esc', 'Schließen'], ['?', 'Diese Übersicht']]" :key="k[0]">
                         <div class="flex justify-between items-center">
                             <dt class="text-[#5B6B7E]"><kbd class="px-1.5 py-0.5 bg-[#F0F3F7] border border-[#E4E9F0] rounded text-xs font-mono" x-text="k[0]"></kbd></dt>
                             <dd class="text-[#1A2433]" x-text="k[1]"></dd>
@@ -694,7 +694,7 @@
             <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="palette = false"></div>
             <div class="relative mx-auto mt-24 w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
                 <input x-ref="paletteInput" x-model="paletteQ" x-init="$watch('palette', v => v && $nextTick(() => $refs.paletteInput.focus())); $watch('paletteQ', () => palIdx = 0)"
-                       placeholder="Modul suchen…" class="w-full px-5 py-4 text-sm border-0 border-b border-[#E4E9F0] focus:ring-0 focus:border-[#CA8A04]"
+                       placeholder="Modul oder Aktion suchen…" class="w-full px-5 py-4 text-sm border-0 border-b border-[#E4E9F0] focus:ring-0 focus:border-[#CA8A04]"
                        @keydown.arrow-down.prevent="palIdx = Math.min(palIdx + 1, paletteItems().length - 1)"
                        @keydown.arrow-up.prevent="palIdx = Math.max(palIdx - 1, 0)"
                        @keydown.enter.prevent="paletteGo()">
