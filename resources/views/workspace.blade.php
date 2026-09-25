@@ -446,6 +446,7 @@
                                         class="text-[10px] px-1 text-[#9CA3AF] hover:text-[#A6362E] opacity-0 group-hover/rr:opacity-100 transition">&times;</button>
                             </span>
                         </template>
+                        <button x-show="recentRows().filter(r => r.key === section).length > 1" @click="clearRecentSection()" title="Zuletzt-Liste für diese Sektion leeren" class="ml-auto shrink-0 text-[10px] text-[#9CA3AF] hover:text-[#A6362E]">leeren ×</button>
                     </div>
                     <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
                         <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" title="Überfällig (u)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
@@ -1070,6 +1071,11 @@ function workspace(initial) {
         },
         removeRecentRow(rr) {
             const list = this.recentRows().filter(r => !(r.key === rr.key && String(r.id) === String(rr.id)));
+            try { localStorage.setItem('af_recentrows', JSON.stringify(list)); } catch (e) {}
+            this._rrTick = (this._rrTick || 0) + 1;
+        },
+        clearRecentSection() {
+            const list = this.recentRows().filter(r => r.key !== this.section);
             try { localStorage.setItem('af_recentrows', JSON.stringify(list)); } catch (e) {}
             this._rrTick = (this._rrTick || 0) + 1;
         },
