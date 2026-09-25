@@ -438,9 +438,13 @@
                     <div x-show="rows && recentRows().some(r => r.key === section)" class="flex items-center gap-1.5 px-5 py-1.5 border-b border-[#E4E9F0] print:hidden overflow-x-auto">
                         <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF] shrink-0">ZULETZT</span>
                         <template x-for="rr in recentRows().filter(r => r.key === section).slice(0, 5)" :key="rr.key + rr.id">
-                            <button @click="const t = (rows || []).find(x => String(x.id) === String(rr.id)); if (t) detail = t"
-                                    :class="detail && String(detail.id) === String(rr.id) ? 'border-[#CA8A04] text-[#CA8A04] bg-[#CA8A04]/5' : 'border-[#E4E9F0] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'"
-                                    class="text-[11px] px-2 py-0.5 border rounded-full transition whitespace-nowrap" x-text="'↻ ' + (rr.name || rr.id)"></button>
+                            <span class="inline-flex items-center border rounded-full transition group/rr"
+                                    :class="detail && String(detail.id) === String(rr.id) ? 'border-[#CA8A04] text-[#CA8A04] bg-[#CA8A04]/5' : 'border-[#E4E9F0] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'">
+                                <button @click="const t = (rows || []).find(x => String(x.id) === String(rr.id)); if (t) detail = t"
+                                        class="text-[11px] pl-2 py-0.5 whitespace-nowrap" x-text="'↻ ' + (rr.name || rr.id)"></button>
+                                <button @click.stop="removeRecentRow(rr)" title="Entfernen"
+                                        class="text-[10px] px-1 text-[#9CA3AF] hover:text-[#A6362E] opacity-0 group-hover/rr:opacity-100 transition">&times;</button>
+                            </span>
                         </template>
                     </div>
                     <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
@@ -1056,12 +1060,18 @@ function workspace(initial) {
             this.toast(was ? 'Aus Favoriten entfernt' : 'Zu Favoriten hinzugefügt');
         },
         sectionLabel(k) { const i = this.groups.flatMap(g => g.items).find(x => x.key === k); return i ? i.label : k; },
-        recentRows() { try { return JSON.parse(localStorage.getItem('af_recentrows') || '[]'); } catch (e) { return []; } },
+        recentRows() { this._rrTick = this._rrTick || 0; try { return JSON.parse(localStorage.getItem('af_recentrows') || '[]'); } catch (e) { return []; } },
         pushRecentRow(d) {
             const name = d.name || d.title || d.headline || d.subject || d.order_no || d.file_name || d.email || String(d.id).slice(0, 8);
             const list = this.recentRows().filter(r => !(r.key === this.section && String(r.id) === String(d.id)));
             list.unshift({key: this.section, id: d.id, name: name});
             try { localStorage.setItem('af_recentrows', JSON.stringify(list.slice(0, 8))); } catch (e) {}
+            this._rrTick = (this._rrTick || 0) + 1;
+        },
+        removeRecentRow(rr) {
+            const list = this.recentRows().filter(r => !(r.key === rr.key && String(r.id) === String(rr.id)));
+            try { localStorage.setItem('af_recentrows', JSON.stringify(list)); } catch (e) {}
+            this._rrTick = (this._rrTick || 0) + 1;
         },
         allCollapsed() { return this.groups.every(g => this.collapsed[g.label]); },
         toggleAllGroups() { const v = !this.allCollapsed(); this.groups.forEach(g => { this.collapsed[g.label] = v; }); this.saveCollapsed(); },
