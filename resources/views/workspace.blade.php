@@ -1249,8 +1249,8 @@ function workspace(initial) {
             }
             location.href = '/app/' + it.key + (this.tenant ? '?tenant=' + this.tenant : '');
         },
-        insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
-        insightFilter(code) { return ({tasks_overdue:'overdue=1',deadlines_overdue:'overdue=1',high_risks_open:'status=open',tenders_open:'status=open'})[code] || ''; },
+        insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders',inspections_overdue:'inspections',leave_requests_pending:'leave-requests'})[code] || null; },
+        insightFilter(code) { return ({tasks_overdue:'overdue=1',deadlines_overdue:'overdue=1',high_risks_open:'status=open',tenders_open:'status=open',inspections_overdue:'overdue=1',leave_requests_pending:'status=pending'})[code] || ''; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
         sortedTenants() { return [...this.tenantList].sort((a, b) => String(a.name).localeCompare(String(b.name), 'de')); },
         execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake'}; return M[k] || k; },
@@ -2159,7 +2159,7 @@ function workspace(initial) {
             const i = rs.findIndex(r => String(r.id) === String(this.detail.id));
             return i < 0 ? '' : (i + 1) + ' / ' + rs.length;
         },
-        dueKey(row) { return ['due_at','deadline','deadline_at','ends_on','ends_at','due_date','end_date','next_due_at','review_at'].find(k => row[k]); },
+        dueKey(row) { return ['due_at','deadline','deadline_at','ends_on','ends_at','due_date','end_date','next_due_at','review_at','scheduled_at'].find(k => row[k]); },
         isOpenStatus(row) {
             const OPEN = ['open','pending','in_progress','running','queued','scheduled','planned','active','submitted','shortlisted','draft','on_hold'];
             return !row.status || OPEN.includes(String(row.status));
