@@ -223,10 +223,15 @@
                         </a>
                         <div class="divide-y divide-[#F0F3F7]">
                             <template x-for="t in openTasks" :key="t.id">
-                                <a :href="'/app/tasks?tenant=' + tenant + '&open=' + t.id" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
-                                    <span class="text-sm text-[#1A2433] truncate" x-text="t.title"></span>
-                                    <span class="text-[11px] font-mono shrink-0" :class="t.due_at && new Date(t.due_at) < new Date() ? 'text-[#A6362E]' : 'text-[#9CA3AF]'" x-text="t.due_at ? new Date(t.due_at).toLocaleDateString('de-DE') : ''"></span>
-                                </a>
+                                <div class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
+                                    <a :href="'/app/tasks?tenant=' + tenant + '&open=' + t.id" class="text-sm text-[#1A2433] truncate hover:text-[#CA8A04] transition" x-text="t.title"></a>
+                                    <span class="flex items-center gap-2.5 shrink-0">
+                                        <span class="text-[11px] font-mono" :class="t.due_at && new Date(t.due_at) < new Date() ? 'text-[#A6362E]' : 'text-[#9CA3AF]'" x-text="t.due_at ? new Date(t.due_at).toLocaleDateString('de-DE') : ''"></span>
+                                        <button @click="completeDashTask(t)" title="Erledigt markieren" class="h-4.5 w-4.5 p-0.5 rounded border border-[#D6DEE9] text-transparent hover:border-[#2E7D5B] hover:text-[#2E7D5B] transition">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                        </button>
+                                    </span>
+                                </div>
                             </template>
                         </div>
                     </div>
@@ -1074,6 +1079,16 @@ function workspace(initial) {
             if (v.length < 2) return '';
             const min = Math.min(...v), max = Math.max(...v), span = max - min || 1;
             return v.map((p, i) => (i ? 'L' : 'M') + (i * 96 / (v.length - 1)).toFixed(1) + ',' + (22 - (p - min) / span * 20).toFixed(1)).join(' ');
+        },
+        completeDashTask(t) {
+            const prev = t.status, id = t.id;
+            this.api('/api/v1/tasks/' + id, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status: 'done'})})
+                .then(r => {
+                    if (!r.ok) { this.toast('Fehler (HTTP ' + r.status + ')'); return; }
+                    this.openTasks = this.openTasks.filter(x => String(x.id) !== String(id));
+                    this.toast('Aufgabe erledigt.', {label: 'Rückgängig', fn: () => this.api('/api/v1/tasks/' + id, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status: prev || 'open'})}).then(() => this.loadSection(true))});
+                })
+                .catch(() => this.toast('Fehler beim Speichern.'));
         },
         toast(msg, action) {
             const type = /fehlgeschlagen|abgelaufen|fehler/i.test(msg) ? 'error' : 'info';
