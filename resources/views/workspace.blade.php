@@ -1977,6 +1977,7 @@ function workspace(initial) {
             let v = row[c];
             if (v === null || v === undefined) return '—';
             if (c === 'id' && typeof v === 'string' && v.length > 8) return `<button onclick="event.stopPropagation();navigator.clipboard.writeText('${v}')" title="ID kopieren: ${v}" class="font-mono text-[11px] text-[#5B6B7E] hover:text-[#CA8A04]">${v.slice(0, 8)}…</button>`;
+            if (c === 'event_type' && typeof v === 'string') return `<span class="text-[10px] font-semibold uppercase tracking-wide text-[#CA8A04]">${this.eventGroup(v)}</span> <span class="text-[#5B6B7E]">${this.eventLabel(v)}</span>`;
             const rn = this.resolveId(c, v);
             if (rn) {
                 const t = FKMAP[c];
