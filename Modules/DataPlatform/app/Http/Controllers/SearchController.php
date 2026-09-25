@@ -34,6 +34,7 @@ class SearchController extends Controller
     ];
 
     private const SEARCH_COLS = ['name', 'title', 'subject', 'question', 'reference', 'email'];
+
     private const LABEL_COLS = ['name', 'title', 'subject', 'question', 'reference', 'email'];
 
     public function index()
