@@ -122,6 +122,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'tenders_open', "{$openTenders} Ausschreibung(en) offen — Experten-Matching prüfen.", ['count' => $openTenders]);
         }
 
+        $openQuestions = $count('questions', fn ($q) => $q->where('status', 'open'));
+        if ($openQuestions) {
+            $insights[] = $this->hit('info', 'questions_open', "{$openQuestions} offene Frage(n) im Expertennetzwerk.", ['count' => $openQuestions]);
+        }
+
         if (! $insights) {
             $insights[] = $this->hit('info', 'all_clear', 'Keine Auffälligkeiten — alle Kennzahlen im grünen Bereich.');
         }
