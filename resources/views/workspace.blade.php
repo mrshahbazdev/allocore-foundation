@@ -2192,7 +2192,8 @@ function workspace(initial) {
             const rn = this.resolveId(c, v);
             if (rn) {
                 const t = FKMAP[c];
-                const href = t && this.groups.flatMap(g => g.items).some(i => i.key === t) ? `/app/${t}?tenant=${this.tenant}&open=${encodeURIComponent(v)}` : null;
+                const sk = t ? ({expert_profiles: 'expert-profiles', graph_entities: 'graph-entities'})[t] || t : null;
+                const href = sk && this.groups.flatMap(g => g.items).some(i => i.key === sk) ? `/app/${sk}?tenant=${this.tenant}&open=${encodeURIComponent(v)}` : null;
                 return href ? `<a href="${href}" onclick="event.stopPropagation()" title="${v}" class="text-[#1A2433] underline decoration-[#D6DEE9] underline-offset-2 hover:text-[#CA8A04] hover:decoration-[#CA8A04]">${rn}</a>` : `<span title="${v}">${rn}</span>`;
             }
             if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
