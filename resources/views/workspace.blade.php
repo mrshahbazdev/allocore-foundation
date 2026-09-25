@@ -714,6 +714,7 @@
                            :class="pi === palIdx ? 'bg-[#CA8A04]/10' : ''"
                            class="block px-5 py-2.5 text-sm text-[#1A2433] hover:bg-[#FAFBFC] transition">
                             <span class="inline-block w-4 text-center text-[11px] text-[#9CA3AF] mr-2" x-text="icons[it.key] || '·'"></span><span x-text="it.label"></span>
+                            <span x-show="it.key === section" class="ml-1.5 text-[9px] text-[#CA8A04] font-semibold">●</span>
                             <span class="ml-2 text-[10px] text-[#9CA3AF] tracking-wide" x-text="it.group"></span>
                         </a>
                     </template>
