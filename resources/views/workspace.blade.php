@@ -1486,7 +1486,7 @@ function workspace(initial) {
             return [...new Set(this.rows.map(r => r.status).filter(Boolean))].sort();
         },
         statusLabel(s) { return STATUS_DE[String(s).toLowerCase()] || s; },
-        insightKey(i) { return (i.code || '') + '|' + (i.message || ''); },
+        insightKey(i) { return (this.tenant || '') + '|' + (i.code || '') + '|' + (i.message || ''); },
         visibleInsights() { return (this.insights || []).filter(i => !this.insDismissed.includes(this.insightKey(i))); },
         dismissInsight(i) {
             this.insDismissed.push(this.insightKey(i));
