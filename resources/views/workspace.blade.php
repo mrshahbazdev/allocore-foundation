@@ -130,7 +130,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <template x-for="(row, idx) in sorted(filtered())" :key="idx">
+                            <template x-for="(row, idx) in sorted(filtered()).slice(0, limit)" :key="idx">
                                 <tr @click="detail = row" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer">
                                     <template x-for="c in columns" :key="c">
                                         <td class="px-5 py-3 text-[#1A2433]" x-html="cell(row, c)"></td>
@@ -139,6 +139,11 @@
                             </template>
                         </tbody>
                     </table>
+                    <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center">
+                        <button @click="limit += 100" class="text-xs text-[#CA8A04] hover:underline">
+                            Mehr laden (<span x-text="filtered().length - limit"></span> weitere)
+                        </button>
+                    </div>
                 </div>
             </template>
         </div>
@@ -156,7 +161,7 @@
                         <template x-for="k in Object.keys(detail || {})" :key="k">
                             <div class="flex gap-3">
                                 <dt class="w-36 shrink-0 text-[#5B6B7E]" x-text="label(k)"></dt>
-                                <dd class="min-w-0 font-mono text-[13px] text-[#1A2433] break-words" x-text="fmt(detail[k])"></dd>
+                                <dd class="min-w-0 font-mono text-[13px] text-[#1A2433] break-words" x-text="fmtD(detail, k)"></dd>
                             </div>
                         </template>
                     </dl>
@@ -258,7 +263,7 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], lookups: {},
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
-        sortKey: '', sortAsc: true,
+        sortKey: '', sortAsc: true, limit: 100,
         init() {
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
@@ -281,7 +286,7 @@ function workspace(initial) {
         loadSection() {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
-            this.loading = true; this.error = '';
+            this.loading = true; this.error = ''; this.limit = 100;
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
             history.replaceState(null,'',url);
             if (this.section === 'dashboard') {
@@ -348,6 +353,11 @@ function workspace(initial) {
             const q = this.query.trim().toLowerCase();
             if (!q) return this.rows;
             return this.rows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
+        },
+        fmtD(row, k) {
+            const rn = this.resolveId(k, row[k]);
+            if (rn) return rn;
+            return this.fmt(row[k]);
         },
         fmt(v) {
             if (v === null || v === undefined) return '—';
