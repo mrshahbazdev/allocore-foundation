@@ -180,7 +180,13 @@
             <template x-if="section === 'dashboard'">
                 <div class="space-y-5">
                     <div x-show="insights.length" class="space-y-2">
-                        <template x-for="i in insights" :key="i.code">
+                        <div x-show="insights.some(i => i.severity === 'warning' || i.severity === 'info')" class="flex gap-1.5">
+                            <template x-for="s in [['','Alle'],['critical','Kritisch'],['warning','Warnung'],['info','Info']]" :key="s[0]">
+                                <button @click="insightSev = s[0]" class="text-[11px] px-2 py-1 rounded-full border transition"
+                                        :class="insightSev === s[0] ? 'bg-[#0B0B0F] text-[#FACC15] border-[#0B0B0F]' : 'bg-white text-[#5B6B7E] border-[#D6DEE9] hover:border-[#CA8A04]'" x-text="s[1]"></button>
+                            </template>
+                        </div>
+                        <template x-for="i in insights.filter(x => !insightSev || x.severity === insightSev)" :key="i.code">
                             <a :href="insightSection(i.code) ? '/app/' + insightSection(i.code) + '?tenant=' + tenant + (insightFilter(i.code) ? '&' + insightFilter(i.code) : '') : '#'"
                                class="flex items-start gap-3 rounded-lg border bg-white px-4 py-3 text-sm transition"
                                :class="{'border-[#A6362E]/40': i.severity==='critical','border-[#CA8A04]/50': i.severity==='warning','border-[#D6DEE9]': i.severity==='info','hover:shadow-sm': insightSection(i.code)}">
@@ -914,7 +920,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, fkQ: {},
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, insightSev: '', fkQ: {},
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {},
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
