@@ -12,6 +12,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 | GET/POST | `/tenants` | Mandantenliste / Mandant anlegen (seedet Rollenmodell) |
 | GET | `/context` | (auth) aktueller User + Tenant-Kontext |
 | GET | `/roles` | (auth+tenant) verfügbare Rollen des Tenants |
+| GET | `/users` | (auth+tenant) Mitglieder des Tenants (User mit zugewiesener Rolle) |
 | GET/PUT | `/users/{user}/roles` | (auth+tenant, `roles.manage`) Rollen eines Users lesen/setzen |
 
 ## Core (`companies`, `persons`)
