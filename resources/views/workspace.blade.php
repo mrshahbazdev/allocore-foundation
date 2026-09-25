@@ -15,7 +15,7 @@
 </head>
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
 <div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak
-     @keydown.escape.window="detail = null; showCreate = false; navOpen = false; palette = false"
+     @keydown.escape.window="detail = null; showCreate = false; navOpen = false; palette = false; colPicker = false; showImport = false; confirmDel = false"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
      @keydown.window="
@@ -23,7 +23,9 @@
         else if (!$event.ctrlKey && !$event.metaKey && !$event.altKey && !/^(input|textarea|select)$/i.test($event.target.tagName)) {
             if ($event.key === '/') { $event.preventDefault(); if ($refs.search) $refs.search.focus(); }
             else if ($event.key === 'n' && !detail && !showCreate && !palette && canCreate()) openCreate();
+            else if ($event.key === 'e' && detail && !showCreate && canEdit()) openEdit();
             else if ($event.key === 'r' && !detail && !showCreate && !palette && !['dashboard','executive'].includes(section)) loadSection(true);
+            else if ($event.key === 'i' && !detail && !showCreate && !palette && canImport()) { showImport = true; importText = ''; importResult = ''; }
         }">
 
     {{-- Mobile top bar --}}
@@ -54,7 +56,7 @@
             <select x-model="tenant" @change="loadSection()"
                     class="w-full rounded-lg bg-[#1A1A1F] border-[#2A2A31] text-white text-sm py-2 focus:border-[#FACC15] focus:ring-[#FACC15]/30">
                 <option value="">— wählen —</option>
-                <template x-for="t in tenantList" :key="t.id">
+                <template x-for="t in sortedTenants()" :key="t.id">
                     <option :value="t.id" x-text="t.name"></option>
                 </template>
             </select>
@@ -62,6 +64,14 @@
         </div>
 
         <nav class="flex-1 overflow-y-auto py-3 text-[13px]">
+            <div x-show="recent.length" class="px-5 pb-3">
+                <div class="text-[10px] font-semibold tracking-widest text-[#6B7280] pb-1.5">ZULETZT</div>
+                <div class="flex flex-wrap gap-1.5">
+                    <template x-for="r in recent" :key="r">
+                        <a :href="'/app/' + r + (tenant ? '?tenant='+tenant : '')" class="px-2 py-1 rounded-full bg-[#1A1A1F] text-[11px] text-[#9CA3AF] hover:text-[#FACC15] transition" x-text="sectionLabel(r)"></a>
+                    </template>
+                </div>
+            </div>
             <template x-for="group in groups" :key="group.label">
                 <div class="mb-1">
                     <button @click="collapsed[group.label] = !collapsed[group.label]"
@@ -107,13 +117,15 @@
                 <h1 class="font-semibold text-lg tracking-tight text-[#0B0B0F]" x-text="title()"></h1>
                 <p class="text-xs text-[#5B6B7E]" x-text="subtitle()"></p>
             </div>
+            <div class="text-right">
+                <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
+                <span x-show="!loading && lastLoad" class="text-[11px] text-[#9CA3AF]" x-text="lastLoad ? 'Stand ' + lastLoad.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'}) : ''"></span>
+            </div>
             <div class="flex items-center gap-3">
                 <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" title="Aktualisieren (r)"
                         class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 9A8 8 0 0119 7.5M18.5 15A8 8 0 015 16.5"/></svg>
                 </button>
-                <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
-            </div>
         </header>
 
         <div class="p-6 space-y-5">
@@ -258,9 +270,15 @@
                         Wählen Sie links einen Mandanten, um Daten zu laden.
                     </div>
                     <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0]">
+                        <span class="text-xs text-[#5B6B7E] shrink-0 flex items-center gap-2">
+                            <span x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
+                            <span x-show="rows && rows.some(r => overdue(r))" class="text-[#A6362E]" x-text="'· ' + rows.filter(r => overdue(r)).length + ' überfällig'"></span>
+                            <span x-show="rows && rows.some(r => dueSoon(r))" class="text-[#B45309]" x-text="'· ' + rows.filter(r => dueSoon(r)).length + ' ≤ 7 Tage'"></span>
+                        </span>
+                        <input x-model="query" placeholder="Suchen…" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         <span class="text-xs text-[#5B6B7E] shrink-0" x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' Einträge'"></span>
                         <div class="relative">
-                            <input x-ref="search" x-model="query" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+                            <input x-ref="search" x-model.debounce.200ms="query" placeholder="Suchen… (/)" class="w-48 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                             <button x-show="query" @click="query = ''; $refs.search.focus()" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#5B6B7E] text-xs leading-none" aria-label="Suche löschen">&times;</button>
                         </div>
                         <div class="relative shrink-0">
@@ -268,7 +286,9 @@
                                     class="text-xs px-3 py-1.5 border rounded-lg transition shrink-0"
                                     :class="compact ? 'border-[#CA8A04] text-[#CA8A04] bg-[#CA8A04]/5' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'">≡</button>
                             <button @click="colPicker = !colPicker" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten</button>
+                            <button @click="colPicker = !colPicker" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten<span x-show="Object.values(hiddenCols).filter(Boolean).length" class="ml-1 text-[#CA8A04]" x-text="'(' + Object.values(hiddenCols).filter(Boolean).length + ')'"></span></button>
                             <div x-show="colPicker" @click.outside="colPicker = false" class="absolute right-0 mt-1.5 w-48 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20 max-h-64 overflow-y-auto" style="display:none">
+                                <button x-show="Object.values(hiddenCols).some(Boolean)" @click="hiddenCols = {}; saveColPrefs()" class="w-full text-left px-3 py-1.5 text-xs text-[#CA8A04] hover:bg-[#CA8A04]/10 border-b border-[#E4E9F0]">Alle einblenden</button>
                                 <template x-for="c in columns" :key="c">
                                     <label class="flex items-center gap-2 px-3 py-1.5 text-xs text-[#1A2433] hover:bg-[#FAFBFC] cursor-pointer">
                                         <input type="checkbox" :checked="!hiddenCols[c]" @change="toggleCol(c)" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
@@ -278,7 +298,7 @@
                             </div>
                         </div>
                         <button @click="exportCsv()" title="CSV exportieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
-                        <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
+                        <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren (i)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
                         <button x-show="canCreate()" @click="openCreate()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
                     </div>
                     <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0]">
@@ -311,11 +331,13 @@
                         <button x-show="canCreate() && !query && !statusFilter && !overdueOnly && !dueSoonOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
                     </div>
+                    <div class="max-h-[70vh] overflow-y-auto">
                     <table x-show="rows && filtered().length" class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
+                                <th class="px-3 py-3 text-[11px] font-semibold tracking-wide text-[#9CA3AF] w-8">#</th>
                                 <template x-for="c in visCols()" :key="c">
-                                    <th @click="sort(c)" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] cursor-pointer select-none hover:text-[#0B0B0F]">
+                                    <th @click="sort(c)" class="sticky top-0 z-10 bg-[#FAFBFC] px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] cursor-pointer select-none hover:text-[#0B0B0F]">
                                         <span x-text="label(c)"></span><span class="ml-1 text-[#CA8A04]" x-text="sortKey===c ? (sortAsc?'▲':'▼') : ''"></span>
                                     </th>
                                 </template>
@@ -325,8 +347,12 @@
                         <tbody>
                             <template x-for="(row, idx) in sorted(filtered()).slice(0, limit)" :key="idx">
                                 <tr @click="detail = row" @dblclick="canEdit() && (detail = row, openEdit())" :class="overdue(row) ? 'bg-[#A6362E]/5' : ''" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer" title="Doppelklick: Bearbeiten">
+                                    <td class="px-3 py-3 text-[#9CA3AF] text-xs tabular-nums" x-text="idx + 1"></td>
                                     <template x-for="c in visCols()" :key="c">
                                         <td class="px-5 text-[#1A2433]" :class="compact ? 'py-1.5 text-xs' : 'py-3'" x-html="cell(row, c)"></td>
+                                        <td class="px-5 py-3 text-[#1A2433]">
+                                            <span x-html="cell(row, c)"></span><span x-show="c === visCols()[0] && isNew(row)" class="ml-1.5 text-[9px] font-bold px-1 py-0.5 rounded bg-[#FACC15] text-[#0B0B0F] align-middle" style="display:none">NEU</span>
+                                        </td>
                                     </template>
                                     <td x-show="sectionActions().length" @click.stop class="px-5 py-3">
                                         <div class="flex gap-1">
@@ -339,6 +365,8 @@
                             </template>
                         </tbody>
                     </table>
+                    </div>
+                    <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center">
                     <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center flex items-center justify-center gap-4">
                         <button @click="limit += 100" class="text-xs text-[#CA8A04] hover:underline">
                             Mehr laden (<span x-text="filtered().length - limit"></span> weitere)
@@ -368,9 +396,11 @@
                     <dl class="space-y-3 text-sm">
                         <template x-for="k in Object.keys(detail || {})" :key="k">
                             <div class="flex gap-3">
-                                <dt class="w-36 shrink-0 text-[#5B6B7E]" x-text="label(k)"></dt>
+                                <dt class="w-36 shrink-0 text-[#5B6B7E]" :title="k" x-text="label(k)"></dt>
                                 <dd class="min-w-0 font-mono text-[13px] text-[#1A2433] break-words">
-                                    <span x-text="fmtD(detail, k)"></span>
+                                    <span x-show="!linkOf(detail[k])" x-text="fmtD(detail, k)"></span>
+                                    <a x-show="linkOf(detail[k])" :href="linkOf(detail[k])" :target="/^https?:/.test(linkOf(detail[k]) || '') ? '_blank' : null" rel="noopener"
+                                       class="text-[#CA8A04] hover:underline break-all" x-text="fmtD(detail, k)"></a>
                                     <a x-show="refSection(k) && detail[k]" :href="'/app/' + refSection(k) + '?tenant=' + tenant + '&open=' + detail[k]"
                                        class="ml-1.5 text-[#CA8A04] hover:underline text-[11px] font-sans whitespace-nowrap">öffnen →</a>
                                 </dd>
@@ -496,7 +526,7 @@
                     <button @click="copyLink()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="linkCopied ? 'Kopiert' : 'Link'"></button>
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Duplizieren</button>
-                    <button x-show="canEdit()" @click="openEdit()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
+                    <button x-show="canEdit()" @click="openEdit()" title="Bearbeiten (e)" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
                     <button x-show="writable()" @click="confirmDel ? deleteRow(detail) : (confirmDel = true, setTimeout(() => confirmDel = false, 3000))"
                             class="text-xs px-3 py-1.5 border rounded-lg transition"
                             :class="confirmDel ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
@@ -545,7 +575,9 @@
                                     <option :value="o[0]" x-text="o[1]"></option>
                                 </template>
                             </select>
-                            <input x-show="f.type !== 'fk'" x-model="form[f.key]" :type="f.type"
+                            <textarea x-show="f.type === 'textarea'" x-model="form[f.key]" rows="3"
+                                      class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30"></textarea>
+                            <input x-show="f.type !== 'fk' && f.type !== 'textarea'" x-model="form[f.key]" :type="f.type"
                                    class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         </div>
                     </template>
@@ -582,6 +614,14 @@
             </div>
         </div>
     </main>
+
+    {{-- Toasts --}}
+    <div class="fixed bottom-4 right-4 z-50 space-y-2">
+        <template x-for="t in toasts" :key="t.id">
+            <div class="bg-[#0B0B0F] text-white text-xs px-4 py-3 rounded-lg shadow-lg border-l-2 border-[#A6362E] max-w-xs"
+                 x-text="t.msg"></div>
+        </template>
+    </div>
 </div>
 
 <script>
@@ -648,15 +688,29 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], exec: null, execReports: [], lookups: {}, navOpen: false, collapsed: {}, dueSoon: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, showCreate: false, compact: localStorage.getItem('af_density') === '1', form: {}, formError: '', query: '', editing: null,
+        loading: false, error: '', detail: null, toasts: [], showCreate: false, form: {}, formError: '', query: '', editing: null,
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false,
         loading: false, error: '', detail: null, showCreate: false, form: {}, formError: '', query: '', editing: null,
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', recent: [],
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, lastLoad: null, hiddenCols: {}, colPicker: false, docVersions: [], answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, linkCopied: false, confirmDel: false, hiddenCols: {}, colPicker: false, docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         init() {
+            try { this.recent = JSON.parse(localStorage.getItem('af_recent') || '[]').filter(k => k !== this.section).slice(0, 5); } catch (e) { this.recent = []; }
+            if (this.section !== 'dashboard' && this.section !== 'executive') {
+                const next = [this.section, ...this.recent.filter(k => k !== this.section)].slice(0, 5);
+                try { localStorage.setItem('af_recent', JSON.stringify(next)); } catch (e) {}
+            }
             const t = new URLSearchParams(location.search).get('tenant');
             if (t) this.tenant = t;
+            else if (localStorage.getItem('allocore.tenant')) this.tenant = localStorage.getItem('allocore.tenant');
             if (this.tenant) this.loadSection();
-            this.$watch('tenant', () => { document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE'; });
+            this.$watch('tenant', v => {
+                if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
+                document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE';
+            });
             setInterval(() => { if (this.tenant && !this.detail && !this.showCreate && !this.palette) this.loadSection(true); }, 30000);
             this.$watch('detail', v => {
                 const url = new URL(location.href);
@@ -679,6 +733,7 @@ function workspace(initial) {
             return g ? g.label : '';
         },
         title() { return this.item().label; },
+        sectionLabel(k) { const i = this.groups.flatMap(g => g.items).find(x => x.key === k); return i ? i.label : k; },
         paletteItems() {
             const q = this.paletteQ.trim().toLowerCase();
             const all = this.groups.flatMap(g => g.items.map(i => ({key: i.key, label: i.label, group: g.label})));
@@ -690,16 +745,22 @@ function workspace(initial) {
         },
         insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
+        sortedTenants() { return [...this.tenantList].sort((a, b) => String(a.name).localeCompare(String(b.name), 'de')); },
         execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake'}; return M[k] || k; },
         createExecReport() {
             const title = prompt('Report-Titel', 'Executive Report ' + new Date().toLocaleDateString('de-DE'));
             if (!title) return;
             this.api('/api/v1/exec-reports', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title})})
-                .then(r => { if (r.ok) this.loadSection(); else alert('Report fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) this.loadSection(); else this.toast('Report fehlgeschlagen (HTTP '+r.status+')'); });
         },
         subtitle() { return (this.section === 'dashboard' ? 'Unternehmenssteuerung' : 'Modul ' + (this.item().label||this.section)) + ' · ' + this.tenantName(); },
         metric(k) { const v = this.metrics && this.metrics[k]; return v ? parseFloat(v.value) : '–'; },
         trend(k) { const t = this.trends.find(x => x.metric === k); return t || {delta: null, direction: 'unknown'}; },
+        toast(msg) {
+            const t = {id: Date.now() + Math.random(), msg};
+            this.toasts.push(t);
+            setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== t.id); }, 4500);
+        },
         api(path, opts={}) {
             opts.headers = Object.assign({
                 'Authorization': 'Bearer {{ $apiToken }}',
@@ -718,7 +779,7 @@ function workspace(initial) {
             history.replaceState(null,'',url);
             if (this.section === 'dashboard') {
                 this.api('/api/v1/metrics').then(r => r.ok ? r.json() : (this.error='HTTP '+r.status, null))
-                    .then(d => { this.metrics = d; this.loading = false; });
+                    .then(d => { this.metrics = d; this.loading = false; this.lastLoad = new Date(); });
                 this.api('/api/v1/insights').then(r => r.ok ? r.json() : [])
                     .then(d => this.insights = d.filter(i => i.code !== 'all_clear'));
                 this.api('/api/v1/events').then(r => r.ok ? r.json() : [])
@@ -743,7 +804,7 @@ function workspace(initial) {
                 this.api('/api/v1/executive/overview').then(r => {
                     if (!r.ok) { this.error = 'HTTP '+r.status+' — keine Berechtigung (executive.view)?'; this.exec = null; this.loading=false; return null; }
                     return r.json();
-                }).then(d => { if (d) this.exec = d; this.loading = false; });
+                }).then(d => { if (d) this.exec = d; this.loading = false; this.lastLoad = new Date(); });
                 this.api('/api/v1/exec-reports').then(r => r.ok ? r.json() : [])
                     .then(d => this.execReports = Array.isArray(d) ? d : (d.data || []));
                 return;
@@ -762,7 +823,7 @@ function workspace(initial) {
                 } else this.columns = [];
                 const oid = new URLSearchParams(location.search).get('open');
                 if (oid) { const r = rows.find(x => String(x.id) === oid); if (r) this.detail = r; }
-                this.loading = false;
+                this.loading = false; this.lastLoad = new Date();
             });
         },
         sort(c) {
@@ -770,8 +831,8 @@ function workspace(initial) {
             try { localStorage.setItem('af_sort_' + this.section, JSON.stringify({k: this.sortKey, a: this.sortAsc})); } catch (e) {}
         },
         sorted(rows) {
-            if (!this.sortKey) return rows;
-            const k = this.sortKey, dir = this.sortAsc ? 1 : -1;
+            const k = this.sortKey || 'updated_at', dir = (this.sortKey ? this.sortAsc : false) ? 1 : -1;
+            if (!rows.length || rows[0][k] === undefined) return rows;
             return [...rows].sort((a,b) => {
                 const x = a[k], y = b[k];
                 if (x === y) return 0;
@@ -811,7 +872,7 @@ function workspace(initial) {
         },
         applyStatus(s) {
             this.api(this.item().ep + '/' + this.detail.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
-                .then(r => { if (r.ok) { this.detail = null; this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.detail = null; this.loadSection(); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
         },
         appName(a) {
             const p = a.expert_profile?.person;
@@ -826,11 +887,11 @@ function workspace(initial) {
         submitApp() {
             if (!this.appForm.expert_profile_id || !this.detail) return;
             this.api('/api/v1/tenders/' + this.detail.id + '/applications', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(this.appForm)})
-                .then(r => { if (r.ok) { this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.loadApps(this.detail.id); this.loadSection(); } else alert('Bewerbung fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.loadApps(this.detail.id); this.loadSection(); } else this.toast('Bewerbung fehlgeschlagen (HTTP '+r.status+')'); });
         },
         setAppStatus(id, s) {
             this.api('/api/v1/tender-applications/' + id, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
-                .then(r => { if (r.ok) { this.loadApps(this.detail.id); this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.loadApps(this.detail.id); this.loadSection(); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
         },
         deleteApp(id) {
             if (!confirm('Bewerbung löschen?')) return;
@@ -846,11 +907,11 @@ function workspace(initial) {
             const body = this.answerText.trim();
             if (!body || !this.detail) return;
             this.api('/api/v1/questions/' + this.detail.id + '/answers', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({body})})
-                .then(r => { if (r.ok) { this.answerText = ''; this.loadAnswers(this.detail.id); this.loadSection(); } else alert('Antwort fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.answerText = ''; this.loadAnswers(this.detail.id); this.loadSection(); } else this.toast('Antwort fehlgeschlagen (HTTP '+r.status+')'); });
         },
         acceptAnswer(id) {
             this.api('/api/v1/answers/' + id + '/accept', {method:'POST'})
-                .then(r => { if (r.ok) { this.loadAnswers(this.detail.id); this.loadSection(); } else alert('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.loadAnswers(this.detail.id); this.loadSection(); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
         },
         deleteAnswer(id) {
             if (!confirm('Antwort löschen?')) return;
@@ -892,7 +953,7 @@ function workspace(initial) {
             const fd = new FormData();
             fd.append('file', f);
             this.api('/api/v1/documents/' + this.detail.id + '/versions', {method:'POST', body:fd})
-                .then(r => { if (r.ok) { this.$refs.versionFile.value = ''; this.loadDocVersions(this.detail.id); this.loadSection(); } else alert('Upload fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.$refs.versionFile.value = ''; this.loadDocVersions(this.detail.id); this.loadSection(); } else this.toast('Upload fehlgeschlagen (HTTP '+r.status+')'); });
         },
         dlPath(row) {
             if (this.section === 'data-objects') return '/api/v1/data-objects/' + row.id + '/download';
@@ -900,7 +961,7 @@ function workspace(initial) {
         },
         async downloadDoc(row) {
             const r = await this.api(this.dlPath(row));
-            if (!r.ok) { alert('Download fehlgeschlagen'); return; }
+            if (!r.ok) { this.toast('Download fehlgeschlagen'); return; }
             const blob = await r.blob();
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -917,7 +978,7 @@ function workspace(initial) {
                 'Authorization': 'Bearer {{ $apiToken }}', 'Accept':'application/json',
                 'Content-Type':'application/json'},
                 body: JSON.stringify({name: name.trim()})});
-            if (!r.ok) { alert('Anlegen fehlgeschlagen (HTTP '+r.status+')'); return; }
+            if (!r.ok) { this.toast('Anlegen fehlgeschlagen (HTTP '+r.status+')'); return; }
             const t = await r.json();
             this.tenantList.push({id: t.id, name: t.name});
             this.tenant = t.id;
@@ -928,6 +989,10 @@ function workspace(initial) {
         },
         toggleCol(c) {
             this.hiddenCols[c] = !this.hiddenCols[c];
+            this.saveColPrefs();
+        },
+        saveColPrefs() {
+            try { localStorage.setItem('allocore.cols.' + this.section, JSON.stringify(this.hiddenCols)); } catch (e) {}
             try { localStorage.setItem('af_cols_' + this.section, JSON.stringify(this.hiddenCols)); } catch (e) {}
         },
         visCols() { return this.columns.filter(c => !this.hiddenCols[c]); },
@@ -957,6 +1022,13 @@ function workspace(initial) {
             if (rn) return rn;
             return this.fmt(row[k]);
         },
+        linkOf(v) {
+            if (typeof v !== 'string') return null;
+            if (/^https?:\/\/\S+$/.test(v)) return v;
+            if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return 'mailto:' + v;
+            if (/^[+\d][\d\s\/()-]{5,}$/.test(v)) return 'tel:' + v.replace(/\s/g, '');
+            return null;
+        },
         fmt(v) {
             if (v === null || v === undefined) return '—';
             if (typeof v === 'object') return JSON.stringify(v);
@@ -964,10 +1036,11 @@ function workspace(initial) {
         },
         createFields() {
             const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes']);
+            const LONGTEXT = new Set(['description','content','notes','measures','bio','body','proposal','result','message','answer','question','summary','goal','scope','rationale','findings']);
             const src = (this.rows && this.rows[0]) || {};
             return Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12).map(k => ({
                 key: k,
-                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : 'text')),
+                type: FKMAP[k] ? 'fk' : (typeof src[k] === 'number' ? 'number' : (/_at$|_date$/.test(k) ? 'date' : (LONGTEXT.has(k) ? 'textarea' : 'text'))),
                 table: FKMAP[k] || null,
                 req: ['name', 'title'].includes(k),
             }));
@@ -982,7 +1055,7 @@ function workspace(initial) {
         openCreate() {
             if (this.section === 'ai-analyses') {
                 this.api('/api/v1/ai-analyses', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'})
-                    .then(r => { if (r.ok) this.loadSection(); else alert('Analyse fehlgeschlagen (HTTP '+r.status+')'); });
+                    .then(r => { if (r.ok) this.loadSection(); else this.toast('Analyse fehlgeschlagen (HTTP '+r.status+')'); });
                 return;
             }
             this.editing = null; this.form = {}; this.formError = ''; this.showCreate = true;
@@ -1001,7 +1074,8 @@ function workspace(initial) {
                 if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleDateString('de-DE');
                 return v;
             };
-            const lines = [this.columns.map(c => esc(this.label(c))).join(';'), ...rows.map(r => this.columns.map(c => esc(csvVal(r, c))).join(';'))];
+            const cols = this.visCols();
+            const lines = [cols.map(c => esc(this.label(c))).join(';'), ...rows.map(r => cols.map(c => esc(csvVal(r, c))).join(';'))];
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv'}));
             a.download = this.section + '.csv';
@@ -1070,7 +1144,12 @@ function workspace(initial) {
             }
             this.api(url, fetchOpts)
                 .then(r => {
-                    if (!r.ok) { this.formError = 'HTTP '+r.status+' — Pflichtfelder fehlen?'; return null; }
+                    if (!r.ok) {
+                        return r.json().then(d => {
+                            const errs = d && d.errors ? Object.entries(d.errors).map(([k, ms]) => this.label(k) + ': ' + (Array.isArray(ms) ? ms[0] : ms)).join(' · ') : null;
+                            this.formError = errs || (d && d.message ? d.message : 'HTTP ' + r.status + ' — Pflichtfelder fehlen?');
+                        }).catch(() => { this.formError = 'HTTP ' + r.status + ' — Pflichtfelder fehlen?'; });
+                    }
                     this.showCreate = false; this.detail = null; this.editing = null; this.loadSection(); return r.json();
                 });
         },
@@ -1118,6 +1197,7 @@ function workspace(initial) {
             const n = rs[i + dir];
             if (n) this.detail = n;
         },
+        isNew(row) { const t = row.updated_at || row.created_at; return t && (Date.now() - new Date(t).getTime()) < 86400000; },
         detailPos() {
             if (!this.detail) return '';
             const rs = this.sorted(this.filtered());
@@ -1148,10 +1228,15 @@ function workspace(initial) {
         cell(row, c) {
             let v = row[c];
             if (v === null || v === undefined) return '—';
+            if (c === 'id' && typeof v === 'string' && v.length > 8) return `<button onclick="event.stopPropagation();navigator.clipboard.writeText('${v}')" title="ID kopieren: ${v}" class="font-mono text-[11px] text-[#5B6B7E] hover:text-[#CA8A04]">${v.slice(0, 8)}…</button>`;
             const rn = this.resolveId(c, v);
             if (rn) return `<span title="${v}">${rn}</span>`;
             if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
             if (typeof v === 'number' && c !== 'id' && !c.endsWith('_id') && Number.isFinite(v)) {
+                if (/progress|pct|percent|rate$|quote|completion/i.test(c) && v >= 0 && v <= 100) {
+                    const col = v >= 100 ? '#2E7D5B' : v >= 50 ? '#CA8A04' : '#A6362E';
+                    return `<span class="inline-flex items-center gap-2"><span class="inline-block w-16 h-1.5 rounded-full bg-[#E4E9F0] overflow-hidden"><span class="block h-full rounded-full" style="width:${Math.min(100,v)}%;background:${col}"></span></span><span>${v}%</span></span>`;
+                }
                 const f = Math.abs(v) % 1 ? v.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : v.toLocaleString('de-DE');
                 return /price|amount|value|cost|rate|budget|revenue|ebitda|salary|euro|eur/i.test(c) ? f + ' €' : f;
             }
@@ -1163,11 +1248,12 @@ function workspace(initial) {
             }
             if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) {
                 const d = new Date(v);
-                let out = d.toLocaleDateString('de-DE');
+                let out = d.toLocaleDateString('de-DE', {weekday: 'short'}) + ', ' + d.toLocaleDateString('de-DE');
                 if (/due|deadline|scheduled/.test(c)) {
                     const days = Math.ceil((d - Date.now()) / 86400000);
-                    if (days < 0) out += ` <span class="text-[#A6362E]">(vor ${-days} T)</span>`;
-                    else if (days <= 7) out += ` <span class="text-[#CA8A04]">(in ${days} T)</span>`;
+                    const rel = days === -1 ? 'gestern' : days === 0 ? 'heute' : days === 1 ? 'morgen' : days < 0 ? `vor ${-days} T` : `in ${days} T`;
+                    if (days < 0) out += ` <span class="text-[#A6362E]">(${rel})</span>`;
+                    else if (days <= 7) out += ` <span class="text-[#CA8A04]">(${rel})</span>`;
                 }
                 return out;
             }
@@ -1175,7 +1261,11 @@ function workspace(initial) {
                 return `<a href="mailto:${v}" @click.stop class="text-[#CA8A04] hover:underline">${v}</a>`;
             if (typeof v === 'string' && /^[+0-9][0-9\s\/()-]{5,}$/.test(v) && /phone|tel|mobile/i.test(c))
                 return `<a href="tel:${v.replace(/[^+0-9]/g,'')}" @click.stop class="text-[#CA8A04] hover:underline">${v}</a>`;
-            if (typeof v === 'string' && v.length > 80) return v.slice(0,80)+'…';
+            if (typeof v === 'string' && v.length > 80) v = v.slice(0,80)+'…';
+            if (typeof v === 'string' && this.query) {
+                const q = this.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                v = String(v).replace(new RegExp('(' + q + ')', 'ig'), '<mark class="bg-[#FACC15]/40 rounded-sm px-0.5">$1</mark>');
+            }
             return v;
         },
     }
