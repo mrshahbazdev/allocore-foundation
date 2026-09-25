@@ -194,6 +194,10 @@
                             </a>
                         </template>
                     </div>
+                    <div x-show="tenant && metrics && !insights.length && !openTasks.length && !upcoming.length && !events.length" class="bg-white border border-[#E4E9F0] rounded-xl px-6 py-8 text-center">
+                        <div class="text-sm text-[#5B6B7E]">Noch keine Einträge für diesen Mandanten.</div>
+                        <button @click="seedDemo()" :disabled="seeding" class="mt-3 text-xs px-4 py-2 bg-[#0B0B0F] text-[#FACC15] rounded-lg hover:opacity-90 disabled:opacity-50" x-text="seeding ? 'Lade Demo-Daten…' : 'Demo-Daten laden'"></button>
+                    </div>
                     <div x-show="tenant && metrics && !insights.length" class="flex items-center gap-3 rounded-lg border border-[#2E7D5B]/30 bg-[#2E7D5B]/5 px-4 py-3 text-sm text-[#2E7D5B]">
                         <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Alles im grünen Bereich — keine offenen Hinweise.
@@ -905,7 +909,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0,
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false,
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {},
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
@@ -1080,6 +1084,12 @@ function workspace(initial) {
             if (v.length < 2) return '';
             const min = Math.min(...v), max = Math.max(...v), span = max - min || 1;
             return v.map((p, i) => (i ? 'L' : 'M') + (i * 96 / (v.length - 1)).toFixed(1) + ',' + (22 - (p - min) / span * 20).toFixed(1)).join(' ');
+        },
+        seedDemo() {
+            this.seeding = true;
+            this.api('/api/v1/demo-seed', {method: 'POST'})
+                .then(r => { this.seeding = false; this.toast(r.ok ? 'Demo-Daten geladen.' : 'Demo-Seed fehlgeschlagen (HTTP ' + r.status + ')'); if (r.ok) this.loadSection(); })
+                .catch(() => { this.seeding = false; this.toast('Demo-Seed fehlgeschlagen.'); });
         },
         completeDashTask(t) {
             const prev = t.status, id = t.id;
