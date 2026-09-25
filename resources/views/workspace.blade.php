@@ -947,6 +947,7 @@ function workspace(initial) {
                 this.setDocTitle();
             });
             this.$watch('rows', () => this.setDocTitle());
+            this.$watch('detail', d => { if (d && d.id) this.pushRecentRow(d); });
             this.$watch('section', () => this.setDocTitle());
             setInterval(() => { if (this.tenant && !this.detail && !this.showCreate && !this.palette) this.loadSection(true); }, 30000);
             this.$watch('detail', v => {
@@ -993,6 +994,13 @@ function workspace(initial) {
             this.toast(was ? 'Aus Favoriten entfernt' : 'Zu Favoriten hinzugefügt');
         },
         sectionLabel(k) { const i = this.groups.flatMap(g => g.items).find(x => x.key === k); return i ? i.label : k; },
+        recentRows() { try { return JSON.parse(localStorage.getItem('af_recentrows') || '[]'); } catch (e) { return []; } },
+        pushRecentRow(d) {
+            const name = d.name || d.title || d.headline || d.subject || d.order_no || d.file_name || d.email || String(d.id).slice(0, 8);
+            const list = this.recentRows().filter(r => !(r.key === this.section && String(r.id) === String(d.id)));
+            list.unshift({key: this.section, id: d.id, name: name});
+            try { localStorage.setItem('af_recentrows', JSON.stringify(list.slice(0, 8))); } catch (e) {}
+        },
         allCollapsed() { return this.groups.every(g => this.collapsed[g.label]); },
         toggleAllGroups() { const v = !this.allCollapsed(); this.groups.forEach(g => { this.collapsed[g.label] = v; }); this.saveCollapsed(); },
         toggleGroup(k) { this.collapsed[k] = !this.collapsed[k]; this.saveCollapsed(); },
@@ -1030,6 +1038,7 @@ function workspace(initial) {
                 if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)) acts.push({key: null, action: 'filter', filter: 'myOnly', label: 'Filter: Mir zugewiesen ' + (this.myOnly ? '(an)' : '(aus)'), group: 'Aktion'});
                 if (this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.statusFilter || this.query) acts.push({key: null, action: 'filter', filter: '_reset', label: 'Filter zurücksetzen', group: 'Aktion'});
             }
+            this.recentRows().forEach(r => acts.push({key: null, action: 'openrow', row: r, label: '↻ ' + (r.name || r.id) + ' (' + this.sectionLabel(r.key) + ')', group: 'Zuletzt'}));
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
             mods.sort((a, b) => ((this.pins || []).includes(b.key) ? 1 : 0) - ((this.pins || []).includes(a.key) ? 1 : 0));
             return [...acts.filter(a => !q || a.label.toLowerCase().includes(q)), ...mods];
@@ -1049,6 +1058,7 @@ function workspace(initial) {
             if (it.action === 'dark') { this.toggleDark(); return; }
             if (it.action === 'tenant') { this.tenant = it.tenant; this.loadSection(); this.loadNavBadges(); return; }
             if (it.action === 'view') { this.applyView(it.view); return; }
+            if (it.action === 'openrow') { location.href = '/app/' + it.row.key + '?tenant=' + this.tenant + '&open=' + encodeURIComponent(it.row.id); return; }
             if (it.action === 'filter') {
                 if (it.filter === '_reset') { this.query = ''; this.statusFilter = ''; this.overdueOnly = this.dueSoonOnly = this.dueTodayOnly = this.myOnly = false; }
                 else this[it.filter] = !this[it.filter];
