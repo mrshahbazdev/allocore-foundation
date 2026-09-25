@@ -10,16 +10,16 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-5">
 
             {{-- Tenant selector --}}
-            <div class="bg-white border border-[#E4E9F0] rounded-xl px-5 py-4 flex flex-wrap items-center gap-4">
-                <label class="text-[13px] font-medium text-[#42536A]">Mandant</label>
+            <div class="bg-[#0B0B0F] rounded-xl px-5 py-4 flex flex-wrap items-center gap-4">
+                <label class="text-[13px] font-medium text-[#FACC15]">Mandant</label>
                 <select x-model="tenant" @change="load()"
-                        class="rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30 min-w-56">
+                        class="rounded-lg bg-[#1A1A1F] border-[#2A2A31] text-white text-sm focus:border-[#FACC15] focus:ring-[#FACC15]/30 min-w-56">
                     <option value="">— wählen —</option>
                     @foreach($tenants as $t)
                         <option value="{{ $t->id }}">{{ $t->name }}</option>
                     @endforeach
                 </select>
-                <span x-show="error" x-text="error" class="text-[13px] text-[#A6362E]"></span>
+                <span x-show="error" x-text="error" class="text-[13px] text-[#F87171]"></span>
             </div>
 
             {{-- Empty state until a tenant is chosen --}}
@@ -53,6 +53,7 @@
                     <div class="bg-white border border-[#E4E9F0] rounded-xl px-5 py-4">
                         <div class="text-[11px] font-medium text-[#5B6B7E]" x-text="m.label"></div>
                         <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="metric(m.key)"></div>
+                        <div class="mt-2 h-0.5 w-8 rounded-full bg-[#FACC15]"></div>
                     </div>
                 </template>
             </div>
@@ -61,6 +62,7 @@
             <div x-show="users" class="bg-white border border-[#E4E9F0] rounded-xl p-5">
                 <h3 class="text-sm font-semibold text-[#0B0B0F] mb-1">Team &amp; Rollen</h3>
                 <p class="text-[13px] text-[#5B6B7E] mb-4">Rollen gelten pro Mandant (Dokument C).</p>
+                <div class="h-px bg-gradient-to-r from-[#FACC15] via-[#E4E9F0] to-transparent mb-1"></div>
                 <template x-for="u in users" :key="u.id">
                     <div class="flex flex-wrap items-center gap-x-4 gap-y-2 py-3 border-t border-[#E4E9F0] first:border-t-0">
                         <div class="w-64 min-w-0">
