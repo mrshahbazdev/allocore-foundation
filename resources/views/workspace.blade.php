@@ -1727,7 +1727,7 @@ function workspace(initial) {
             const lines = [cols.map(c => esc(this.label(c))).join(';'), ...rows.map(r => cols.map(c => esc(csvVal(r, c))).join(';'))];
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv'}));
-            a.download = this.section + '.csv';
+            a.download = this.exportName('csv');
             a.click();
             this.toast(rows.length + ' ' + this.eintrag(rows.length) + ' exportiert.');
         },
@@ -1736,9 +1736,14 @@ function workspace(initial) {
             if (!rows.length) return;
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([JSON.stringify(rows, null, 2)], {type: 'application/json'}));
-            a.download = this.section + '.json';
+            a.download = this.exportName('json');
             a.click();
             this.toast(rows.length + ' ' + this.eintrag(rows.length) + ' exportiert (JSON).');
+        },
+        exportName(ext) {
+            const t = this.tenantName().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'export';
+            const d = new Date().toISOString().slice(0, 10);
+            return 'allocore-' + this.section + '-' + t + '-' + d + '.' + ext;
         },
         canImport() { return this.writable() && !['documents','data-objects','ai-analyses','events','metrics'].includes(this.section); },
         async importCsv() {
