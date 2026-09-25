@@ -412,6 +412,7 @@
                         </div>
                         <select x-model="groupBy" title="Gruppieren nach" class="text-xs px-2 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg bg-white hover:border-[#CA8A04] transition shrink-0 max-w-[10rem]">
                             <option value="">Keine Gruppierung</option>
+                            <option x-show="rows && rows.some(r => r.updated_at)" value="__period">Zeitraum</option>
                             <template x-for="c in columns" :key="'g-'+c">
                                 <option :value="c" x-text="label(c)"></option>
                             </template>
@@ -1310,13 +1311,13 @@ function workspace(initial) {
             if (!this.groupBy) return rows.map((r, i) => mk(r, i));
             const buckets = new Map();
             rows.forEach(r => {
-                const g = String(r[this.groupBy] ?? '');
+                const g = this.groupBy === '__period' ? this.periodKey(r.updated_at) : String(r[this.groupBy] ?? '');
                 if (!buckets.has(g)) buckets.set(g, []);
                 buckets.get(g).push(r);
             });
             const out = []; let i = 0;
             for (const [label, rs] of buckets) {
-                const disp = (this.groupBy === 'status' || this.groupBy === 'severity') ? this.statusLabel(label) : (/_id$/.test(this.groupBy) ? (this.resolveId(this.groupBy, label) || label || '—') : (label || '—'));
+                const disp = this.groupBy === '__period' ? label : ((this.groupBy === 'status' || this.groupBy === 'severity') ? this.statusLabel(label) : (/_id$/.test(this.groupBy) ? (this.resolveId(this.groupBy, label) || label || '—') : (label || '—')));
                 out.push({t: 'h', label, disp, count: rs.length, overdue: rs.filter(r => this.overdue(r)).length});
                 if (!this.collapsedGroups[label]) rs.forEach(r => out.push(mk(r, i++)));
                 else i += rs.length;
@@ -1947,7 +1948,7 @@ function workspace(initial) {
             else if (e.key === 'j') { if (this.detail && !this.showCreate) this.copyJson(); }
             else if (e.key === 'k') { if (!this.detail && !this.showCreate && !this.palette) { this.compact = !this.compact; try { localStorage.setItem('af_density', this.compact ? '1' : '0'); } catch (err) {} this.toast(this.compact ? 'Kompakte Zeilen an' : 'Kompakte Zeilen aus'); } }
             else if (e.key === 'w') { if (this.detail && !this.showCreate) { this.drawerWide = !this.drawerWide; try { localStorage.setItem('af_drawer_wide', this.drawerWide ? '1' : '0'); } catch (err) {} } }
-            else if (e.key === 'g') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.length) { const opts = ['status', ...this.visCols().filter(c => /_id$/.test(c)), '']; const cyc = opts.filter(o => o === '' || this.rows.some(r => o in r)); const i = cyc.indexOf(this.groupBy); this.groupBy = cyc[(i + 1) % cyc.length]; this.toast(this.groupBy ? 'Gruppiert nach: ' + this.label(this.groupBy) : 'Gruppierung aus'); } }
+            else if (e.key === 'g') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.length) { const opts = ['status', '__period', ...this.visCols().filter(c => /_id$/.test(c)), '']; const cyc = opts.filter(o => o === '' || (o === '__period' ? this.rows.some(r => r.updated_at) : this.rows.some(r => o in r))); const i = cyc.indexOf(this.groupBy); this.groupBy = cyc[(i + 1) % cyc.length]; this.toast(this.groupBy ? 'Gruppiert nach: ' + this.label(this.groupBy) : 'Gruppierung aus'); } }
             else if (e.key === 'b') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.dueToday(r))) this.dueTodayOnly = !this.dueTodayOnly; }
             else if (e.key === 'm') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)) this.myOnly = !this.myOnly; }
             else if (e.key === 'q') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id))) this.unassignedOnly = !this.unassignedOnly; }
@@ -2031,13 +2032,21 @@ function workspace(initial) {
             return name ? this.title() + ' · ' + name : this.title() + ' · Details';
         },
         label(c) {
-            const L = {name:'Name',title:'Titel',first_name:'Vorname',last_name:'Nachname',email:'E-Mail',phone:'Telefon',type:'Typ',status:'Status',description:'Beschreibung',content:'Inhalt',category:'Kategorie',subject:'Betreff',area:'Bereich',hazard:'Gefährdung',risk_level:'Risikostufe',measures:'Maßnahmen',result:'Ergebnis',notes:'Notizen',progress:'Fortschritt',quantity:'Menge',order_no:'Auftrag-Nr.',product:'Produkt',scrap_qty:'Ausschuss',headline:'Schlagzeile',bio:'Bio',skills:'Skills',hourly_rate:'Stundensatz',budget:'Budget',price:'Preis',proposal:'Angebot',stake_pct:'Anteil %',invested_amount:'Investiert',current_valuation:'Bewertung',capital_need:'Kapitalbedarf',revenue:'Umsatz',cashflow:'Cashflow',ebitda:'EBITDA',liquidity:'Liquidität',period:'Periode',legal_form:'Rechtsform',street:'Straße',zip:'PLZ',city:'Stadt',country:'Land',version:'Version',valid_from:'Gültig ab',interval_months:'Intervall (Mon.)',capacity_units_per_day:'Kapazität/Tag',asset_class:'Anlageklasse',cost_basis:'Kostenbasis',current_value:'Aktueller Wert',currency:'Währung',due_at:'Fällig',deadline_at:'Frist',scheduled_at:'Geplant',starts_on:'Von',ends_on:'Bis',starts_at:'Start',ends_at:'Ende',acquired_at:'Erworben',valued_at:'Bewertet am',body:'Inhalt',is_accepted:'Akzeptiert',document_id:'Dokument'};
+            const L = {__period:'Zeitraum',name:'Name',title:'Titel',first_name:'Vorname',last_name:'Nachname',email:'E-Mail',phone:'Telefon',type:'Typ',status:'Status',description:'Beschreibung',content:'Inhalt',category:'Kategorie',subject:'Betreff',area:'Bereich',hazard:'Gefährdung',risk_level:'Risikostufe',measures:'Maßnahmen',result:'Ergebnis',notes:'Notizen',progress:'Fortschritt',quantity:'Menge',order_no:'Auftrag-Nr.',product:'Produkt',scrap_qty:'Ausschuss',headline:'Schlagzeile',bio:'Bio',skills:'Skills',hourly_rate:'Stundensatz',budget:'Budget',price:'Preis',proposal:'Angebot',stake_pct:'Anteil %',invested_amount:'Investiert',current_valuation:'Bewertung',capital_need:'Kapitalbedarf',revenue:'Umsatz',cashflow:'Cashflow',ebitda:'EBITDA',liquidity:'Liquidität',period:'Periode',legal_form:'Rechtsform',street:'Straße',zip:'PLZ',city:'Stadt',country:'Land',version:'Version',valid_from:'Gültig ab',interval_months:'Intervall (Mon.)',capacity_units_per_day:'Kapazität/Tag',asset_class:'Anlageklasse',cost_basis:'Kostenbasis',current_value:'Aktueller Wert',currency:'Währung',due_at:'Fällig',deadline_at:'Frist',scheduled_at:'Geplant',starts_on:'Von',ends_on:'Bis',starts_at:'Start',ends_at:'Ende',acquired_at:'Erworben',valued_at:'Bewertet am',body:'Inhalt',is_accepted:'Akzeptiert',document_id:'Dokument'};
             if (!L[c] && c.endsWith('_id')) {
                 const F = {person_id:'Person',company_id:'Unternehmen',machine_id:'Maschine',task_id:'Aufgabe',question_id:'Frage',answer_id:'Antwort',tender_id:'Ausschreibung',project_id:'Projekt',strategy_id:'Strategie',measure_id:'Maßnahme',portfolio_id:'Portfolio',investment_id:'Investment',participation_id:'Beteiligung',expert_profile_id:'Experte',instruction_id:'Unterweisung',inspection_id:'Prüfung',risk_assessment_id:'Gefährdungsbeurteilung',financial_report_id:'Finanzbericht',leave_request_id:'Abwesenheit',parent_id:'Übergeordnet',responsible_id:'Verantwortlich',assignee_id:'Zugewiesen',created_by:'Erstellt von',updated_by:'Geändert von',approved_by:'Genehmigt von',awarded_by:'Vergeben von',user_id:'Benutzer',document_id:'Dokument'};
                 if (F[c]) return F[c];
                 return c.slice(0, -3).replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
             }
             return L[c] || c.replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
+        },
+        periodKey(v) {
+            const d = new Date(v);
+            if (isNaN(d)) return 'Unbekannt';
+            const now = new Date();
+            const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate());
+            const diff = Math.round((day(now) - day(d)) / 86400000);
+            return diff <= 0 ? 'Heute' : (diff < 7 ? 'Diese Woche' : 'Älter');
         },
         dueRel(v) {
             if (!v) return '';
