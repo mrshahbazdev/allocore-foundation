@@ -387,7 +387,7 @@
                     </div>
                     <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0] print:hidden">
                         <span class="text-xs text-[#5B6B7E] shrink-0 flex items-center gap-2">
-                            <span x-text="filtered().length + ' / ' + (rows ? rows.length : 0) + ' ' + eintrag(rows ? rows.length : 0)"></span>
+                            <span x-text="filtered().length + ' / ' + (rowsTotal || (rows ? rows.length : 0)) + ' ' + eintrag(rowsTotal || (rows ? rows.length : 0))"></span>
                             <span x-show="rows && rows.some(r => overdue(r))" class="text-[#A6362E]" x-text="'· ' + rows.filter(r => overdue(r)).length + ' überfällig'"></span>
                             <span x-show="rows && rows.some(r => dueSoon(r))" class="text-[#B45309]" x-text="'· ' + rows.filter(r => dueSoon(r)).length + ' ≤ 7 Tage'"></span>
                         </span>
@@ -973,7 +973,7 @@ function workspace(initial) {
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [], evShown: 6,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
-        meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false,
+        meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null,
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
             window.addEventListener('offline', () => { this.offline = true; });
@@ -1290,6 +1290,7 @@ function workspace(initial) {
                 if (d === null) return;
                 const rows = Array.isArray(d) ? d : (d.data || []);
                 this.rows = rows;
+                this.rowsTotal = (d && typeof d.total === 'number') ? d.total : rows.length;
                 this.navBadges = {...this.navBadges, [this.section]: rows.filter(r => this.overdue(r)).length};
                 this.navBadgesToday = {...this.navBadgesToday, [this.section]: rows.filter(r => this.dueToday(r)).length};
                 if (rows.length) {
