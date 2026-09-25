@@ -745,12 +745,13 @@
                         <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERLAUF <span class="text-[#9CA3AF] font-normal" x-text="'(' + rowEvents.length + ')'"></span></div>
                         <a :href="'/app/events?tenant=' + tenant + '&q=' + encodeURIComponent(detail.id || '')" class="text-[10px] text-[#CA8A04] hover:underline" title="Alle Ereignisse zu diesem Datensatz">Alle →</a>
                     </div>
-                    <template x-for="(e, i) in rowEvents" :key="i">
+                    <template x-for="(e, i) in rowEvents.slice(0, evShown)" :key="i">
                         <a :href="'/app/events?tenant=' + tenant + '&open=' + e.id" class="flex items-center justify-between text-xs py-1 rounded hover:bg-[#FAFBFC] -mx-1 px-1">
                             <span class="text-[#1A2433]"><span class="text-[#CA8A04] font-semibold uppercase text-[10px] tracking-wide" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span></span>
                             <span class="text-[10px] text-[#9CA3AF] font-mono" :title="e.created_at ? new Date(e.created_at).toLocaleString('de-DE') : ''" x-text="ago(e.created_at)"></span>
                         </a>
                     </template>
+                    <button x-show="rowEvents.length > evShown" @click="evShown += 20" class="text-[11px] text-[#CA8A04] hover:underline mt-1" x-text="'+ ' + Math.min(20, rowEvents.length - evShown) + ' weitere'"></button>
                 </div>
                 <div x-show="detail && (detail.created_at || detail.updated_at)" class="px-6 py-2.5 border-t border-[#F0F3F7] text-[10px] text-[#9CA3AF] flex gap-4">
                     <span x-show="detail && detail.created_at">Erstellt: <span x-text="detail && new Date(detail.created_at).toLocaleString('de-DE')"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.created_at) + ')'"></span></span>
@@ -970,7 +971,7 @@ function workspace(initial) {
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
-        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [],
+        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [], evShown: 6,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false,
         init() {
@@ -1029,7 +1030,7 @@ function workspace(initial) {
                 if (v && v.id) url.searchParams.set('open', v.id); else url.searchParams.delete('open');
                 history.replaceState(null, '', url);
                 this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null;
-                this.confirmDel = false; this.rowEvents = [];
+                this.confirmDel = false; this.rowEvents = []; this.evShown = 6;
                 if (v && v.id && !['events','metrics','ai-analyses','executive','dashboard'].includes(this.section)) this.loadRowEvents(v.id);
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
@@ -1408,7 +1409,7 @@ function workspace(initial) {
         },
         loadRowEvents(id) {
             this.api('/api/v1/events?per_page=100&subject_id=' + encodeURIComponent(id)).then(r => r.ok ? r.json() : {data: []})
-                .then(d => { const es = (d.data || d || []); this.rowEvents = es.filter(e => e.event_properties && e.event_properties.subject && String(e.event_properties.subject.id) === String(id)).slice(0, 6); })
+                .then(d => { const es = (d.data || d || []); this.rowEvents = es.filter(e => e.event_properties && e.event_properties.subject && String(e.event_properties.subject.id) === String(id)).slice(0, 25); })
                 .catch(() => this.rowEvents = []);
         },
         loadAnswers(qid) {
