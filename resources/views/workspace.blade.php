@@ -305,7 +305,9 @@
                             <template x-for="(row, idx) in sorted(filtered()).slice(0, limit)" :key="idx">
                                 <tr @click="detail = row" :class="overdue(row) ? 'bg-[#A6362E]/5' : ''" class="border-b border-[#F0F3F7] last:border-b-0 hover:bg-[#FAFBFC] cursor-pointer">
                                     <template x-for="c in visCols()" :key="c">
-                                        <td class="px-5 py-3 text-[#1A2433]" x-html="cell(row, c)"></td>
+                                        <td class="px-5 py-3 text-[#1A2433]">
+                                            <span x-html="cell(row, c)"></span><span x-show="c === visCols()[0] && isNew(row)" class="ml-1.5 text-[9px] font-bold px-1 py-0.5 rounded bg-[#FACC15] text-[#0B0B0F] align-middle" style="display:none">NEU</span>
+                                        </td>
                                     </template>
                                     <td x-show="sectionActions().length" @click.stop class="px-5 py-3">
                                         <div class="flex gap-1">
@@ -1030,6 +1032,7 @@ function workspace(initial) {
             const n = rs[i + dir];
             if (n) this.detail = n;
         },
+        isNew(row) { const t = row.updated_at || row.created_at; return t && (Date.now() - new Date(t).getTime()) < 86400000; },
         dueKey(row) { return ['due_at','deadline','ends_on','due_date','end_date','next_due_at'].find(k => row[k]); },
         isOpenStatus(row) {
             const OPEN = ['open','pending','in_progress','running','queued','scheduled','planned','active','submitted','shortlisted','draft','on_hold'];
