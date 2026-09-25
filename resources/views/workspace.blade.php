@@ -1244,7 +1244,11 @@ function workspace(initial) {
             if (this.statusFilter) rs = rs.filter(r => String(r.status || '') === this.statusFilter);
             const q = this.query.trim().toLowerCase();
             if (!q) return rs;
-            return rs.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
+            return rs.filter(r => Object.entries(r).some(([k, v]) => {
+                if (String(v).toLowerCase().includes(q)) return true;
+                const rn = this.resolveId(k, v);
+                return rn && String(rn).toLowerCase().includes(q);
+            }));
         },
         statusOpts() {
             if (!this.rows) return [];
