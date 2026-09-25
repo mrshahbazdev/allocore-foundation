@@ -336,6 +336,19 @@
                                 <option :value="c" x-text="label(c)"></option>
                             </template>
                         </select>
+                        <div class="relative shrink-0">
+                            <button @click="viewPicker = !viewPicker" title="Gespeicherte Ansichten" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Ansichten<span x-show="Object.keys(views()).length" class="ml-1 text-[#CA8A04]" x-text="'(' + Object.keys(views()).length + ')'"></span></button>
+                            <div x-show="viewPicker" @click.outside="viewPicker = false" class="absolute right-0 mt-1.5 w-56 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20" style="display:none">
+                                <button @click="saveView()" class="w-full text-left px-3 py-1.5 text-xs text-[#CA8A04] hover:bg-[#CA8A04]/10 border-b border-[#E4E9F0]">+ Aktuelle Ansicht speichern</button>
+                                <p x-show="!Object.keys(views()).length" class="px-3 py-2 text-[11px] text-[#9CA3AF]">Noch keine Ansichten.</p>
+                                <template x-for="(v, name) in views()" :key="name">
+                                    <div class="flex items-center hover:bg-[#FAFBFC]">
+                                        <button @click="applyView(name)" class="flex-1 text-left px-3 py-1.5 text-xs text-[#1A2433] truncate" x-text="name"></button>
+                                        <button @click="deleteView(name)" class="px-2 text-[#9CA3AF] hover:text-[#A6362E] text-xs" title="Ansicht löschen">&times;</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                         <button @click="exportCsv()" title="CSV exportieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
                         <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren (i)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
                         <button @click="window.print()" title="Drucken" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">Drucken</button>
@@ -812,7 +825,7 @@ function workspace(initial) {
         loading: false, error: '', detail: null, drawerWide: false, showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, showImport: false, importText: '', importResult: '', importErr: false, importing: false, toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'),
-        pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, selected: {}, recent: [], navBadges: {},
+        pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {},
@@ -1336,6 +1349,29 @@ function workspace(initial) {
             }
             this.editing = null; this.form = {}; this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
+        },
+        views() {
+            try { return JSON.parse(localStorage.getItem('af_views_' + this.section) || '{}'); } catch (e) { return {}; }
+        },
+        saveView() {
+            const name = prompt('Name der Ansicht:');
+            if (!name) return;
+            const all = this.views();
+            all[name] = {query: this.query, statusFilter: this.statusFilter, overdueOnly: this.overdueOnly, dueSoonOnly: this.dueSoonOnly, myOnly: this.myOnly, groupBy: this.groupBy, sortKey: this.sortKey, sortAsc: this.sortAsc, hiddenCols: this.hiddenCols};
+            localStorage.setItem('af_views_' + this.section, JSON.stringify(all));
+            this.viewPicker = false;
+        },
+        applyView(name) {
+            const v = this.views()[name];
+            if (!v) return;
+            this.query = v.query || ''; this.statusFilter = v.statusFilter || ''; this.overdueOnly = !!v.overdueOnly; this.dueSoonOnly = !!v.dueSoonOnly; this.myOnly = !!v.myOnly;
+            this.groupBy = v.groupBy || ''; this.sortKey = v.sortKey || ''; this.sortAsc = v.sortAsc !== false; this.hiddenCols = v.hiddenCols || {};
+            this.viewPicker = false; this.toast('Ansicht „' + name + '“ angewendet.');
+        },
+        deleteView(name) {
+            const all = this.views(); delete all[name];
+            localStorage.setItem('af_views_' + this.section, JSON.stringify(all));
+            this.viewPicker = false; this.viewPicker = true;
         },
         copySel() {
             const sel = (this.rows || []).filter(r => this.selected[r.id]);
