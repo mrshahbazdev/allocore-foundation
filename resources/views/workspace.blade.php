@@ -344,6 +344,7 @@
                     <div class="flex items-center gap-1">
                         <button @click="navDetail(-1)" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" title="Vorheriger (←)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
                         <button @click="navDetail(1)" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" title="Nächster (→)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+                        <span class="text-[11px] font-mono text-[#9CA3AF] px-1" x-text="detailPos()"></span>
                     </div>
                     <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]" title="Schließen (Esc)" aria-label="Schließen">&times;</button>
                 </div>
@@ -1041,6 +1042,12 @@ function workspace(initial) {
             const i = rs.findIndex(r => String(r.id) === String(this.detail.id));
             const n = rs[i + dir];
             if (n) this.detail = n;
+        },
+        detailPos() {
+            if (!this.detail) return '';
+            const rs = this.sorted(this.filtered());
+            const i = rs.findIndex(r => String(r.id) === String(this.detail.id));
+            return i < 0 ? '' : (i + 1) + ' / ' + rs.length;
         },
         dueKey(row) { return ['due_at','deadline','ends_on','due_date','end_date','next_due_at'].find(k => row[k]); },
         isOpenStatus(row) {
