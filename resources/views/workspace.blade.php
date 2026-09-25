@@ -400,12 +400,12 @@
                         </thead>
                         <tbody>
                             <template x-for="it in renderRows()" :key="it.t === 'h' ? 'h-'+it.label : it.r.id">
-                                <tr @click="it.t === 'r' && (detail = it.r)" @dblclick="it.t === 'r' && canEdit() && (detail = it.r, openEdit())"
-                                    :class="it.t === 'h' ? 'bg-[#F0F3F7]' : ([overdue(it.r) ? 'bg-[#A6362E]/5' : '', selected[it.r.id] ? 'bg-[#FFFBEB]' : '', detail && detail.id === it.r.id ? 'bg-[#FACC15]/10' : '', it.i % 2 ? 'bg-[#FAFBFC]/50' : ''].join(' ') + ' hover:bg-[#F3F6FA] cursor-pointer')"
-                                    class="border-b border-[#F0F3F7] last:border-b-0" :title="it.t === 'r' ? 'Doppelklick: Bearbeiten' : ''">
+                                <tr @click="it.t === 'r' ? (detail = it.r) : (collapsedGroups[it.label] = !collapsedGroups[it.label])" @dblclick="it.t === 'r' && canEdit() && (detail = it.r, openEdit())"
+                                    :class="it.t === 'h' ? 'bg-[#F0F3F7] hover:bg-[#E4E9F0] cursor-pointer' : ([overdue(it.r) ? 'bg-[#A6362E]/5' : '', selected[it.r.id] ? 'bg-[#FFFBEB]' : '', detail && detail.id === it.r.id ? 'bg-[#FACC15]/10' : '', it.i % 2 ? 'bg-[#FAFBFC]/50' : ''].join(' ') + ' hover:bg-[#F3F6FA] cursor-pointer')"
+                                    class="border-b border-[#F0F3F7] last:border-b-0" :title="it.t === 'r' ? 'Doppelklick: Bearbeiten' : 'Klick: einklappen/ausklappen'">
                                     <template x-if="it.t === 'h'">
                                         <td :colspan="visCols().length + (writable() ? 3 : 2)" class="px-5 py-2 text-[11px] font-semibold text-[#5B6B7E]">
-                                            <span x-text="it.label || '—'"></span> <span class="font-normal text-[#9CA3AF]" x-text="'· ' + it.count"></span>
+                                            <span x-text="collapsedGroups[it.label] ? '▸' : '▾'" class="mr-1.5 text-[#CA8A04]"></span><span x-text="it.label || '—'"></span> <span class="font-normal text-[#9CA3AF]" x-text="'· ' + it.count"></span>
                                         </td>
                                     </template>
                                     <template x-if="it.t === 'r'">
@@ -801,7 +801,7 @@ function workspace(initial) {
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, selected: {}, recent: [], navBadges: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
-        meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '',
+        meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {},
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
             window.addEventListener('offline', () => { this.offline = true; });
@@ -1018,7 +1018,8 @@ function workspace(initial) {
             const out = []; let i = 0;
             for (const [label, rs] of buckets) {
                 out.push({t: 'h', label, count: rs.length});
-                rs.forEach(r => out.push(mk(r, i++)));
+                if (!this.collapsedGroups[label]) rs.forEach(r => out.push(mk(r, i++)));
+                else i += rs.length;
             }
             return out;
         },
