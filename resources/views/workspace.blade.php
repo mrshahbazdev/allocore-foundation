@@ -28,6 +28,7 @@
             <img src="{{ asset('logo-mark.png') }}" alt="ALLOCORE" class="h-7 w-auto">
             <span class="font-semibold tracking-tight">ALLO<span class="text-[#FACC15]">CORE</span></span>
         </a>
+        <span class="text-[13px] text-[#9CA3AF] truncate"><span class="text-[#FACC15] mr-1.5" x-text="icons[section] || ''"></span><span x-text="title()"></span></span>
         <button @click="navOpen = !navOpen" class="p-2 -mr-2 text-[#9CA3AF] hover:text-white" title="Menü">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
