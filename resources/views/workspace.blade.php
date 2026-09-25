@@ -367,7 +367,7 @@
                     <dl class="space-y-3 text-sm">
                         <template x-for="k in Object.keys(detail || {})" :key="k">
                             <div class="flex gap-3">
-                                <dt class="w-36 shrink-0 text-[#5B6B7E]" x-text="label(k)"></dt>
+                                <dt class="w-36 shrink-0 text-[#5B6B7E]" :title="k" x-text="label(k)"></dt>
                                 <dd class="min-w-0 font-mono text-[13px] text-[#1A2433] break-words">
                                     <span x-text="fmtD(detail, k)"></span>
                                     <a x-show="refSection(k) && detail[k]" :href="'/app/' + refSection(k) + '?tenant=' + tenant + '&open=' + detail[k]"
