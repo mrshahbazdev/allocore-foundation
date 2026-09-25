@@ -774,7 +774,6 @@ function workspace(initial) {
             if (p.get('status')) this.statusFilter = p.get('status');
             this.$watch('query', () => this.syncUrl());
             this.$watch('statusFilter', () => this.syncUrl());
-            this.$watch('tenant', () => { document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE'; });
             this.$watch('tenant', v => {
                 if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
                 document.title = this.title() + ' · ' + this.tenantName() + ' — ALLOCORE';
