@@ -693,12 +693,15 @@
         <div x-show="palette" class="fixed inset-0 z-50" style="display:none">
             <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="palette = false"></div>
             <div class="relative mx-auto mt-24 w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
-                <input x-ref="paletteInput" x-model="paletteQ" x-init="$watch('palette', v => v && $nextTick(() => $refs.paletteInput.focus()))"
+                <input x-ref="paletteInput" x-model="paletteQ" x-init="$watch('palette', v => v && $nextTick(() => $refs.paletteInput.focus())); $watch('paletteQ', () => palIdx = 0)"
                        placeholder="Modul suchen…" class="w-full px-5 py-4 text-sm border-0 border-b border-[#E4E9F0] focus:ring-0 focus:border-[#CA8A04]"
+                       @keydown.arrow-down.prevent="palIdx = Math.min(palIdx + 1, paletteItems().length - 1)"
+                       @keydown.arrow-up.prevent="palIdx = Math.max(palIdx - 1, 0)"
                        @keydown.enter.prevent="paletteGo()">
                 <div class="max-h-72 overflow-y-auto py-1">
-                    <template x-for="it in paletteItems()" :key="it.key">
+                    <template x-for="(it, pi) in paletteItems()" :key="it.key">
                         <a :href="'/app/' + it.key + (tenant ? '?tenant='+tenant : '')"
+                           :class="pi === palIdx ? 'bg-[#CA8A04]/10' : ''"
                            class="block px-5 py-2.5 text-sm text-[#1A2433] hover:bg-[#FAFBFC] transition">
                             <span class="inline-block w-4 text-center text-[11px] text-[#9CA3AF] mr-2" x-text="icons[it.key] || '·'"></span><span x-text="it.label"></span>
                             <span class="ml-2 text-[10px] text-[#9CA3AF] tracking-wide" x-text="it.group"></span>
@@ -859,7 +862,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, myOnly: false, linkCopied: false, jsonCopied: false, lastLoad: null, dark: document.documentElement.classList.contains('dark'),
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false,
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '',
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0,
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {},
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
@@ -945,7 +948,7 @@ function workspace(initial) {
             return q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
         },
         paletteGo() {
-            const it = this.paletteItems()[0];
+            const it = this.paletteItems()[this.palIdx] || this.paletteItems()[0];
             if (it) location.href = '/app/' + it.key + (this.tenant ? '?tenant=' + this.tenant : '');
         },
         insightSection(code) { return ({tasks_overdue:'tasks',compliance_rate_low:'instructions',high_risks_open:'risk-assessments',deadlines_overdue:'deadlines',tenders_open:'tenders'})[code] || null; },
