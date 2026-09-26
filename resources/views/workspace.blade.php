@@ -1230,6 +1230,7 @@ function workspace(initial) {
             if (p.get('my')) this.myOnly = true;
             if (p.get('unassigned')) this.unassignedOnly = true;
             if (p.get('unread')) this.unreadOnly = true;
+            if (p.get('kind')) this.kindFilter = p.get('kind');
             if (p.get('group')) this.groupBy = p.get('group');
             if (p.get('eg')) this.evGroup = p.get('eg');
             this._urlSort = p.get('sort') || null;
@@ -1243,6 +1244,7 @@ function workspace(initial) {
             this.$watch('myOnly', () => this.syncUrl());
             this.$watch('unassignedOnly', () => this.syncUrl());
             this.$watch('unreadOnly', () => this.syncUrl());
+            this.$watch('kindFilter', () => this.syncUrl());
             this.$watch('evGroup', () => this.syncUrl());
             this.$watch('paletteQ', q => {
                 clearTimeout(this.globTimer); this.globHits = [];
@@ -1314,6 +1316,7 @@ function workspace(initial) {
             if (this.myOnly) url.searchParams.set('my', '1'); else url.searchParams.delete('my');
             if (this.unassignedOnly) url.searchParams.set('unassigned', '1'); else url.searchParams.delete('unassigned');
             if (this.unreadOnly) url.searchParams.set('unread', '1'); else url.searchParams.delete('unread');
+            if (this.kindFilter) url.searchParams.set('kind', this.kindFilter); else url.searchParams.delete('kind');
             if (this.groupBy) url.searchParams.set('group', this.groupBy); else url.searchParams.delete('group');
             if (this.evGroup) url.searchParams.set('eg', this.evGroup); else url.searchParams.delete('eg');
             history.replaceState(null, '', url);
