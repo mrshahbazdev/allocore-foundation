@@ -20,6 +20,7 @@ class NotificationController extends Controller
                 'kind' => $n->data['kind'] ?? null,
                 'title' => $n->data['title'] ?? '',
                 'due_at' => $n->data['due_at'] ?? null,
+                'entity_id' => $n->data['id'] ?? null,
                 'read' => $n->read_at !== null,
                 'created_at' => $n->created_at,
             ]);
