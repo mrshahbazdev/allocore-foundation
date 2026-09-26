@@ -76,6 +76,19 @@ class NotificationController extends Controller
         );
     }
 
+    public function stats(Request $request)
+    {
+        $muted = $request->user()->notification_muted ?? [];
+        $base = $request->user()->notifications();
+
+        return response()->json([
+            'total' => (clone $base)->count(),
+            'unread' => (clone $base)->whereNull('read_at')->count(),
+            'read' => (clone $base)->whereNotNull('read_at')->count(),
+            'muted' => $muted === [] ? 0 : (clone $base)->whereIn('data->kind', $muted)->count(),
+        ]);
+    }
+
     public function codes(Request $request)
     {
         return response()->json(
