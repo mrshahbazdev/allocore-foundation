@@ -165,7 +165,10 @@
                         <span x-show="overdueTotal() === 0 && (todayTotal() + unreadNotifs()) > 0" x-text="todayTotal() + unreadNotifs()" class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#CA8A04] text-[#0B0B0F] text-[9px] font-bold leading-4 text-center"></span>
                     </button>
                     <div x-show="notif" @click.outside="notif = false" class="absolute right-0 mt-1.5 w-72 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-2 z-30" style="display:none">
-                        <div class="px-3 pb-1.5 text-[10px] font-semibold tracking-widest text-[#9CA3AF]">BENACHRICHTIGUNGEN</div>
+                        <div class="px-3 pb-1.5 flex items-center justify-between">
+                            <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF]">BENACHRICHTIGUNGEN</span>
+                            <button x-show="unreadNotifs()" @click="markAllNotifsRead()" class="text-[10px] text-[#CA8A04] hover:underline">alle gelesen</button>
+                        </div>
                         <template x-for="n in dbNotifs">
                             <a :href="'/app/' + ({unterweisung:'instructions',pruefung:'inspections',frist:'deadlines',feststellung:'audit-findings',audit:'audits'}[n.kind] || 'dashboard') + '?tenant=' + tenant + '&open=' + encodeURIComponent(n.entity_id || '')" @click="n.read || markNotifRead(n)" class="px-3 py-1.5 flex items-start gap-2 text-xs hover:bg-[#FAFBFC]" :class="n.read && 'opacity-50'">
                                 <span class="w-1.5 h-1.5 mt-1 rounded-full shrink-0" :class="n.read ? 'bg-[#D1D5DB]' : 'bg-[#CA8A04]'"></span>
@@ -1449,6 +1452,9 @@ function workspace(initial) {
         },
         markNotifRead(n) {
             this.api('/api/v1/notifications/' + n.id + '/read', {method: 'POST'}).then(r => { if (r.ok) { n.read = true; } }).catch(() => {});
+        },
+        markAllNotifsRead() {
+            this.dbNotifs.filter(n => !n.read).forEach(n => this.markNotifRead(n));
         },
         loadSection(soft) {
             if (!this.tenant) { this.rows = null; return; }
