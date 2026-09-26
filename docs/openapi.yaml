@@ -3352,6 +3352,32 @@ paths:
         '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
         '404': {description: Not Found}
         '422': {description: Validation failed}
+    post:
+      tags: [users]
+      summary: POST /api/v1/users — Benutzer anlegen oder per email anhängen
+      description: Existiert ein User mit der E-Mail, werden ihm die Rollen im Tenant zugewiesen; sonst wird ein neuer User angelegt (ohne password wird initial_password generiert und einmalig zurückgegeben). Erfordert Permission roles.manage.
+      parameters:
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              properties:
+                name: {type: string}
+                email: {type: string, format: email}
+                password: {type: string, minLength: 8}
+                roles: {type: array, items: {type: string}}
+      responses:
+        '201': {description: Created}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '422': {description: Validation failed}
   /api/v1/audits:
     get:
       tags: [audits]
