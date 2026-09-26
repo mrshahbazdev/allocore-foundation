@@ -62,6 +62,24 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = $request->user();
+        if ($user) {
+            $teamIds = DB::table('model_has_roles')
+                ->where('model_type', User::class)
+                ->where('model_id', $user->id)
+                ->pluck('team_id');
+            foreach ($teamIds as $teamId) {
+                $event = new DomainEvent(
+                    type: 'user.logged_out',
+                    tenantId: (string) $teamId,
+                    subject: ['type' => 'user', 'id' => $user->id, 'title' => $user->name],
+                    payload: ['ip' => (string) $request->ip()],
+                );
+                $event->setMetaData(['tenant_id' => (string) $teamId]);
+                event($event);
+            }
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

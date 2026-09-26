@@ -40,7 +40,7 @@ Neue Modelle: nur in `WATCHED` eintragen — keine Änderung am Listener nötig.
 | `exec_report.*` | Executive | Executive-Reports |
 | `audit.*` / `audit_finding.*` | Audits | Audits und Feststellungen |
 | `user.added` / `user.roles_updated` / `user.removed` / `user.updated` / `user.password_changed` / `user.left` | Core | Mitglied angelegt, Rollen geändert, Mitglied entfernt, Profil geändert, Passwort geändert, Mandant verlassen (manuell emittiert, kein Eloquent-Event) |
-| `user.logged_in` | Core | Anmeldung — ein Event pro Mandant-Mitgliedschaft (Payload: `ip`) |
+| `user.logged_in` / `user.logged_out` | Core | An-/Abmeldung — ein Event pro Mandant-Mitgliedschaft (Payload: `ip`) |
 | `role.created` / `role.permissions_updated` / `role.deleted` | Core | Eigene Rolle angelegt, Rechte geändert, Rolle gelöscht (manuell emittiert) |
 | `tenant.created` / `tenant.updated` | Core | Mandant angelegt (Zentral-API) / umbenannt (manuell emittiert) |
 
