@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Tasks\Notifications\TaskAssigned;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Task extends Model
@@ -38,6 +39,18 @@ class Task extends Model
             'reminded_at' => 'datetime',
             'completed_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        $notify = function (Task $task) {
+            $actor = request()?->user();
+            if ($task->assignee_id && $actor && $actor->id !== $task->assignee_id) {
+                $task->assignee?->notify(new TaskAssigned($task));
+            }
+        };
+        static::created($notify);
+        static::updated(fn (Task $task) => $task->wasChanged('assignee_id') ? $notify($task) : null);
     }
 
     public function assignee(): BelongsTo
