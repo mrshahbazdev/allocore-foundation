@@ -20,7 +20,11 @@ class PruneNotifications extends Command
             ->where('created_at', '<', now()->subDays($days))
             ->delete();
 
-        $this->info("{$deleted} Benachrichtigung(en) geloescht (gelesen, > {$days} Tage).");
+        $keysDeleted = DB::table('insight_notifications')
+            ->where('created_at', '<', now()->subDays(60))
+            ->delete();
+
+        $this->info("{$deleted} Benachrichtigung(en) geloescht (gelesen, > {$days} Tage), {$keysDeleted} Insight-Dedupe-Key(s) (> 60 Tage).");
 
         return self::SUCCESS;
     }

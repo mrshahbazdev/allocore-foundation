@@ -1129,6 +1129,21 @@ class DataPlatformTest extends TestCase
         $this->assertNull(DB::table('notifications')->where('id', $ids[0])->first());
     }
 
+    public function test_notifications_prune_removes_old_insight_dedupe_keys(): void
+    {
+        $tenant = Tenant::create(['name' => 'PK GmbH']);
+        $this->acting($tenant);
+        DB::table('insight_notifications')->insert([
+            ['tenant_id' => $tenant->id, 'dedupe_key' => 'old', 'created_at' => now()->subDays(61), 'updated_at' => now()],
+            ['tenant_id' => $tenant->id, 'dedupe_key' => 'fresh', 'created_at' => now()->subDays(59), 'updated_at' => now()],
+        ]);
+
+        $this->artisan('notifications:prune')->assertSuccessful();
+
+        $this->assertNull(DB::table('insight_notifications')->where('dedupe_key', 'old')->first());
+        $this->assertNotNull(DB::table('insight_notifications')->where('dedupe_key', 'fresh')->first());
+    }
+
     public function test_notifications_prune_removes_old_read(): void
     {
         $tenant = Tenant::create(['name' => 'P GmbH']);
