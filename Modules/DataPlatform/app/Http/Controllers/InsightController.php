@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $objNoCat = $count('data_objects', fn ($q) => $q->whereNull('category')->orWhere('category', ''));
+        if ($objNoCat) {
+            $insights[] = $this->hit('info', 'data_objects_no_category', "{$objNoCat} Data-Lake-Objekt(e) ohne Kategorie.", ['count' => $objNoCat]);
+        }
+
+        $edgesNoRel = $count('graph_edges', fn ($q) => $q->whereNull('relation')->orWhere('relation', ''));
+        if ($edgesNoRel) {
+            $insights[] = $this->hit('info', 'graph_edges_no_relation', "{$edgesNoRel} Graph-Kante(n) ohne Relationsbezeichnung.", ['count' => $edgesNoRel]);
+        }
+
         $renewals = $count('instructions', fn ($q) => $q->where('status', 'completed')->whereNotNull('interval_months')->whereRaw('DATE_ADD(completed_at, INTERVAL interval_months MONTH) < ?', [now()]));
         if ($renewals) {
             $insights[] = $this->hit('warning', 'instructions_renewal_due', "{$renewals} Unterweisung(en) – Wiederholungsintervall überschritten.", ['count' => $renewals]);
