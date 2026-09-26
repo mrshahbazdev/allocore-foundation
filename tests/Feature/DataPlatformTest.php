@@ -468,6 +468,32 @@ class DataPlatformTest extends TestCase
         $this->assertContains('questions_unassigned', $codes);
     }
 
+    public function test_insights_reports_missing_reports_and_overlapping_leave(): void
+    {
+        $tenant = Tenant::create(['name' => 'Lücken GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/companies', ['name' => 'Ohne Bericht AG'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/tenders', ['title' => 'Ohne Bewerbung'], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $person = $this->postJson('/api/v1/persons', ['first_name' => 'Lea', 'last_name' => 'Fern'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $a = $this->postJson('/api/v1/leave-requests', ['person_id' => $person['id'], 'type' => 'vacation', 'starts_on' => now()->addDay()->toDateString(), 'ends_on' => now()->addDays(5)->toDateString()], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $b = $this->postJson('/api/v1/leave-requests', ['person_id' => $person['id'], 'type' => 'vacation', 'starts_on' => now()->addDays(3)->toDateString(), 'ends_on' => now()->addDays(8)->toDateString()], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->putJson("/api/v1/leave-requests/{$a['id']}", ['status' => 'approved'], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->putJson("/api/v1/leave-requests/{$b['id']}", ['status' => 'approved'], ['X-Tenant' => $tenant->id])->assertOk();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('fin_reports_missing', $codes);
+        $this->assertContains('tenders_no_applications', $codes);
+        $this->assertContains('leave_overlap', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
