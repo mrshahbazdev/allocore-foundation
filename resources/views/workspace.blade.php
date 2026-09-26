@@ -1446,7 +1446,7 @@ function workspace(initial) {
             this.api('/api/v1/notifications?limit=10').then(r => r.ok ? r.json() : []).then(d => {
                 const now = Date.now();
                 this.dbNotifs = (d || []).map(n => ({
-                    ...n, entity_id: n.data?.entity_id || '',
+                    ...n, entity_id: n.entity_id || n.data?.entity_id || '',
                     rel: (() => { const m = Math.round((now - new Date(n.created_at).getTime()) / 60000); return m < 60 ? 'vor ' + m + ' Min' : m < 1440 ? 'vor ' + Math.round(m / 60) + ' Std' : 'vor ' + Math.round(m / 1440) + ' T'; })()
                 }));
             }).catch(() => {});
