@@ -17,6 +17,7 @@ use Modules\Compliance\Models\Instruction;
 use Modules\Core\Models\Company;
 use Modules\CorporateDev\Models\Project;
 use Modules\Documents\Models\Document;
+use Modules\ExpertNetwork\Models\TenderApplication;
 use Tests\TestCase;
 
 class DataPlatformTest extends TestCase
@@ -653,6 +654,37 @@ class DataPlatformTest extends TestCase
         $this->assertContains('deadlines_no_subject', $codes);
         $this->assertContains('documents_no_version', $codes);
         $this->assertContains('documents_no_category', $codes);
+    }
+
+    public function test_insights_reports_expert_and_tender_gaps(): void
+    {
+        $tenant = Tenant::create(['name' => 'Bewerbung GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $person = $this->postJson('/api/v1/persons', ['first_name' => 'An', 'last_name' => 'Onym'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $expert = $this->postJson('/api/v1/expert-profiles', ['person_id' => $person['id'], 'status' => 'active'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $tender = $this->postJson('/api/v1/tenders', ['title' => 'Vergabe-Lücke'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $app = $this->postJson("/api/v1/tenders/{$tender['id']}/applications", ['expert_profile_id' => $expert['id']], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        tenancy()->initialize($tenant);
+        TenderApplication::whereKey($app['id'])->update(['created_at' => now()->subDays(20)]);
+        tenancy()->end();
+        $tender2 = $this->postJson('/api/v1/tenders', ['title' => 'Direktvergabe'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->putJson("/api/v1/tenders/{$tender2['id']}", ['status' => 'awarded'], ['X-Tenant' => $tenant->id])->assertOk();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('persons_no_contact', $codes);
+        $this->assertContains('expert_profiles_incomplete', $codes);
+        $this->assertContains('expert_profiles_no_rate', $codes);
+        $this->assertContains('applications_no_price', $codes);
+        $this->assertContains('applications_no_proposal', $codes);
+        $this->assertContains('applications_stale', $codes);
+        $this->assertContains('tenders_awarded_no_winner', $codes);
     }
 
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
