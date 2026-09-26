@@ -154,6 +154,7 @@ class DataPlatformTest extends TestCase
         $this->assertContains('audits_overdue', $codes);
         $this->assertContains('audits_starting_soon', $codes);
         $this->assertContains('audit_findings_due_soon', $codes);
+        $this->assertContains('audit_findings_unassigned', $codes);
     }
 
     public function test_nav_counts_returns_overdue_and_today(): void
