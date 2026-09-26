@@ -129,6 +129,27 @@ class RolesTest extends TestCase
         $this->assertContains('compliance.view', $res->json('permissions'));
     }
 
+    public function test_admin_can_remove_member_but_not_self(): void
+    {
+        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Remove GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+        $target = User::factory()->create();
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+        $target->assignRole('mitarbeiter');
+
+        $this->deleteJson("/api/v1/users/{$admin->id}", [], ['X-Tenant' => $tenant])
+            ->assertStatus(422);
+
+        $this->deleteJson("/api/v1/users/{$target->id}", [], ['X-Tenant' => $tenant])
+            ->assertNoContent();
+
+        $ids = collect($this->getJson('/api/v1/users', ['X-Tenant' => $tenant])->json())->pluck('id');
+        $this->assertNotContains($target->id, $ids);
+        $this->assertContains($admin->id, $ids);
+    }
+
     public function test_every_permission_domain_in_workspace_map_exists(): void
     {
         $this->postJson('/api/v1/tenants', ['name' => 'Perms GmbH'])->assertCreated();

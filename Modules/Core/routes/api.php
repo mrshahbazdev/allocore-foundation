@@ -28,6 +28,9 @@ Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(funct
     Route::put('users/{user}/roles', [RoleController::class, 'assign'])
         ->middleware('permission:roles.manage')
         ->name('users.roles.assign');
+    Route::delete('users/{user}', [RoleController::class, 'remove'])
+        ->middleware('permission:roles.manage')
+        ->name('users.remove');
 
     Route::post('demo-seed', function (Request $request) {
         Artisan::call('demo:seed', ['tenant' => (string) $request->header('X-Tenant')]);

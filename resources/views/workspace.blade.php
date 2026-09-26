@@ -814,8 +814,9 @@
                         </label>
                     </template>
                     <div x-show="!allRoles.length" class="text-xs text-[#9CA3AF]">Keine Rollen für diesen Mandanten.</div>
-                    <div class="flex justify-end" x-show="allRoles.length">
-                        <button @click="saveUserRoles()" :disabled="!userRoles.length" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40">Rollen speichern</button>
+                    <div class="flex items-center justify-between" x-show="allRoles.length">
+                        <button x-show="hasPerm('roles.manage') && detail && me && detail.id !== me.id" @click="removeMember()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/10" title="Mitglied aus diesem Mandanten entfernen">Entfernen</button>
+                        <button @click="saveUserRoles()" :disabled="!userRoles.length" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 ml-auto">Rollen speichern</button>
                     </div>
                     <div x-show="userPerms.length" class="pt-2">
                         <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5">BERECHTIGUNGEN</div>
@@ -1705,6 +1706,13 @@ function workspace(initial) {
             if (!this.detail) return;
             this.api('/api/v1/users/' + this.detail.id + '/roles', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({roles: this.userRoles})})
                 .then(r => { this.toast(r.ok ? 'Rollen gespeichert.' : 'Speichern fehlgeschlagen (HTTP ' + r.status + ')'); if (r.ok) this.loadUserRoles(this.detail.id); });
+        },
+        removeMember() {
+            if (!this.detail || !confirm((this.detail.name || 'Mitglied') + ' aus dem Mandanten entfernen?')) return;
+            this.api('/api/v1/users/' + this.detail.id, {method: 'DELETE'}).then(r => {
+                this.toast(r.ok || r.status === 204 ? 'Mitglied entfernt.' : 'Entfernen fehlgeschlagen (HTTP ' + r.status + ')');
+                if (r.ok || r.status === 204) { this.detail = null; this.loadSection(); }
+            });
         },
         loadAnswers(qid) {
             this.api('/api/v1/questions/' + qid).then(r => r.ok ? r.json() : {answers: []}).then(d => {
