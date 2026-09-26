@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $tNoBudget = $count('tenders', fn ($q) => $q->where('status', 'open')->whereNull('budget'));
+        if ($tNoBudget) {
+            $insights[] = $this->hit('info', 'tenders_no_budget', "{$tNoBudget} offene Ausschreibung(en) ohne Budgetangabe.", ['count' => $tNoBudget]);
+        }
+
+        $qNoExpert = $count('questions', fn ($q) => $q->where('status', 'open')->whereNull('expert_profile_id'));
+        if ($qNoExpert) {
+            $insights[] = $this->hit('info', 'questions_unassigned', "{$qNoExpert} offene Frage(n) ohne zugeordneten Experten.", ['count' => $qNoExpert]);
+        }
+
         $aiFailed = $count('ai_analyses', fn ($q) => $q->where('status', 'failed'));
         if ($aiFailed) {
             $insights[] = $this->hit('warning', 'ai_analyses_failed', "{$aiFailed} KI-Analyse(n) mit Fehlerstatus.", ['count' => $aiFailed]);
