@@ -206,6 +206,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $instrNoPerson = $count('instructions', fn ($q) => $q->whereIn('status', ['pending', 'overdue'])->whereNull('person_id'));
+        if ($instrNoPerson) {
+            $insights[] = $this->hit('warning', 'instructions_no_person', "{$instrNoPerson} offene Unterweisung(en) ohne zugewiesene Person.", ['count' => $instrNoPerson]);
+        }
+
         $machinesIdle = $count('machines', fn ($q) => $q->where('status', 'active')->whereNotExists(fn ($sub) => $sub->selectRaw(1)->from('production_orders')->whereColumn('production_orders.machine_id', 'machines.id')->whereIn('status', ['queued', 'running'])));
         if ($machinesIdle) {
             $insights[] = $this->hit('info', 'machines_idle', "{$machinesIdle} aktive Maschine(n) ohne eingeplanten Auftrag.", ['count' => $machinesIdle]);
