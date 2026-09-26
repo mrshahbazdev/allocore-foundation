@@ -107,6 +107,13 @@ class DataPlatformTest extends TestCase
         foreach ($updated->json('data') as $row) {
             $this->assertStringEndsWith('.updated', $row['event_properties']['type']);
         }
+
+        $grouped = $this->getJson('/api/v1/events?group=company', ['X-Tenant' => $tenant->id]);
+        $this->assertNotEmpty($grouped->json('data'));
+        foreach ($grouped->json('data') as $row) {
+            $this->assertStringStartsWith('company.', $row['event_properties']['type']);
+        }
+        $this->assertEmpty($this->getJson('/api/v1/events?group=task', ['X-Tenant' => $tenant->id])->json('data'));
     }
 
     public function test_events_endpoint_filters_by_id_cursors(): void
