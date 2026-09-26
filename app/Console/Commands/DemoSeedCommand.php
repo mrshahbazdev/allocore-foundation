@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Modules\Audits\Models\Audit;
+use Modules\Audits\Models\AuditFinding;
 use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\Inspection;
 use Modules\Compliance\Models\Instruction;
@@ -150,6 +152,15 @@ class DemoSeedCommand extends Command
         FinancialReport::firstOrCreate(
             ['company_id' => $company->id, 'period' => now()->format('Y-m')],
             ['revenue' => 210000, 'cashflow' => 42000, 'ebitda' => 38000, 'liquidity' => 135000]
+        );
+
+        $audit = Audit::firstOrCreate(
+            ['title' => 'Internes Audit Arbeitssicherheit 2026'],
+            ['type' => 'internal', 'standard' => 'ISO 45001', 'auditor' => 'Anna Auditor', 'company_id' => $company->id, 'responsible_id' => $user?->id, 'status' => 'planned', 'starts_on' => now()->addDays(10), 'ends_on' => now()->addDays(12)]
+        );
+        AuditFinding::firstOrCreate(
+            ['audit_id' => $audit->id, 'title' => 'Fehlende Gefährdungsbeurteilung Lager'],
+            ['description' => 'Für den Lagerbereich liegt keine aktuelle GB vor.', 'severity' => 'high', 'status' => 'open', 'due_at' => now()->addDays(21), 'responsible_id' => $user?->id]
         );
 
         $this->call('analytics:aggregate');

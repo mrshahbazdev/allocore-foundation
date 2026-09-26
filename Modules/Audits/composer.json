@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/audits",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Audits\\": "app/",
+            "Modules\\Audits\\Database\\Factories\\": "database/factories/",
+            "Modules\\Audits\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Audits\\Tests\\": "tests/"
+        }
+    }
+}
