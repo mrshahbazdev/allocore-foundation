@@ -1295,6 +1295,14 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertExactJson(['count' => 0]);
         $this->getJson('/api/v1/notifications/unread-count?muted=1', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson(['count' => 1]);
+
+        $user->notify(new Assigned('aufgabe', (string) Str::uuid(), 'x', now()->addDay()->toIso8601String()));
+        $user->notify(new Assigned('aufgabe', (string) Str::uuid(), 'y', now()->addDays(10)->toIso8601String()));
+
+        $this->getJson('/api/v1/notifications/unread-count?due_before='.now()->addDays(7)->toDateString(), ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['count' => 1]);
+        $this->getJson('/api/v1/notifications/unread-count?due_after='.now()->addDays(7)->toDateString(), ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['count' => 1]);
     }
 
     public function test_notifications_destroy_all_filters_by_code(): void
