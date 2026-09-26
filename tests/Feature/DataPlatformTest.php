@@ -1456,6 +1456,21 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertExactJson(['anmeldung', 'passwort_geaendert']);
     }
 
+    public function test_notifications_delete_read_honors_before_filter(): void
+    {
+        $tenant = Tenant::create(['name' => 'DB2 GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new PasswordChangedAlert('x'));
+        $user->notifications()->update(['read_at' => now()]);
+        $user->notifications()->first()->forceFill(['created_at' => now()->subDays(40)])->save();
+        $user->notify(new PasswordChangedAlert('y'));
+
+        $this->postJson('/api/v1/notifications/delete-read?before='.now()->subDays(30)->toDateString(), [], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJson(['deleted' => 1]);
+        $this->assertCount(1, $user->notifications()->get());
+    }
+
     public function test_notifications_codes_lists_distinct_codes(): void
     {
         $tenant = Tenant::create(['name' => 'NC GmbH']);
