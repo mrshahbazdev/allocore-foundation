@@ -173,6 +173,7 @@ class DataPlatformTest extends TestCase
 
         $this->assertContains('tasks_overdue', $codes);
         $this->assertContains('high_risks_open', $codes);
+        $this->assertContains('risks_no_measures', $codes);
         $this->assertContains('audits_overdue', $codes);
         $this->assertContains('audits_starting_soon', $codes);
         $this->assertContains('audit_findings_due_soon', $codes);
