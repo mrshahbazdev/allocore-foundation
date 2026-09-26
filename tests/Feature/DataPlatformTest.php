@@ -1441,6 +1441,20 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertExactJson(['anmeldung', 'passwort_geaendert']);
     }
 
+    public function test_notifications_codes_lists_distinct_codes(): void
+    {
+        $tenant = Tenant::create(['name' => 'NC GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new CriticalInsight($tenant->id, 'orders_overdue', 'x'));
+        $user->notify(new CriticalInsight($tenant->id, 'orders_overdue', 'y'));
+        $user->notify(new CriticalInsight($tenant->id, 'demo_seed', 'z'));
+        $user->notify(new PasswordChangedAlert('kein code'));
+
+        $this->getJson('/api/v1/notifications/codes', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['demo_seed', 'orders_overdue']);
+    }
+
     public function test_notifications_unread_filter_and_mark_unread(): void
     {
         $tenant = Tenant::create(['name' => 'NU GmbH']);
