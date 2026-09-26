@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Tenant;
+use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -108,7 +109,14 @@ Route::prefix('v1')->group(function () {
         return response()->json($tenant, 201);
     })->middleware('auth:sanctum');
 
-    Route::get('/tenants', fn () => response()->json(Tenant::paginate()))->middleware('auth:sanctum');
+    Route::get('/tenants', function (Request $request) {
+        $tenantIds = DB::table('model_has_roles')
+            ->where('model_type', User::class)
+            ->where('model_id', $request->user()->getAuthIdentifier())
+            ->pluck('team_id');
+
+        return response()->json(Tenant::whereIn('id', $tenantIds)->paginate());
+    })->middleware('auth:sanctum');
 
     // Tenant-scoped API surface — modules register their routes under this group.
     Route::middleware(['auth:sanctum', 'tenant.request'])->group(function () {
