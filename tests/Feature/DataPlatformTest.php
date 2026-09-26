@@ -1485,6 +1485,21 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertExactJson(['demo_seed', 'orders_overdue']);
     }
 
+    public function test_notifications_destroy_all_filters_by_after(): void
+    {
+        $tenant = Tenant::create(['name' => 'DA GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new PasswordChangedAlert('x'));
+        $user->notifications()->first()->forceFill(['created_at' => now()->subDays(40)])->save();
+        $user->notify(new PasswordChangedAlert('y'));
+
+        $this->deleteJson('/api/v1/notifications?after='.now()->subDays(30)->toDateString(), [], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJson(['deleted' => 1]);
+        $this->assertCount(1, $user->notifications()->get());
+        $this->assertLessThan(now()->subDays(30), $user->notifications()->first()->created_at);
+    }
+
     public function test_notifications_stats_counts(): void
     {
         $tenant = Tenant::create(['name' => 'NS GmbH']);
