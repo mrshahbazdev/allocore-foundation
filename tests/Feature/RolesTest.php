@@ -8,7 +8,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
+use Modules\Core\Notifications\NewLoginAlert;
 use Modules\DataPlatform\Events\DomainEvent;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -224,6 +226,20 @@ class RolesTest extends TestCase
             'notifiable_id' => $user->id,
             'notifiable_type' => User::class,
         ]);
+    }
+
+    public function test_login_from_new_ip_notifies_user(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create([
+            'password' => 'NeuPasswort123',
+            'last_login_ip' => '10.0.0.1',
+        ]);
+
+        $this->post('/login', ['email' => $user->email, 'password' => 'NeuPasswort123'],
+            ['REMOTE_ADDR' => '10.0.0.2']);
+
+        Notification::assertSentTo($user, NewLoginAlert::class);
     }
 
     public function test_email_change_resets_email_verified_at(): void

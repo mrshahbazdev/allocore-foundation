@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Modules\Core\Notifications\NewLoginAlert;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -28,7 +29,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $request->user()->forceFill(['last_login_at' => now()])->saveQuietly();
+        $user = $request->user();
+        $ip = (string) $request->ip();
+        if ($user->last_login_ip && $user->last_login_ip !== $ip) {
+            $user->notify(new NewLoginAlert($ip, $user->last_login_ip));
+        }
+        $user->forceFill(['last_login_at' => now(), 'last_login_ip' => $ip])->saveQuietly();
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
