@@ -1249,6 +1249,7 @@ function workspace(initial) {
             if (p.get('q')) this.query = p.get('q');
             if (p.get('status')) this.statusFilter = p.get('status');
             if (p.get('severity')) this.severityFilter = p.get('severity');
+            if (this.section === 'dashboard' && p.get('severity')) this.insightSev = p.get('severity');
             if (p.get('role')) this.roleFilter = p.get('role');
             if (p.get('overdue')) this.overdueOnly = true;
             if (p.get('dueSoon')) this.dueSoonOnly = true;
@@ -2135,6 +2136,7 @@ function workspace(initial) {
             return 'vor ' + Math.round(s / 86400) + ' T';
         },
         notifLink(n) {
+            if (n && n.kind === 'hinweis') return '/app/dashboard?tenant=' + this.tenant + '&severity=critical';
             if (!n || !n.entity_id) return null;
             const M = {unterweisung:'instructions',pruefung:'inspections',frist:'deadlines',feststellung:'audit-findings',audit:'audits',massnahme:'measures',aufgabe:'tasks',gefaehrdungsbeurteilung:'risk-assessments',projekt:'projects',auftrag:'production-orders',ausschreibung:'tenders',antwort:'questions',frage:'questions',urlaub:'leave-requests',rollen:'users',unterweisung_wiederholung:'instructions'};
             return M[n.kind] ? '/app/' + M[n.kind] + '?tenant=' + this.tenant + '&open=' + n.entity_id : null;
