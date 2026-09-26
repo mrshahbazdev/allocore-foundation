@@ -12,6 +12,7 @@ use Laravel\Sanctum\Sanctum;
 use Modules\ExpertNetwork\Notifications\AnswerAccepted;
 use Modules\ExpertNetwork\Notifications\ApplicationDecided;
 use Modules\ExpertNetwork\Notifications\QuestionAnswered;
+use Modules\ExpertNetwork\Notifications\TenderPublished;
 use Tests\TestCase;
 
 class ExpertNetworkTest extends TestCase
@@ -78,6 +79,27 @@ class ExpertNetworkTest extends TestCase
         ], ['X-Tenant' => $tenant->id])->assertCreated();
 
         Notification::assertSentTo($asker, QuestionAnswered::class);
+    }
+
+    public function test_new_tender_notifies_expert_managers(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Pub GmbH']);
+        $this->acting($tenant);
+
+        $berater = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $berater->assignRole('berater');
+        $kunde = User::factory()->create();
+        $kunde->assignRole('kunde');
+        tenancy()->end();
+        Sanctum::actingAs($this->acting($tenant));
+
+        $this->postJson('/api/v1/tenders', ['title' => 'Neue Ausschreibung'],
+            ['X-Tenant' => $tenant->id])->assertCreated();
+
+        Notification::assertSentTo($berater, TenderPublished::class);
+        Notification::assertNotSentTo($kunde, TenderPublished::class);
     }
 
     public function test_answer_acceptance_notifies_author(): void

@@ -4,7 +4,9 @@ namespace Modules\ExpertNetwork\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Modules\Core\Models\Company;
+use Modules\ExpertNetwork\Notifications\TenderPublished;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Tender extends Model
@@ -29,6 +31,25 @@ class Tender extends Model
             'deadline_at' => 'datetime',
             'reminded_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (Tender $tender) {
+            $actor = request()?->user();
+            if (! $actor) {
+                return;
+            }
+            $memberIds = DB::table('model_has_roles')
+                ->where('team_id', tenant()->getTenantKey())
+                ->where('model_type', User::class)
+                ->pluck('model_id');
+            User::whereIn('id', $memberIds)
+                ->where('id', '!=', $actor->id)
+                ->get()
+                ->filter(fn (User $u) => $u->hasPermissionTo('experts.manage'))
+                ->each(fn (User $u) => $u->notify(new TenderPublished($tender)));
+        });
     }
 
     public function company()
