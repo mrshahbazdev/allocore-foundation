@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\Tenant;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Modules\DataPlatform\Events\DomainEvent;
 
@@ -20,7 +21,36 @@ use Modules\DataPlatform\Events\DomainEvent;
 */
 
 Route::prefix('v1')->group(function () {
-    Route::get('/health', fn () => response()->json(['status' => 'ok', 'platform' => 'allocore-foundation']));
+    // Liveness + readiness: DB-Verbindung und ausstehende Migrationen prüfen.
+    Route::get('/health', function () {
+        $checks = [];
+        $ok = true;
+
+        try {
+            DB::connection()->selectOne('select 1');
+            $checks['database'] = 'ok';
+        } catch (Throwable $e) {
+            $checks['database'] = 'error';
+            $ok = false;
+        }
+
+        try {
+            $migrator = app('migrator');
+            $files = $migrator->getMigrationFiles($migrator->paths());
+            $ran = $migrator->getRepository()->getRan();
+            $pending = array_diff(array_keys($files), $ran);
+            $checks['migrations'] = count($pending) === 0 ? 'ok' : 'pending:'.count($pending);
+            $ok = $ok && count($pending) === 0;
+        } catch (Throwable $e) {
+            $checks['migrations'] = 'unknown';
+        }
+
+        return response()->json([
+            'status' => $ok ? 'ok' : 'degraded',
+            'platform' => 'allocore-foundation',
+            'checks' => $checks,
+        ], $ok ? 200 : 503);
+    });
 
     // Central: tenant (Unternehmen/Mandant) provisioning
     Route::post('/tenants', function (Request $request) {
