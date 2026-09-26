@@ -1196,6 +1196,19 @@
                     </div>
                 </div>
             </template>
+            <template x-if="me && me.muted_kinds && me.muted_kinds.length">
+                <div class="pt-2 border-t border-[#E4E9F0]">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[#8A97A6] mb-1.5">Stummgeschaltete Arten</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <template x-for="k in me.muted_kinds" :key="k">
+                            <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-[#0B0B0F]/5 text-[#5B6B7E]">
+                                <span x-text="NOTIF_KIND[k] || k"></span>
+                                <button @click="toggleMute(k)" class="text-[#8A97A6] hover:text-[#A6362E]" :title="'Stummschaltung für ' + k + ' aufheben'">×</button>
+                            </span>
+                        </template>
+                    </div>
+                </div>
+            </template>
             <template x-if="loginHistory.length">
                 <div class="pt-2 border-t border-[#E4E9F0]">
                     <p class="text-[10px] font-semibold uppercase tracking-wider text-[#8A97A6] mb-1.5">Anmelde-Verlauf</p>
