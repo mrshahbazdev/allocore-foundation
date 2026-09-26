@@ -13,6 +13,7 @@ class MachineController extends Controller
     {
         return Machine::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->withCount(['orders', 'orders as open_orders_count' => fn ($q) => $q->whereIn('status', ['queued', 'running'])])
             ->paginate(min(request()->integer('per_page', 200), 200));
     }

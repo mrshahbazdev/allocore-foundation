@@ -13,6 +13,7 @@ class StrategyController extends Controller
     {
         return Strategy::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->withCount('projects')
             ->paginate(min(request()->integer('per_page', 200), 200));
     }

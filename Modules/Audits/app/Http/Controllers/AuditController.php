@@ -13,6 +13,7 @@ class AuditController extends Controller
     {
         return Audit::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->q, fn ($q, $s) => $q->where('title', 'like', '%'.$s.'%'))
             ->when($request->type, fn ($q) => $q->where('type', $request->type))
             ->when($request->company_id, fn ($q) => $q->where('company_id', $request->company_id))
             ->withCount(['findings', 'findings as open_findings_count' => fn ($q) => $q->whereIn('status', ['open', 'in_progress'])])

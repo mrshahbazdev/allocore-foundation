@@ -13,6 +13,7 @@ class ProjectController extends Controller
     {
         return Project::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->when($request->strategy_id, fn ($q) => $q->where('strategy_id', $request->strategy_id))
             ->with('owner:id,name')
             ->withCount('measures')

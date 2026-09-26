@@ -13,6 +13,7 @@ class ParticipationController extends Controller
     {
         return Participation::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->with('company:id,name')
             ->paginate(min(request()->integer('per_page', 200), 200));
     }

@@ -11,6 +11,7 @@ class GraphEntityController extends Controller
     public function index(Request $request)
     {
         return GraphEntity::query()
+            ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->when($request->type, fn ($q, $t) => $q->where('type', $t))
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
