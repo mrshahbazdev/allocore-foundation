@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Modules\Core\Http\Controllers\CompanyController;
 use Modules\Core\Http\Controllers\PersonController;
@@ -47,6 +48,20 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v
     Route::delete('users/{user}', [RoleController::class, 'remove'])
         ->middleware('permission:roles.manage')
         ->name('users.remove');
+
+    Route::get('tenant', function (Request $request) {
+        $tenant = tenant();
+        $members = DB::table('model_has_roles')
+            ->where('team_id', (string) $tenant->getTenantKey())
+            ->count();
+
+        return response()->json([
+            'id' => (string) $tenant->getTenantKey(),
+            'name' => $tenant->name,
+            'members_count' => $members,
+            'created_at' => $tenant->created_at,
+        ]);
+    })->name('tenant.show');
 
     Route::put('tenant', function (Request $request) {
         $validated = $request->validate(['name' => ['required', 'string', 'max:255']]);
