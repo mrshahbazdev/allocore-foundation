@@ -75,9 +75,11 @@ class NotificationController extends Controller
 
     public function deleteRead(Request $request)
     {
+        $muted = $request->user()->notification_muted ?? [];
         $count = $request->user()->notifications()->whereNotNull('read_at')
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->input('kind')))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
+            ->when($request->boolean('muted') && $muted !== [], fn ($q) => $q->whereIn('data->kind', $muted))
             ->delete();
 
         return response()->json(['deleted' => $count]);
