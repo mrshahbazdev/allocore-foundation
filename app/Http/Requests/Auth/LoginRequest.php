@@ -2,13 +2,16 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Modules\Core\Notifications\FailedLoginAlert;
 
 class LoginRequest extends FormRequest
 {
@@ -65,6 +68,13 @@ class LoginRequest extends FormRequest
         }
 
         event(new Lockout($this));
+
+        $user = User::where('email', $this->string('email'))->first();
+        $cacheKey = 'login_lockout_notified:'.$this->throttleKey();
+        if ($user && ! Cache::has($cacheKey)) {
+            Cache::put($cacheKey, true, 600);
+            $user->notify(new FailedLoginAlert((string) $this->ip()));
+        }
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
