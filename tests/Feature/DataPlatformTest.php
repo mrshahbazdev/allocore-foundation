@@ -1252,6 +1252,19 @@ class DataPlatformTest extends TestCase
         $this->assertEquals(1, $other->fresh()->unreadNotifications()->count());
     }
 
+    public function test_notifications_index_filters_by_code(): void
+    {
+        $tenant = Tenant::create(['name' => 'CF GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new CriticalInsight($tenant->id, 'demo_seed', 'Hinweis 1'));
+        $user->notify(new CriticalInsight($tenant->id, 'orders_overdue', 'Hinweis 2'));
+
+        $res = $this->getJson('/api/v1/notifications?code=demo_seed', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $res);
+        $this->assertSame('Hinweis 1', $res[0]['title']);
+    }
+
     public function test_notifications_read_all_honors_kind_filter(): void
     {
         $tenant = Tenant::create(['name' => 'NK GmbH']);

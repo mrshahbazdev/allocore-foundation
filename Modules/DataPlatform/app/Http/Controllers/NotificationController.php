@@ -19,6 +19,7 @@ class NotificationController extends Controller
                 ? $q->whereIn('data->kind', $muted)
                 : $q->whereNotIn('data->kind', $muted))
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
+            ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get()
