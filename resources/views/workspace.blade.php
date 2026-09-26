@@ -92,7 +92,7 @@
             <div class="flex justify-end pr-4 -mb-1">
                 <button @click="toggleAllGroups()" class="text-[10px] text-[#4B5563] hover:text-[#9CA3AF] transition" :title="allCollapsed() ? 'Alle Gruppen aufklappen' : 'Alle Gruppen einklappen'" x-text="allCollapsed() ? '▸ alle auf' : '▾ alle zu'"></button>
             </div>
-            <template x-for="group in groups" :key="group.label">
+            <template x-for="group in visGroups()" :key="group.label">
                 <div class="mb-1">
                     <button @click="toggleGroup(group.label)"
                             class="w-full flex items-center justify-between px-5 pt-4 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280] hover:text-[#9CA3AF] transition">
@@ -1308,7 +1308,7 @@ function workspace(initial) {
         unreadNotifs() { return this.dbNotifs.filter(n => !n.read).length; },
         paletteItems() {
             const q = this.paletteQ.trim().toLowerCase();
-            const all = this.groups.flatMap(g => g.items.map(i => ({key: i.key, label: i.label, group: g.label})));
+            const all = this.visGroups().flatMap(g => g.items.map(i => ({key: i.key, label: i.label, group: g.label})));
             const acts = [];
             if (this.canCreate()) acts.push({key: null, action: 'create', label: '+ Neu: ' + this.title(), group: 'Aktion'});
             if (this.rows && this.section !== 'dashboard') acts.push({key: null, action: 'export', label: 'CSV exportieren', group: 'Aktion'}, {key: null, action: 'exportJson', label: 'JSON exportieren', group: 'Aktion'}, {key: null, action: 'reload', label: 'Liste neu laden', group: 'Aktion'}, {key: null, action: 'print', label: 'Liste drucken', group: 'Aktion'});
@@ -1985,11 +1985,14 @@ function workspace(initial) {
             return Object.entries(m).sort((a,b) => String(a[1]).localeCompare(String(b[1]), 'de'));
         },
         hasPerm(p) { return !this.me || !Array.isArray(this.me.permissions) || this.me.permissions.includes(p); },
-        managePerm() {
-            const M = {companies:'companies',persons:'persons',documents:'documents',tasks:'tasks',instructions:'compliance',inspections:'compliance',deadlines:'compliance','risk-assessments':'compliance','operating-instructions':'compliance','expert-profiles':'experts',questions:'experts',tenders:'experts',strategies:'projects',projects:'projects',measures:'projects',portfolios:'investments',investments:'investments',participations:'participations',machines:'production','production-orders':'production','leave-requests':'hr','financial-reports':'finance',audits:'audits','audit-findings':'audits','data-objects':'datalake','ai-analyses':'ai','graph-entities':'graph','graph-edges':'graph',users:'roles'};
-            return M[this.section] || null;
+        permDom(key) {
+            const M = {companies:'companies',persons:'persons',documents:'documents',tasks:'tasks',instructions:'compliance',inspections:'compliance',deadlines:'compliance','risk-assessments':'compliance','operating-instructions':'compliance',expert-profiles:'experts',questions:'experts',tenders:'experts',strategies:'projects',projects:'projects',measures:'projects',portfolios:'investments',investments:'investments',participations:'participations',machines:'production','production-orders':'production','leave-requests':'hr','financial-reports':'finance',audits:'audits','audit-findings':'audits','data-objects':'datalake','ai-analyses':'ai','graph-entities':'graph','graph-edges':'graph',users:'roles',events:'metrics',executive:'executive','exec-reports':'executive'};
+            return M[key] || null;
         },
+        managePerm() { return this.permDom(this.section); },
+        canView(key) { if (key === 'users' || key === 'dashboard') return true; const p = this.permDom(key); return !p || this.hasPerm(p + '.view'); },
         canManage() { const p = this.managePerm(); return !p || this.hasPerm(p + '.manage'); },
+        visGroups() { return this.groups.map(g => ({...g, items: g.items.filter(i => this.canView(i.key))})).filter(g => g.items.length); },
         writable() { return !['events','ai-analyses','metrics','users'].includes(this.section) && this.canManage(); },
         canEdit() { return this.writable() && this.section !== 'data-objects'; },
         canCreate() { return this.section === 'ai-analyses' ? this.hasPerm('ai.manage') : (this.section === 'users' ? this.hasPerm('roles.manage') : this.writable()); },
