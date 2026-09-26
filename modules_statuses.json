@@ -1,18 +1,19 @@
 {
+    "Ai": true,
+    "Audits": true,
     "Compliance": true,
     "Core": true,
     "CorporateDev": true,
+    "DataLake": true,
     "DataPlatform": true,
     "Documents": true,
+    "Executive": true,
     "ExpertNetwork": true,
     "Finance": true,
     "Hr": true,
     "Investments": true,
+    "KnowledgeGraph": true,
     "Participations": true,
     "Production": true,
-    "Tasks": true,
-    "DataLake": true,
-    "KnowledgeGraph": true,
-    "Ai": true,
-    "Executive": true
+    "Tasks": true
 }

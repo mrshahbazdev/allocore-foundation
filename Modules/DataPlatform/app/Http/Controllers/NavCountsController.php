@@ -31,6 +31,8 @@ class NavCountsController extends Controller
         'production-orders' => 'production_orders',
         'leave-requests' => 'leave_requests',
         'financial-reports' => 'financial_reports',
+        'audits' => 'audits',
+        'audit-findings' => 'audit_findings',
     ];
 
     private const DUE_KEYS = ['due_at', 'deadline', 'deadline_at', 'ends_on', 'ends_at', 'due_date', 'end_date', 'next_due_at', 'review_at', 'scheduled_at'];
@@ -39,8 +41,7 @@ class NavCountsController extends Controller
 
     public function index()
     {
-        $now = now();
-        $today = $now->toDateString();
+        $today = now()->toDateString();
         $tid = tenancy()->initialized ? tenant()->getTenantKey() : null;
         $out = [];
 
@@ -60,7 +61,7 @@ class NavCountsController extends Controller
                 ));
 
             $out[$key] = [
-                $base()->where($due, '<', $now)->count(),
+                $base()->whereDate($due, '<', $today)->count(),
                 $base()->whereDate($due, $today)->count(),
             ];
         }

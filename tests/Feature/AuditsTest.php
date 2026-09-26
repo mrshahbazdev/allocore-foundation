@@ -1,0 +1,78 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Tenant;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
+
+class AuditsTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private function acting(Tenant $tenant): User
+    {
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        return $user;
+    }
+
+    public function test_audit_crud_and_findings_scoped(): void
+    {
+        $tenantA = Tenant::create(['name' => 'A GmbH']);
+        $tenantB = Tenant::create(['name' => 'B GmbH']);
+        $user = $this->acting($tenantA);
+
+        $audit = $this->postJson('/api/v1/audits', [
+            'title' => 'Internes Audit Q4', 'type' => 'internal', 'standard' => 'ISO 9001',
+        ], ['X-Tenant' => $tenantA->id])->assertCreated()->json();
+
+        $finding = $this->postJson('/api/v1/audit-findings', [
+            'audit_id' => $audit['id'], 'title' => 'Fehlende GB', 'severity' => 'high',
+            'due_at' => now()->addDays(10)->toDateString(),
+        ], ['X-Tenant' => $tenantA->id])->assertCreated()->json();
+
+        $this->putJson('/api/v1/audit-findings/'.$finding['id'], ['status' => 'resolved'], ['X-Tenant' => $tenantA->id])
+            ->assertOk()->assertJsonPath('status', 'resolved');
+
+        $this->getJson('/api/v1/audits?status=planned', ['X-Tenant' => $tenantA->id])
+            ->assertOk()->assertJsonCount(1, 'data');
+
+        // audit-FK muss zum Tenant gehören: Audit aus B nicht referenzierbar
+        $auditB = $this->postJson('/api/v1/audits', ['title' => 'B Audit'], ['X-Tenant' => $tenantB->id])->assertCreated()->json();
+        Sanctum::actingAs(User::find($user->id));
+        $this->postJson('/api/v1/audit-findings', ['audit_id' => $auditB['id'], 'title' => 'x'], ['X-Tenant' => $tenantA->id])
+            ->assertStatus(404);
+    }
+
+    public function test_audits_require_permission(): void
+    {
+        $tenant = Tenant::create(['name' => 'C GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('kunde');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/audits', ['title' => 'X'], ['X-Tenant' => $tenant->id])->assertForbidden();
+        $this->getJson('/api/v1/audits', ['X-Tenant' => $tenant->id])->assertForbidden();
+    }
+
+    public function test_auditor_role_can_manage_audits(): void
+    {
+        $tenant = Tenant::create(['name' => 'D GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('auditor');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/audits', ['title' => 'Externes Audit'], ['X-Tenant' => $tenant->id])->assertCreated();
+    }
+}

@@ -5,6 +5,8 @@ namespace Modules\DataPlatform\Support;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Modules\Ai\Models\AiAnalysis;
+use Modules\Audits\Models\Audit;
+use Modules\Audits\Models\AuditFinding;
 use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\Inspection;
 use Modules\Compliance\Models\Instruction;
@@ -72,6 +74,8 @@ class ActivityRecorder
         Measure::class => 'measure',
         AiAnalysis::class => 'ai_analysis',
         ExecReport::class => 'exec_report',
+        Audit::class => 'audit',
+        AuditFinding::class => 'audit_finding',
     ];
 
     public static function register(): void
