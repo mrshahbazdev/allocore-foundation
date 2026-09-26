@@ -570,6 +570,11 @@ paths:
       tags: [events]
       summary: "GET /api/v1/events/summary — {total, by_group, per_day (7d)} — ?since=/?until="
       parameters:
+        - name: days
+          in: query
+          required: false
+          schema: {type: integer}
+          description: Fenster für per_day in Tagen (Default 7, max 90)
         - name: X-Tenant
           in: header
           required: true
