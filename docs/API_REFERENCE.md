@@ -46,7 +46,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 
 `/instructions`, `/inspections`, `/deadlines` (morphTo subject — an beliebiges Objekt anhängbar),
 `/risk-assessments`, `/operating-instructions` — je `compliance.view`/`compliance.manage`.
-Listen-Filter: `?status=` + `?q=` (Titel-Suche); Inspections zusätzlich `?result=`, Risk-Assessments `?risk_level=`. Überfällig/`due_soon=1` (≤7 Tage) auf: `/deadlines` (open,due_at), `/instructions` (pending,due_at), `/inspections` (scheduled,scheduled_at), `/risk-assessments` (open,review_at), `/audit-findings` + `/measures` (open|in_progress,due_at).
+Listen-Filter: `?status=` + `?q=` (Titel-Suche); Inspections zusätzlich `?result=`, Risk-Assessments `?risk_level=`. Zuordnungs-Filter: `responsible_id` (`/deadlines`, `/audits`, `/audit-findings`, `/measures`), `person_id` (`/instructions`, `/inspections`, `/risk-assessments`, `/leave-requests`), `owner_id` (`/projects`). Überfällig/`due_soon=1` (≤7 Tage) auf: `/deadlines` (open,due_at), `/instructions` (pending,due_at), `/inspections` (scheduled,scheduled_at), `/risk-assessments` (open,review_at), `/audit-findings` + `/measures` (open|in_progress,due_at).
 
 `?q=` (LIKE-Suche auf Titel/Name) gibt es außerdem auf: `/tasks`, `/projects`, `/strategies`, `/measures`, `/audits`, `/audit-findings`, `/tenders`, `/questions`, `/expert-profiles` (headline), `/machines`, `/production-orders` (order_no+product), `/portfolios`, `/investments`, `/participations`, `/graph/entities`, `/companies`, `/persons`, `/documents`, `/data-objects`.
 `/audits`, `/audit-findings` — je `audits.view`/`audits.manage` (Auditor-Rolle hat beides).

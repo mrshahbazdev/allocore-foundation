@@ -17,6 +17,7 @@ class AuditController extends Controller
             ->when($request->type, fn ($q) => $q->where('type', $request->type))
             ->when($request->company_id, fn ($q) => $q->where('company_id', $request->company_id))
             ->withCount(['findings', 'findings as open_findings_count' => fn ($q) => $q->whereIn('status', ['open', 'in_progress'])])
+            ->when($request->responsible_id, fn ($q, $v) => $q->where('responsible_id', $v))
             ->with('company:id,name', 'responsible:id,name')
             ->orderByDesc('starts_on')
             ->paginate(min($request->integer('per_page', 200), 200));

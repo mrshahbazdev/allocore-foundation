@@ -495,4 +495,24 @@ class ComplianceTest extends TestCase
         $this->assertTrue($titles->contains('Bald fällig'));
         $this->assertFalse($titles->contains('Erledigt'));
     }
+
+    public function test_deadlines_filter_by_responsible_id(): void
+    {
+        $tenant = Tenant::create(['name' => 'Resp GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Verantwortlich', 'status' => 'open',
+            'due_at' => now()->addDays(5)->toDateString(),
+            'responsible_id' => $user->id,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Andere', 'status' => 'open',
+            'due_at' => now()->addDays(5)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $res = $this->getJson("/api/v1/deadlines?responsible_id={$user->id}", ['X-Tenant' => $tenant->id]);
+        $this->assertCount(1, $res->json('data'));
+        $this->assertSame('Verantwortlich', $res->json('data.0.title'));
+    }
 }

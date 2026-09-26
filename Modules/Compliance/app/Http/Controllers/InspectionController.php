@@ -17,6 +17,7 @@ class InspectionController extends Controller
             ->when($request->boolean('overdue'), fn ($q) => $q->where('status', 'scheduled')->where('scheduled_at', '<', now()))
             ->when($request->boolean('due_soon'), fn ($q) => $q->where('status', 'scheduled')->whereBetween('scheduled_at', [now(), now()->addDays(7)]))
             ->when($request->result, fn ($q) => $q->where('result', $request->result))
+            ->when($request->person_id, fn ($q, $v) => $q->where('person_id', $v))
             ->with('person:id,first_name,last_name', 'responsible:id,name')
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
