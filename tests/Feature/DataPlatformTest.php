@@ -124,6 +124,29 @@ class DataPlatformTest extends TestCase
         }
     }
 
+    public function test_events_endpoint_filters_by_since_and_until(): void
+    {
+        $tenant = Tenant::create(['name' => 'Zeit GmbH']);
+        $this->acting($tenant);
+
+        $this->postJson('/api/v1/companies', ['name' => 'Z1'], ['X-Tenant' => $tenant->id]);
+        DB::table('stored_events')->latest('id')->limit(1)
+            ->update(['created_at' => '2020-01-01 00:00:00']);
+
+        $this->postJson('/api/v1/companies', ['name' => 'Z2'], ['X-Tenant' => $tenant->id]);
+
+        $since = $this->getJson('/api/v1/events?since=2021-01-01', ['X-Tenant' => $tenant->id])->json('data');
+        foreach ($since as $row) {
+            $this->assertGreaterThanOrEqual('2021-01-01', $row['created_at']);
+        }
+
+        $until = $this->getJson('/api/v1/events?until=2021-01-01', ['X-Tenant' => $tenant->id])->json('data');
+        $this->assertNotEmpty($until);
+        foreach ($until as $row) {
+            $this->assertLessThanOrEqual('2021-01-01', $row['created_at']);
+        }
+    }
+
     public function test_events_endpoint_is_tenant_scoped(): void
     {
         $tenantA = Tenant::create(['name' => 'EA GmbH']);
