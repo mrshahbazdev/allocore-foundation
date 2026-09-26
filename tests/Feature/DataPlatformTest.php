@@ -1428,6 +1428,19 @@ class DataPlatformTest extends TestCase
         $this->assertNull($user->notifications()->where('data->kind', 'passwort_geaendert')->first()->read_at);
     }
 
+    public function test_notifications_kinds_lists_distinct_kinds(): void
+    {
+        $tenant = Tenant::create(['name' => 'NK GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new PasswordChangedAlert('x'));
+        $user->notify(new PasswordChangedAlert('y'));
+        $user->notify(new NewLoginAlert('1.2.3.4', null));
+
+        $this->getJson('/api/v1/notifications/kinds', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['anmeldung', 'passwort_geaendert']);
+    }
+
     public function test_notifications_unread_filter_and_mark_unread(): void
     {
         $tenant = Tenant::create(['name' => 'NU GmbH']);

@@ -61,6 +61,20 @@ class NotificationController extends Controller
         return response()->json(['count' => $q->count()]);
     }
 
+    public function kinds(Request $request)
+    {
+        return response()->json(
+            $request->user()->notifications()
+                ->whereRaw("JSON_CONTAINS_PATH(`data`, 'one', '$.kind')")
+                ->reorder()
+                ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`data`, '$.kind')) as kind")
+                ->distinct()
+                ->pluck('kind')
+                ->sort()
+                ->values()
+        );
+    }
+
     public function markRead(Request $request, string $id)
     {
         $n = $request->user()->notifications()->where('id', $id)->firstOrFail();
