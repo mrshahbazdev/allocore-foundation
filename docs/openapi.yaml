@@ -2194,7 +2194,7 @@ paths:
 
     delete:
       tags: [metrics]
-      summary: "DELETE /api/v1/notifications — Benachrichtigungen des Users löschen {deleted: n} (ohne Filter alle; kind=/read=1/unread=1/code=/muted=1/before=/after= grenzt ein)"
+      summary: "DELETE /api/v1/notifications — Benachrichtigungen des Users löschen {deleted: n} (ohne Filter alle; kind=/read=1/unread=1/code=/muted=1/before=/after=/due_before=/due_after= grenzt ein)"
       parameters:
         - name: kind
           in: query
@@ -2310,7 +2310,7 @@ paths:
   /api/v1/notifications/read-all:
     post:
       tags: [metrics]
-      summary: "POST /api/v1/notifications/read-all — alle ungelesenen als gelesen markieren (?kind=/?code=/?muted=1/?before=/?after= grenzt ein)"
+      summary: "POST /api/v1/notifications/read-all — alle ungelesenen als gelesen markieren (?kind=/?code=/?muted=1/?before=/?after=/due_before=/due_after= grenzt ein)"
       parameters:
         - name: X-Tenant
           in: header
@@ -2325,7 +2325,7 @@ paths:
   /api/v1/notifications/delete-read:
     post:
       tags: [metrics]
-      summary: "POST /api/v1/notifications/delete-read — alle gelesenen löschen, {deleted: n}; ?kind=/?code=/?muted=1/?before=/?after= grenzt ein"
+      summary: "POST /api/v1/notifications/delete-read — alle gelesenen löschen, {deleted: n}; ?kind=/?code=/?muted=1/?before=/?after=/due_before=/due_after= grenzt ein"
       parameters:
         - name: X-Tenant
           in: header

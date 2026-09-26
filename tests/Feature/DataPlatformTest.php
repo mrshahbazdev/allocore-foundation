@@ -1439,6 +1439,18 @@ class DataPlatformTest extends TestCase
         $res = $this->getJson('/api/v1/notifications?due_after='.now()->addDays(7)->toDateString(), ['X-Tenant' => $tenant->id])->assertOk()->json();
         $this->assertCount(1, $res);
         $this->assertSame('B', $res[0]['title']);
+
+        $this->postJson('/api/v1/notifications/read-all?due_before='.now()->addDays(7)->toDateString(), [], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->getJson('/api/v1/notifications/unread-count', ['X-Tenant' => $tenant->id])->assertJson(['count' => 2]);
+
+        $this->postJson('/api/v1/notifications/delete-read?due_after='.now()->addDays(7)->toDateString(), [], ['X-Tenant' => $tenant->id])->assertJson(['deleted' => 0]);
+
+        $bId = $user->notifications()->where('data->title', 'B')->value('id');
+        $this->postJson("/api/v1/notifications/{$bId}/read", [], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->postJson('/api/v1/notifications/delete-read?due_after='.now()->addDays(7)->toDateString(), [], ['X-Tenant' => $tenant->id])->assertJson(['deleted' => 1]);
+
+        $this->deleteJson('/api/v1/notifications?due_before='.now()->addDays(7)->toDateString(), [], ['X-Tenant' => $tenant->id])->assertJson(['deleted' => 1]);
+        $this->assertSame(1, $user->notifications()->count());
     }
 
     public function test_notifications_read_all_honors_kind_filter(): void
