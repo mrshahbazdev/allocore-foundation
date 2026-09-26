@@ -347,6 +347,33 @@ class DataPlatformTest extends TestCase
         $this->assertContains('instructions_overdue', $codes);
     }
 
+    public function test_insights_reports_deadlines_and_tasks_due(): void
+    {
+        $tenant = Tenant::create(['name' => 'Fristen GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Verstrichene Frist', 'due_at' => now()->subDays(2)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Baldige Frist', 'due_at' => now()->addDays(4)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/tasks', [
+            'title' => 'Fällige Aufgabe', 'due_at' => now()->addDays(3)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('deadlines_overdue', $codes);
+        $this->assertContains('deadlines_due_soon', $codes);
+        $this->assertContains('tasks_due_soon', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
