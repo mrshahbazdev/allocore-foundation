@@ -594,6 +594,32 @@ class DataPlatformTest extends TestCase
         $this->assertContains('orders_no_machine', $codes);
     }
 
+    public function test_insights_reports_missing_docs_and_persons(): void
+    {
+        $tenant = Tenant::create(['name' => 'Leerstand GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/instructions', ['title' => 'Ohne Dokument und Person'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/inspections', ['title' => 'Ohne Person'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $done = $this->postJson('/api/v1/inspections', ['title' => 'Ohne Ergebnis'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->putJson("/api/v1/inspections/{$done['id']}", ['status' => 'completed'], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->postJson('/api/v1/operating-instructions', ['title' => 'Entwurf ohne Dokument'], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('instructions_no_document', $codes);
+        $this->assertContains('instructions_no_person', $codes);
+        $this->assertContains('inspections_no_person', $codes);
+        $this->assertContains('inspections_no_result', $codes);
+        $this->assertContains('op_instructions_draft', $codes);
+        $this->assertContains('op_instructions_no_document', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
