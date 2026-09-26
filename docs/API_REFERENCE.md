@@ -27,7 +27,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 | GET | `/permissions` | (auth+tenant) alle bekannten Permissions (für Rollen-Editor) |
 | GET | `/tenant` | (auth+tenant) aktueller Mandant — `{id, name, members_count, created_at}` |
 | PUT | `/tenant` | (auth+tenant, `roles.manage`) aktuellen Mandanten umbenennen — `name` |
-| GET | `/users` | (auth+tenant) Mitglieder des Tenants (User mit zugewiesener Rolle) |
+| GET | `/users` | (auth+tenant) Mitglieder des Tenants (User mit zugewiesener Rolle) — Felder: `id`, `name`, `email`, `role_names[]`, `last_login_at`, `last_login_ip` |
 | POST | `/users` | (auth+tenant, `roles.manage`) Benutzer anlegen bzw. vorhandenen per `email` anhängen — `name`, `email`, optional `password` + `roles`; ohne `password` wird `initial_password` einmalig zurückgegeben; Abstufung des letzten `roles.manage`-Mitglieds → 422 |
 | GET/PUT | `/users/{user}/roles` | (auth+tenant, `roles.manage`) Rollen eines Users lesen/setzen; Lockout-Guard: letztes `roles.manage`-Mitglied kann nicht abgestuft werden → 422 |
 | DELETE | `/users/{user}` | (auth+tenant, `roles.manage`) Mitglied aus dem Mandanten entfernen (eigener Account ausgeschlossen, 422; letztes `roles.manage`-Mitglied → 422) |

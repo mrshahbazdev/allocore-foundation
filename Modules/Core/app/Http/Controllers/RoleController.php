@@ -34,7 +34,7 @@ class RoleController extends Controller
             ->where('model_type', User::class)
             ->pluck('model_id');
 
-        return User::whereIn('id', $userIds)->orderBy('name')->get(['id', 'name', 'email', 'last_login_at'])
+        return User::whereIn('id', $userIds)->orderBy('name')->get(['id', 'name', 'email', 'last_login_at', 'last_login_ip'])
             ->map(fn (User $u) => $u->setAttribute('role_names', $u->getRoleNames()));
     }
 
