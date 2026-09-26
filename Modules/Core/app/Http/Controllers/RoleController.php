@@ -163,7 +163,12 @@ class RoleController extends Controller
             'email' => ['sometimes', 'required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
         ]);
 
+        $emailChanged = array_key_exists('email', $validated)
+            && $validated['email'] !== $user->email;
         $user->update($validated);
+        if ($emailChanged) {
+            $user->forceFill(['email_verified_at' => null])->save();
+        }
         $this->recordMemberEvent('updated', $user);
 
         return response()->json([
