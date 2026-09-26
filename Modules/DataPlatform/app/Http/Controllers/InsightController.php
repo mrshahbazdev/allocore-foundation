@@ -67,6 +67,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'deadlines_due_soon', "{$dlSoon} Frist(en) innerhalb von 7 Tagen fällig.", ['count' => $dlSoon]);
         }
 
+        $dlUnassigned = $count('deadlines', fn ($q) => $q->where('status', 'open')->whereNull('responsible_id'));
+        if ($dlUnassigned) {
+            $insights[] = $this->hit('info', 'deadlines_unassigned', "{$dlUnassigned} offene Frist(en) ohne Verantwortlichen.", ['count' => $dlUnassigned]);
+        }
+
         $insp = $count('inspections', fn ($q) => $q->where('status', 'scheduled')->where('scheduled_at', '<', now()));
         if ($insp) {
             $insights[] = $this->hit('warning', 'inspections_overdue', "{$insp} geplante Prüfung(en) überfällig.", ['count' => $insp]);
@@ -77,6 +82,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'inspections_due_soon', "{$inspSoon} Prüfung(en) innerhalb von 7 Tagen geplant.", ['count' => $inspSoon]);
         }
 
+        $inspUnassigned = $count('inspections', fn ($q) => $q->where('status', 'scheduled')->whereNull('responsible_id'));
+        if ($inspUnassigned) {
+            $insights[] = $this->hit('info', 'inspections_unassigned', "{$inspUnassigned} geplante Prüfung(en) ohne Verantwortlichen.", ['count' => $inspUnassigned]);
+        }
+
         $instrSoon = $count('instructions', fn ($q) => $q->where('status', 'pending')->whereBetween('due_at', [now(), now()->addDays(7)]));
         if ($instrSoon) {
             $insights[] = $this->hit('info', 'instructions_due_soon', "{$instrSoon} Unterweisung(en) innerhalb von 7 Tagen fällig.", ['count' => $instrSoon]);
@@ -85,6 +95,11 @@ class InsightController extends Controller
         $instrOverdue = $count('instructions', fn ($q) => $q->where('status', 'pending')->where('due_at', '<', now()));
         if ($instrOverdue) {
             $insights[] = $this->hit('warning', 'instructions_overdue', "{$instrOverdue} Unterweisung(en) überfällig.", ['count' => $instrOverdue]);
+        }
+
+        $instrUnassigned = $count('instructions', fn ($q) => $q->where('status', 'pending')->whereNull('responsible_id'));
+        if ($instrUnassigned) {
+            $insights[] = $this->hit('info', 'instructions_unassigned', "{$instrUnassigned} offene Unterweisung(en) ohne Verantwortlichen.", ['count' => $instrUnassigned]);
         }
 
         $reviewsDue = $count('risk_assessments', fn ($q) => $q->where('status', 'open')->where('review_at', '<', now()));
@@ -117,6 +132,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'orders_due_soon', "{$ordersSoon} Produktionsauftrag/-aufträge — Fälligkeit in ≤7 Tagen.", ['count' => $ordersSoon]);
         }
 
+        $ordersUnassigned = $count('production_orders', fn ($q) => $q->whereIn('status', ['queued', 'running'])->whereNull('assigned_to'));
+        if ($ordersUnassigned) {
+            $insights[] = $this->hit('info', 'orders_unassigned', "{$ordersUnassigned} Produktionsauftrag/-aufträge ohne Zuständige.", ['count' => $ordersUnassigned]);
+        }
+
         $measuresOverdue = $count('measures', fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->where('due_at', '<', now()));
         if ($measuresOverdue) {
             $insights[] = $this->hit('warning', 'measures_overdue', "{$measuresOverdue} Maßnahme(n) überfällig.", ['count' => $measuresOverdue]);
@@ -140,6 +160,11 @@ class InsightController extends Controller
         $projectsSoon = $count('projects', fn ($q) => $q->whereIn('status', ['planned', 'active', 'on_hold'])->whereBetween('ends_at', [now(), now()->addDays(7)]));
         if ($projectsSoon) {
             $insights[] = $this->hit('info', 'projects_ending_soon', "{$projectsSoon} Projekt(e) — Enddatum in ≤7 Tagen.", ['count' => $projectsSoon]);
+        }
+
+        $projectsUnassigned = $count('projects', fn ($q) => $q->whereIn('status', ['planned', 'active', 'on_hold'])->whereNull('owner_id'));
+        if ($projectsUnassigned) {
+            $insights[] = $this->hit('info', 'projects_unassigned', "{$projectsUnassigned} Projekt(e) ohne Verantwortlichen.", ['count' => $projectsUnassigned]);
         }
 
         $machinesDown = $count('machines', fn ($q) => $q->where('status', 'maintenance'));
