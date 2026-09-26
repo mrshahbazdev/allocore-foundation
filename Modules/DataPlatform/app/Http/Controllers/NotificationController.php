@@ -89,7 +89,10 @@ class NotificationController extends Controller
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
-            ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')));
+            ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
+            ->when($request->filled('muted') && $muted !== [], fn ($q) => $request->boolean('muted')
+                ? $q->whereIn('data->kind', $muted)
+                : $q->whereNotIn('data->kind', $muted));
 
         return response()->json([
             'total' => (clone $base)->count(),
