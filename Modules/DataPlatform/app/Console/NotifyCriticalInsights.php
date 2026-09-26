@@ -16,6 +16,12 @@ class NotifyCriticalInsights extends Command
 
     public function handle(InsightService $insights): int
     {
+        // Dedupe-Keys älter als 30 Tage lösen sich auf — kehrt ein Hinweis zurück,
+        // wird er erneut gemeldet statt für immer unterdrückt.
+        DB::table('insight_notifications')
+            ->where('created_at', '<', now()->subDays(30))
+            ->delete();
+
         $tenantIds = DB::table('tenants')->pluck('id');
 
         foreach ($tenantIds as $tenantId) {
