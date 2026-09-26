@@ -105,6 +105,35 @@ class RolesTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_roles_validation_scoped_to_tenant(): void
+    {
+        $tenantA = $this->postJson('/api/v1/tenants', ['name' => 'ScopeA GmbH'])->json('id');
+        $tenantB = $this->postJson('/api/v1/tenants', ['name' => 'ScopeB GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+
+        tenancy()->initialize(Tenant::find($tenantB));
+        $roleB = new Role;
+        $roleB->name = 'spezialrolle';
+        $roleB->guard_name = 'web';
+        $roleB->team_id = $tenantB;
+        $roleB->save();
+
+        tenancy()->initialize(Tenant::find($tenantA));
+        $admin->assignRole('administrator');
+
+        $this->postJson('/api/v1/users', [
+            'name' => 'N', 'email' => 'n@scope.test', 'roles' => ['spezialrolle'],
+        ], ['X-Tenant' => $tenantA])->assertUnprocessable();
+
+        $target = User::factory()->create();
+        $this->putJson("/api/v1/users/{$target->id}/roles", ['roles' => ['spezialrolle']], ['X-Tenant' => $tenantA])
+            ->assertUnprocessable();
+
+        $this->postJson('/api/v1/users', [
+            'name' => 'N', 'email' => 'n@scope.test', 'roles' => ['mitarbeiter'],
+        ], ['X-Tenant' => $tenantA])->assertCreated();
+    }
+
     public function test_roleless_user_cannot_assign_roles(): void
     {
         $tenant = $this->postJson('/api/v1/tenants', ['name' => 'NoPerm GmbH'])->json('id');

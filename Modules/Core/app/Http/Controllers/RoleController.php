@@ -8,6 +8,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -120,7 +121,10 @@ class RoleController extends Controller
             'email' => ['required', 'email'],
             'password' => ['nullable', 'string', 'min:8'],
             'roles' => ['nullable', 'array'],
-            'roles.*' => ['string', 'exists:roles,name'],
+            'roles.*' => [
+                'string',
+                Rule::exists('roles', 'name')->where('team_id', tenant()->getTenantKey()),
+            ],
         ]);
 
         $roles = $validated['roles'] ?? ['mitarbeiter'];
@@ -150,7 +154,10 @@ class RoleController extends Controller
     {
         $validated = $request->validate([
             'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => ['string', 'exists:roles,name'],
+            'roles.*' => [
+                'string',
+                Rule::exists('roles', 'name')->where('team_id', tenant()->getTenantKey()),
+            ],
         ]);
 
         $user->syncRoles($validated['roles']);
