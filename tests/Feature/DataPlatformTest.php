@@ -716,6 +716,28 @@ class DataPlatformTest extends TestCase
         $this->assertContains('documents_no_category', $codes);
     }
 
+    public function test_documents_endpoint_filters_by_category_and_q(): void
+    {
+        $tenant = Tenant::create(['name' => 'Docs GmbH']);
+        $this->acting($tenant);
+
+        $this->postJson('/api/v1/documents', [
+            'title' => 'Betriebsanweisung Laser', 'category' => 'compliance',
+            'file' => UploadedFile::fake()->create('ba.pdf', 50, 'application/pdf'),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/documents', [
+            'title' => 'Vertrag Müller', 'category' => 'contract',
+            'file' => UploadedFile::fake()->create('v.pdf', 50, 'application/pdf'),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $this->getJson('/api/v1/documents?category=contract', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/documents?q=Laser', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/documents?q=nichts', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(0, 'data');
+    }
+
     public function test_insights_reports_expert_and_tender_gaps(): void
     {
         $tenant = Tenant::create(['name' => 'Bewerbung GmbH']);

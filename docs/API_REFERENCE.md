@@ -34,7 +34,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 
 | Pfad | Methode | Recht |
 |---|---|---|
-| `/documents`, `/documents/{id}` | CRUD | `documents.view` / `documents.manage` |
+| `/documents`, `/documents/{id}` | CRUD — Liste: `?category=`, `?q=` (Titel) | `documents.view` / `documents.manage` |
 | `/documents/{id}/versions` | POST (Upload neue Version) | `documents.manage` |
 | `/documents/{id}/download/{version?}` | GET | `documents.view` |
 
