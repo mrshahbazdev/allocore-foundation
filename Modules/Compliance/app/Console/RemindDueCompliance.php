@@ -31,12 +31,21 @@ class RemindDueCompliance extends Command
         $count += $this->remind(
             Instruction::query()->where('status', Instruction::STATUS_PENDING)->whereNotNull('due_at')->where('due_at', '<=', $horizon),
             'unterweisung',
+            'due_at',
+            'responsible_id',
+            'responsible',
+            'person_id',
+            'person',
         );
 
         $count += $this->remind(
             Inspection::query()->where('status', Inspection::STATUS_SCHEDULED)->whereNotNull('scheduled_at')->where('scheduled_at', '<=', $horizon),
             'pruefung',
             'scheduled_at',
+            'responsible_id',
+            'responsible',
+            'person_id',
+            'person',
         );
 
         $count += $this->remind(
@@ -79,16 +88,32 @@ class RemindDueCompliance extends Command
         return self::SUCCESS;
     }
 
-    private function remind($query, string $kind, string $dateColumn = 'due_at', string $responsibleColumn = 'responsible_id', string $relation = 'responsible'): int
+    private function remind($query, string $kind, string $dateColumn = 'due_at', string $responsibleColumn = 'responsible_id', string $relation = 'responsible', ?string $personColumn = null, ?string $personRelation = null): int
     {
-        $items = $query->whereNull('reminded_at')->whereNotNull($responsibleColumn)->with($relation)->get();
-
-        foreach ($items as $item) {
-            $item->{$relation}?->notify(new ComplianceDueSoon($item, $kind, $item->{$dateColumn}->format('d.m.Y H:i')));
-            $item->update(['reminded_at' => now()]);
+        $query->whereNull('reminded_at')->whereNotNull($responsibleColumn);
+        if ($personColumn) {
+            $query = $query->clone()->with([$relation, $personRelation])->get()
+                ->merge($query->clone()->whereNull($responsibleColumn)->whereNotNull($personColumn)->with($personRelation)->get());
+            $items = $query;
+        } else {
+            $items = $query->with($relation)->get();
         }
 
-        return $items->count();
+        $count = 0;
+        foreach ($items as $item) {
+            $user = $item->{$relation};
+            if (! $user && $personRelation && $item->{$personRelation}?->email) {
+                $user = User::where('email', $item->{$personRelation}->email)->first();
+            }
+            if (! $user) {
+                continue;
+            }
+            $user->notify(new ComplianceDueSoon($item, $kind, $item->{$dateColumn}->format('d.m.Y H:i')));
+            $item->update(['reminded_at' => now()]);
+            $count++;
+        }
+
+        return $count;
     }
 
     private function remindRiskReviews(Carbon $horizon): int
