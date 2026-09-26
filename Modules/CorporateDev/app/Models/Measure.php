@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Concerns\NotifiesAssigneeOnChange;
+use Modules\Core\Notifications\Assigned;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Measure extends Model
@@ -30,6 +31,25 @@ class Measure extends Model
     protected function casts(): array
     {
         return ['due_at' => 'date', 'reminded_at' => 'datetime'];
+    }
+
+    protected static function booted(): void
+    {
+        static::updated(function (Measure $measure) {
+            if (! $measure->wasChanged('status') || $measure->status !== 'done') {
+                return;
+            }
+            $owner = $measure->project?->owner;
+            $actor = request()?->user();
+            if (! $owner || (int) $owner->id === (int) $actor?->id) {
+                return;
+            }
+            $owner->notify(new Assigned(
+                kind: 'massnahme',
+                entityId: (string) $measure->getKey(),
+                title: 'Maßnahme abgeschlossen: '.$measure->title,
+            ));
+        });
     }
 
     public function project(): BelongsTo
