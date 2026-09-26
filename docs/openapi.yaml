@@ -565,6 +565,16 @@ paths:
         '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
         '404': {description: Not Found}
         '422': {description: Validation failed}
+  /api/v1/events/{id}:
+    get:
+      summary: GET /api/v1/events/{id} — einzelnes Ereignis des Mandanten (404 bei fremder ID)
+      tags: [DataPlatform]
+      parameters:
+        - {name: X-Tenant, in: header, required: true, schema: {type: string}}
+        - {name: id, in: path, required: true, schema: {type: integer}}
+      responses:
+        '200': {description: stored_events-Datensatz}
+        '404': {description: Nicht gefunden}
   /api/v1/events/summary:
     get:
       tags: [events]

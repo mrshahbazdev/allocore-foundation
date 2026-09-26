@@ -37,6 +37,19 @@ class EventController extends Controller
         return $page;
     }
 
+    /** Einzelnes Ereignis des aktuellen Mandanten lesen. */
+    public function show(int $event)
+    {
+        $row = DB::table('stored_events')
+            ->where('meta_data->tenant_id', tenant()->getTenantKey())
+            ->where('id', $event)
+            ->first();
+
+        abort_unless($row, 404);
+
+        return response()->json($row);
+    }
+
     /** Manuelles Event in den Mandanten-Event-Store schreiben (z. B. externe Integrationen). */
     public function store(Request $request)
     {
