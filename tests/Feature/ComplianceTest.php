@@ -171,6 +171,26 @@ class ComplianceTest extends TestCase
         });
     }
 
+    public function test_deadline_reminder_notifies_responsible(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Frist GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'IHK-Meldung',
+            'responsible_id' => $user->id,
+            'due_at' => now()->addHours(12)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, function (ComplianceDueSoon $n) {
+            return $n->kind === 'frist';
+        });
+    }
+
     public function test_project_reminder_notifies_owner(): void
     {
         Notification::fake();
