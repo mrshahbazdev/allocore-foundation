@@ -39,9 +39,12 @@ class NotificationController extends Controller
 
     public function markAllRead(Request $request)
     {
+        $muted = $request->user()->notification_muted ?? [];
+
         $request->user()->unreadNotifications()
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
+            ->when($request->boolean('muted') && $muted !== [], fn ($q) => $q->whereIn('data->kind', $muted))
             ->update(['read_at' => now()]);
 
         return response()->json(['status' => 'ok']);
