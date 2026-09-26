@@ -339,6 +339,36 @@ class RolesTest extends TestCase
         );
     }
 
+    public function test_new_member_notifies_roles_manage_users(): void
+    {
+        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'MJ GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+        $admin2 = User::factory()->create();
+        $worker = User::factory()->create();
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+        $admin2->assignRole('administrator');
+        $worker->assignRole('mitarbeiter');
+
+        $this->postJson('/api/v1/users', [
+            'name' => 'Neu Mitglied', 'email' => 'neu@example.test', 'roles' => ['kunde'],
+        ], ['X-Tenant' => $tenant])->assertCreated();
+
+        $this->assertTrue(
+            DB::table('notifications')
+                ->where('notifiable_id', $admin2->id)
+                ->where('data->kind', 'rollen')
+                ->where('data->title', 'like', 'Neues Mitglied:%')
+                ->exists()
+        );
+        $this->assertFalse(
+            DB::table('notifications')
+                ->where('notifiable_id', $worker->id)
+                ->where('data->title', 'like', 'Neues Mitglied:%')
+                ->exists()
+        );
+    }
+
     public function test_every_permission_domain_in_workspace_map_exists(): void
     {
         $this->postJson('/api/v1/tenants', ['name' => 'Perms GmbH'])->assertCreated();

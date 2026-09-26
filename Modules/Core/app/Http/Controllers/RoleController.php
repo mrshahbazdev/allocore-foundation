@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Modules\Core\Notifications\MemberJoined;
 use Modules\Core\Notifications\RolesChanged;
 use Modules\DataPlatform\Events\DomainEvent;
 use Spatie\Permission\Models\Permission;
@@ -155,6 +156,10 @@ class RoleController extends Controller
         $this->recordMemberEvent($created ? 'added' : 'roles_updated', $user, ['roles' => $roles]);
         $user->notify(new RolesChanged($user, $created ? 'added' : 'roles_updated', $roles));
 
+        if ($created) {
+            $this->notifyMemberJoined($request->user(), $user);
+        }
+
         $payload = $this->userRoles($user)->getData(true);
         if ($initialPassword && ! isset($validated['password'])) {
             $payload['initial_password'] = $initialPassword;
@@ -195,6 +200,20 @@ class RoleController extends Controller
         $user->notify(new RolesChanged($user, 'removed'));
 
         return response()->noContent();
+    }
+
+    private function notifyMemberJoined(User $actor, User $member): void
+    {
+        $memberIds = DB::table('model_has_roles')
+            ->where('team_id', tenant()->getTenantKey())
+            ->where('model_type', User::class)
+            ->pluck('model_id');
+
+        User::whereIn('id', $memberIds)
+            ->whereNotIn('id', [$actor->id, $member->id])
+            ->get()
+            ->filter(fn (User $u) => $u->hasPermissionTo('roles.manage'))
+            ->each(fn (User $u) => $u->notify(new MemberJoined($member)));
     }
 
     private function recordMemberEvent(string $action, User $user, array $payload = []): void
