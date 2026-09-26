@@ -19,13 +19,14 @@ class AuditFinding extends Model
 
     protected $fillable = [
         'audit_id', 'title', 'description', 'severity', 'status',
-        'due_at', 'responsible_id',
+        'due_at', 'responsible_id', 'reminded_at',
     ];
 
     protected function casts(): array
     {
         return [
             'due_at' => 'date',
+            'reminded_at' => 'datetime',
         ];
     }
 
