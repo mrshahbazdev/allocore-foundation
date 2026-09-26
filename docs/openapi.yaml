@@ -1525,7 +1525,7 @@ paths:
     put:
       tags: [roles]
       summary: PUT /api/v1/roles/{role} — Permissions einer Rolle setzen
-      description: Synct die Permission-Namen der Rolle im aktiven Tenant. Erfordert Permission roles.manage; fremde Mandanten liefern 404.
+      description: Synct die Permission-Namen der Rolle im aktiven Tenant. Erfordert Permission roles.manage; fremde Mandanten liefern 404. Wird `roles.manage` der letzten verbleibenden Manager-Rolle entzogen, liefert der Request 422 (Lockout-Guard).
       parameters:
         - name: X-Tenant
           in: header
@@ -1553,7 +1553,7 @@ paths:
     delete:
       tags: [roles]
       summary: DELETE /api/v1/roles/{role} — Rolle löschen
-      description: Löscht eine Rolle des aktiven Mandanten. System-Rollen (holding, administrator) liefern 422; fremde Mandanten 404. Erfordert Permission roles.manage.
+      description: Löscht eine Rolle des aktiven Mandanten. System-Rollen (holding, administrator) liefern 422; fremde Mandanten 404. Auch die letzte Rolle mit `roles.manage` (sofern kein Mitglied die Permission anderweitig behält) liefert 422. Erfordert Permission roles.manage.
       parameters:
         - name: X-Tenant
           in: header
@@ -1916,6 +1916,7 @@ paths:
     put:
       tags: [users]
       summary: PUT /api/v1/users/{user}/roles
+      description: Setzt die Rollen eines Mitglieds im aktiven Tenant. Rollen oberhalb der eigenen Berechtigungen liefern 403; die Abstufung des letzten `roles.manage`-Mitglieds liefert 422 (Lockout-Guard).
       parameters:
         - name: id
           in: path
@@ -3714,7 +3715,7 @@ paths:
     delete:
       tags: [users]
       summary: DELETE /api/v1/users/{user} — Mitglied aus dem Tenant entfernen
-      description: Entfernt die Rollen-Mitgliedschaft des Users im aktiven Tenant (model_has_roles). Der eigene Account kann nicht entfernt werden (422). Erfordert Permission roles.manage.
+      description: Entfernt die Rollen-Mitgliedschaft des Users im aktiven Tenant (model_has_roles). Der eigene Account kann nicht entfernt werden (422); auch das letzte `roles.manage`-Mitglied ist geschützt (422, Lockout-Guard). Erfordert Permission roles.manage.
       parameters:
         - name: X-Tenant
           in: header
