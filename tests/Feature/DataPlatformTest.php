@@ -17,9 +17,14 @@ use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\Instruction;
 use Modules\Core\Models\Company;
 use Modules\CorporateDev\Models\Project;
+use Modules\DataLake\Models\DataObject;
 use Modules\Documents\Models\Document;
+use Modules\ExpertNetwork\Models\Answer;
+use Modules\ExpertNetwork\Models\Question;
 use Modules\ExpertNetwork\Models\TenderApplication;
 use Modules\Hr\Models\LeaveRequest;
+use Modules\Investments\Models\Investment;
+use Modules\KnowledgeGraph\Models\GraphEdge;
 use Modules\Production\Models\Machine;
 use Modules\Production\Models\ProductionOrder;
 use Modules\Tasks\Models\Task;
@@ -768,6 +773,53 @@ class DataPlatformTest extends TestCase
         $this->assertContains('tenders_open', $codes);
     }
 
+    public function test_insights_reports_investment_question_and_lake_gaps(): void
+    {
+        $tenant = Tenant::create(['name' => 'Kapital GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $portfolio = $this->postJson('/api/v1/portfolios', ['name' => 'Buch I'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/investments', ['portfolio_id' => $portfolio['id'], 'name' => 'Ohne Wert', 'cost_basis' => 1000], ['X-Tenant' => $tenant->id])->assertCreated();
+        $inv = $this->postJson('/api/v1/investments', ['portfolio_id' => $portfolio['id'], 'name' => 'Alt bewertet', 'cost_basis' => 1000, 'current_value' => 1200], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $part = $this->postJson('/api/v1/participations', ['name' => 'Exit AG', 'stake_pct' => 25], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->putJson("/api/v1/participations/{$part['id']}", ['status' => 'exited'], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->postJson('/api/v1/projects', ['name' => 'Herrenlos'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $q = $this->postJson('/api/v1/questions', ['title' => 'Offen alt'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $q2 = $this->postJson('/api/v1/questions', ['title' => 'Beantwortet leer'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->putJson("/api/v1/questions/{$q2['id']}", ['status' => 'answered'], ['X-Tenant' => $tenant->id])->assertOk();
+        $q3 = $this->postJson('/api/v1/questions', ['title' => 'Nur Antwort'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->putJson("/api/v1/questions/{$q3['id']}", ['status' => 'answered'], ['X-Tenant' => $tenant->id])->assertOk();
+        $e1 = $this->postJson('/api/v1/graph-entities', ['type' => 'company', 'name' => 'A'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $e2 = $this->postJson('/api/v1/graph-entities', ['type' => 'person', 'name' => 'B'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $edge = $this->postJson('/api/v1/graph-edges', ['from_entity_id' => $e1['id'], 'to_entity_id' => $e2['id'], 'relation' => 'works_at'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $obj = $this->post('/api/v1/data-objects', ['name' => 'Ohne Kategorie', 'file' => UploadedFile::fake()->create('d.txt', 2)], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+
+        tenancy()->initialize($tenant);
+        Investment::whereKey($inv['id'])->update(['valued_at' => now()->subDays(100)]);
+        Question::whereKey($q['id'])->update(['created_at' => now()->subDays(20)]);
+        Answer::create(['question_id' => $q3['id'], 'body' => 'So geht es']);
+        GraphEdge::whereKey($edge['id'])->update(['relation' => '']);
+        DataObject::whereKey($obj['id'])->update(['category' => null]);
+        tenancy()->end();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('investments_no_value', $codes);
+        $this->assertContains('investments_stale_value', $codes);
+        $this->assertContains('participations_exited_with_stake', $codes);
+        $this->assertContains('projects_no_owner', $codes);
+        $this->assertContains('questions_stale', $codes);
+        $this->assertContains('questions_no_answers', $codes);
+        $this->assertContains('questions_no_accepted', $codes);
+        $this->assertContains('data_objects_no_category', $codes);
+        $this->assertContains('graph_edges_no_relation', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
@@ -832,9 +884,9 @@ class DataPlatformTest extends TestCase
         $fremdId = DB::table('graph_entities')->insertGetId(['tenant_id' => $other->id, 'type' => 'company', 'name' => 'Acme Fremd GmbH']);
         $fremdObj = DB::table('data_objects')->insertGetId(['tenant_id' => $other->id, 'name' => 'Acme Fremd.pdf', 'path' => 'fremd.pdf']);
         $res = $this->getJson('/api/v1/search?q=Acme', ['X-Tenant' => $tenant->id])->assertOk()->json();
-        $ids = collect($res)->pluck('id')->all();
-        $this->assertNotContains($fremdId, $ids);
-        $this->assertNotContains($fremdObj, $ids);
+        $bySection = collect($res)->mapToGroups(fn ($r) => [$r['section'] => $r['id']]);
+        $this->assertNotContains($fremdId, $bySection->get('graph-entities', collect())->all());
+        $this->assertNotContains($fremdObj, $bySection->get('data-objects', collect())->all());
 
         $this->getJson('/api/v1/search?q=a', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson([]);
