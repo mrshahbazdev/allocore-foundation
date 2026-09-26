@@ -13,6 +13,7 @@ class DeadlineController extends Controller
     {
         return Deadline::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->q, fn ($q, $s) => $q->where('title', 'like', '%'.$s.'%'))
             ->with('responsible:id,name')
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
