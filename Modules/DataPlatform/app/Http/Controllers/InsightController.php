@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $tasksDoneNoStamp = $count('tasks', fn ($q) => $q->where('status', 'done')->whereNull('completed_at'));
+        if ($tasksDoneNoStamp) {
+            $insights[] = $this->hit('info', 'tasks_done_no_stamp', "{$tasksDoneNoStamp} erledigte Aufgabe(n) ohne Erledigt-Zeitpunkt.", ['count' => $tasksDoneNoStamp]);
+        }
+
+        $dataObjectsEmpty = $count('data_objects', fn ($q) => $q->where('size_bytes', 0));
+        if ($dataObjectsEmpty) {
+            $insights[] = $this->hit('info', 'data_objects_empty', "{$dataObjectsEmpty} Data-Lake-Objekt(e) mit Größe 0 B.", ['count' => $dataObjectsEmpty]);
+        }
+
         $auditsNoAuditor = $count('audits', fn ($q) => $q->whereIn('status', ['planned', 'in_progress'])->whereNull('auditor'));
         if ($auditsNoAuditor) {
             $insights[] = $this->hit('warning', 'audits_no_auditor', "{$auditsNoAuditor} geplante/laufende(s) Audit(s) ohne benannten Auditor.", ['count' => $auditsNoAuditor]);
