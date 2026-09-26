@@ -1513,6 +1513,30 @@ class DataPlatformTest extends TestCase
         $this->assertSame(1, $user->notifications()->count());
     }
 
+    public function test_notifications_batch_ops(): void
+    {
+        $tenant = Tenant::create(['name' => 'NB GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new Assigned('aufgabe', 'e1', 'Eins'));
+        $user->notify(new Assigned('aufgabe', 'e2', 'Zwei'));
+        $user->notify(new Assigned('aufgabe', 'e3', 'Drei'));
+        $ids = $user->notifications()->where('data->title', '!=', 'Drei')->pluck('id')->all();
+
+        $this->postJson('/api/v1/notifications/batch', ['ids' => $ids, 'action' => 'read'], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJson(['updated' => 2]);
+        $this->assertSame(2, $user->notifications()->whereNotNull('read_at')->count());
+
+        $this->postJson('/api/v1/notifications/batch', ['ids' => $ids, 'action' => 'delete'], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJson(['updated' => 2]);
+        $this->assertSame(1, $user->notifications()->count());
+
+        $this->postJson('/api/v1/notifications/batch', ['ids' => ['nonexistent'], 'action' => 'read'], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJson(['updated' => 0]);
+        $this->postJson('/api/v1/notifications/batch', ['ids' => $ids, 'action' => 'bogus'], ['X-Tenant' => $tenant->id])
+            ->assertStatus(422);
+    }
+
     public function test_notifications_read_all_honors_kind_filter(): void
     {
         $tenant = Tenant::create(['name' => 'NK GmbH']);
