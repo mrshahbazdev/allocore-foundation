@@ -206,6 +206,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $tendersNoApps = $count('tenders', fn ($q) => $q->where('status', 'open')->whereNotExists(fn ($sub) => $sub->selectRaw(1)->from('tender_applications')->whereColumn('tender_applications.tender_id', 'tenders.id')));
+        if ($tendersNoApps) {
+            $insights[] = $this->hit('info', 'tenders_no_applications', "{$tendersNoApps} Ausschreibung(en) ohne Bewerbung — Experten direkt ansprechen.", ['count' => $tendersNoApps]);
+        }
+
         $strategiesEnding = $count('strategies', fn ($q) => $q->where('status', 'active')->whereBetween('ends_at', [now(), now()->addDays(7)]));
         if ($strategiesEnding) {
             $insights[] = $this->hit('info', 'strategies_ending_soon', "{$strategiesEnding} Strategie(n) — Enddatum in ≤7 Tagen.", ['count' => $strategiesEnding]);
