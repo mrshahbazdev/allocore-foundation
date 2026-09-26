@@ -92,7 +92,7 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 | POST `/notifications/delete-read` | `metrics.view` | Alle gelesenen Benachrichtigungen löschen — `{deleted: n}` |
 | `/notifications/unread-count` | `metrics.view` | Anzahl ungelesener Benachrichtigungen: `{count}` — stummgeschaltete Arten (`PUT /me/notification-prefs`) werden nicht mitgezählt; `include_muted=1` liefert die Gesamtzahl; `kind=` nur eine Art zählen |
 | DELETE `/notifications/{id}` | `metrics.view` | Einzelne Benachrichtigung löschen (404 bei fremder) |
-| DELETE `/notifications` | `metrics.view` | Benachrichtigungen des Users löschen — `{deleted: n}`; ohne Filter alle, mit `?kind=`/ `?read=1` / `?unread=1` / `?code=` nur passende |
+| DELETE `/notifications` | `metrics.view` | Benachrichtigungen des Users löschen — `{deleted: n}`; ohne Filter alle, mit `?kind=`/ `?read=1` / `?unread=1` / `?code=` / `?muted=1` nur passende |
 | POST `/demo-seed` | `roles.manage` | Demodaten für den aktuellen Tenant laden (idempotent; wie `php artisan demo:seed {tenant}`) |
 
 ## DataLake (`datalake`) — Layer 4
