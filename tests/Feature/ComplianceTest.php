@@ -213,6 +213,32 @@ class ComplianceTest extends TestCase
         });
     }
 
+    public function test_instruction_completion_notifies_linked_person_user(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'UWDone GmbH']);
+        $this->actingWithTenant($tenant);
+        $instructed = User::factory()->create();
+
+        $this->postJson('/api/v1/persons', [
+            'first_name' => 'Erika',
+            'last_name' => 'Fertig',
+            'email' => $instructed->email,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $personId = $this->getJson('/api/v1/persons', ['X-Tenant' => $tenant->id])->json('data.0.id');
+
+        $this->postJson('/api/v1/instructions', [
+            'title' => 'Ersthelfer',
+            'person_id' => $personId,
+            'due_at' => now()->addDay()->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $id = $this->getJson('/api/v1/instructions', ['X-Tenant' => $tenant->id])->json('data.0.id');
+
+        $this->putJson("/api/v1/instructions/{$id}", ['status' => 'completed'], ['X-Tenant' => $tenant->id])->assertOk();
+
+        Notification::assertSentToTimes($instructed, Assigned::class, 2);
+    }
+
     public function test_risk_assessment_creation_notifies_linked_assessor(): void
     {
         Notification::fake();

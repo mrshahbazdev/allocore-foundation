@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Core\Concerns\NotifiesAssigneeOnChange;
 use Modules\Core\Concerns\NotifiesLinkedUserOnCreate;
+use Modules\Core\Concerns\NotifiesLinkedUserOnStatus;
 use Modules\Core\Models\Person;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
@@ -14,6 +15,13 @@ class Inspection extends Model
     use BelongsToTenant;
     use NotifiesAssigneeOnChange;
     use NotifiesLinkedUserOnCreate;
+    use NotifiesLinkedUserOnStatus;
+
+    protected const DONE_FIELD = 'status';
+
+    protected const DONE_VALUE = 'completed';
+
+    protected const DONE_LABEL = 'abgeschlossen';
 
     protected const ASSIGNEE_FIELD = 'responsible_id';
 
