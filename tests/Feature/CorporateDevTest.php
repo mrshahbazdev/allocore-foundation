@@ -6,7 +6,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
+use Modules\Core\Notifications\Assigned;
 use Tests\TestCase;
 
 class CorporateDevTest extends TestCase
@@ -89,5 +91,35 @@ class CorporateDevTest extends TestCase
         )->pluck('event_class')->all();
 
         $this->assertNotEmpty($types);
+    }
+
+    public function test_measure_done_notifies_project_owner(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'M GmbH']);
+        $actor = $this->acting($tenant);
+        $owner = User::factory()->create();
+
+        $strategy = $this->postJson('/api/v1/strategies', [
+            'name' => 'Wachstum', 'status' => 'active',
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+
+        $project = $this->postJson('/api/v1/projects', [
+            'strategy_id' => $strategy['id'],
+            'name' => 'Portal',
+            'status' => 'active',
+            'owner_id' => $owner->id,
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+
+        $measure = $this->postJson('/api/v1/measures', [
+            'project_id' => $project['id'],
+            'title' => 'Rollout',
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+
+        $this->putJson("/api/v1/measures/{$measure['id']}", ['status' => 'done'], ['X-Tenant' => $tenant->id])->assertOk();
+
+        Notification::assertSentTo($owner, function (Assigned $n) {
+            return $n->kind === 'massnahme';
+        });
     }
 }
