@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Modules\Core\Notifications\RolesChanged;
 use Modules\DataPlatform\Events\DomainEvent;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -152,6 +153,7 @@ class RoleController extends Controller
         $user->syncRoles($roles);
 
         $this->recordMemberEvent($created ? 'added' : 'roles_updated', $user, ['roles' => $roles]);
+        $user->notify(new RolesChanged($user, $created ? 'added' : 'roles_updated', $roles));
 
         $payload = $this->userRoles($user)->getData(true);
         if ($initialPassword && ! isset($validated['password'])) {
@@ -174,6 +176,7 @@ class RoleController extends Controller
         $user->syncRoles($validated['roles']);
 
         $this->recordMemberEvent('roles_updated', $user, ['roles' => $validated['roles']]);
+        $user->notify(new RolesChanged($user, 'roles_updated', $validated['roles']));
 
         return $this->userRoles($user);
     }
@@ -189,6 +192,7 @@ class RoleController extends Controller
             ->delete();
 
         $this->recordMemberEvent('removed', $user);
+        $user->notify(new RolesChanged($user, 'removed'));
 
         return response()->noContent();
     }

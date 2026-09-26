@@ -308,6 +308,37 @@ class RolesTest extends TestCase
         $this->assertContains('role.deleted', $types);
     }
 
+    public function test_member_actions_notify_user(): void
+    {
+        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Notif GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+
+        $this->postJson('/api/v1/users', [
+            'name' => 'N Mitglied', 'email' => 'n@example.test', 'roles' => ['mitarbeiter'],
+        ], ['X-Tenant' => $tenant])->assertCreated();
+
+        $member = User::where('email', 'n@example.test')->firstOrFail();
+
+        $this->assertTrue(
+            DB::table('notifications')
+                ->where('notifiable_id', $member->id)
+                ->where('data->kind', 'rollen')
+                ->where('data->title', 'like', '%hinzugefügt%')
+                ->exists()
+        );
+
+        $this->putJson("/api/v1/users/{$member->id}/roles", ['roles' => ['auditor']], ['X-Tenant' => $tenant])->assertOk();
+        $this->assertTrue(
+            DB::table('notifications')
+                ->where('notifiable_id', $member->id)
+                ->where('data->kind', 'rollen')
+                ->where('data->title', 'like', '%geändert%')
+                ->exists()
+        );
+    }
+
     public function test_every_permission_domain_in_workspace_map_exists(): void
     {
         $this->postJson('/api/v1/tenants', ['name' => 'Perms GmbH'])->assertCreated();
