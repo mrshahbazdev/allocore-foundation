@@ -2149,6 +2149,17 @@ paths:
         '404': {description: Not Found}
         '422': {description: Validation failed}
 
+  /api/v1/notifications/export:
+    get:
+      tags: [notifications]
+      summary: "GET /api/v1/notifications/export — NDJSON-Stream (Filter wie GET /notifications)"
+      parameters:
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: NDJSON-Attachment}
   /api/v1/notifications:
     get:
       tags: [metrics]
