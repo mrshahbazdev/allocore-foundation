@@ -192,12 +192,20 @@ class RoleController extends Controller
     public function updateNotificationPrefs(Request $request)
     {
         $data = $request->validate([
-            'muted_kinds' => 'required|array|max:100',
+            'muted_kinds' => 'required_without_all:mute,unmute|array|max:100',
             'muted_kinds.*' => 'string|max:100',
+            'mute' => 'nullable|string|max:100',
+            'unmute' => 'nullable|string|max:100',
         ]);
-        $request->user()->forceFill(['notification_muted' => array_values($data['muted_kinds'])])->save();
+        $kinds = isset($data['muted_kinds'])
+            ? array_values($data['muted_kinds'])
+            : array_values(array_diff($request->user()->notification_muted ?? [], [$data['unmute'] ?? '']));
+        if (! empty($data['mute']) && ! in_array($data['mute'], $kinds, true)) {
+            $kinds[] = $data['mute'];
+        }
+        $request->user()->forceFill(['notification_muted' => array_values(array_unique($kinds))])->save();
 
-        return response()->json(['muted_kinds' => array_values($data['muted_kinds'])]);
+        return response()->json(['muted_kinds' => array_values(array_unique($kinds))]);
     }
 
     public function updatePassword(Request $request)

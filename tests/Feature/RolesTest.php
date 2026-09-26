@@ -271,6 +271,21 @@ class RolesTest extends TestCase
             ->assertOk()->assertExactJson(['muted_kinds' => ['aufgabe']]);
     }
 
+    public function test_notification_prefs_mute_unmute_ops(): void
+    {
+        $tenant = Tenant::create(['name' => 'MU GmbH']);
+        $user = $this->actingAsUser($tenant);
+
+        $this->putJson('/api/v1/me/notification-prefs', ['mute' => 'anmeldung'], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['muted_kinds' => ['anmeldung']]);
+        $this->putJson('/api/v1/me/notification-prefs', ['mute' => 'aufgabe'], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['muted_kinds' => ['anmeldung', 'aufgabe']]);
+        $this->putJson('/api/v1/me/notification-prefs', ['unmute' => 'anmeldung'], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['muted_kinds' => ['aufgabe']]);
+        $this->putJson('/api/v1/me/notification-prefs', [], ['X-Tenant' => $tenant->id])
+            ->assertStatus(422);
+    }
+
     public function test_notifications_muted_param_filters(): void
     {
         $tenant = Tenant::create(['name' => 'NMF GmbH']);

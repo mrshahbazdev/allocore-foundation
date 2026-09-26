@@ -1525,7 +1525,7 @@ paths:
         '403': {description: Forbidden — falsches Tenant}
     put:
       tags: [users]
-      summary: 'PUT /api/v1/me/notification-prefs — Benachrichtigungs-Arten stummschalten {muted_kinds: []}'
+      summary: 'PUT /api/v1/me/notification-prefs — Benachrichtigungs-Arten stummschalten {muted_kinds: []} — Vollersetzung oder {mute:}/{unmute: kind}'
       parameters:
         - name: X-Tenant
           in: header
@@ -1537,12 +1537,17 @@ paths:
           application/json:
             schema:
               type: object
-              required: [muted_kinds]
               properties:
                 muted_kinds:
                   type: array
                   items: {type: string}
-                  description: Art-Kinds der Benachrichtigungen, die stumm geschaltet werden (z. B. passwort_geaendert, anmeldung, hinweis)
+                  description: Art-Kinds, Vollersetzung (z. B. passwort_geaendert, anmeldung, hinweis) — alternativ mute/unmute
+                mute:
+                  type: string
+                  description: Einzelne Art stummschalten
+                unmute:
+                  type: string
+                  description: Einzelne Art wieder aktivieren
       responses:
         '200': {description: "OK — {muted_kinds: []}"}
         '401': {description: Unauthenticated}
