@@ -16,14 +16,14 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 | `/me` | (auth+tenant) aktueller Nutzer im Mandanten — `id`, `name`, `email`, `roles`, `permissions` |
 | GET | `/roles` | (auth+tenant) verfügbare Rollen des Tenants |
 | POST | `/roles` | (auth+tenant, `roles.manage`) eigene Rolle anlegen — `name` (snake_case, eindeutig je Mandant), optional `permissions` |
-| PUT | `/roles/{role}` | (auth+tenant, `roles.manage`) Permissions einer Rolle setzen — `permissions: string[]`; Rollen anderer Mandanten → 404 |
-| DELETE | `/roles/{role}` | (auth+tenant, `roles.manage`) Rolle löschen; System-Rollen (`holding`, `administrator`) → 422 |
+| PUT | `/roles/{role}` | (auth+tenant, `roles.manage`) Permissions einer Rolle setzen — `permissions: string[]`; Rollen anderer Mandanten → 404; Rechte der letzten `roles.manage`-Rolle kappen → 422 |
+| DELETE | `/roles/{role}` | (auth+tenant, `roles.manage`) Rolle löschen; System-Rollen (`holding`, `administrator`) → 422; letzte `roles.manage`-Rolle (wenn kein Mitglied die Rechte anderweitig behält) → 422 |
 | GET | `/permissions` | (auth+tenant) alle bekannten Permissions (für Rollen-Editor) |
 | PUT | `/tenant` | (auth+tenant, `roles.manage`) aktuellen Mandanten umbenennen — `name` |
 | GET | `/users` | (auth+tenant) Mitglieder des Tenants (User mit zugewiesener Rolle) |
-| POST | `/users` | (auth+tenant, `roles.manage`) Benutzer anlegen bzw. vorhandenen per `email` anhängen — `name`, `email`, optional `password` + `roles`; ohne `password` wird `initial_password` einmalig zurückgegeben |
-| GET/PUT | `/users/{user}/roles` | (auth+tenant, `roles.manage`) Rollen eines Users lesen/setzen |
-| DELETE | `/users/{user}` | (auth+tenant, `roles.manage`) Mitglied aus dem Mandanten entfernen (eigener Account ausgeschlossen, 422) |
+| POST | `/users` | (auth+tenant, `roles.manage`) Benutzer anlegen bzw. vorhandenen per `email` anhängen — `name`, `email`, optional `password` + `roles`; ohne `password` wird `initial_password` einmalig zurückgegeben; Abstufung des letzten `roles.manage`-Mitglieds → 422 |
+| GET/PUT | `/users/{user}/roles` | (auth+tenant, `roles.manage`) Rollen eines Users lesen/setzen; Lockout-Guard: letztes `roles.manage`-Mitglied kann nicht abgestuft werden → 422 |
+| DELETE | `/users/{user}` | (auth+tenant, `roles.manage`) Mitglied aus dem Mandanten entfernen (eigener Account ausgeschlossen, 422; letztes `roles.manage`-Mitglied → 422) |
 
 ## Core (`companies`, `persons`)
 
