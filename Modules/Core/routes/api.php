@@ -21,6 +21,7 @@ Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(funct
         ->only(['store', 'update', 'destroy'])->middleware('permission:persons.manage')->names('persons');
 
     Route::get('me', [RoleController::class, 'me'])->name('me.show');
+    Route::get('tokens/abilities', [TokenController::class, 'abilities'])->name('tokens.abilities');
     Route::get('tokens', [TokenController::class, 'index'])->name('tokens.index');
     Route::post('tokens', [TokenController::class, 'store'])->name('tokens.store');
     Route::delete('tokens/{id}', [TokenController::class, 'destroy'])->name('tokens.destroy');

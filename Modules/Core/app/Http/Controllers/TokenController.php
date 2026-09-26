@@ -23,6 +23,12 @@ class TokenController extends Controller
         return array_merge($abilities, RoleSeeder::EXTRA_PERMISSIONS);
     }
 
+    /** Erlaubte Token-Abilities (für das Formular). */
+    public function abilities()
+    {
+        return response()->json(self::allowedAbilities());
+    }
+
     /** Eigene API-Token des Nutzers (ohne Token-Wert — der wird nur einmal bei Erstellung ausgegeben). */
     public function index(Request $request)
     {
