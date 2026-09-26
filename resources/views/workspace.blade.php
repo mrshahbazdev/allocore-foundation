@@ -1103,7 +1103,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [],
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
@@ -1125,6 +1125,7 @@ function workspace(initial) {
             if (p.get('new')) this.$nextTick(() => { if (this.tenant && this.canCreate()) this.openCreate(p.get('from') ? {from_entity_id: p.get('from')} : (p.get('audit') ? {audit_id: p.get('audit')} : {})); });
             if (p.get('q')) this.query = p.get('q');
             if (p.get('status')) this.statusFilter = p.get('status');
+            if (p.get('severity')) this.severityFilter = p.get('severity');
             if (p.get('overdue')) this.overdueOnly = true;
             if (p.get('dueSoon')) this.dueSoonOnly = true;
             if (p.get('today')) this.dueTodayOnly = true;
@@ -1135,6 +1136,7 @@ function workspace(initial) {
             this._urlSort = p.get('sort') || null;
             this.$watch('query', () => this.syncUrl());
             this.$watch('statusFilter', () => this.syncUrl());
+            this.$watch('severityFilter', () => this.syncUrl());
             this.$watch('overdueOnly', () => this.syncUrl());
             this.$watch('dueSoonOnly', () => this.syncUrl());
             this.$watch('dueTodayOnly', () => this.syncUrl());
@@ -1203,6 +1205,7 @@ function workspace(initial) {
             const url = new URL(location.href);
             if (this.query) url.searchParams.set('q', this.query); else url.searchParams.delete('q');
             if (this.statusFilter) url.searchParams.set('status', this.statusFilter); else url.searchParams.delete('status');
+            if (this.severityFilter) url.searchParams.set('severity', this.severityFilter); else url.searchParams.delete('severity');
             if (this.overdueOnly) url.searchParams.set('overdue', '1'); else url.searchParams.delete('overdue');
             if (this.dueSoonOnly) url.searchParams.set('dueSoon', '1'); else url.searchParams.delete('dueSoon');
             if (this.dueTodayOnly) url.searchParams.set('today', '1'); else url.searchParams.delete('today');
@@ -1760,6 +1763,7 @@ function workspace(initial) {
             if (this.myOnly) rs = rs.filter(r => String(r.assignee_id || r.responsible_id || r.owner_id || '') === String(this.meId));
             if (this.unassignedOnly) rs = rs.filter(r => !(r.assignee_id || r.responsible_id || r.owner_id));
             if (this.statusFilter) rs = rs.filter(r => String(r.status || '') === this.statusFilter);
+            if (this.severityFilter) rs = rs.filter(r => String(r.severity || '') === this.severityFilter);
             if (this.evGroup) rs = rs.filter(r => this.eventGroup(r.event_type) === this.evGroup);
             const q = this.query.trim().toLowerCase();
             if (!q) return rs;
