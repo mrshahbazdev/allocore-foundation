@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Modules\DataPlatform\Events\DomainEvent;
+use Spatie\Permission\PermissionRegistrar;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,6 +91,11 @@ Route::prefix('v1')->group(function () {
         $tenant = Tenant::create($validated);
 
         RoleSeeder::forTenant($tenant);
+
+        if ($request->user()) {
+            app(PermissionRegistrar::class)->setPermissionsTeamId($tenant->getTenantKey());
+            $request->user()->assignRole('administrator');
+        }
 
         $event = new DomainEvent(
             type: 'tenant.created',
