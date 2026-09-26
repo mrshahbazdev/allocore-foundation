@@ -2147,6 +2147,16 @@ paths:
           required: false
           schema: {type: string}
           description: Titel-Teiltextsuche
+        - name: due_before
+          in: query
+          required: false
+          schema: {type: string, format: date}
+          description: Nur Benachrichtigungen mit due_at vor diesem Datum
+        - name: due_after
+          in: query
+          required: false
+          schema: {type: string, format: date}
+          description: Nur Benachrichtigungen mit due_at ab diesem Datum
         - name: read
           in: query
           required: false

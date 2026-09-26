@@ -12,11 +12,13 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Modules\Ai\Models\AiAnalysis;
 use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\Instruction;
 use Modules\Core\Models\Company;
+use Modules\Core\Notifications\Assigned;
 use Modules\Core\Notifications\NewLoginAlert;
 use Modules\Core\Notifications\PasswordChangedAlert;
 use Modules\CorporateDev\Models\Project;
@@ -1411,6 +1413,24 @@ class DataPlatformTest extends TestCase
         $res = $this->getJson('/api/v1/notifications?q=Frist', ['X-Tenant' => $tenant->id])->assertOk()->json();
         $this->assertCount(1, $res);
         $this->assertSame('Frist läuft ab', $res[0]['title']);
+    }
+
+    public function test_notifications_index_filters_by_due_window(): void
+    {
+        $tenant = Tenant::create(['name' => 'DW GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new Assigned('aufgabe', (string) Str::uuid(), 'A', now()->addDay()->toIso8601String()));
+        $user->notify(new Assigned('aufgabe', (string) Str::uuid(), 'B', now()->addDays(10)->toIso8601String()));
+        $user->notify(new Assigned('aufgabe', (string) Str::uuid(), 'C'));
+
+        $res = $this->getJson('/api/v1/notifications?due_before='.now()->addDays(7)->toDateString(), ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $res);
+        $this->assertSame('A', $res[0]['title']);
+
+        $res = $this->getJson('/api/v1/notifications?due_after='.now()->addDays(7)->toDateString(), ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $res);
+        $this->assertSame('B', $res[0]['title']);
     }
 
     public function test_notifications_read_all_honors_kind_filter(): void
