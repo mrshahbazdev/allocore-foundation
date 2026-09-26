@@ -5,6 +5,7 @@ namespace Modules\DataPlatform\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Modules\DataPlatform\Events\DomainEvent;
 
 class EventController extends Controller
 {
@@ -34,6 +35,31 @@ class EventController extends Controller
         });
 
         return $page;
+    }
+
+    /** Manuelles Event in den Mandanten-Event-Store schreiben (z. B. externe Integrationen). */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'type' => 'required|string|max:255|regex:/^[a-z0-9_]+\.[a-z0-9_]+$/',
+            'subject' => 'required|array',
+            'subject.type' => 'required|string|max:100',
+            'subject.id' => 'nullable|string|max:100',
+            'subject.title' => 'nullable|string|max:500',
+            'payload' => 'nullable|array',
+        ]);
+
+        $tenantKey = (string) tenant()->getTenantKey();
+        $event = new DomainEvent(
+            type: $data['type'],
+            tenantId: $tenantKey,
+            subject: $data['subject'],
+            payload: $data['payload'] ?? [],
+        );
+        $event->setMetaData(['tenant_id' => $tenantKey]);
+        event($event);
+
+        return response()->json(['status' => 'recorded', 'id' => $event->storedEventId() ?? null], 201);
     }
 
     /** Aggregierte Übersicht: total, by_group (Präfix vor dem ersten Punkt), per_day letzte 7 Tage. */

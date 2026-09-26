@@ -10,6 +10,7 @@ use Modules\DataPlatform\Http\Controllers\NotificationController;
 use Modules\DataPlatform\Http\Controllers\SearchController;
 
 Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api', 'permission:metrics.view'])->prefix('v1')->group(function () {
+    Route::post('events', [EventController::class, 'store'])->name('data-platform.events.store');
     Route::get('events', [EventController::class, 'index'])->name('data-platform.events');
     Route::get('events/summary', [EventController::class, 'summary'])->name('data-platform.events.summary');
     Route::get('events/export', [EventController::class, 'export'])->name('data-platform.events.export');

@@ -130,6 +130,26 @@ class DataPlatformTest extends TestCase
         $this->assertEmpty($this->getJson('/api/v1/events?q=NoSuchTitle', ['X-Tenant' => $tenant->id])->json('data'));
     }
 
+    public function test_events_endpoint_stores_custom_event(): void
+    {
+        $tenant = Tenant::create(['name' => 'ExtEv GmbH']);
+        $this->acting($tenant);
+
+        $res = $this->postJson('/api/v1/events', [
+            'type' => 'integration.webhook_received',
+            'subject' => ['type' => 'external_system', 'id' => 'ext-1', 'title' => 'Webhook X'],
+            'payload' => ['k' => 1],
+        ], ['X-Tenant' => $tenant->id]);
+        $res->assertCreated()->assertJsonPath('status', 'recorded');
+        $this->assertNotNull($res->json('id'));
+
+        $list = $this->getJson('/api/v1/events?type=integration.webhook_received', ['X-Tenant' => $tenant->id])->json('data');
+        $this->assertCount(1, $list);
+        $this->assertSame('Webhook X', $list[0]['event_properties']['subject']['title']);
+
+        $this->postJson('/api/v1/events', ['type' => 'noseparator', 'subject' => ['type' => 'x']], ['X-Tenant' => $tenant->id])->assertUnprocessable();
+    }
+
     public function test_events_endpoint_filters_by_id(): void
     {
         $tenant = Tenant::create(['name' => 'IdEv GmbH']);
