@@ -321,6 +321,25 @@ class RoleController extends Controller
             "{$context} uebersteigt eigene Berechtigungen (fehlend: {$missing->implode(', ')}).");
     }
 
+    public function leaveTenant(Request $request)
+    {
+        $user = $request->user();
+        if ($user->hasPermissionTo('roles.manage')) {
+            $this->guardLastRolesManager($user);
+        }
+
+        DB::table('model_has_roles')
+            ->where('team_id', tenant()->getTenantKey())
+            ->where('model_type', User::class)
+            ->where('model_id', $user->id)
+            ->delete();
+
+        $this->recordMemberEvent('left', $user);
+        $this->notifyMemberRemoved($user, $user);
+
+        return response()->noContent();
+    }
+
     public function remove(Request $request, User $user)
     {
         abort_if($request->user()->is($user), 422, 'Eigenes Mitglied kann nicht entfernt werden.');
