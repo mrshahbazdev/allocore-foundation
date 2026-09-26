@@ -206,6 +206,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $renewals = $count('instructions', fn ($q) => $q->where('status', 'completed')->whereNotNull('interval_months')->whereRaw('DATE_ADD(completed_at, INTERVAL interval_months MONTH) < ?', [now()]));
+        if ($renewals) {
+            $insights[] = $this->hit('warning', 'instructions_renewal_due', "{$renewals} Unterweisung(en) – Wiederholungsintervall überschritten.", ['count' => $renewals]);
+        }
+
         $inspNoPerson = $count('inspections', fn ($q) => $q->where('status', 'scheduled')->whereNull('person_id')->whereNull('responsible_id'));
         if ($inspNoPerson) {
             $insights[] = $this->hit('info', 'inspections_no_person', "{$inspNoPerson} geplante Prüfung(en) ohne zugeordnete Person.", ['count' => $inspNoPerson]);
