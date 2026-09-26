@@ -72,6 +72,9 @@ class RoleController extends Controller
         abort_if($role->team_id !== tenant()->getTenantKey(), 404);
         abort_if(in_array($role->name, ['holding', 'administrator']), 422, 'System-Rolle kann nicht gelöscht werden.');
         $this->guardRoleWithinOwnPermissions($request, $role);
+        if ($role->permissions->contains('name', 'roles.manage')) {
+            $this->guardOtherRolesManager($role, 'Letzte roles.manage-Rolle kann nicht gelöscht werden.');
+        }
 
         $role->delete();
 
@@ -96,6 +99,10 @@ class RoleController extends Controller
 
         $this->guardRoleWithinOwnPermissions($request, $role);
         $this->guardPermissionSet($request, $validated['permissions'], 'Rolle');
+        if ($role->permissions->contains('name', 'roles.manage')
+            && ! in_array('roles.manage', $validated['permissions'], true)) {
+            $this->guardOtherRolesManager($role, 'Letzte roles.manage-Rolle kann nicht ihrer Rechte beraubt werden.');
+        }
         $role->syncPermissions($validated['permissions']);
 
         $this->recordRoleEvent('permissions_updated', $role, ['permissions' => $validated['permissions']]);
@@ -145,6 +152,9 @@ class RoleController extends Controller
         $roles = $validated['roles'] ?? ['mitarbeiter'];
         $this->guardAssignableRoles($request, $roles);
         $user = User::where('email', $validated['email'])->first();
+        if ($user && $user->hasPermissionTo('roles.manage') && ! $this->rolesGrantManage($roles)) {
+            $this->guardLastRolesManager($user);
+        }
         $initialPassword = null;
         $created = false;
 
@@ -186,6 +196,9 @@ class RoleController extends Controller
         ]);
 
         $this->guardAssignableRoles($request, $validated['roles']);
+        if ($user->hasPermissionTo('roles.manage') && ! $this->rolesGrantManage($validated['roles'])) {
+            $this->guardLastRolesManager($user);
+        }
         $user->syncRoles($validated['roles']);
 
         $this->recordMemberEvent('roles_updated', $user, ['roles' => $validated['roles']]);
@@ -217,6 +230,47 @@ class RoleController extends Controller
         }
     }
 
+    /**
+     * Lockout-Guard: das letzte Mitglied mit roles.manage darf weder
+     * abgestuft noch entfernt werden — sonst ist der Tenant unverwaltbar.
+     */
+    private function guardLastRolesManager(User $target): void
+    {
+        $memberIds = DB::table('model_has_roles')
+            ->where('team_id', tenant()->getTenantKey())
+            ->where('model_type', User::class)
+            ->pluck('model_id');
+
+        $anotherManager = User::whereIn('id', $memberIds)
+            ->whereKeyNot($target->id)
+            ->get()
+            ->contains(fn (User $u) => $u->hasPermissionTo('roles.manage'));
+
+        abort_unless($anotherManager, 422,
+            'Letztes Mitglied mit roles.manage kann nicht abgestuft oder entfernt werden.');
+    }
+
+    private function rolesGrantManage(array $roleNames): bool
+    {
+        return Role::where('team_id', tenant()->getTenantKey())
+            ->whereIn('name', $roleNames)
+            ->whereHas('permissions', fn ($q) => $q->where('name', 'roles.manage'))
+            ->exists();
+    }
+
+    private function guardOtherRolesManager(Role $role, string $message): void
+    {
+        // Der Tenant darf durch die Mutation nicht ohne roles.manager bleiben.
+        $keepsManager = DB::table('model_has_roles')->where('model_has_roles.team_id', tenant()->getTenantKey())
+            ->where('model_has_roles.model_type', User::class)
+            ->join('role_has_permissions', 'role_has_permissions.role_id', '=', 'model_has_roles.role_id')
+            ->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
+            ->where('permissions.name', 'roles.manage')
+            ->where('model_has_roles.role_id', '!=', $role->id)
+            ->exists();
+        abort_unless($keepsManager, 422, $message);
+    }
+
     private function guardRoleWithinOwnPermissions(Request $request, Role $role): void
     {
         $this->guardPermissionSet($request, $role->permissions->pluck('name'),
@@ -233,6 +287,9 @@ class RoleController extends Controller
     public function remove(Request $request, User $user)
     {
         abort_if($request->user()->is($user), 422, 'Eigenes Mitglied kann nicht entfernt werden.');
+        if ($user->hasPermissionTo('roles.manage')) {
+            $this->guardLastRolesManager($user);
+        }
 
         DB::table('model_has_roles')
             ->where('team_id', tenant()->getTenantKey())
