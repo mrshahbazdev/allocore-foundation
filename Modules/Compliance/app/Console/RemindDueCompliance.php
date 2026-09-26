@@ -90,13 +90,12 @@ class RemindDueCompliance extends Command
 
     private function remind($query, string $kind, string $dateColumn = 'due_at', string $responsibleColumn = 'responsible_id', string $relation = 'responsible', ?string $personColumn = null, ?string $personRelation = null): int
     {
-        $query->whereNull('reminded_at')->whereNotNull($responsibleColumn);
+        $query->whereNull('reminded_at');
         if ($personColumn) {
-            $query = $query->clone()->with([$relation, $personRelation])->get()
-                ->merge($query->clone()->whereNull($responsibleColumn)->whereNotNull($personColumn)->with($personRelation)->get());
-            $items = $query;
+            $items = (clone $query)->whereNotNull($responsibleColumn)->with([$relation, $personRelation])->get()
+                ->merge((clone $query)->whereNull($responsibleColumn)->whereNotNull($personColumn)->with($personRelation)->get());
         } else {
-            $items = $query->with($relation)->get();
+            $items = $query->whereNotNull($responsibleColumn)->with($relation)->get();
         }
 
         $count = 0;
