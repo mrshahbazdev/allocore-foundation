@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Modules\Ai\Models\AiAnalysis;
+use Modules\Compliance\Models\Instruction;
 use Modules\Core\Models\Company;
+use Modules\CorporateDev\Models\Project;
 use Tests\TestCase;
 
 class DataPlatformTest extends TestCase
@@ -540,6 +542,34 @@ class DataPlatformTest extends TestCase
         $this->assertContains('strategies_ending_soon', $codes);
         $this->assertContains('audits_starting_soon', $codes);
         $this->assertContains('audit_findings_due_soon', $codes);
+    }
+
+    public function test_insights_reports_renewals_stalled_projects_and_old_instructions(): void
+    {
+        $tenant = Tenant::create(['name' => 'Altlasten GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/tenders', ['title' => 'Ohne Budget'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/operating-instructions', ['title' => 'Galvanik BA', 'status' => 'active', 'valid_from' => now()->subYears(2)->toDateString()], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Instruction::create(['title' => 'Alt-Unterweisung', 'status' => 'completed', 'interval_months' => 12, 'completed_at' => now()->subMonths(13)]);
+        $stalled = Project::create(['name' => 'Liegengeblieben', 'status' => 'active', 'progress' => 0]);
+        $stalled->created_at = now()->subDays(40);
+        $stalled->save();
+        tenancy()->end();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('tenders_no_budget', $codes);
+        $this->assertContains('op_instructions_review', $codes);
+        $this->assertContains('instructions_renewal_due', $codes);
+        $this->assertContains('projects_stalled', $codes);
     }
 
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
