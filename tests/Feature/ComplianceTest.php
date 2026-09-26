@@ -117,6 +117,33 @@ class ComplianceTest extends TestCase
         $this->assertNotNull(RiskAssessment::first()->reminded_at);
     }
 
+    public function test_instruction_reminder_falls_back_to_person_email(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'UW GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/persons', [
+            'first_name' => 'Erika',
+            'last_name' => 'Muster',
+            'email' => $user->email,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $personId = $this->getJson('/api/v1/persons', ['X-Tenant' => $tenant->id])->json('data.0.id');
+
+        $this->postJson('/api/v1/instructions', [
+            'title' => 'Brandschutz',
+            'person_id' => $personId,
+            'due_at' => now()->addHours(12)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, function (ComplianceDueSoon $n) {
+            return $n->kind === 'unterweisung';
+        });
+    }
+
     public function test_project_reminder_notifies_owner(): void
     {
         Notification::fake();
