@@ -1165,6 +1165,7 @@
             <input type="password" x-model="pwForm.confirm" placeholder="Neues Passwort wiederholen" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
             <p class="text-[11px] text-[#5B6B7E]" x-show="me && me.password_changed_at" x-text="'Zuletzt geändert: ' + new Date(me.password_changed_at).toLocaleString('de-DE')"></p>
             <p class="text-[11px] text-[#5B6B7E]" x-show="me && me.created_at" x-text="'Mitglied seit: ' + new Date(me.created_at).toLocaleDateString('de-DE')"></p>
+            <p class="text-[11px] text-[#5B6B7E]" x-show="me && me.tokens_count !== undefined"><span x-text="(me.tokens_count || 0) + ' aktive API-Token'"></span> · <a :href="'/app/tokens?tenant=' + tenant" class="text-[#CA8A04] hover:underline">verwalten →</a></p>
             <p class="text-[11px] text-[#A6362E]" x-show="me && me.email_verified === false">E-Mail noch nicht verifiziert — wird nach Änderung erneut ausstehend.</p>
             <p class="text-[11px] text-[#5B6B7E]">Nach der Änderung werden alle API-Token widerrufen — die Seite lädt neu.</p>
             <template x-if="me && me.tenants && me.tenants.length">

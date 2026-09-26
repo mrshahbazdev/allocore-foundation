@@ -130,6 +130,7 @@ class RoleController extends Controller
             'last_login_at' => $user->last_login_at,
             'email_verified' => $user->email_verified_at !== null,
             'created_at' => $user->created_at,
+            'tokens_count' => $user->tokens()->count(),
             'password_changed_at' => $user->password_changed_at,
             'tenants' => $this->memberships($user),
         ]);
