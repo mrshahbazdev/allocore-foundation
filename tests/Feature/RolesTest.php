@@ -561,6 +561,50 @@ class RolesTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_letzter_roles_manager_kann_nicht_abgestuft_oder_entfernt_werden(): void
+    {
+        $tenant = Tenant::find($this->createTenantApi(['name' => 'Lockout GmbH'])->json('id'));
+        $admin = $this->actingAsUser($tenant);
+
+        // Andere roles.manager (z. B. den Tenant-Ersteller) zuerst abstufen.
+        $otherManagerIds = DB::table('model_has_roles')
+            ->where('team_id', $tenant->getTenantKey())
+            ->where('model_type', User::class)
+            ->where('model_id', '!=', $admin->id)
+            ->pluck('model_id');
+        foreach ($otherManagerIds as $id) {
+            $this->putJson("/api/v1/users/{$id}/roles", ['roles' => ['mitarbeiter']], ['X-Tenant' => $tenant->id])
+                ->assertOk();
+        }
+
+        // Jetzt ist $admin der letzte roles.manager — Abstufung muss 422 liefern.
+        $this->putJson("/api/v1/users/{$admin->id}/roles", ['roles' => ['mitarbeiter']], ['X-Tenant' => $tenant->id])
+            ->assertStatus(422);
+
+        // Zweiten Admin hinzufügen -> Abstufung jetzt erlaubt.
+        $second = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $second->assignRole('administrator');
+        $this->putJson("/api/v1/users/{$admin->id}/roles", ['roles' => ['mitarbeiter']], ['X-Tenant' => $tenant->id])
+            ->assertOk();
+
+        // Ab hier als zweiter Admin agieren ($admin ist jetzt mitarbeiter).
+        Sanctum::actingAs($second->fresh());
+
+        // Letzte roles.manage-Rolle löschen -> 422. Erst 'holding' entfernen, dann 'administrator'.
+        $holding = Role::where('team_id', $tenant->getTenantKey())->where('name', 'holding')->first();
+        $this->deleteJson("/api/v1/roles/{$holding->id}", [], ['X-Tenant' => $tenant->id])
+            ->assertStatus(422); // System-Rolle
+
+        $admRole = Role::where('team_id', $tenant->getTenantKey())->where('name', 'administrator')->first();
+        $this->deleteJson("/api/v1/roles/{$admRole->id}", [], ['X-Tenant' => $tenant->id])
+            ->assertStatus(422); // System-Rolle schützt ohnehin
+
+        // Update der letzten roles.manage-Rolle ohne roles.manage -> 422.
+        $this->putJson("/api/v1/roles/{$admRole->id}", ['permissions' => ['tasks.view']], ['X-Tenant' => $tenant->id])
+            ->assertStatus(422);
+    }
+
     protected function actingAsUser(Tenant|string|null $tenant = null): User
     {
         $user = User::factory()->create();
