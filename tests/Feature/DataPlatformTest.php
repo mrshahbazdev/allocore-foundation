@@ -144,6 +144,22 @@ class DataPlatformTest extends TestCase
         $this->assertCount(0, $this->getJson('/api/v1/events?id='.($id + 999), ['X-Tenant' => $tenant->id])->json('data'));
     }
 
+    public function test_events_export_honors_q_and_id_filters(): void
+    {
+        $tenant = Tenant::create(['name' => 'ExQ GmbH']);
+        $this->acting($tenant);
+        Company::create(['tenant_id' => $tenant->id, 'name' => 'ExportAlpha']);
+
+        $id = DB::table('stored_events')->where('meta_data->tenant_id', $tenant->id)->value('id');
+        $res = $this->get('/api/v1/events/export?q=ExportAlpha', ['X-Tenant' => $tenant->id]);
+        $res->assertOk();
+        $lines = array_values(array_filter(explode("\n", trim($res->streamedContent()))));
+        $this->assertNotEmpty($lines);
+        $this->assertCount(0, $this->get('/api/v1/events/export?id='.($id + 999), ['X-Tenant' => $tenant->id])->json ?? []);
+        $resId = $this->get('/api/v1/events/export?id='.$id, ['X-Tenant' => $tenant->id]);
+        $this->assertSame(1, count(array_filter(explode("\n", trim($resId->streamedContent())))));
+    }
+
     public function test_notifications_test_endpoint_creates_self_notification(): void
     {
         $tenant = Tenant::create(['name' => 'Test GmbH']);

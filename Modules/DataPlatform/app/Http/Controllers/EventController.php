@@ -67,11 +67,13 @@ class EventController extends Controller
 
         $query = DB::table('stored_events')
             ->where('meta_data->tenant_id', $tenantKey)
+            ->when($request->id, fn ($q) => $q->where('id', $request->integer('id')))
             ->when($request->type, fn ($q) => $q->where('event_properties->type', $request->type))
             ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
             ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
             ->when($request->action, fn ($q) => $q->where('event_properties->type', 'like', '%.'.$request->action))
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
+            ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
             ->orderBy('id')
