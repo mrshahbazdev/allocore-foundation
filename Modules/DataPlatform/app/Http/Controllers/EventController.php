@@ -75,7 +75,8 @@ class EventController extends Controller
             ->selectRaw("SUBSTRING_INDEX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')), '.', 1) as grp, COUNT(*) as n")
             ->groupBy('grp')->orderByDesc('n')->pluck('n', 'grp');
 
-        $perDay = (clone $base)->where('created_at', '>=', now()->subDays(7)->startOfDay())
+        $days = min($request->integer('days', 7), 90);
+        $perDay = (clone $base)->where('created_at', '>=', now()->subDays($days)->startOfDay())
             ->selectRaw('DATE(created_at) as day, COUNT(*) as n')
             ->groupBy('day')->pluck('n', 'day');
 

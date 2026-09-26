@@ -130,6 +130,20 @@ class DataPlatformTest extends TestCase
         $this->assertEmpty($this->getJson('/api/v1/events?q=NoSuchTitle', ['X-Tenant' => $tenant->id])->json('data'));
     }
 
+    public function test_events_summary_honors_days_window(): void
+    {
+        $tenant = Tenant::create(['name' => 'SumD GmbH']);
+        $this->acting($tenant);
+        Company::create(['tenant_id' => $tenant->id, 'name' => 'SumCo']);
+        DB::table('stored_events')->where('meta_data->tenant_id', $tenant->id)
+            ->update(['created_at' => now()->subDays(20)]);
+
+        $res = $this->getJson('/api/v1/events/summary', ['X-Tenant' => $tenant->id])->assertOk();
+        $this->assertEmpty($res->json('per_day'));
+        $res = $this->getJson('/api/v1/events/summary?days=30', ['X-Tenant' => $tenant->id])->assertOk();
+        $this->assertNotEmpty($res->json('per_day'));
+    }
+
     public function test_events_endpoint_stores_custom_event(): void
     {
         $tenant = Tenant::create(['name' => 'ExtEv GmbH']);
