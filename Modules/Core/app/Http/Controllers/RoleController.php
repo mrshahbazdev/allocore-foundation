@@ -30,6 +30,44 @@ class RoleController extends Controller
             ->map(fn (User $u) => $u->setAttribute('role_names', $u->getRoleNames()));
     }
 
+    public function storeRole(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100', 'regex:/^[a-z][a-z0-9_-]*$/'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string', 'exists:permissions,name'],
+        ]);
+
+        abort_if(
+            Role::where('team_id', tenant()->getTenantKey())->where('name', $validated['name'])->exists(),
+            422,
+            'Rolle existiert bereits.'
+        );
+
+        $role = new Role;
+        $role->name = $validated['name'];
+        $role->guard_name = 'web';
+        $role->team_id = tenant()->getTenantKey();
+        $role->save();
+        $role->syncPermissions($validated['permissions'] ?? []);
+
+        return response()->json([
+            'id' => $role->id,
+            'name' => $role->name,
+            'permissions' => $role->permissions()->orderBy('name')->pluck('name'),
+        ], 201);
+    }
+
+    public function destroyRole(Role $role)
+    {
+        abort_if($role->team_id !== tenant()->getTenantKey(), 404);
+        abort_if(in_array($role->name, ['holding', 'administrator']), 422, 'System-Rolle kann nicht gelöscht werden.');
+
+        $role->delete();
+
+        return response()->noContent();
+    }
+
     public function permissions()
     {
         return Permission::orderBy('name')->pluck('name');
