@@ -4,12 +4,24 @@ namespace Modules\Production\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Core\Concerns\NotifiesLinkedUserOnCreate;
 use Modules\Core\Models\Person;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class ProductionOrder extends Model
 {
     use BelongsToTenant;
+    use NotifiesLinkedUserOnCreate;
+
+    protected const PERSON_REL = 'assignee';
+
+    protected const PERSON_ID_FIELD = 'assigned_to';
+
+    protected const PERSON_KIND = 'auftrag';
+
+    protected const PERSON_LABEL = 'Auftrag';
+
+    protected const PERSON_DUE_FIELD = 'due_at';
 
     public const STATUSES = ['queued', 'running', 'done', 'rejected', 'cancelled'];
 
