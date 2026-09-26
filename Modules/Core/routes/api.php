@@ -28,6 +28,7 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v
     Route::get('tokens/abilities', [TokenController::class, 'abilities'])->name('tokens.abilities');
     Route::get('tokens', [TokenController::class, 'index'])->name('tokens.index');
     Route::post('tokens', [TokenController::class, 'store'])->name('tokens.store');
+    Route::delete('tokens', [TokenController::class, 'destroyAll'])->name('tokens.destroy_all');
     Route::delete('tokens/{id}', [TokenController::class, 'destroy'])->name('tokens.destroy');
     Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('permissions', [RoleController::class, 'permissions'])->name('permissions.index');

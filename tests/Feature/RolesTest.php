@@ -228,6 +228,19 @@ class RolesTest extends TestCase
         ]);
     }
 
+    public function test_delete_all_tokens_endpoint(): void
+    {
+        $tenant = Tenant::create(['name' => 'TokAll GmbH']);
+        $user = $this->actingAsUser($tenant);
+        $plain = $user->createToken('keep')->plainTextToken;
+        $user->createToken('x');
+        $user->createToken('y');
+        $this->deleteJson('/api/v1/tokens', [], ['X-Tenant' => $tenant->id])
+            ->assertOk()
+            ->assertJson(['status' => 'ok', 'deleted' => 3]);
+        $this->assertSame(0, $user->tokens()->count());
+    }
+
     public function test_login_from_new_ip_notifies_user(): void
     {
         Notification::fake();
