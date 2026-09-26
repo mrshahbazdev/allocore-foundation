@@ -1525,21 +1525,22 @@ function workspace(initial) {
                     ...n, entity_id: n.entity_id || n.data?.entity_id || '',
                     rel: (() => { const m = Math.round((now - new Date(n.created_at).getTime()) / 60000); return m < 60 ? 'vor ' + m + ' Min' : m < 1440 ? 'vor ' + Math.round(m / 60) + ' Std' : 'vor ' + Math.round(m / 1440) + ' T'; })()
                 }));
+                this.navBadges['notifications'] = this.unreadNotifs();
             }).catch(() => {});
         },
         markNotifRead(n) {
-            this.api('/api/v1/notifications/' + n.id + '/read', {method: 'POST'}).then(r => { if (r.ok) { n.read = true; } }).catch(() => {});
+            this.api('/api/v1/notifications/' + n.id + '/read', {method: 'POST'}).then(r => { if (r.ok) { n.read = true; this.navBadges['notifications'] = this.unreadNotifs(); } }).catch(() => {});
         },
         toggleNotifRead(n) {
             if (!n) return;
             const url = '/api/v1/notifications/' + n.id + (n.read ? '/unread' : '/read');
-            this.api(url, {method: 'POST'}).then(r => { if (r.ok) { n.read = !n.read; this.loadSection(true); } }).catch(() => {});
+            this.api(url, {method: 'POST'}).then(r => { if (r.ok) { n.read = !n.read; this.navBadges['notifications'] = this.unreadNotifs(); this.loadSection(true); } }).catch(() => {});
         },
         dismissNotif(n) {
-            this.api('/api/v1/notifications/' + n.id, {method: 'DELETE'}).then(r => { if (r.ok) { this.dbNotifs = this.dbNotifs.filter(x => x.id !== n.id); } }).catch(() => {});
+            this.api('/api/v1/notifications/' + n.id, {method: 'DELETE'}).then(r => { if (r.ok) { this.dbNotifs = this.dbNotifs.filter(x => x.id !== n.id); this.navBadges['notifications'] = this.unreadNotifs(); } }).catch(() => {});
         },
         markAllNotifsRead() {
-            this.api('/api/v1/notifications/read-all', {method: 'POST'}).then(r => { if (r.ok) { this.dbNotifs.forEach(n => n.read = true); } }).catch(() => {});
+            this.api('/api/v1/notifications/read-all', {method: 'POST'}).then(r => { if (r.ok) { this.dbNotifs.forEach(n => n.read = true); this.navBadges['notifications'] = this.unreadNotifs(); } }).catch(() => {});
         },
         loadSection(soft) {
             if (!this.tenant) { this.rows = null; return; }
