@@ -95,4 +95,17 @@ class RoleController extends Controller
 
         return $this->userRoles($user);
     }
+
+    public function remove(Request $request, User $user)
+    {
+        abort_if($request->user()->is($user), 422, 'Eigenes Mitglied kann nicht entfernt werden.');
+
+        DB::table('model_has_roles')
+            ->where('team_id', tenant()->getTenantKey())
+            ->where('model_type', User::class)
+            ->where('model_id', $user->id)
+            ->delete();
+
+        return response()->noContent();
+    }
 }
