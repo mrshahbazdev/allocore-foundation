@@ -19,6 +19,7 @@ class LeaveRequestController extends Controller
             ->when($request->type, fn ($q) => $q->where('type', $request->type))
             ->when($request->active === '1', fn ($q) => $q->where('status', 'approved')
                 ->where('starts_on', '<=', today())->where('ends_on', '>=', today()))
+            ->when($request->person_id, fn ($q, $v) => $q->where('person_id', $v))
             ->with('person:id,first_name,last_name')
             ->orderByDesc('starts_on')
             ->paginate(min(request()->integer('per_page', 200), 200));

@@ -17,6 +17,7 @@ class MeasureController extends Controller
             ->when($request->boolean('overdue'), fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->where('due_at', '<', now()))
             ->when($request->boolean('due_soon'), fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->whereBetween('due_at', [now(), now()->addDays(7)]))
             ->when($request->project_id, fn ($q) => $q->where('project_id', $request->project_id))
+            ->when($request->responsible_id, fn ($q, $v) => $q->where('responsible_id', $v))
             ->with('responsible:id,name')
             ->paginate(min(request()->integer('per_page', 200), 200));
     }

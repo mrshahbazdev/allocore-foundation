@@ -21,6 +21,7 @@ class AuditFindingController extends Controller
             ->when($request->boolean('overdue'), fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->where('due_at', '<', now()))
             ->when($request->boolean('due_soon'), fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->whereBetween('due_at', [now(), now()->addDays(7)]))
             ->when($request->severity, fn ($q) => $q->where('severity', $request->severity))
+            ->when($request->responsible_id, fn ($q, $v) => $q->where('responsible_id', $v))
             ->with('audit:id,title', 'responsible:id,name')
             ->orderBy('due_at')
             ->paginate(min($request->integer('per_page', 200), 200));
