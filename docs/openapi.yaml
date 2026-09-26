@@ -1898,6 +1898,56 @@ paths:
         '404': {description: Not Found}
         '422': {description: Validation failed}
 
+  /api/v1/notifications/read-all:
+    post:
+      tags: [metrics]
+      summary: "POST /api/v1/notifications/read-all — alle ungelesenen als gelesen markieren"
+      parameters:
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+
+  /api/v1/notifications/unread-count:
+    get:
+      tags: [metrics]
+      summary: "GET /api/v1/notifications/unread-count — {count} ungelesener Benachrichtigungen"
+      parameters:
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+
+  /api/v1/notifications/{id}:
+    delete:
+      tags: [metrics]
+      summary: "DELETE /api/v1/notifications/{id} — Benachrichtigung löschen (404 bei fremder)"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '204': {description: No Content}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+
   /api/v1/analytics/trends:
     get:
       tags: [analytics]
