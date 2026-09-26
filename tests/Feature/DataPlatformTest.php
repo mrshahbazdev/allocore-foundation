@@ -1306,6 +1306,21 @@ class DataPlatformTest extends TestCase
         $this->assertSame(1, $user->notifications()->count());
     }
 
+    public function test_notifications_destroy_all_filters_by_before(): void
+    {
+        $tenant = Tenant::create(['name' => 'DB GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new PasswordChangedAlert('alt'));
+        $user->notify(new PasswordChangedAlert('neu'));
+        $user->notifications()->orderBy('created_at')->first()->forceFill(['created_at' => now()->subDays(40)])->save();
+
+        $this->deleteJson('/api/v1/notifications?before='.now()->subDays(30)->toDateString(), [], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['deleted' => 1]);
+
+        $this->assertSame(1, $user->notifications()->count());
+    }
+
     public function test_notifications_delete_read_honors_muted_filter(): void
     {
         $tenant = Tenant::create(['name' => 'RM GmbH']);
