@@ -7,10 +7,12 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
+use Modules\Ai\Models\AiAnalysis;
 use Modules\Core\Models\Company;
 use Tests\TestCase;
 
@@ -492,6 +494,29 @@ class DataPlatformTest extends TestCase
         $this->assertContains('fin_reports_missing', $codes);
         $this->assertContains('tenders_no_applications', $codes);
         $this->assertContains('leave_overlap', $codes);
+    }
+
+    public function test_insights_reports_graph_orphans_and_empty_objects(): void
+    {
+        $tenant = Tenant::create(['name' => 'Verwaist GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/graph-entities', ['type' => 'company', 'name' => 'Waise AG'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->post('/api/v1/data-objects', ['name' => 'leer.txt', 'file' => UploadedFile::fake()->create('leer.txt', 0)], ['X-Tenant' => $tenant->id])->assertCreated();
+        tenancy()->initialize($tenant);
+        AiAnalysis::create(['kind' => 'insight', 'provider' => 'heuristic', 'status' => 'failed', 'summary' => 'Fehler']);
+        tenancy()->end();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('graph_orphans', $codes);
+        $this->assertContains('data_objects_empty', $codes);
+        $this->assertContains('ai_analyses_failed', $codes);
     }
 
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
