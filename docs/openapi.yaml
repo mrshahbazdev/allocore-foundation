@@ -2142,6 +2142,11 @@ paths:
           required: false
           schema: {type: boolean, default: false}
           description: Nur ungelesene Benachrichtigungen liefern
+        - name: q
+          in: query
+          required: false
+          schema: {type: string}
+          description: Titel-Teiltextsuche
         - name: read
           in: query
           required: false
