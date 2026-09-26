@@ -206,6 +206,17 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $leaveOverlap = DB::table('leave_requests')->where('tenant_id', $t)->where('status', 'approved')
+            ->whereExists(fn ($sub) => $sub->selectRaw(1)->from('leave_requests as l2')
+                ->whereColumn('l2.person_id', 'leave_requests.person_id')
+                ->whereColumn('l2.id', '!=', 'leave_requests.id')
+                ->where('l2.status', 'approved')
+                ->whereColumn('l2.starts_on', '<=', 'leave_requests.ends_on')
+                ->whereColumn('l2.ends_on', '>=', 'leave_requests.starts_on'))->count();
+        if ($leaveOverlap) {
+            $insights[] = $this->hit('warning', 'leave_overlap', "{$leaveOverlap} genehmigte(r) Urlaubsantrag/-anträge überschneiden sich.", ['count' => $leaveOverlap]);
+        }
+
         $persNoContact = $count('persons', fn ($q) => $q->whereNull('email')->whereNull('phone'));
         if ($persNoContact) {
             $insights[] = $this->hit('info', 'persons_no_contact', "{$persNoContact} Person(en) ohne E-Mail und Telefon.", ['count' => $persNoContact]);
