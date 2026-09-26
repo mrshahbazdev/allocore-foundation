@@ -499,6 +499,16 @@ class RolesTest extends TestCase
         $this->assertDatabaseHas('personal_access_tokens', ['id' => $keep->accessToken->id]);
     }
 
+    public function test_missing_tenant_header_returns_400(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/v1/tasks')
+            ->assertStatus(400)
+            ->assertJsonPath('message', 'X-Tenant Header fehlt oder Mandant unbekannt.');
+    }
+
     public function test_api_rate_limit(): void
     {
         $tenant = Tenant::create(['name' => 'RL GmbH']);
