@@ -71,7 +71,11 @@ class NotificationController extends Controller
 
     public function destroyAll(Request $request)
     {
-        $count = $request->user()->notifications()->delete();
+        $count = $request->user()->notifications()
+            ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->input('kind')))
+            ->when($request->boolean('read'), fn ($q) => $q->whereNotNull('read_at'))
+            ->when($request->boolean('unread'), fn ($q) => $q->whereNull('read_at'))
+            ->delete();
 
         return response()->json(['deleted' => $count]);
     }
