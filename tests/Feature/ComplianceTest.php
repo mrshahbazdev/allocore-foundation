@@ -212,6 +212,62 @@ class ComplianceTest extends TestCase
         });
     }
 
+    public function test_measure_reminder_notifies_responsible(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Maßnahmen GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/projects', [
+            'name' => 'Arbeitssicherheit',
+            'status' => 'active',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $projectId = $this->getJson('/api/v1/projects', ['X-Tenant' => $tenant->id])->json('data.0.id');
+
+        $this->postJson('/api/v1/measures', [
+            'title' => 'Sicherheitsbelehrung',
+            'project_id' => $projectId,
+            'responsible_id' => $user->id,
+            'due_at' => now()->addHours(12)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, function (ComplianceDueSoon $n) {
+            return $n->kind === 'massnahme';
+        });
+    }
+
+    public function test_production_order_reminder_uses_assignee_email(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Auftrag GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/persons', [
+            'first_name' => 'Otto',
+            'last_name' => 'Werker',
+            'email' => $user->email,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $personId = $this->getJson('/api/v1/persons', ['X-Tenant' => $tenant->id])->json('data.0.id');
+
+        $this->postJson('/api/v1/production-orders', [
+            'order_no' => 'PO-TEST-1',
+            'product' => 'Kronen 3er',
+            'assigned_to' => $personId,
+            'due_at' => now()->addHours(12)->toISOString(),
+            'status' => 'queued',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, function (ComplianceDueSoon $n) {
+            return $n->kind === 'auftrag';
+        });
+    }
+
     public function test_project_reminder_notifies_owner(): void
     {
         Notification::fake();
