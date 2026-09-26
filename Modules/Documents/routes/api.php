@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Documents\Http\Controllers\DocumentController;
 
-Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v1')->group(function () {
     Route::apiResource('documents', DocumentController::class)
         ->only(['index', 'show'])->middleware('permission:documents.view')->names('documents');
     Route::apiResource('documents', DocumentController::class)

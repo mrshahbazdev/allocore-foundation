@@ -7,7 +7,7 @@ use Modules\ExpertNetwork\Http\Controllers\QuestionController;
 use Modules\ExpertNetwork\Http\Controllers\TenderApplicationController;
 use Modules\ExpertNetwork\Http\Controllers\TenderController;
 
-Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v1')->group(function () {
     Route::get('expert-profiles/match', [ExpertProfileController::class, 'match'])
         ->middleware('permission:experts.view')->name('expert-network.profiles.match');
     Route::apiResource('expert-profiles', ExpertProfileController::class)

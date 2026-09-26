@@ -5,7 +5,7 @@ use Modules\KnowledgeGraph\Http\Controllers\GraphEdgeController;
 use Modules\KnowledgeGraph\Http\Controllers\GraphEntityController;
 use Modules\KnowledgeGraph\Http\Controllers\GraphTraversalController;
 
-Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v1')->group(function () {
     foreach ([
         'graph-entities' => GraphEntityController::class,
         'graph-edges' => GraphEdgeController::class,

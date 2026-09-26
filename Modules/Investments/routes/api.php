@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Investments\Http\Controllers\InvestmentController;
 use Modules\Investments\Http\Controllers\PortfolioController;
 
-Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v1')->group(function () {
     foreach ([
         'portfolios' => PortfolioController::class,
         'investments' => InvestmentController::class,

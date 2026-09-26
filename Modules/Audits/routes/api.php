@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Audits\Http\Controllers\AuditController;
 use Modules\Audits\Http\Controllers\AuditFindingController;
 
-Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v1')->group(function () {
     Route::apiResource('audits', AuditController::class)
         ->only(['index', 'show'])->middleware('permission:audits.view')->names('audits');
     Route::apiResource('audits', AuditController::class)

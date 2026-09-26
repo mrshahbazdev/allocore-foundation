@@ -7,7 +7,7 @@ use Modules\Compliance\Http\Controllers\InstructionController;
 use Modules\Compliance\Http\Controllers\OperatingInstructionController;
 use Modules\Compliance\Http\Controllers\RiskAssessmentController;
 
-Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v1')->group(function () {
     foreach ([
         'instructions' => InstructionController::class,
         'inspections' => InspectionController::class,

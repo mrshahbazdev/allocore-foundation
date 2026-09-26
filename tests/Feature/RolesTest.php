@@ -482,6 +482,17 @@ class RolesTest extends TestCase
             ->assertJsonPath('abilities.0', 'tasks.view');
     }
 
+    public function test_api_rate_limit(): void
+    {
+        $tenant = Tenant::create(['name' => 'RL GmbH']);
+        $this->actingAsUser($tenant);
+        $response = null;
+        foreach (range(1, 121) as $i) {
+            $response = $this->getJson('/api/v1/me', ['X-Tenant' => $tenant->id]);
+        }
+        $response->assertStatus(429);
+    }
+
     protected function actingAsUser(Tenant|string|null $tenant = null): User
     {
         $user = User::factory()->create();
