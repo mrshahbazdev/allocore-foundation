@@ -34,6 +34,29 @@ class EventController extends Controller
         return $page;
     }
 
+    /** Aggregierte Übersicht: total, by_group (Präfix vor dem ersten Punkt), per_day letzte 7 Tage. */
+    public function summary(Request $request)
+    {
+        $base = DB::table('stored_events')
+            ->where('meta_data->tenant_id', tenant()->getTenantKey())
+            ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
+            ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')));
+
+        $byGroup = (clone $base)
+            ->selectRaw("SUBSTRING_INDEX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')), '.', 1) as grp, COUNT(*) as n")
+            ->groupBy('grp')->orderByDesc('n')->pluck('n', 'grp');
+
+        $perDay = (clone $base)->where('created_at', '>=', now()->subDays(7)->startOfDay())
+            ->selectRaw('DATE(created_at) as day, COUNT(*) as n')
+            ->groupBy('day')->pluck('n', 'day');
+
+        return response()->json([
+            'total' => (clone $base)->count(),
+            'by_group' => $byGroup,
+            'per_day' => $perDay,
+        ]);
+    }
+
     /** Audit-export: alle Events des Mandanten als NDJSON-Stream (gleiche Filter wie index). */
     public function export(Request $request)
     {

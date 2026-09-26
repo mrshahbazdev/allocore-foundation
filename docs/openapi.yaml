@@ -525,6 +525,17 @@ paths:
         '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
         '404': {description: Not Found}
         '422': {description: Validation failed}
+  /api/v1/events/summary:
+    get:
+      tags: [events]
+      summary: "GET /api/v1/events/summary — {total, by_group, per_day (7d)} — ?since=/?until="
+      parameters:
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: Event-Aggregat}
   /api/v1/events/export:
     get:
       tags: [events]
