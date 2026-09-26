@@ -713,6 +713,7 @@ class DataPlatformTest extends TestCase
         $this->putJson("/api/v1/audits/{$auditDone['id']}", ['status' => 'done'], ['X-Tenant' => $tenant->id])->assertOk();
         $auditOpen = $this->postJson('/api/v1/audits', ['title' => 'Aktives Audit'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
         $this->postJson('/api/v1/audit-findings', ['audit_id' => $auditOpen['id'], 'title' => 'Kritisch', 'severity' => 'critical', 'due_at' => now()->subDays(2)->toDateString()], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/measures', ['title' => 'Losgelöst'], ['X-Tenant' => $tenant->id])->assertCreated();
 
         tenancy()->initialize($tenant);
         LeaveRequest::whereKey($leave['id'])->update(['created_at' => now()->subDays(10)]);
@@ -726,6 +727,7 @@ class DataPlatformTest extends TestCase
         $this->assertContains('leave_pending_stale', $codes);
         $this->assertContains('leave_decided_no_stamp', $codes);
         $this->assertContains('instructions_no_completed_at', $codes);
+        $this->assertContains('measures_no_project', $codes);
         $this->assertContains('risk_assessments_no_person', $codes);
         $this->assertContains('audits_no_findings', $codes);
         $this->assertContains('audits_no_result', $codes);
