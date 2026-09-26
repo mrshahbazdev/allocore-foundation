@@ -482,6 +482,23 @@ class RolesTest extends TestCase
             ->assertJsonPath('abilities.0', 'tasks.view');
     }
 
+    public function test_tokens_prune_removes_expired_and_stale_workspace_tokens(): void
+    {
+        $tenant = Tenant::create(['name' => 'Prune GmbH']);
+        $user = $this->actingAsUser($tenant);
+
+        $exp = $user->fresh()->createToken('exp', ['*'], now()->subDay());
+        $ws = $user->fresh()->createToken('workspace');
+        $ws->accessToken->forceFill(['created_at' => now()->subDays(3)])->save();
+        $keep = $user->fresh()->createToken('keep', ['*'], now()->addDays(5));
+
+        $this->artisan('tokens:prune')->assertSuccessful();
+
+        $this->assertDatabaseMissing('personal_access_tokens', ['id' => $exp->accessToken->id]);
+        $this->assertDatabaseMissing('personal_access_tokens', ['id' => $ws->accessToken->id]);
+        $this->assertDatabaseHas('personal_access_tokens', ['id' => $keep->accessToken->id]);
+    }
+
     public function test_api_rate_limit(): void
     {
         $tenant = Tenant::create(['name' => 'RL GmbH']);

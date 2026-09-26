@@ -3,6 +3,7 @@
 namespace Modules\Core\Providers;
 
 use Illuminate\Console\Scheduling\Schedule;
+use Modules\Core\Console\PruneTokens;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class CoreServiceProvider extends ModuleServiceProvider
@@ -22,7 +23,9 @@ class CoreServiceProvider extends ModuleServiceProvider
      *
      * @var string[]
      */
-    // protected array $commands = [];
+    protected array $commands = [
+        PruneTokens::class,
+    ];
 
     /**
      * Provider classes to register.
@@ -36,11 +39,9 @@ class CoreServiceProvider extends ModuleServiceProvider
 
     /**
      * Define module schedules.
-     *
-     * @param  $schedule
      */
-    // protected function configureSchedules(Schedule $schedule): void
-    // {
-    //     $schedule->command('inspire')->hourly();
-    // }
+    protected function configureSchedules(Schedule $schedule): void
+    {
+        $schedule->command('tokens:prune')->daily();
+    }
 }
