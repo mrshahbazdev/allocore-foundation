@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $ordersRunningNoStart = $count('production_orders', fn ($q) => $q->where('status', 'running')->whereNull('started_at'));
+        if ($ordersRunningNoStart) {
+            $insights[] = $this->hit('info', 'orders_running_no_start', "{$ordersRunningNoStart} laufende(r) Auftrag/Aufträge ohne Startzeit.", ['count' => $ordersRunningNoStart]);
+        }
+
+        $ordersDoneNoFinish = $count('production_orders', fn ($q) => $q->where('status', 'done')->whereNull('finished_at'));
+        if ($ordersDoneNoFinish) {
+            $insights[] = $this->hit('info', 'orders_done_no_finish', "{$ordersDoneNoFinish} fertige(r) Auftrag/Aufträge ohne Endzeit.", ['count' => $ordersDoneNoFinish]);
+        }
+
         $questionsNoAccepted = $count('questions', fn ($q) => $q->where('status', 'answered')->whereNotExists(fn ($sub) => $sub->selectRaw(1)->from('answers')->whereColumn('answers.question_id', 'questions.id')->where('answers.is_accepted', true)));
         if ($questionsNoAccepted) {
             $insights[] = $this->hit('info', 'questions_no_accepted', "{$questionsNoAccepted} beantwortete Frage(n) ohne akzeptierte Antwort.", ['count' => $questionsNoAccepted]);
