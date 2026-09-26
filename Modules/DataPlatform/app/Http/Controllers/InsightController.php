@@ -206,6 +206,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $invStale = $count('investments', fn ($q) => $q->whereNull('disposed_at')->whereNotNull('valued_at')->where('valued_at', '<', now()->subDays(90)));
+        if ($invStale) {
+            $insights[] = $this->hit('info', 'investments_stale_value', "{$invStale} Investition(en) mit Bewertung älter als 90 Tage.", ['count' => $invStale]);
+        }
+
         $projNoOwner = $count('projects', fn ($q) => $q->whereIn('status', ['planned', 'active'])->whereNull('owner_id'));
         if ($projNoOwner) {
             $insights[] = $this->hit('warning', 'projects_no_owner', "{$projNoOwner} offene(s) Projekt(e) ohne Owner.", ['count' => $projNoOwner]);
