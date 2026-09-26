@@ -1752,6 +1752,48 @@ paths:
         '404': {description: Not Found}
         '422': {description: Validation failed}
 
+  /api/v1/notifications:
+    get:
+      tags: [metrics]
+      summary: "GET /api/v1/notifications — Datenbank-Benachrichtigungen des Users [{id, kind, title, due_at, read, created_at}]"
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema: {type: integer, minimum: 1, maximum: 50, default: 10}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+
+  /api/v1/notifications/{id}/read:
+    post:
+      tags: [metrics]
+      summary: "POST /api/v1/notifications/{id}/read — Benachrichtigung als gelesen markieren"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      security: [{bearerAuth: []}]
+      responses:
+        '200': {description: OK}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Validation failed}
+
   /api/v1/analytics/trends:
     get:
       tags: [analytics]
