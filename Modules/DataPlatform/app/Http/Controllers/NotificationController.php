@@ -9,7 +9,7 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
-        $limit = min($request->integer('limit', 10), 50);
+        $limit = min($request->integer('per_page', $request->integer('limit', 10)), 200);
 
         return $request->user()->notifications()
             ->when($request->boolean('unread'), fn ($q) => $q->whereNull('read_at'))
