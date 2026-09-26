@@ -206,6 +206,14 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $appNoPrice = DB::table('tender_applications')->where('tenant_id', $t)
+            ->whereNull('price')
+            ->whereExists(fn ($sub) => $sub->selectRaw(1)->from('tenders')->whereColumn('tenders.id', 'tender_applications.tender_id')->where('status', 'open'))
+            ->count();
+        if ($appNoPrice) {
+            $insights[] = $this->hit('info', 'applications_no_price', "{$appNoPrice} Bewerbung(en) auf offene Ausschreibungen ohne Preisangabe.", ['count' => $appNoPrice]);
+        }
+
         $leaveOverlap = DB::table('leave_requests')->where('tenant_id', $t)->where('status', 'approved')
             ->whereExists(fn ($sub) => $sub->selectRaw(1)->from('leave_requests as l2')
                 ->whereColumn('l2.person_id', 'leave_requests.person_id')
