@@ -1252,6 +1252,22 @@ class DataPlatformTest extends TestCase
         $this->assertEquals(1, $other->fresh()->unreadNotifications()->count());
     }
 
+    public function test_notifications_read_all_honors_kind_filter(): void
+    {
+        $tenant = Tenant::create(['name' => 'NK GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new PasswordChangedAlert('Passwort geändert'));
+        $user->notify(new NewLoginAlert('1.2.3.4', null));
+
+        $this->postJson('/api/v1/notifications/read-all?kind=anmeldung', [], ['X-Tenant' => $tenant->id])->assertOk();
+
+        $this->getJson('/api/v1/notifications/unread-count', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJson(['count' => 1]);
+        $this->getJson('/api/v1/notifications?unread=1', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonPath('0.kind', 'passwort_geaendert');
+    }
+
     public function test_notifications_unread_filter_and_mark_unread(): void
     {
         $tenant = Tenant::create(['name' => 'NU GmbH']);

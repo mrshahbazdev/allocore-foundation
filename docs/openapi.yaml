@@ -2232,7 +2232,7 @@ paths:
   /api/v1/notifications/read-all:
     post:
       tags: [metrics]
-      summary: "POST /api/v1/notifications/read-all — alle ungelesenen als gelesen markieren"
+      summary: "POST /api/v1/notifications/read-all — alle ungelesenen als gelesen markieren (?kind= nur eine Art)"
       parameters:
         - name: X-Tenant
           in: header
