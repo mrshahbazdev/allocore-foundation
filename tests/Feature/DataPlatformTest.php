@@ -11,6 +11,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Laravel\Sanctum\Sanctum;
 use Modules\Ai\Models\AiAnalysis;
 use Modules\Compliance\Models\Deadline;
@@ -18,6 +19,7 @@ use Modules\Compliance\Models\Instruction;
 use Modules\Core\Models\Company;
 use Modules\CorporateDev\Models\Project;
 use Modules\DataLake\Models\DataObject;
+use Modules\DataPlatform\Notifications\CriticalInsight;
 use Modules\Documents\Models\Document;
 use Modules\ExpertNetwork\Models\Answer;
 use Modules\ExpertNetwork\Models\Question;
@@ -1290,5 +1292,33 @@ class DataPlatformTest extends TestCase
         $res = $this->getJson('/api/v1/notifications?kind=frist', ['X-Tenant' => $tenant->id])->assertOk()->json();
         $this->assertCount(1, $res);
         $this->assertSame('frist', $res[0]['kind']);
+    }
+
+    public function test_insights_notify_sends_critical_insights_to_admins_once(): void
+    {
+        $tenant = Tenant::create(['name' => 'Hinweis GmbH']);
+        $admin = $this->acting($tenant);
+
+        $company = $this->postJson('/api/v1/companies', ['name' => 'HinweisCo'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/financial-reports', [
+            'company_id' => $company['id'],
+            'period' => now()->format('Y-m'),
+            'liquidity' => -100,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        NotificationFacade::fake();
+
+        Artisan::call('insights:notify');
+
+        NotificationFacade::assertSentTo($admin, CriticalInsight::class, function ($n) {
+            return $n->toArray(new \stdClass)['kind'] === 'hinweis';
+        });
+        NotificationFacade::assertSentToTimes($admin, CriticalInsight::class, 1);
+
+        // Dedupe: zweiter Lauf schickt denselben Hinweis nicht noch einmal.
+        Artisan::call('insights:notify');
+        NotificationFacade::assertSentToTimes($admin, CriticalInsight::class, 1);
+
+        $this->assertDatabaseCount('insight_notifications', 1);
     }
 }
