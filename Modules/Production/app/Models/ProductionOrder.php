@@ -5,6 +5,7 @@ namespace Modules\Production\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Concerns\NotifiesLinkedUserOnCreate;
+use Modules\Core\Concerns\NotifiesLinkedUserOnStatus;
 use Modules\Core\Models\Person;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
@@ -12,6 +13,13 @@ class ProductionOrder extends Model
 {
     use BelongsToTenant;
     use NotifiesLinkedUserOnCreate;
+    use NotifiesLinkedUserOnStatus;
+
+    protected const DONE_FIELD = 'status';
+
+    protected const DONE_VALUE = 'done';
+
+    protected const DONE_LABEL = 'fertiggestellt';
 
     protected const PERSON_REL = 'assignee';
 
