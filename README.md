@@ -18,4 +18,4 @@ php artisan demo:seed {tenant_id}   # optionale Demodaten
 php artisan serve                   # http://localhost:8000/login
 ```
 
-Dokumentation: `docs/ALLOCORE_FOUNDATION_ROADMAP.md` (Roadmap v1.0), `docs/API_REFERENCE.md`, `docs/EVENT_CATALOG.md`, `docs/openapi.yaml`, `docs/DEPLOYMENT.md`, `docs/adr/`
+Dokumentation: `docs/ALLOCORE_FOUNDATION_ROADMAP.md` (Roadmap v1.0), `docs/API_REFERENCE.md`, `docs/EVENT_CATALOG.md`, `docs/openapi.yaml`, `docs/DEPLOYMENT.md`, `docs/OPERATIONS.md` (Betrieb/Scheduler), `docs/adr/`
