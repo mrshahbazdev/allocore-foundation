@@ -1,7 +1,7 @@
 # ALLOCORE Foundation — API Referenz (v1)
 
 Alle Endpunkte unter `/api/v1`. Auth: `Authorization: Bearer <sanctum-token>`.
-Tenant-Scope: Header `X-Tenant: <tenant-uuid>` (Pflicht auf allen Domänen-Endpunkten). Mitgliedschaft Pflicht: Nutzer mit Rollen-Zuweisungen dürfen nur Mandanten betreten, in denen sie Mitglied sind — sonst `403 Kein Mitglied dieses Mandanten.` (Nutzer ganz ohne Zuweisungen dürfen überall hin — Grace-Modus für Erst-Onboarding).
+Tenant-Scope: Header `X-Tenant: <tenant-uuid>` (Pflicht auf allen Domänen-Endpunkten). Mitgliedschaft Pflicht: Nutzer dürfen nur Mandanten betreten, in denen sie Mitglied sind — sonst `403 Kein Mitglied dieses Mandanten.` (Einstiegspunkt: der Ersteller eines neuen Mandanten wird automatisch `administrator`; weitere Nutzer werden per `POST /users` eines Mitglieds angebunden).
 RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 
 ## Zentral (kein Tenant-Header nötig)

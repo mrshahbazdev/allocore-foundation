@@ -22,7 +22,7 @@ class RolesTest extends TestCase
         $tenant = $this->createTenantApi(['name' => 'Rollen GmbH'])
             ->assertCreated()->json('id');
 
-        $this->actingAsUser();
+        $this->actingAsUser(Tenant::find($tenant));
 
         $res = $this->getJson('/api/v1/roles', ['X-Tenant' => $tenant])->assertOk();
 
