@@ -91,8 +91,8 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 | GET `/notifications/stats` | `metrics.view` | Zählwerte `{total, unread, read, muted}` der eigenen Benachrichtigungen |
 | GET `/notifications/codes` | `metrics.view` | Vorhandene Insight-/Seed-Codes des Users (distinct, sortiert) |
 | GET `/notifications/kinds` | `metrics.view` | Vorhandene Benachrichtigungs-Arten des Users (distinct, sortiert) — für Filter-Chips |
-| POST `/notifications/read-all` | `metrics.view` | Alle ungelesenen Benachrichtigungen als gelesen markieren; `?kind=`/`?code=`/`?muted=1`/`?before=YYYY-MM-DD` nur eine Art/Code/stumme/vor Datum |
-| POST `/notifications/delete-read` | `metrics.view` | Alle gelesenen Benachrichtigungen löschen — `{deleted: n}`; `?kind=`/`?code=`/`?muted=1`/`?before=YYYY-MM-DD` grenzt ein |
+| POST `/notifications/read-all` | `metrics.view` | Alle ungelesenen Benachrichtigungen als gelesen markieren; `?kind=`/`?code=`/`?muted=1`/`?before=`/`?after=YYYY-MM-DD` nur eine Art/Code/stumme/Zeitraum |
+| POST `/notifications/delete-read` | `metrics.view` | Alle gelesenen Benachrichtigungen löschen — `{deleted: n}`; `?kind=`/`?code=`/`?muted=1`/`?before=`/`?after=YYYY-MM-DD` grenzt ein |
 | `/notifications/unread-count` | `metrics.view` | Anzahl ungelesener Benachrichtigungen: `{count}` — stummgeschaltete Arten (`PUT /me/notification-prefs`) werden nicht mitgezählt; `include_muted=1` liefert die Gesamtzahl; `kind=`/`?code=` nur eine Art/Code zählen |
 | DELETE `/notifications/{id}` | `metrics.view` | Einzelne Benachrichtigung löschen (404 bei fremder) |
 | DELETE `/notifications` | `metrics.view` | Benachrichtigungen des Users löschen — `{deleted: n}`; ohne Filter alle, mit `?kind=`/ `?read=1` / `?unread=1` / `?code=` / `?muted=1` / `?before=`/`?after=YYYY-MM-DD` nur passende |

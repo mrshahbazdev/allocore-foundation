@@ -1515,6 +1515,24 @@ class DataPlatformTest extends TestCase
         $this->assertCount(1, $items);
     }
 
+    public function test_notifications_read_all_and_delete_read_honor_after(): void
+    {
+        $tenant = Tenant::create(['name' => 'AW GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new PasswordChangedAlert('a'));
+        $user->notifications()->first()->forceFill(['created_at' => now()->subDays(40)])->save();
+        $user->notify(new PasswordChangedAlert('b'));
+
+        $this->postJson('/api/v1/notifications/read-all?after='.now()->subDays(30)->toDateString(), [], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->assertSame(1, $user->unreadNotifications()->count());
+        $this->assertNull($user->notifications()->reorder('created_at')->first()->read_at);
+
+        $this->postJson('/api/v1/notifications/read-all', [], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->postJson('/api/v1/notifications/delete-read?after='.now()->subDays(30)->toDateString(), [], ['X-Tenant' => $tenant->id])->assertOk()->assertJson(['deleted' => 1]);
+        $this->assertSame(1, $user->notifications()->count());
+    }
+
     public function test_notifications_stats_counts(): void
     {
         $tenant = Tenant::create(['name' => 'NS GmbH']);
