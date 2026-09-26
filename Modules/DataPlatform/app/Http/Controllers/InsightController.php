@@ -206,6 +206,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $persNoContact = $count('persons', fn ($q) => $q->whereNull('email')->whereNull('phone'));
+        if ($persNoContact) {
+            $insights[] = $this->hit('info', 'persons_no_contact', "{$persNoContact} Person(en) ohne E-Mail und Telefon.", ['count' => $persNoContact]);
+        }
+
         $expNoRate = $count('expert_profiles', fn ($q) => $q->where('status', 'active')->whereNull('hourly_rate'));
         if ($expNoRate) {
             $insights[] = $this->hit('info', 'expert_profiles_no_rate', "{$expNoRate} aktive(s) Expertenprofil(e) ohne Stundensatz.", ['count' => $expNoRate]);
