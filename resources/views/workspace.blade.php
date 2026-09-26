@@ -394,6 +394,26 @@
                             </template>
                         </div>
                     </div>
+                    <div x-show="evSummary" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
+                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center">Aktivität (7 Tage) <span class="text-[10px] font-mono text-[#9CA3AF]" x-text="evSummary ? evSummary.total + ' gesamt' : ''"></span></div>
+                        <div class="px-5 py-4">
+                            <div class="flex items-end gap-1.5 h-16">
+                                <template x-for="d in evDays()" :key="d.key">
+                                    <div class="flex-1 flex flex-col items-center gap-1" :title="d.label + ': ' + d.n + ' Ereignisse'">
+                                        <div class="w-full bg-[#F0F3F7] rounded-sm flex items-end" style="height: 100%;">
+                                            <div class="w-full bg-[#CA8A04] rounded-sm transition-all" :style="'height:' + Math.max(4, d.pct) + '%'"></div>
+                                        </div>
+                                        <span class="text-[9px] font-mono text-[#9CA3AF]" x-text="d.label.split(' ')[0]"></span>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 mt-3">
+                                <template x-for="[g, n] in evGroups()" :key="g">
+                                    <a :href="'/app/events?tenant=' + tenant + '&eg=' + g" class="text-[10px] px-2 py-0.5 rounded-full border border-[#E4E9F0] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="eventGroup(g) + ' · ' + n"></a>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
                     <div x-show="events.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
                         <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center">Letzte Ereignisse <a :href="'/app/events?tenant=' + tenant" class="text-[10px] text-[#CA8A04] hover:underline font-normal">Alle →</a></div>
                         <div class="divide-y divide-[#F0F3F7] max-h-64 overflow-y-auto">
@@ -1337,7 +1357,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI, icons: ICONS,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], spark: {}, exec: null, execReports: [], reportOpen: {}, reportData: {}, lookups: {}, navOpen: false, collapsed: {}, me: null, upcoming: [], openTasks: [],
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], evSummary: null, spark: {}, exec: null, execReports: [], reportOpen: {}, reportData: {}, lookups: {}, navOpen: false, collapsed: {}, me: null, upcoming: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
@@ -1846,6 +1866,8 @@ function workspace(initial) {
                         .sort((a, b) => ({critical: 0, warning: 1, info: 2}[a.severity] ?? 3) - ({critical: 0, warning: 1, info: 2}[b.severity] ?? 3)));
                 this.api('/api/v1/events').then(r => r.ok ? r.json() : [])
                     .then(d => this.events = (Array.isArray(d) ? d : (d.data || [])).slice(0, 15));
+                this.api('/api/v1/events/summary').then(r => r.ok ? r.json() : null)
+                    .then(d => this.evSummary = d);
                 this.api('/api/v1/analytics/trends').then(r => r.ok ? r.json() : [])
                     .then(d => this.trends = Array.isArray(d) ? d : (d.data || []));
                 Promise.all([
@@ -2422,6 +2444,18 @@ function workspace(initial) {
         canView(key) { if (key === 'users' || key === 'dashboard') return true; const p = this.permDom(key); return !p || this.hasPerm(p + '.view'); },
         canManage() { const p = this.managePerm(); return !p || this.hasPerm(p + '.manage'); },
         visGroups() { return this.groups.map(g => ({...g, items: g.items.filter(i => this.canView(i.key))})).filter(g => g.items.length); },
+        evDays() {
+            if (!this.evSummary) return [];
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                const key = d.toISOString().slice(0, 10);
+                days.push({key, label: d.toLocaleDateString('de-DE', {weekday: 'short', day: '2-digit'}), n: this.evSummary.per_day[key] || 0});
+            }
+            const max = Math.max(1, ...days.map(d => d.n));
+            return days.map(d => ({...d, pct: Math.round(d.n / max * 100)}));
+        },
+        evGroups() { return this.evSummary ? Object.entries(this.evSummary.by_group || {}).slice(0, 10) : []; },
         writable() { return !['events','ai-analyses','metrics','users','notifications'].includes(this.section) && this.canManage(); },
         canEdit() { return this.writable() && !['data-objects','tokens'].includes(this.section); },
         canCreate() { return this.section === 'ai-analyses' ? this.hasPerm('ai.manage') : (this.section === 'users' ? this.hasPerm('roles.manage') : (this.section === 'tokens' ? true : this.writable())); },
