@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $auditsNoAuditor = $count('audits', fn ($q) => $q->whereIn('status', ['planned', 'in_progress'])->whereNull('auditor'));
+        if ($auditsNoAuditor) {
+            $insights[] = $this->hit('warning', 'audits_no_auditor', "{$auditsNoAuditor} geplante/laufende(s) Audit(s) ohne benannten Auditor.", ['count' => $auditsNoAuditor]);
+        }
+
+        $applicationsNoProposal = $count('tender_applications', fn ($q) => $q->whereNull('proposal'));
+        if ($applicationsNoProposal) {
+            $insights[] = $this->hit('info', 'applications_no_proposal', "{$applicationsNoProposal} Bewerbung(en) ohne Angebotstext.", ['count' => $applicationsNoProposal]);
+        }
+
         $riskHighNoMeasures = $count('risk_assessments', fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->whereIn('risk_level', ['high', 'critical'])->whereNull('measures'));
         if ($riskHighNoMeasures) {
             $insights[] = $this->hit('critical', 'risks_no_measures', "{$riskHighNoMeasures} hohe/kritische(r) Risiko(risiken) ohne Maßnahmen.", ['count' => $riskHighNoMeasures]);
