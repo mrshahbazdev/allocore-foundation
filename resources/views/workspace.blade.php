@@ -813,6 +813,7 @@
                                 <span x-text="r.name"></span>
                                 <span class="text-[11px] text-[#9CA3AF]" x-text="'(' + (r.permissions || []).length + ' Rechte)'"></span>
                                 <button x-show="hasPerm('roles.manage')" @click="openRoleEdit(r)" class="text-[10px] text-[#9CA3AF] hover:text-[#CA8A04] underline underline-offset-2" title="Rechte der Rolle bearbeiten">bearbeiten</button>
+                                <button x-show="hasPerm('roles.manage') && !['holding','administrator'].includes(r.name)" @click="deleteRole(r)" class="text-[10px] text-[#9CA3AF] hover:text-[#A6362E] underline underline-offset-2" title="Rolle löschen">löschen</button>
                             </div>
                             <div x-show="roleEdit === r.id" class="mt-1.5 ml-6 p-2.5 rounded-lg border border-[#E4E9F0] bg-[#F8FAFC] space-y-1.5">
                                 <div class="flex flex-wrap gap-x-3 gap-y-1 max-h-40 overflow-y-auto">
@@ -830,6 +831,10 @@
                             </div>
                         </div>
                     </template>
+                    <div x-show="hasPerm('roles.manage')" class="flex items-center gap-2">
+                        <input x-model="newRole" placeholder="neue_rolle" class="flex-1 text-xs px-2 py-1.5 border border-[#D6DEE9] rounded-md bg-white font-mono" @keydown.enter.prevent="createRole()">
+                        <button @click="createRole()" :disabled="!newRole.trim()" class="text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] rounded-md hover:border-[#CA8A04] disabled:opacity-40" title="Eigene Rolle anlegen">+ Rolle</button>
+                    </div>
                     <div x-show="!allRoles.length" class="text-xs text-[#9CA3AF]">Keine Rollen für diesen Mandanten.</div>
                     <div class="flex items-center justify-between" x-show="allRoles.length">
                         <button x-show="hasPerm('roles.manage') && detail && me && detail.id !== me.id" @click="removeMember()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/10" title="Mitglied aus diesem Mandanten entfernen">Entfernen</button>
@@ -1157,7 +1162,7 @@ function workspace(initial) {
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
-        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [],
+        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [],
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
@@ -1730,6 +1735,22 @@ function workspace(initial) {
                 this.rolePerms = (r.permissions || []).map(p => p.name);
                 this.api('/api/v1/permissions').then(res => res.ok ? res.json() : []).then(d => { this.allPerms = Array.isArray(d) ? d : []; });
             }
+        },
+        createRole() {
+            const name = this.newRole.trim();
+            if (!name) return;
+            this.api('/api/v1/roles', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, permissions: this.rolePerms})})
+                .then(async res => {
+                    if (!res.ok) { const d = await res.json().catch(() => ({})); this.toast(d.message || 'Anlegen fehlgeschlagen (HTTP ' + res.status + ')'); return; }
+                    this.newRole = ''; this.rolePerms = []; this.toast('Rolle angelegt.'); this.loadUserRoles(this.detail.id);
+                });
+        },
+        deleteRole(r) {
+            if (!confirm('Rolle „' + r.name + '" löschen? Zugewiesene Nutzer verlieren diese Rolle.')) return;
+            this.api('/api/v1/roles/' + r.id, {method: 'DELETE'}).then(res => {
+                this.toast(res.ok ? 'Rolle gelöscht.' : 'Löschen fehlgeschlagen (HTTP ' + res.status + ')');
+                if (res.ok) { this.loadUserRoles(this.detail.id); this.loadMe(); }
+            });
         },
         saveRolePerms(r) {
             this.api('/api/v1/roles/' + r.id, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({permissions: this.rolePerms})})

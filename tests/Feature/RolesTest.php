@@ -195,6 +195,32 @@ class RolesTest extends TestCase
         $this->assertEquals(['tasks.view'], $role->fresh()->permissions->pluck('name')->all());
     }
 
+    public function test_admin_can_create_and_delete_custom_role(): void
+    {
+        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'RoleCrud GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+
+        $roleId = $this->postJson('/api/v1/roles', [
+            'name' => 'buchhaltung', 'permissions' => ['finance.view', 'finance.manage'],
+        ], ['X-Tenant' => $tenant])->assertCreated()->json('id');
+
+        $this->assertDatabaseHas('roles', ['id' => $roleId, 'name' => 'buchhaltung', 'team_id' => $tenant]);
+
+        $this->postJson('/api/v1/roles', ['name' => 'buchhaltung'], ['X-Tenant' => $tenant])
+            ->assertStatus(422);
+
+        $adminRole = Role::where('team_id', $tenant)->where('name', 'administrator')->firstOrFail();
+        $this->deleteJson("/api/v1/roles/{$adminRole->id}", [], ['X-Tenant' => $tenant])
+            ->assertStatus(422);
+
+        $this->deleteJson("/api/v1/roles/{$roleId}", [], ['X-Tenant' => $tenant])
+            ->assertNoContent();
+        $this->assertDatabaseMissing('roles', ['id' => $roleId]);
+    }
+
     public function test_every_permission_domain_in_workspace_map_exists(): void
     {
         $this->postJson('/api/v1/tenants', ['name' => 'Perms GmbH'])->assertCreated();
