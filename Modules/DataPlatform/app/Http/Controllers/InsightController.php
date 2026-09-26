@@ -102,6 +102,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'leave_requests_pending', "{$leave} Urlaubs-/Fehlzeitenantrag/-anträge zur Genehmigung offen.", ['count' => $leave]);
         }
 
+        $leaveActive = $count('leave_requests', fn ($q) => $q->where('status', 'approved')->whereDate('starts_on', '<=', now())->whereDate('ends_on', '>=', now()));
+        if ($leaveActive) {
+            $insights[] = $this->hit('info', 'leave_active_today', "{$leaveActive} genehmigte(r) Urlaubs-/Fehlzeitenantrag/-anträge läuft/laufen heute.", ['count' => $leaveActive]);
+        }
+
         $ordersOverdue = $count('production_orders', fn ($q) => $q->whereIn('status', ['queued', 'running'])->where('due_at', '<', now()));
         if ($ordersOverdue) {
             $insights[] = $this->hit('warning', 'orders_overdue', "{$ordersOverdue} Produktionsauftrag/-aufträge überfällig.", ['count' => $ordersOverdue]);
