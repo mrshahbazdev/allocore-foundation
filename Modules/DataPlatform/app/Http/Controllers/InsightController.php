@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $auditsNoResult = $count('audits', fn ($q) => $q->where('status', 'done')->whereNull('result'));
+        if ($auditsNoResult) {
+            $insights[] = $this->hit('info', 'audits_no_result', "{$auditsNoResult} abgeschlossene(s) Audit(s) ohne Ergebnis.", ['count' => $auditsNoResult]);
+        }
+
+        $instrNoDate = $count('instructions', fn ($q) => $q->where('status', 'completed')->whereNull('completed_at'));
+        if ($instrNoDate) {
+            $insights[] = $this->hit('info', 'instructions_no_completed_at', "{$instrNoDate} abgeschlossene Unterweisung(en) ohne Abschlussdatum.", ['count' => $instrNoDate]);
+        }
+
         $objNoCat = $count('data_objects', fn ($q) => $q->whereNull('category')->orWhere('category', ''));
         if ($objNoCat) {
             $insights[] = $this->hit('info', 'data_objects_no_category', "{$objNoCat} Data-Lake-Objekt(e) ohne Kategorie.", ['count' => $objNoCat]);
