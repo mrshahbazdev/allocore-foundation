@@ -8,6 +8,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
@@ -27,6 +28,29 @@ class RoleController extends Controller
 
         return User::whereIn('id', $userIds)->orderBy('name')->get(['id', 'name', 'email'])
             ->map(fn (User $u) => $u->setAttribute('role_names', $u->getRoleNames()));
+    }
+
+    public function permissions()
+    {
+        return Permission::orderBy('name')->pluck('name');
+    }
+
+    public function updateRole(Request $request, Role $role)
+    {
+        abort_if($role->team_id !== tenant()->getTenantKey(), 404);
+
+        $validated = $request->validate([
+            'permissions' => ['required', 'array'],
+            'permissions.*' => ['string', 'exists:permissions,name'],
+        ]);
+
+        $role->syncPermissions($validated['permissions']);
+
+        return response()->json([
+            'id' => $role->id,
+            'name' => $role->name,
+            'permissions' => $role->permissions()->orderBy('name')->pluck('name'),
+        ]);
     }
 
     public function me(Request $request)

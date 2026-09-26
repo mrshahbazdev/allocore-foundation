@@ -807,11 +807,28 @@
                 <div x-show="section === 'users'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">ROLLEN</div>
                     <template x-for="r in allRoles" :key="r.id">
-                        <label class="flex items-center gap-2.5 text-sm text-[#1A2433]">
-                            <input type="checkbox" :value="r.name" x-model="userRoles" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
-                            <span x-text="r.name"></span>
-                            <span class="text-[11px] text-[#9CA3AF]" x-text="'(' + (r.permissions || []).length + ' Rechte)'"></span>
-                        </label>
+                        <div>
+                            <div class="flex items-center gap-2.5 text-sm text-[#1A2433]">
+                                <input type="checkbox" :value="r.name" x-model="userRoles" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                <span x-text="r.name"></span>
+                                <span class="text-[11px] text-[#9CA3AF]" x-text="'(' + (r.permissions || []).length + ' Rechte)'"></span>
+                                <button x-show="hasPerm('roles.manage')" @click="openRoleEdit(r)" class="text-[10px] text-[#9CA3AF] hover:text-[#CA8A04] underline underline-offset-2" title="Rechte der Rolle bearbeiten">bearbeiten</button>
+                            </div>
+                            <div x-show="roleEdit === r.id" class="mt-1.5 ml-6 p-2.5 rounded-lg border border-[#E4E9F0] bg-[#F8FAFC] space-y-1.5">
+                                <div class="flex flex-wrap gap-x-3 gap-y-1 max-h-40 overflow-y-auto">
+                                    <template x-for="p in allPerms" :key="p">
+                                        <label class="flex items-center gap-1.5 text-[11px] font-mono text-[#42536A]">
+                                            <input type="checkbox" :value="p" x-model="rolePerms" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                            <span x-text="p"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                                <div class="flex justify-end gap-2 pt-1">
+                                    <button @click="roleEdit = null" class="text-[11px] text-[#9CA3AF] hover:text-[#1A2433]">Abbrechen</button>
+                                    <button @click="saveRolePerms(r)" class="text-[11px] px-2.5 py-1 bg-[#0B0B0F] text-white rounded-md hover:bg-[#1A1A1F]">Rechte speichern</button>
+                                </div>
+                            </div>
+                        </div>
                     </template>
                     <div x-show="!allRoles.length" class="text-xs text-[#9CA3AF]">Keine Rollen für diesen Mandanten.</div>
                     <div class="flex items-center justify-between" x-show="allRoles.length">
@@ -1140,7 +1157,7 @@ function workspace(initial) {
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
-        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [],
+        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [],
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [],
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
@@ -1221,7 +1238,7 @@ function workspace(initial) {
                 const url = new URL(location.href);
                 if (v && v.id) url.searchParams.set('open', v.id); else url.searchParams.delete('open');
                 history.replaceState(null, '', url);
-                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null; this.auditFindings = []; this.userRoles = []; this.userPerms = [];
+                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null; this.auditFindings = []; this.userRoles = []; this.userPerms = []; this.roleEdit = null; this.rolePerms = [];
                 this.confirmDel = false; this.rowEvents = []; this.evShown = 6;
                 if (v && v.id && !['events','metrics','ai-analyses','executive','dashboard'].includes(this.section)) this.loadRowEvents(v.id);
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
@@ -1706,6 +1723,20 @@ function workspace(initial) {
             if (!this.detail) return;
             this.api('/api/v1/users/' + this.detail.id + '/roles', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({roles: this.userRoles})})
                 .then(r => { this.toast(r.ok ? 'Rollen gespeichert.' : 'Speichern fehlgeschlagen (HTTP ' + r.status + ')'); if (r.ok) this.loadUserRoles(this.detail.id); });
+        },
+        openRoleEdit(r) {
+            this.roleEdit = this.roleEdit === r.id ? null : r.id;
+            if (this.roleEdit === r.id) {
+                this.rolePerms = (r.permissions || []).map(p => p.name);
+                this.api('/api/v1/permissions').then(res => res.ok ? res.json() : []).then(d => { this.allPerms = Array.isArray(d) ? d : []; });
+            }
+        },
+        saveRolePerms(r) {
+            this.api('/api/v1/roles/' + r.id, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({permissions: this.rolePerms})})
+                .then(res => {
+                    this.toast(res.ok ? 'Rechte gespeichert.' : 'Speichern fehlgeschlagen (HTTP ' + res.status + ')');
+                    if (res.ok) { this.roleEdit = null; this.loadUserRoles(this.detail.id); this.loadMe(); }
+                });
         },
         removeMember() {
             if (!this.detail || !confirm((this.detail.name || 'Mitglied') + ' aus dem Mandanten entfernen?')) return;

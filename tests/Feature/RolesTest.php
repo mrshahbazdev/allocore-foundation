@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class RolesTest extends TestCase
@@ -148,6 +149,25 @@ class RolesTest extends TestCase
         $ids = collect($this->getJson('/api/v1/users', ['X-Tenant' => $tenant])->json())->pluck('id');
         $this->assertNotContains($target->id, $ids);
         $this->assertContains($admin->id, $ids);
+    }
+
+    public function test_admin_can_update_role_permissions(): void
+    {
+        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'PermsEdit GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+
+        $perms = $this->getJson('/api/v1/permissions', ['X-Tenant' => $tenant])->assertOk()->json();
+        $this->assertContains('tasks.view', $perms);
+
+        $role = Role::where('team_id', $tenant)->where('name', 'mitarbeiter')->firstOrFail();
+
+        $this->putJson("/api/v1/roles/{$role->id}", ['permissions' => ['tasks.view']], ['X-Tenant' => $tenant])
+            ->assertOk()->assertJsonPath('permissions.0', 'tasks.view');
+
+        $this->assertEquals(['tasks.view'], $role->fresh()->permissions->pluck('name')->all());
     }
 
     public function test_every_permission_domain_in_workspace_map_exists(): void
