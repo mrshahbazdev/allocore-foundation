@@ -11,9 +11,12 @@ use Modules\Documents\Models\DocumentVersion;
 
 class DocumentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Document::with('currentVersion')->paginate(min(request()->integer('per_page', 200), 200));
+        return Document::with('currentVersion')
+            ->when($request->category, fn ($q, $c) => $q->where('category', $c))
+            ->when($request->q, fn ($q, $s) => $q->where('title', 'like', '%'.$s.'%'))
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)
