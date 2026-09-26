@@ -13,6 +13,7 @@ use Modules\Core\Notifications\Assigned;
 use Modules\ExpertNetwork\Notifications\AnswerAccepted;
 use Modules\ExpertNetwork\Notifications\ApplicationDecided;
 use Modules\ExpertNetwork\Notifications\QuestionAnswered;
+use Modules\ExpertNetwork\Notifications\QuestionPublished;
 use Modules\ExpertNetwork\Notifications\TenderPublished;
 use Tests\TestCase;
 
@@ -80,6 +81,27 @@ class ExpertNetworkTest extends TestCase
         ], ['X-Tenant' => $tenant->id])->assertCreated();
 
         Notification::assertSentTo($asker, QuestionAnswered::class);
+    }
+
+    public function test_new_question_notifies_expert_managers(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'QPub GmbH']);
+        $this->acting($tenant);
+
+        $berater = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $berater->assignRole('berater');
+        $kunde = User::factory()->create();
+        $kunde->assignRole('kunde');
+        tenancy()->end();
+        Sanctum::actingAs($this->acting($tenant));
+
+        $this->postJson('/api/v1/questions', ['title' => 'Neue Frage'],
+            ['X-Tenant' => $tenant->id])->assertCreated();
+
+        Notification::assertSentTo($berater, QuestionPublished::class);
+        Notification::assertNotSentTo($kunde, QuestionPublished::class);
     }
 
     public function test_new_tender_notifies_expert_managers(): void
