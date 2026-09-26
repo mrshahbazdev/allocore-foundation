@@ -224,4 +224,16 @@ class CorePlatformTest extends TestCase
         $this->getJson('/api/v1/companies', ['X-Tenant' => $tenant->id])
             ->assertUnauthorized();
     }
+
+    public function test_tenant_show_returns_current_tenant_with_member_count(): void
+    {
+        $tenant = Tenant::create(['name' => 'Info GmbH']);
+        $this->actingWithTenant($tenant);
+
+        $res = $this->getJson('/api/v1/tenant', ['X-Tenant' => $tenant->id])->assertOk();
+
+        $this->assertSame((string) $tenant->id, $res->json('id'));
+        $this->assertSame('Info GmbH', $res->json('name'));
+        $this->assertSame(1, $res->json('members_count'));
+    }
 }
