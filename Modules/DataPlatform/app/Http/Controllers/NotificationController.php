@@ -43,7 +43,11 @@ class NotificationController extends Controller
 
     public function unreadCount(Request $request)
     {
-        return response()->json(['count' => $request->user()->unreadNotifications()->count()]);
+        $muted = $request->user()->notification_muted ?? [];
+        $q = $request->user()->unreadNotifications()
+            ->when(! $request->boolean('include_muted') && $muted !== [], fn ($q) => $q->whereNotIn('data->kind', $muted));
+
+        return response()->json(['count' => $q->count()]);
     }
 
     public function markRead(Request $request, string $id)

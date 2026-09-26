@@ -249,6 +249,19 @@ class RolesTest extends TestCase
         $this->assertTrue($rows[0]['muted']);
     }
 
+    public function test_unread_count_excludes_muted_kinds(): void
+    {
+        $tenant = Tenant::create(['name' => 'UC GmbH']);
+        $user = $this->actingAsUser($tenant);
+        $this->putJson('/api/v1/me/notification-prefs', ['muted_kinds' => ['passwort_geaendert']], ['X-Tenant' => $tenant->id]);
+        $user->notify(new PasswordChangedAlert('Passwort geändert'));
+        $user->notify(new NewLoginAlert('1.2.3.4', null));
+        $this->getJson('/api/v1/notifications/unread-count', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['count' => 1]);
+        $this->getJson('/api/v1/notifications/unread-count?include_muted=1', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['count' => 2]);
+    }
+
     public function test_get_notification_prefs_endpoint(): void
     {
         $tenant = Tenant::create(['name' => 'GP GmbH']);
