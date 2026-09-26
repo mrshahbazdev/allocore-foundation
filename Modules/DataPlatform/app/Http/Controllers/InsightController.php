@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $projectsNoStrategy = $count('projects', fn ($q) => $q->whereIn('status', ['planned', 'active'])->whereNull('strategy_id'));
+        if ($projectsNoStrategy) {
+            $insights[] = $this->hit('warning', 'projects_no_strategy', "{$projectsNoStrategy} offene(s) Projekt(e) ohne zugeordnete Strategie.", ['count' => $projectsNoStrategy]);
+        }
+
+        $invNoValue = $count('investments', fn ($q) => $q->whereNull('disposed_at')->whereNull('current_value'));
+        if ($invNoValue) {
+            $insights[] = $this->hit('info', 'investments_no_value', "{$invNoValue} aktive Investition(en) ohne aktuellen Wert.", ['count' => $invNoValue]);
+        }
+
         $ordersRunningNoStart = $count('production_orders', fn ($q) => $q->where('status', 'running')->whereNull('started_at'));
         if ($ordersRunningNoStart) {
             $insights[] = $this->hit('info', 'orders_running_no_start', "{$ordersRunningNoStart} laufende(r) Auftrag/Aufträge ohne Startzeit.", ['count' => $ordersRunningNoStart]);
