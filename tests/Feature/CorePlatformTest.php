@@ -95,6 +95,26 @@ class CorePlatformTest extends TestCase
         $this->assertNotNull(Task::first()->reminded_at);
     }
 
+    public function test_tasks_remind_skips_already_reminded_tasks(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Skip GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        Task::create([
+            'title' => 'Schon erinnert',
+            'assignee_id' => $user->id,
+            'due_at' => now()->addHours(12),
+            'status' => Task::STATUS_OPEN,
+            'reminded_at' => now(),
+        ]);
+
+        tenancy()->initialize($tenant);
+        Artisan::call('tasks:remind');
+
+        Notification::assertNothingSent();
+    }
+
     public function test_list_endpoints_honor_per_page_param_and_cap(): void
     {
         $tenant = Tenant::create(['name' => 'Page GmbH']);
