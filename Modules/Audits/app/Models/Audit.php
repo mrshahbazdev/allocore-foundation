@@ -21,7 +21,7 @@ class Audit extends Model
 
     protected $fillable = [
         'title', 'type', 'standard', 'auditor', 'company_id',
-        'responsible_id', 'starts_on', 'ends_on', 'status', 'result',
+        'responsible_id', 'starts_on', 'ends_on', 'status', 'result', 'reminded_at',
     ];
 
     protected function casts(): array

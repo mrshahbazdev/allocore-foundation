@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
+use Modules\Audits\Models\Audit;
 use Modules\Audits\Models\AuditFinding;
 use Modules\Compliance\Notifications\ComplianceDueSoon;
 use Tests\TestCase;
@@ -97,5 +98,23 @@ class AuditsTest extends TestCase
 
         Notification::assertSentTo($user, ComplianceDueSoon::class, fn ($n) => $n->kind === 'feststellung');
         $this->assertNotNull(AuditFinding::first()->reminded_at);
+    }
+
+    public function test_audit_start_reminder_notifies_responsible(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'F GmbH']);
+        $user = $this->acting($tenant);
+
+        $this->postJson('/api/v1/audits', [
+            'title' => 'ISO Audit', 'starts_on' => now()->addHours(12)->toDateString(),
+            'responsible_id' => $user->id,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, ComplianceDueSoon::class, fn ($n) => $n->kind === 'audit');
+        $this->assertNotNull(Audit::first()->reminded_at);
     }
 }
