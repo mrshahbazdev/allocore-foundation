@@ -2262,8 +2262,12 @@ paths:
   /api/v1/notifications/unread-count:
     get:
       tags: [metrics]
-      summary: "GET /api/v1/notifications/unread-count — {count} ungelesener Benachrichtigungen"
+      summary: 'GET /api/v1/notifications/unread-count — {count} ungelesener Benachrichtigungen (stumme Arten ausgenommen, include_muted=1 für Gesamtzahl)'
       parameters:
+        - name: include_muted
+          in: query
+          required: false
+          schema: {type: boolean}
         - name: X-Tenant
           in: header
           required: true
