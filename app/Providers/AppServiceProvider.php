@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +30,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
         });
+
+        // Passwort-Policy (Registrierung, Reset, Aenderung): mind. 12 Zeichen,
+        // Gross-/Kleinschreibung und Zahl — wirkt ueber Password::defaults().
+        Password::defaults(fn () => Password::min(12)->mixedCase()->numbers());
 
         if (str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');

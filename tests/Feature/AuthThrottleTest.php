@@ -13,8 +13,8 @@ class AuthThrottleTest extends TestCase
             $this->post('/register', [
                 'name' => 'T',
                 'email' => "t{$i}@x.de",
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'Passw0rd12345',
+                'password_confirmation' => 'Passw0rd12345',
             ]);
             $this->post('/logout');
         }
@@ -22,8 +22,8 @@ class AuthThrottleTest extends TestCase
         $this->post('/register', [
             'name' => 'T',
             'email' => 't7@x.de',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Passw0rd12345',
+            'password_confirmation' => 'Passw0rd12345',
         ])->assertStatus(429);
     }
 
