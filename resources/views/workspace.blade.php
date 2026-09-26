@@ -656,6 +656,12 @@
                         <button @click="invertSel()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Auswahl umkehren (sichtbare Zeilen)">Invertieren</button>
                         <button @click="exportCsv((this.rows || []).filter(r => selected[r.id]))" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">CSV</button>
                         <button @click="exportJson((this.rows || []).filter(r => selected[r.id]))" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Ausgewählte Zeilen als JSON-Datei">JSON</button>
+                        <template x-if="section === 'notifications'">
+                            <span class="inline-flex gap-2">
+                                <button @click="notifBatch('read')" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" title="Ausgewählte als gelesen markieren">Gelesen</button>
+                                <button @click="notifBatch('unread')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Ausgewählte als ungelesen markieren">Ungelesen</button>
+                            </span>
+                        </template>
                         <button @click="bulkDelete()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
                         <button @click="selected = {}" class="text-xs px-3 py-1.5 text-[#5B6B7E] hover:text-[#0B0B0F]">Auswahl aufheben</button>
                     </div>
@@ -2632,6 +2638,16 @@ function workspace(initial) {
             this.selected = s;
         },
         selCount() { return Object.keys(this.selected).length; },
+        notifBatch(action) {
+            const ids = Object.keys(this.selected);
+            if (!ids.length) return;
+            this.api('/api/v1/notifications/batch', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ids, action})})
+                .then(r => {
+                    this.selected = {};
+                    this.loadSection(); this.unreadNotifs();
+                    if (r.ok) this.toast(action === 'read' ? 'Als gelesen markiert.' : action === 'unread' ? 'Als ungelesen markiert.' : 'Entfernt.');
+                });
+        },
         bulkStatus(s) {
             const ids = Object.keys(this.selected);
             if (!ids.length) return;
