@@ -4,12 +4,22 @@ namespace Modules\Compliance\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Core\Concerns\NotifiesAssigneeOnChange;
 use Modules\Core\Models\Person;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Inspection extends Model
 {
     use BelongsToTenant;
+    use NotifiesAssigneeOnChange;
+
+    protected const ASSIGNEE_FIELD = 'responsible_id';
+
+    protected const ASSIGNEE_KIND = 'pruefung';
+
+    protected const ASSIGNEE_LABEL = 'Prüfung';
+
+    protected const ASSIGNEE_DUE_FIELD = 'scheduled_at';
 
     public const STATUS_SCHEDULED = 'scheduled';
 

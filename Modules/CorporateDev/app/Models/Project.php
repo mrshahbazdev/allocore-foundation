@@ -6,11 +6,21 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Core\Concerns\NotifiesAssigneeOnChange;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Project extends Model
 {
     use BelongsToTenant;
+    use NotifiesAssigneeOnChange;
+
+    protected const ASSIGNEE_FIELD = 'owner_id';
+
+    protected const ASSIGNEE_KIND = 'projekt';
+
+    protected const ASSIGNEE_LABEL = 'Projekt';
+
+    protected const ASSIGNEE_DUE_FIELD = 'ends_at';
 
     public const STATUSES = ['planned', 'active', 'on_hold', 'done', 'cancelled'];
 

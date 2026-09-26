@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 use Modules\Core\Models\Company;
+use Modules\Core\Notifications\Assigned;
 use Modules\Tasks\Models\Task;
-use Modules\Tasks\Notifications\TaskAssigned;
 use Modules\Tasks\Notifications\TaskDueSoon;
 use Tests\TestCase;
 
@@ -108,14 +108,14 @@ class CorePlatformTest extends TestCase
             'assignee_id' => $assignee->id,
         ], ['X-Tenant' => $tenant->id])->assertCreated();
 
-        Notification::assertSentTo($assignee, TaskAssigned::class);
+        Notification::assertSentTo($assignee, Assigned::class);
 
         $other = User::factory()->create();
         $this->putJson('/api/v1/tasks/'.Task::first()->id, [
             'assignee_id' => $other->id,
         ], ['X-Tenant' => $tenant->id])->assertOk();
 
-        Notification::assertSentTo($other, TaskAssigned::class);
+        Notification::assertSentTo($other, Assigned::class);
     }
 
     public function test_tasks_remind_skips_already_reminded_tasks(): void
