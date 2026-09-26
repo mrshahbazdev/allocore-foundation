@@ -18,6 +18,7 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api', 'permission
     Route::get('search', [SearchController::class, 'index'])->name('data-platform.search');
     Route::get('notifications', [NotificationController::class, 'index'])->name('data-platform.notifications');
     Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('data-platform.notifications.read-all');
+    Route::get('notifications/kinds', [NotificationController::class, 'kinds'])->name('data-platform.notifications.kinds');
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('data-platform.notifications.unread-count');
     Route::post('notifications/{id}/read', [NotificationController::class, 'markRead'])->name('data-platform.notifications.read');
     Route::post('notifications/{id}/unread', [NotificationController::class, 'markUnread'])->name('data-platform.notifications.unread');
