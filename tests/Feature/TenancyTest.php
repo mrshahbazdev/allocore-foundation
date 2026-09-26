@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class TenancyTest extends TestCase
@@ -70,6 +72,32 @@ class TenancyTest extends TestCase
         $this->assertSame($tenant->getTenantKey(), $resolver->getPermissionsTeamId());
 
         tenancy()->end();
+    }
+
+    public function test_tenant_rename_emits_event_and_requires_permission(): void
+    {
+        $tenant = Tenant::create(['name' => 'Alt GmbH']);
+
+        Sanctum::actingAs(User::factory()->create());
+        $this->putJson('/api/v1/tenant', ['name' => 'Neu GmbH'], ['X-Tenant' => $tenant->id])
+            ->assertForbidden();
+
+        tenancy()->initialize($tenant);
+        $admin = User::factory()->create();
+        $admin->assignRole('administrator');
+        Sanctum::actingAs($admin->fresh());
+        tenancy()->end();
+
+        $this->putJson('/api/v1/tenant', ['name' => 'Neu GmbH'], ['X-Tenant' => $tenant->id])
+            ->assertOk();
+        $this->assertSame('Neu GmbH', $tenant->fresh()->name);
+
+        $types = DB::table('stored_events')
+            ->where('meta_data->tenant_id', $tenant->id)
+            ->pluck('event_properties')
+            ->map(fn ($p) => json_decode($p, true)['type'] ?? null)
+            ->all();
+        $this->assertContains('tenant.updated', $types);
     }
 
     public function test_event_store_tables_exist(): void

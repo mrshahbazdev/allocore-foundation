@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Core\Http\Controllers\CompanyController;
 use Modules\Core\Http\Controllers\PersonController;
 use Modules\Core\Http\Controllers\RoleController;
+use Modules\DataPlatform\Events\DomainEvent;
 
 Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
     Route::apiResource('companies', CompanyController::class)
@@ -41,6 +42,24 @@ Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(funct
     Route::delete('users/{user}', [RoleController::class, 'remove'])
         ->middleware('permission:roles.manage')
         ->name('users.remove');
+
+    Route::put('tenant', function (Request $request) {
+        $validated = $request->validate(['name' => ['required', 'string', 'max:255']]);
+
+        $tenant = tenant();
+        $tenant->name = $validated['name'];
+        $tenant->save();
+
+        $event = new DomainEvent(
+            type: 'tenant.updated',
+            tenantId: (string) $tenant->getTenantKey(),
+            subject: ['type' => 'tenant', 'id' => $tenant->getTenantKey(), 'title' => $tenant->name],
+        );
+        $event->setMetaData(['tenant_id' => (string) $tenant->getTenantKey()]);
+        event($event);
+
+        return response()->json($tenant);
+    })->middleware('permission:roles.manage')->name('tenant.update');
 
     Route::post('demo-seed', function (Request $request) {
         Artisan::call('demo:seed', ['tenant' => (string) $request->header('X-Tenant')]);
