@@ -133,7 +133,7 @@ class RemindDueCompliance extends Command
             if (! $user) {
                 continue;
             }
-            $user->notify(new ComplianceDueSoon($item, 'auftrag', $item->due_at->format('d.m.Y')));
+            $user->notify(new ComplianceDueSoon($item, 'auftrag', $item->due_at->format('d.m.Y H:i')));
             $item->update(['reminded_at' => now()]);
             $count++;
         }
