@@ -24,6 +24,10 @@ class PasswordController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        // Alle persönlichen API-Tokens widerrufen — sie sollen die
+        // Passwortänderung nicht überleben.
+        $request->user()->tokens()->delete();
+
         return back()->with('status', 'password-updated');
     }
 }
