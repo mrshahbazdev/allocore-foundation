@@ -190,6 +190,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'audits_starting_soon', "{$auditsSoon} Audit(s) starten innerhalb von 7 Tagen.", ['count' => $auditsSoon]);
         }
 
+        $auditsOverdue = $count('audits', fn ($q) => $q->whereIn('status', ['planned', 'in_progress'])->where('ends_on', '<', now()));
+        if ($auditsOverdue) {
+            $insights[] = $this->hit('warning', 'audits_overdue', "{$auditsOverdue} Audit(s) über Enddatum hinaus offen.", ['count' => $auditsOverdue]);
+        }
+
         if (! $insights) {
             $insights[] = $this->hit('info', 'all_clear', 'Keine Auffälligkeiten — alle Kennzahlen im grünen Bereich.');
         }
