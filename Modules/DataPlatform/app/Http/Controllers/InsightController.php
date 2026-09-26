@@ -147,6 +147,12 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'strategies_overdue', "{$strategiesOverdue} aktive Strategie(n) über Enddatum — Status prüfen.", ['count' => $strategiesOverdue]);
         }
 
+        $capitalNeed = DB::table('participations')->where('tenant_id', $t)
+            ->where('status', 'active')->where('capital_need', '>', 0)->sum('capital_need');
+        if ($capitalNeed > 0) {
+            $insights[] = $this->hit('info', 'participations_capital_need', 'Gemeldeter Kapitalbedarf der Beteiligungen: '.number_format((float) $capitalNeed, 2, ',', '.').' €.', ['amount' => (float) $capitalNeed]);
+        }
+
         $drawdown = DB::table('investments')->where('tenant_id', $t)
             ->whereNotNull('current_value')->whereNull('disposed_at')
             ->whereColumn('current_value', '<', 'cost_basis')->count();
