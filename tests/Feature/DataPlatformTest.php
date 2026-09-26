@@ -1349,4 +1349,26 @@ class DataPlatformTest extends TestCase
         // Alter Key wurde gelöscht → Hinweis wird erneut verschickt.
         NotificationFacade::assertSentToTimes($admin, CriticalInsight::class, 1);
     }
+
+    public function test_insights_notify_warnings_only_with_flag(): void
+    {
+        $tenant = Tenant::create(['name' => 'Warn GmbH']);
+        $admin = $this->acting($tenant);
+
+        $this->postJson('/api/v1/tasks', [
+            'title' => 'Überfällige Aufgabe',
+            'status' => 'open',
+            'due_at' => now()->subDay()->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        NotificationFacade::fake();
+
+        // Ohne Flag: nur kritische Hinweise — keine Warnung (tasks_overdue).
+        Artisan::call('insights:notify');
+        NotificationFacade::assertNotSentTo($admin, CriticalInsight::class);
+
+        // Mit --warnings wird die Warnung mitgeschickt.
+        Artisan::call('insights:notify', ['--warnings' => true]);
+        NotificationFacade::assertSentToTimes($admin, CriticalInsight::class, 1);
+    }
 }

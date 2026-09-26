@@ -10,7 +10,7 @@ use Modules\DataPlatform\Support\InsightService;
 
 class NotifyCriticalInsights extends Command
 {
-    protected $signature = 'insights:notify';
+    protected $signature = 'insights:notify {--warnings : Auch Warnungen verschicken (wöchentlicher Lauf)}';
 
     protected $description = 'Kritische Insights als Benachrichtigung an Mitglieder mit roles.manage';
 
@@ -38,8 +38,10 @@ class NotifyCriticalInsights extends Command
                 continue;
             }
 
+            $severities = $this->option('warnings') ? ['critical', 'warning'] : ['critical'];
+
             foreach ($insights->collect($tenantId) as $insight) {
-                if (! $insight || $insight['severity'] !== 'critical') {
+                if (! $insight || ! in_array($insight['severity'], $severities, true)) {
                     continue;
                 }
 

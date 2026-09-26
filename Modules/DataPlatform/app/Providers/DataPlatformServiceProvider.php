@@ -38,5 +38,6 @@ class DataPlatformServiceProvider extends ModuleServiceProvider
         $schedule->command('analytics:aggregate')->daily();
         $schedule->command('notifications:prune')->daily();
         $schedule->command('insights:notify')->daily();
+        $schedule->command('insights:notify --warnings')->weeklyOn(1);
     }
 }
