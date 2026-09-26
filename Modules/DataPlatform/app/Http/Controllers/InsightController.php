@@ -206,6 +206,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $questionsNoAccepted = $count('questions', fn ($q) => $q->where('status', 'answered')->whereNotExists(fn ($sub) => $sub->selectRaw(1)->from('answers')->whereColumn('answers.question_id', 'questions.id')->where('answers.is_accepted', true)));
+        if ($questionsNoAccepted) {
+            $insights[] = $this->hit('info', 'questions_no_accepted', "{$questionsNoAccepted} beantwortete Frage(n) ohne akzeptierte Antwort.", ['count' => $questionsNoAccepted]);
+        }
+
         $projectsDoneGap = $count('projects', fn ($q) => $q->where('status', 'done')->where('progress', '<', 100));
         if ($projectsDoneGap) {
             $insights[] = $this->hit('warning', 'projects_done_incomplete', "{$projectsDoneGap} als erledigt markierte(s) Projekt(e) mit Fortschritt <100%.", ['count' => $projectsDoneGap]);
