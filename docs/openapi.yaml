@@ -2137,6 +2137,11 @@ paths:
           required: false
           schema: {type: boolean, default: false}
           description: Nur ungelesene Benachrichtigungen liefern
+        - name: read
+          in: query
+          required: false
+          schema: {type: boolean, default: false}
+          description: Nur gelesene Benachrichtigungen liefern
         - name: kind
           in: query
           required: false
