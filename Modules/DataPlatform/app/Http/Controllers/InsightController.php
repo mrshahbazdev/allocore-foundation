@@ -142,6 +142,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $strategiesOverdue = $count('strategies', fn ($q) => $q->where('status', 'active')->where('ends_at', '<', now()));
+        if ($strategiesOverdue) {
+            $insights[] = $this->hit('info', 'strategies_overdue', "{$strategiesOverdue} aktive Strategie(n) über Enddatum — Status prüfen.", ['count' => $strategiesOverdue]);
+        }
+
         $drawdown = DB::table('investments')->where('tenant_id', $t)
             ->whereNotNull('current_value')->whereNull('disposed_at')
             ->whereColumn('current_value', '<', 'cost_basis')->count();
