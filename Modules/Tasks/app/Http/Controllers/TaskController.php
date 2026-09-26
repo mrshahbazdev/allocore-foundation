@@ -15,6 +15,9 @@ class TaskController extends Controller
     {
         return Task::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->assignee_id, fn ($q, $id) => $q->where('assignee_id', $id))
+            ->when($request->boolean('unassigned'), fn ($q) => $q->whereNull('assignee_id'))
+            ->when($request->boolean('overdue'), fn ($q) => $q->where('due_at', '<', now())->where('status', '!=', 'done'))
             ->with('assignee:id,name,email')
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
