@@ -64,6 +64,7 @@
             <div class="mt-2 flex gap-3">
                 <button @click="createTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]">+ Neuer Mandant</button>
                 <button x-show="tenant && hasPerm('roles.manage')" @click="renameTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]">&#9998; Umbenennen</button>
+                <button x-show="tenant" @click="leaveTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#A6362E]" title="Mitgliedschaft in diesem Mandanten beenden">&#9094; Verlassen</button>
             </div>
         </div>
 
@@ -2034,6 +2035,17 @@ function workspace(initial) {
             if (!r.ok) { this.toast('Umbenennen fehlgeschlagen (HTTP '+r.status+')'); return; }
             if (cur) cur.name = name.trim();
             this.toast('Mandant umbenannt: ' + name.trim());
+        },
+        async leaveTenant() {
+            const cur = this.tenantList.find(t => t.id === this.tenant);
+            if (!confirm('Mandant „' + (cur ? cur.name : '') + '" wirklich verlassen? Du verlierst alle Rollen und Zugriff.')) return;
+            const r = await this.api('/api/v1/me/membership', {method:'DELETE'});
+            if (!r.ok) { const d = await r.json().catch(() => null); this.toast((d && d.message) ? d.message : 'Verlassen fehlgeschlagen (HTTP '+r.status+')', 'error'); return; }
+            this.toast('Mandant verlassen.');
+            localStorage.removeItem('af_last_tenant');
+            this.tenantList = this.tenantList.filter(t => t.id !== this.tenant);
+            this.tenant = this.tenantList.length ? this.tenantList[0].id : '';
+            location.reload();
         },
         loadColPrefs() {
             try { return JSON.parse(localStorage.getItem('af_cols_' + this.section) || '{}'); } catch (e) { return {}; }
