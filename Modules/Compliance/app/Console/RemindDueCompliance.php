@@ -2,12 +2,15 @@
 
 namespace Modules\Compliance\Console;
 
+use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Modules\Audits\Models\Audit;
 use Modules\Audits\Models\AuditFinding;
 use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\Inspection;
 use Modules\Compliance\Models\Instruction;
+use Modules\Compliance\Models\RiskAssessment;
 use Modules\Compliance\Notifications\ComplianceDueSoon;
 use Modules\CorporateDev\Models\Measure;
 
@@ -54,6 +57,8 @@ class RemindDueCompliance extends Command
             'starts_on',
         );
 
+        $count += $this->remindRiskReviews($horizon);
+
         $this->info("{$count} Erinnerung(en) versendet.");
 
         return self::SUCCESS;
@@ -69,5 +74,30 @@ class RemindDueCompliance extends Command
         }
 
         return $items->count();
+    }
+
+    private function remindRiskReviews(Carbon $horizon): int
+    {
+        $items = RiskAssessment::query()
+            ->where('status', RiskAssessment::STATUS_OPEN)
+            ->whereNotNull('review_at')
+            ->where('review_at', '<=', $horizon)
+            ->whereNull('reminded_at')
+            ->whereNotNull('person_id')
+            ->with('assessor')
+            ->get();
+
+        $count = 0;
+        foreach ($items as $item) {
+            $user = $item->assessor?->email ? User::where('email', $item->assessor->email)->first() : null;
+            if (! $user) {
+                continue;
+            }
+            $user->notify(new ComplianceDueSoon($item, 'gefaehrdungsbeurteilung', $item->review_at->format('d.m.Y H:i')));
+            $item->update(['reminded_at' => now()]);
+            $count++;
+        }
+
+        return $count;
     }
 }

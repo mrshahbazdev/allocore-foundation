@@ -24,7 +24,7 @@ class RiskAssessment extends Model
 
     protected $fillable = [
         'title', 'area', 'hazard', 'risk_level', 'measures',
-        'person_id', 'status', 'review_at',
+        'person_id', 'status', 'review_at', 'reminded_at',
     ];
 
     protected function casts(): array

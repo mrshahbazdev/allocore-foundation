@@ -38,6 +38,7 @@ class ComplianceDueSoon extends Notification
             'feststellung' => 'Audit-Feststellung',
             'massnahme' => 'Massnahme',
             'audit' => 'Audit',
+            'gefaehrdungsbeurteilung' => 'Gefaehrdungsbeurteilung-Review',
         ][$this->kind] ?? ucfirst($this->kind);
     }
 
