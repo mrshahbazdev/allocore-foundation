@@ -674,6 +674,12 @@ paths:
       responses:
         '200': {description: "status=ok, checks.database/checks.migrations=ok"}
         '503': {description: "status=degraded — DB-Fehler oder ausstehende Migrationen"}
+  /api/v1/version:
+    get:
+      tags: [health]
+      summary: "GET /api/v1/version — Build-/Betriebs-Infos (app_version, laravel, php, commit), ohne Auth"
+      responses:
+        '200': {description: "platform, app_version, laravel, php, commit"}
   /api/v1/inspections:
     get:
       tags: [inspections]

@@ -9,6 +9,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 | Methode | Pfad | Zweck |
 |---|---|---|
 | GET | `/health` | Liveness + Readiness — `checks.database` + `checks.migrations` (ausstehende Migrationen → `pending:N`), 503 bei `degraded`; ohne Auth |
+| GET | `/version` | Build-/Betriebs-Infos — `app_version` (APP_VERSION env), `laravel`, `php`, `commit` (Git-SHA aus .git/HEAD, falls vorhanden); ohne Auth |
 | GET/POST | `/tenants` | Mandantenliste / Mandant anlegen (seedet Rollenmodell) |
 | GET | `/context` | (auth) aktueller User + Tenant-Kontext |
 | GET/POST, DELETE | `/tokens`, `/tokens/{id}` | auth | Personal Access Tokens — Klartext nur bei POST-Antwort; `abilities` optional (`['tasks.view', ...]` — scoped Token, enforced auf `permission:`-Routen; Whitelist: `GET /tokens/abilities`), `expires_in_days` 1–365; Workspace-Token werden pro Seitenaufruf rotiert |

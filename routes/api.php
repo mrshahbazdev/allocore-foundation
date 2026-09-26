@@ -52,6 +52,34 @@ Route::prefix('v1')->group(function () {
         ], $ok ? 200 : 503);
     });
 
+    // Build-/Betriebs-Infos für Monitoring und Deploy-Verifikation.
+    Route::get('/version', function () {
+        $commit = null;
+        try {
+            $head = @file_get_contents(base_path('.git/HEAD'));
+            if ($head !== false) {
+                $head = trim($head);
+                if (str_starts_with($head, 'ref:')) {
+                    $ref = trim(substr($head, 4));
+                    $refFile = base_path('.git/'.$ref);
+                    $commit = is_file($refFile) ? substr(trim(file_get_contents($refFile)), 0, 12) : null;
+                } else {
+                    $commit = substr($head, 0, 12);
+                }
+            }
+        } catch (Throwable) {
+            $commit = null;
+        }
+
+        return response()->json([
+            'platform' => 'allocore-foundation',
+            'app_version' => env('APP_VERSION', 'dev'),
+            'laravel' => app()->version(),
+            'php' => PHP_VERSION,
+            'commit' => $commit,
+        ]);
+    });
+
     // Central: tenant (Unternehmen/Mandant) provisioning
     Route::post('/tenants', function (Request $request) {
         $validated = $request->validate([
