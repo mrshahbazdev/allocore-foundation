@@ -4,6 +4,7 @@ namespace Modules\DataPlatform\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Core\Notifications\Assigned;
 
 class NotificationController extends Controller
 {
@@ -177,6 +178,15 @@ class NotificationController extends Controller
                 ->sort()
                 ->values()
         );
+    }
+
+    public function test(Request $request)
+    {
+        $request->user()->notify(new Assigned(
+            'hinweis', 'test', 'Testbenachrichtigung — Benachrichtigungssystem funktioniert.'
+        ));
+
+        return response()->json(['status' => 'ok']);
     }
 
     public function markRead(Request $request, string $id)

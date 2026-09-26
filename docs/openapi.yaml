@@ -2149,6 +2149,17 @@ paths:
         '404': {description: Not Found}
         '422': {description: Validation failed}
 
+  /api/v1/notifications/test:
+    post:
+      tags: [notifications]
+      summary: "POST /api/v1/notifications/test — Testbenachrichtigung an eigenen User (kind 'hinweis')"
+      parameters:
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: status ok}
   /api/v1/notifications/export:
     get:
       tags: [notifications]

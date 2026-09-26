@@ -1276,6 +1276,7 @@
             </template>
         </div>
         <div class="px-6 py-3 border-t border-[#E4E9F0] flex items-center gap-2">
+            <button @click="api('/api/v1/notifications/test', {method: 'POST'}).then(r => r.ok && toast('Testbenachrichtigung gesendet'))" title="Testet die Benachrichtigungsglocke" class="px-3 py-1.5 text-xs rounded-lg border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]">Test-Benachrichtigung</button>
             <button @click="deleteAccount()" class="px-3 py-1.5 text-xs rounded-lg border border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/10">Konto löschen</button>
             <span class="flex-1"></span>
             <button @click="pwOpen = false" class="px-3 py-1.5 text-sm rounded-lg border border-[#D6DEE9] text-[#5B6B7E]">Abbrechen</button>
