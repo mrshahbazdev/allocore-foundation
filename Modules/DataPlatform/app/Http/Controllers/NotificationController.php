@@ -12,6 +12,7 @@ class NotificationController extends Controller
         $limit = min($request->integer('limit', 10), 50);
 
         return $request->user()->notifications()
+            ->when($request->boolean('unread'), fn ($q) => $q->whereNull('read_at'))
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get()
@@ -42,6 +43,14 @@ class NotificationController extends Controller
     {
         $n = $request->user()->notifications()->where('id', $id)->firstOrFail();
         $n->markAsRead();
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function markUnread(Request $request, string $id)
+    {
+        $n = $request->user()->notifications()->where('id', $id)->firstOrFail();
+        $n->markAsUnread();
 
         return response()->json(['status' => 'ok']);
     }
