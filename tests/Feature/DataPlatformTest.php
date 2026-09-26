@@ -519,6 +519,29 @@ class DataPlatformTest extends TestCase
         $this->assertContains('ai_analyses_failed', $codes);
     }
 
+    public function test_insights_reports_due_soon_reviews_strategies_audits_findings(): void
+    {
+        $tenant = Tenant::create(['name' => 'Fristen GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/risk-assessments', ['title' => 'GB Lackier', 'review_at' => now()->addDays(3)], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/strategies', ['name' => 'Wachstum', 'status' => 'active', 'ends_at' => now()->addDays(5)], ['X-Tenant' => $tenant->id])->assertCreated();
+        $audit = $this->postJson('/api/v1/audits', ['title' => 'ISO-Audit', 'starts_on' => now()->addDays(5)->toDateString()], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/audit-findings', ['audit_id' => $audit['id'], 'title' => 'Kappe fehlt', 'due_at' => now()->addDays(4)], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('risk_reviews_due_soon', $codes);
+        $this->assertContains('strategies_ending_soon', $codes);
+        $this->assertContains('audits_starting_soon', $codes);
+        $this->assertContains('audit_findings_due_soon', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
