@@ -884,9 +884,9 @@ class DataPlatformTest extends TestCase
         $fremdId = DB::table('graph_entities')->insertGetId(['tenant_id' => $other->id, 'type' => 'company', 'name' => 'Acme Fremd GmbH']);
         $fremdObj = DB::table('data_objects')->insertGetId(['tenant_id' => $other->id, 'name' => 'Acme Fremd.pdf', 'path' => 'fremd.pdf']);
         $res = $this->getJson('/api/v1/search?q=Acme', ['X-Tenant' => $tenant->id])->assertOk()->json();
-        $ids = collect($res)->pluck('id')->all();
-        $this->assertNotContains($fremdId, $ids);
-        $this->assertNotContains($fremdObj, $ids);
+        $bySection = collect($res)->mapToGroups(fn ($r) => [$r['section'] => $r['id']]);
+        $this->assertNotContains($fremdId, $bySection->get('graph-entities', collect())->all());
+        $this->assertNotContains($fremdObj, $bySection->get('data-objects', collect())->all());
 
         $this->getJson('/api/v1/search?q=a', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson([]);
