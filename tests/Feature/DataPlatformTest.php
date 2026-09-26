@@ -13,12 +13,16 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Modules\Ai\Models\AiAnalysis;
+use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\Instruction;
 use Modules\Core\Models\Company;
 use Modules\CorporateDev\Models\Project;
 use Modules\Documents\Models\Document;
 use Modules\ExpertNetwork\Models\TenderApplication;
 use Modules\Hr\Models\LeaveRequest;
+use Modules\Production\Models\Machine;
+use Modules\Production\Models\ProductionOrder;
+use Modules\Tasks\Models\Task;
 use Tests\TestCase;
 
 class DataPlatformTest extends TestCase
@@ -723,6 +727,45 @@ class DataPlatformTest extends TestCase
         $this->assertContains('audit_findings_critical', $codes);
         $this->assertContains('audit_findings_overdue', $codes);
         $this->assertContains('audit_findings_unassigned', $codes);
+    }
+
+    public function test_insights_reports_production_and_compliance_state(): void
+    {
+        $tenant = Tenant::create(['name' => 'Produktion GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $machine = $this->postJson('/api/v1/machines', ['name' => 'Fräse 1', 'status' => 'maintenance', 'capacity_units_per_day' => 10], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/production-orders', ['order_no' => 'A-001', 'product' => 'Krone', 'machine_id' => $machine['id']], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/instructions', ['title' => 'U1'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/instructions', ['title' => 'U2'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/tenders', ['title' => 'Offene Ausschreibung'], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Machine::create(['name' => 'Altmaschine', 'status' => 'active', 'capacity_units_per_day' => 0]);
+        ProductionOrder::create(['order_no' => 'A-002', 'product' => 'Brücke', 'status' => 'running']);
+        ProductionOrder::create(['order_no' => 'A-003', 'product' => 'Inlay', 'status' => 'done', 'scrap_qty' => 3]);
+        Project::create(['name' => 'Fertig aber offen', 'status' => 'done', 'progress' => 40]);
+        Task::create(['title' => 'Erledigt ohne Stempel', 'status' => 'done']);
+        Deadline::create(['title' => 'Frist fertig', 'due_at' => now()->addWeek(), 'status' => 'completed']);
+        tenancy()->end();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('compliance_rate_low', $codes);
+        $this->assertContains('orders_machine_maintenance', $codes);
+        $this->assertContains('machines_zero_capacity', $codes);
+        $this->assertContains('orders_running_no_start', $codes);
+        $this->assertContains('orders_done_no_finish', $codes);
+        $this->assertContains('orders_done_incomplete', $codes);
+        $this->assertContains('projects_done_incomplete', $codes);
+        $this->assertContains('tasks_done_no_stamp', $codes);
+        $this->assertContains('deadlines_completed_no_stamp', $codes);
+        $this->assertContains('tenders_open', $codes);
     }
 
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
