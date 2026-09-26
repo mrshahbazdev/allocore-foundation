@@ -13,6 +13,7 @@ use Modules\Compliance\Models\Instruction;
 use Modules\Compliance\Models\RiskAssessment;
 use Modules\Compliance\Notifications\ComplianceDueSoon;
 use Modules\CorporateDev\Models\Measure;
+use Modules\CorporateDev\Models\Project;
 
 class RemindDueCompliance extends Command
 {
@@ -57,6 +58,14 @@ class RemindDueCompliance extends Command
             'starts_on',
         );
 
+        $count += $this->remind(
+            Project::query()->whereIn('status', ['planned', 'active'])->whereNotNull('ends_at')->where('ends_at', '<=', $horizon),
+            'projekt',
+            'ends_at',
+            'owner_id',
+            'owner',
+        );
+
         $count += $this->remindRiskReviews($horizon);
 
         $this->info("{$count} Erinnerung(en) versendet.");
@@ -64,12 +73,12 @@ class RemindDueCompliance extends Command
         return self::SUCCESS;
     }
 
-    private function remind($query, string $kind, string $dateColumn = 'due_at'): int
+    private function remind($query, string $kind, string $dateColumn = 'due_at', string $responsibleColumn = 'responsible_id', string $relation = 'responsible'): int
     {
-        $items = $query->whereNull('reminded_at')->whereNotNull('responsible_id')->with('responsible')->get();
+        $items = $query->whereNull('reminded_at')->whereNotNull($responsibleColumn)->with($relation)->get();
 
         foreach ($items as $item) {
-            $item->responsible?->notify(new ComplianceDueSoon($item, $kind, $item->{$dateColumn}->format('d.m.Y H:i')));
+            $item->{$relation}?->notify(new ComplianceDueSoon($item, $kind, $item->{$dateColumn}->format('d.m.Y H:i')));
             $item->update(['reminded_at' => now()]);
         }
 

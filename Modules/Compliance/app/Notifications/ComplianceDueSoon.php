@@ -25,8 +25,8 @@ class ComplianceDueSoon extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject($this->kindLabel().' faellig: '.$this->item->title)
-            ->line($this->kindLabel().' "'.$this->item->title.'" ist am '.$this->dueAt.' faellig.');
+            ->subject($this->kindLabel().' faellig: '.($this->item->title ?? $this->item->name))
+            ->line($this->kindLabel().' "'.($this->item->title ?? $this->item->name).'" ist am '.$this->dueAt.' faellig.');
     }
 
     private function kindLabel(): string
@@ -39,6 +39,7 @@ class ComplianceDueSoon extends Notification
             'massnahme' => 'Massnahme',
             'audit' => 'Audit',
             'gefaehrdungsbeurteilung' => 'Gefaehrdungsbeurteilung-Review',
+            'projekt' => 'Projekt',
         ][$this->kind] ?? ucfirst($this->kind);
     }
 
@@ -47,7 +48,7 @@ class ComplianceDueSoon extends Notification
         return [
             'kind' => $this->kind,
             'id' => $this->item->id,
-            'title' => $this->item->title,
+            'title' => $this->item->title ?? $this->item->name,
             'due_at' => $this->dueAt,
         ];
     }
