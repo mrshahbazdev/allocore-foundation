@@ -60,12 +60,15 @@ class TenancyTest extends TestCase
 
     public function test_lists_tenants_via_the_central_api(): void
     {
-        Tenant::create(['name' => 'ALLOCORE GmbH']);
+        Tenant::create(['name' => 'Fremde GmbH']);
 
         Sanctum::actingAs(User::factory()->create());
+        $this->postJson('/api/v1/tenants', ['name' => 'ALLOCORE GmbH'])->assertCreated();
+
         $this->getJson('/api/v1/tenants')
             ->assertOk()
-            ->assertJsonFragment(['name' => 'ALLOCORE GmbH']);
+            ->assertJsonFragment(['name' => 'ALLOCORE GmbH'])
+            ->assertJsonMissing(['name' => 'Fremde GmbH']);
     }
 
     public function test_initializes_tenancy_context_for_a_tenant(): void
