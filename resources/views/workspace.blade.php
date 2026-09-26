@@ -60,7 +60,10 @@
                     <option :value="t.id" x-text="t.name"></option>
                 </template>
             </select>
-            <button @click="createTenant()" class="mt-2 w-full text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]">+ Neuer Mandant</button>
+            <div class="mt-2 flex gap-3">
+                <button @click="createTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]">+ Neuer Mandant</button>
+                <button x-show="tenant && hasPerm('roles.manage')" @click="renameTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]">&#9998; Umbenennen</button>
+            </div>
         </div>
 
         <nav class="flex-1 overflow-y-auto py-3 text-[13px]" aria-label="Hauptnavigation">
@@ -1882,6 +1885,16 @@ function workspace(initial) {
             this.toast('Mandant angelegt: ' + t.name);
             this.loadSection();
             this.loadNavBadges();
+        },
+        async renameTenant() {
+            const cur = this.tenantList.find(t => t.id === this.tenant);
+            const name = prompt('Neuer Name für ' + (cur ? cur.name : 'Mandanten') + ':', cur ? cur.name : '');
+            if (!name || !name.trim() || name.trim() === (cur ? cur.name : '')) return;
+            const r = await this.api('/api/v1/tenant', {method:'PUT', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({name: name.trim()})});
+            if (!r.ok) { this.toast('Umbenennen fehlgeschlagen (HTTP '+r.status+')'); return; }
+            if (cur) cur.name = name.trim();
+            this.toast('Mandant umbenannt: ' + name.trim());
         },
         loadColPrefs() {
             try { return JSON.parse(localStorage.getItem('af_cols_' + this.section) || '{}'); } catch (e) { return {}; }
