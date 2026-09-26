@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
+use Modules\Core\Notifications\FailedLoginAlert;
 use Modules\Core\Notifications\NewLoginAlert;
 use Modules\DataPlatform\Events\DomainEvent;
 use Spatie\Permission\Models\Permission;
@@ -239,6 +240,18 @@ class RolesTest extends TestCase
             ->assertOk()
             ->assertJson(['status' => 'ok', 'deleted' => 3]);
         $this->assertSame(0, $user->tokens()->count());
+    }
+
+    public function test_login_lockout_notifies_user_once(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create(['password' => 'NeuPasswort123']);
+
+        for ($i = 0; $i < 7; $i++) {
+            $this->post('/login', ['email' => $user->email, 'password' => 'falsches-Passwort']);
+        }
+
+        Notification::assertSentToTimes($user, FailedLoginAlert::class, 1);
     }
 
     public function test_login_from_new_ip_notifies_user(): void
