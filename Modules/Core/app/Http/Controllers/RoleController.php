@@ -125,6 +125,7 @@ class RoleController extends Controller
             'email' => $user->email,
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
+            'last_login_at' => $user->last_login_at,
         ]);
     }
 

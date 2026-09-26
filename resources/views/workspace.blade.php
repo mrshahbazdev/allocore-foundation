@@ -130,7 +130,7 @@
 
         <div class="px-5 py-4 border-t border-[#1A1A1F] flex items-center justify-between">
             <div class="min-w-0">
-                <div class="text-sm font-medium truncate">{{ $user->name }}</div>
+                <div class="text-sm font-medium truncate" :title="(me && me.email ? me.email : '') + (me && me.last_login_at ? ' · letzte Anmeldung ' + new Date(me.last_login_at).toLocaleString('de-DE') : '')">{{ $user->name }}</div>
                 <div class="text-[11px] text-[#6B7280] truncate">{{ $user->email }}</div>
                 <div x-show="me && me.roles && me.roles.length" class="mt-1 flex flex-wrap gap-1">
                     <template x-for="r in (me ? (me.roles || []) : [])" :key="r">

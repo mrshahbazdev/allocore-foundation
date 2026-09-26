@@ -153,7 +153,7 @@ class RolesTest extends TestCase
         tenancy()->initialize(Tenant::find($tenant));
         $user->assignRole('auditor');
 
-        $res = $this->getJson('/api/v1/me', ['X-Tenant' => $tenant])->assertOk();
+        $res = $this->getJson('/api/v1/me', ['X-Tenant' => $tenant])->assertOk()->assertJsonStructure(['last_login_at']);
         $res->assertJsonPath('id', $user->id)
             ->assertJsonPath('email', $user->email)
             ->assertJsonPath('roles.0', 'auditor');
