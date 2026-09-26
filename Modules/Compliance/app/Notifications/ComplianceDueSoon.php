@@ -25,8 +25,19 @@ class ComplianceDueSoon extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Compliance-Frist faellig: '.$this->item->title)
-            ->line(ucfirst($this->kind).' "'.$this->item->title.'" ist am '.$this->dueAt.' faellig.');
+            ->subject($this->kindLabel().' faellig: '.$this->item->title)
+            ->line($this->kindLabel().' "'.$this->item->title.'" ist am '.$this->dueAt.' faellig.');
+    }
+
+    private function kindLabel(): string
+    {
+        return [
+            'instruction' => 'Unterweisung',
+            'inspection' => 'Pruefung',
+            'deadline' => 'Frist',
+            'audit_finding' => 'Audit-Feststellung',
+            'audit' => 'Audit',
+        ][$this->kind] ?? ucfirst($this->kind);
     }
 
     public function toArray(object $notifiable): array
