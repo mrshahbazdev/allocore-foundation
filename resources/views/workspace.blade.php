@@ -1033,6 +1033,17 @@
                             </div>
                         </div>
                     </template>
+                    <div x-show="section === 'users' && !editing">
+                        <label class="block text-[13px] font-medium text-[#42536A] mb-1">Rollen</label>
+                        <div class="flex flex-wrap gap-x-3 gap-y-1 max-h-32 overflow-y-auto">
+                            <template x-for="r in allRoles" :key="r.id">
+                                <label class="flex items-center gap-1.5 text-[11px] text-[#42536A]">
+                                    <input type="checkbox" :value="r.name" x-model="form.roles" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                    <span x-text="r.name"></span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
                     <div x-show="['documents','data-objects'].includes(section) && !editing">
                         <label class="block text-[13px] font-medium text-[#42536A] mb-1">Datei</label>
                         <input type="file" x-ref="fileInput" class="w-full text-sm">
@@ -2062,7 +2073,7 @@ function workspace(initial) {
                     .then(r => { if (r.ok) this.loadSection(); else this.toast('Analyse fehlgeschlagen (HTTP '+r.status+')'); });
                 return;
             }
-            this.editing = null; this.dupMode = false; this.form = prefill || {}; this.formError = ''; this.formDirty = false; this.showCreate = true;
+            this.editing = null; this.dupMode = false; this.form = prefill || {}; if (this.section === 'users') { this.form.roles = this.form.roles || []; if (!this.allRoles.length) this.api('/api/v1/roles').then(r => r.ok ? r.json() : []).then(d => { this.allRoles = Array.isArray(d) ? d : (d.data || []); }); } this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         views() {
@@ -2196,6 +2207,7 @@ function workspace(initial) {
                 if (f.type === 'datetime-local' && v) v = String(v).replace('T', ' ') + (String(v).length === 16 ? ':00' : '');
                 if (v !== undefined && v !== '') body[f.key] = v;
             });
+            if (this.section === 'users' && Array.isArray(this.form.roles) && this.form.roles.length) body.roles = this.form.roles;
             const method = this.editing ? 'PUT' : 'POST';
             const url = this.item().ep + (this.editing ? '/' + this.editing.id : '');
             let fetchOpts = {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)};
