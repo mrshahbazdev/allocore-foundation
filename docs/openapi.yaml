@@ -2282,7 +2282,7 @@ paths:
   /api/v1/notifications/delete-read:
     post:
       tags: [metrics]
-      summary: "POST /api/v1/notifications/delete-read — alle gelesenen löschen, {deleted: n}; ?kind=/?code=/?muted=1 grenzt ein"
+      summary: "POST /api/v1/notifications/delete-read — alle gelesenen löschen, {deleted: n}; ?kind=/?code=/?muted=1/?before= grenzt ein"
       parameters:
         - name: X-Tenant
           in: header
