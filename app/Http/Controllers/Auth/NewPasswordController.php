@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Modules\Core\Notifications\PasswordChangedAlert;
 
 class NewPasswordController extends Controller
 {
@@ -52,6 +53,8 @@ class NewPasswordController extends Controller
                 // Zugehörige API-Tokens ebenfalls widerrufen — ein gekaperter
                 // Token soll das Passwort-Reset nicht überleben.
                 $user->tokens()->delete();
+
+                $user->notify(new PasswordChangedAlert('Passwort-Reset'));
 
                 event(new PasswordReset($user));
             }

@@ -13,6 +13,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Modules\Core\Notifications\MemberJoined;
 use Modules\Core\Notifications\MemberRemoved;
+use Modules\Core\Notifications\PasswordChangedAlert;
 use Modules\Core\Notifications\RolesChanged;
 use Modules\DataPlatform\Events\DomainEvent;
 use Spatie\Permission\Models\Permission;
@@ -194,6 +195,7 @@ class RoleController extends Controller
         $user->update(['password' => Hash::make($validated['password']), 'password_changed_at' => now()]);
         $user->tokens()->delete();
         $this->recordMemberEvent('password_changed', $user);
+        $user->notify(new PasswordChangedAlert('Profil'));
 
         return response()->json(['message' => 'Passwort geändert — alle API-Token wurden widerrufen.']);
     }
