@@ -19,7 +19,7 @@ class RolesTest extends TestCase
 
     public function test_tenant_creation_seeds_rollenmodell(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Rollen GmbH'])
+        $tenant = $this->createTenantApi(['name' => 'Rollen GmbH'])
             ->assertCreated()->json('id');
 
         $this->actingAsUser();
@@ -38,7 +38,7 @@ class RolesTest extends TestCase
 
     public function test_admin_can_assign_roles_to_user(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Assign GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'Assign GmbH'])->json('id');
         $admin = $this->actingAsUser();
         $target = User::factory()->create();
 
@@ -59,7 +59,7 @@ class RolesTest extends TestCase
 
     public function test_users_endpoint_returns_only_tenant_members(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Members GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'Members GmbH'])->json('id');
         $admin = $this->actingAsUser();
         $member = User::factory()->create();
         $outsider = User::factory()->create();
@@ -80,7 +80,7 @@ class RolesTest extends TestCase
 
     public function test_admin_can_create_user_and_attach_existing(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'UserCreate GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'UserCreate GmbH'])->json('id');
         $admin = $this->actingAsUser();
         tenancy()->initialize(Tenant::find($tenant));
         $admin->assignRole('administrator');
@@ -108,8 +108,8 @@ class RolesTest extends TestCase
 
     public function test_roles_validation_scoped_to_tenant(): void
     {
-        $tenantA = $this->postJson('/api/v1/tenants', ['name' => 'ScopeA GmbH'])->json('id');
-        $tenantB = $this->postJson('/api/v1/tenants', ['name' => 'ScopeB GmbH'])->json('id');
+        $tenantA = $this->createTenantApi(['name' => 'ScopeA GmbH'])->json('id');
+        $tenantB = $this->createTenantApi(['name' => 'ScopeB GmbH'])->json('id');
         $admin = $this->actingAsUser();
 
         tenancy()->initialize(Tenant::find($tenantB));
@@ -137,7 +137,7 @@ class RolesTest extends TestCase
 
     public function test_roleless_user_cannot_assign_roles(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'NoPerm GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'NoPerm GmbH'])->json('id');
         $this->actingAsUser();
         $target = User::factory()->create();
 
@@ -147,7 +147,7 @@ class RolesTest extends TestCase
 
     public function test_me_returns_current_user_roles_and_permissions(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Me GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'Me GmbH'])->json('id');
         $user = $this->actingAsUser();
 
         tenancy()->initialize(Tenant::find($tenant));
@@ -162,7 +162,7 @@ class RolesTest extends TestCase
 
     public function test_admin_can_remove_member_but_not_self(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Remove GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'Remove GmbH'])->json('id');
         $admin = $this->actingAsUser();
         $target = User::factory()->create();
 
@@ -183,8 +183,8 @@ class RolesTest extends TestCase
 
     public function test_role_update_requires_roles_manage_and_same_tenant(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Guard GmbH'])->json('id');
-        $other = $this->postJson('/api/v1/tenants', ['name' => 'Fremd GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'Guard GmbH'])->json('id');
+        $other = $this->createTenantApi(['name' => 'Fremd GmbH'])->json('id');
         $user = $this->actingAsUser();
 
         tenancy()->initialize(Tenant::find($tenant));
@@ -208,7 +208,7 @@ class RolesTest extends TestCase
 
     public function test_admin_can_update_role_permissions(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'PermsEdit GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'PermsEdit GmbH'])->json('id');
         $admin = $this->actingAsUser();
 
         tenancy()->initialize(Tenant::find($tenant));
@@ -227,7 +227,7 @@ class RolesTest extends TestCase
 
     public function test_admin_can_create_and_delete_custom_role(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'RoleCrud GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'RoleCrud GmbH'])->json('id');
         $admin = $this->actingAsUser();
 
         tenancy()->initialize(Tenant::find($tenant));
@@ -253,8 +253,8 @@ class RolesTest extends TestCase
 
     public function test_delete_role_of_foreign_tenant_returns_404(): void
     {
-        $tenantA = $this->postJson('/api/v1/tenants', ['name' => 'DelA GmbH'])->json('id');
-        $tenantB = $this->postJson('/api/v1/tenants', ['name' => 'DelB GmbH'])->json('id');
+        $tenantA = $this->createTenantApi(['name' => 'DelA GmbH'])->json('id');
+        $tenantB = $this->createTenantApi(['name' => 'DelB GmbH'])->json('id');
         $admin = $this->actingAsUser();
 
         $roleB = Role::where('team_id', $tenantB)->where('name', 'auditor')->firstOrFail();
@@ -269,7 +269,7 @@ class RolesTest extends TestCase
 
     public function test_member_actions_emit_user_events(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Ev GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'Ev GmbH'])->json('id');
         $admin = $this->actingAsUser();
         tenancy()->initialize(Tenant::find($tenant));
         $admin->assignRole('administrator');
@@ -310,7 +310,7 @@ class RolesTest extends TestCase
 
     public function test_member_actions_notify_user(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Notif GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'Notif GmbH'])->json('id');
         $admin = $this->actingAsUser();
         tenancy()->initialize(Tenant::find($tenant));
         $admin->assignRole('administrator');
@@ -341,7 +341,7 @@ class RolesTest extends TestCase
 
     public function test_new_member_notifies_roles_manage_users(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'MJ GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'MJ GmbH'])->json('id');
         $admin = $this->actingAsUser();
         $admin2 = User::factory()->create();
         $worker = User::factory()->create();
@@ -371,7 +371,7 @@ class RolesTest extends TestCase
 
     public function test_removed_member_notifies_roles_manage_users(): void
     {
-        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'MR GmbH'])->json('id');
+        $tenant = $this->createTenantApi(['name' => 'MR GmbH'])->json('id');
         $admin = $this->actingAsUser();
         $admin2 = User::factory()->create();
         $worker = User::factory()->create();
@@ -404,7 +404,7 @@ class RolesTest extends TestCase
 
     public function test_every_permission_domain_in_workspace_map_exists(): void
     {
-        $this->postJson('/api/v1/tenants', ['name' => 'Perms GmbH'])->assertCreated();
+        $this->createTenantApi(['name' => 'Perms GmbH'])->assertCreated();
 
         $blade = file_get_contents(resource_path('views/workspace.blade.php'));
         preg_match('/permDom\(key\) \{\s*const M = \{([^}]+)\}/', $blade, $m);
@@ -530,5 +530,12 @@ class RolesTest extends TestCase
         Sanctum::actingAs($user->fresh());
 
         return $user;
+    }
+
+    protected function createTenantApi(array $data)
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        return $this->postJson('/api/v1/tenants', $data);
     }
 }

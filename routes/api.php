@@ -80,7 +80,7 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
-    // Central: tenant (Unternehmen/Mandant) provisioning
+    // Central: tenant (Unternehmen/Mandant) provisioning — Auth Pflicht.
     Route::post('/tenants', function (Request $request) {
         $validated = $request->validate([
             'id' => ['nullable', 'string'],
@@ -100,9 +100,9 @@ Route::prefix('v1')->group(function () {
         event($event);
 
         return response()->json($tenant, 201);
-    });
+    })->middleware('auth:sanctum');
 
-    Route::get('/tenants', fn () => response()->json(Tenant::paginate()));
+    Route::get('/tenants', fn () => response()->json(Tenant::paginate()))->middleware('auth:sanctum');
 
     // Tenant-scoped API surface — modules register their routes under this group.
     Route::middleware(['auth:sanctum', 'tenant.request'])->group(function () {
