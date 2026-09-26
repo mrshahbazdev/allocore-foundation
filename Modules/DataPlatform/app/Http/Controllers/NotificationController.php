@@ -82,7 +82,11 @@ class NotificationController extends Controller
     public function stats(Request $request)
     {
         $muted = $request->user()->notification_muted ?? [];
-        $base = $request->user()->notifications();
+        $base = $request->user()->notifications()
+            ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
+            ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
+            ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
+            ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')));
 
         return response()->json([
             'total' => (clone $base)->count(),
