@@ -3394,6 +3394,27 @@ paths:
         '401': {description: Unauthenticated}
         '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
         '422': {description: Validation failed}
+  /api/v1/users/{user}:
+    delete:
+      tags: [users]
+      summary: DELETE /api/v1/users/{user} — Mitglied aus dem Tenant entfernen
+      description: Entfernt die Rollen-Mitgliedschaft des Users im aktiven Tenant (model_has_roles). Der eigene Account kann nicht entfernt werden (422). Erfordert Permission roles.manage.
+      parameters:
+        - name: X-Tenant
+          in: header
+          required: true
+          schema: {type: string}
+        - name: user
+          in: path
+          required: true
+          schema: {type: integer}
+      security: [{bearerAuth: []}]
+      responses:
+        '204': {description: Removed}
+        '401': {description: Unauthenticated}
+        '403': {description: Forbidden — fehlende Permission oder falsches Tenant}
+        '404': {description: Not Found}
+        '422': {description: Eigenes Mitglied kann nicht entfernt werden}
   /api/v1/audits:
     get:
       tags: [audits]
