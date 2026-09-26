@@ -13,6 +13,7 @@ class QuestionController extends Controller
     {
         return Question::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->q, fn ($q, $s) => $q->where('title', 'like', '%'.$s.'%'))
             ->when($request->category, fn ($q) => $q->where('category', $request->category))
             ->with('asker:id,name', 'expertProfile:id,headline')
             ->withCount('answers')

@@ -93,6 +93,32 @@ class CorporateDevTest extends TestCase
         $this->assertNotEmpty($types);
     }
 
+    public function test_strategies_projects_measures_filter_by_q(): void
+    {
+        $tenant = Tenant::create(['name' => 'Q GmbH']);
+        $this->acting($tenant);
+
+        $strategy = $this->postJson('/api/v1/strategies', [
+            'name' => 'Digitalisierung 2027', 'status' => 'active',
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/strategies', [
+            'name' => 'Internationalisierung', 'status' => 'active',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $project = $this->postJson('/api/v1/projects', [
+            'strategy_id' => $strategy['id'], 'name' => 'ERP-Einfuehrung', 'status' => 'active',
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/measures', [
+            'project_id' => $project['id'], 'title' => 'Anforderungsworkshop',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $this->assertCount(1, $this->getJson('/api/v1/strategies?q=Digital', ['X-Tenant' => $tenant->id])->json('data'));
+        $this->assertCount(0, $this->getJson('/api/v1/strategies?q=KeinTrefferXYZ', ['X-Tenant' => $tenant->id])->json('data'));
+        $this->assertCount(1, $this->getJson('/api/v1/projects?q=ERP', ['X-Tenant' => $tenant->id])->json('data'));
+        $this->assertCount(1, $this->getJson('/api/v1/measures?q=Workshop', ['X-Tenant' => $tenant->id])->json('data'));
+        $this->assertCount(0, $this->getJson('/api/v1/measures?q=KeinTrefferXYZ', ['X-Tenant' => $tenant->id])->json('data'));
+    }
+
     public function test_measure_done_notifies_project_owner(): void
     {
         Notification::fake();

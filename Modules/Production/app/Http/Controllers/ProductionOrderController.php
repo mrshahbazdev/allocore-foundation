@@ -13,6 +13,7 @@ class ProductionOrderController extends Controller
     {
         return ProductionOrder::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('order_no', 'like', '%'.$s.'%')->orWhere('product', 'like', '%'.$s.'%')))
             ->when($request->machine_id, fn ($q) => $q->where('machine_id', $request->machine_id))
             ->when($request->overdue === '1', fn ($q) => $q->whereIn('status', ['queued', 'running'])->where('due_at', '<', today()))
             ->with('machine:id,name', 'assignee:id,first_name,last_name')

@@ -13,6 +13,7 @@ class MeasureController extends Controller
     {
         return Measure::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->q, fn ($q, $s) => $q->where('title', 'like', '%'.$s.'%'))
             ->when($request->project_id, fn ($q) => $q->where('project_id', $request->project_id))
             ->with('responsible:id,name')
             ->paginate(min(request()->integer('per_page', 200), 200));

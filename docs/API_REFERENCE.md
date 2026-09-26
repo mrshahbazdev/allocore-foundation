@@ -47,6 +47,8 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 `/instructions`, `/inspections`, `/deadlines` (morphTo subject — an beliebiges Objekt anhängbar),
 `/risk-assessments`, `/operating-instructions` — je `compliance.view`/`compliance.manage`.
 Listen-Filter: `?status=` + `?q=` (Titel-Suche); Inspections zusätzlich `?result=`, Risk-Assessments `?risk_level=`.
+
+`?q=` (LIKE-Suche auf Titel/Name) gibt es außerdem auf: `/tasks`, `/projects`, `/strategies`, `/measures`, `/audits`, `/audit-findings`, `/tenders`, `/questions`, `/expert-profiles` (headline), `/machines`, `/production-orders` (order_no+product), `/portfolios`, `/investments`, `/participations`, `/graph/entities`, `/companies`, `/persons`, `/documents`, `/data-objects`.
 `/audits`, `/audit-findings` — je `audits.view`/`audits.manage` (Auditor-Rolle hat beides).
 Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, Fristen, Feststellungen, Audit-Starts, Maßnahmen, GB-Reviews und Projekt-Enden sowie Unterweisungs-Wiederholungen (Mail + Glocke; GBs gehen an den User mit der E-Mail der zugeordneten Person).
 

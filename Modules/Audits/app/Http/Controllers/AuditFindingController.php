@@ -17,6 +17,7 @@ class AuditFindingController extends Controller
         return AuditFinding::query()
             ->when($request->audit_id, fn ($q) => $q->where('audit_id', $request->audit_id))
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->q, fn ($q, $s) => $q->where('title', 'like', '%'.$s.'%'))
             ->when($request->severity, fn ($q) => $q->where('severity', $request->severity))
             ->with('audit:id,title', 'responsible:id,name')
             ->orderBy('due_at')

@@ -13,6 +13,7 @@ class ExpertProfileController extends Controller
     {
         return ExpertProfile::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->q, fn ($q, $s) => $q->where('headline', 'like', '%'.$s.'%'))
             ->with('person:id,first_name,last_name,email')
             ->paginate(min(request()->integer('per_page', 200), 200));
     }

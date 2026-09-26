@@ -12,6 +12,7 @@ class PortfolioController extends Controller
     public function index(Request $request)
     {
         return Portfolio::query()
+            ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->when($request->type, fn ($q) => $q->where('type', $request->type))
             ->withCount('investments')
             ->paginate(min(request()->integer('per_page', 200), 200));

@@ -12,6 +12,7 @@ class InvestmentController extends Controller
     public function index(Request $request)
     {
         return Investment::query()
+            ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->when($request->portfolio_id, fn ($q) => $q->where('portfolio_id', $request->portfolio_id))
             ->when($request->asset_class, fn ($q) => $q->where('asset_class', $request->asset_class))
             ->when($request->active === '1', fn ($q) => $q->whereNull('disposed_at'))
