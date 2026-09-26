@@ -51,6 +51,9 @@ class AggregateMetrics extends Command
             'graph_entities' => 'graph_entities',
             'graph_edges' => 'graph_edges',
             'data_objects' => 'data_objects',
+            'audits' => 'audits',
+            'audits_planned' => ['audits', "status = 'planned'"],
+            'audit_findings_open' => ['audit_findings', "status IN ('open','in_progress')"],
         ];
     }
 
