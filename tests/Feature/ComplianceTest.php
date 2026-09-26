@@ -446,4 +446,25 @@ class ComplianceTest extends TestCase
         $this->getJson('/api/v1/deadlines', ['X-Tenant' => $tenant->id])
             ->assertUnauthorized();
     }
+
+    public function test_compliance_lists_filter_by_q(): void
+    {
+        $tenant = Tenant::create(['name' => 'Filter GmbH']);
+        $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Brandschutzbeauftragter benennen',
+            'due_at' => now()->addDays(10)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Betriebsprüfung vorbereiten',
+            'due_at' => now()->addDays(10)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $hit = $this->getJson('/api/v1/deadlines?q=Brandschutz', ['X-Tenant' => $tenant->id]);
+        $hit->assertOk();
+        $this->assertCount(1, $hit->json('data'));
+        $miss = $this->getJson('/api/v1/deadlines?q=KeinTrefferXYZ', ['X-Tenant' => $tenant->id]);
+        $this->assertCount(0, $miss->json('data'));
+    }
 }
