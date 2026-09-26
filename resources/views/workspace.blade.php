@@ -551,6 +551,13 @@
                                 <span x-text="statusLabel(s) + ' · ' + rows.filter(r => String(r.status) === s).length"></span>
                             </button>
                         </template>
+                        <template x-for="sv in severityOpts()" :key="'sev-' + sv">
+                            <button @click="severityFilter = severityFilter === sv ? '' : sv" class="text-[11px] px-2.5 py-1 rounded-full border transition inline-flex items-center gap-1.5"
+                                    :class="severityFilter === sv ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">
+                                <span class="w-1.5 h-1.5 rounded-full" :style="'background:' + statusColor(sv)"></span>
+                                <span x-text="'Schwere ' + statusLabel(sv) + ' · ' + rows.filter(r => String(r.severity) === sv).length"></span>
+                            </button>
+                        </template>
                     </div>
                     <div x-show="loading && !rows" class="px-6 py-6 space-y-3" aria-hidden="true">
                         <template x-for="i in 6" :key="i">
@@ -1777,6 +1784,10 @@ function workspace(initial) {
         statusOpts() {
             if (!this.rows) return [];
             return [...new Set(this.rows.map(r => r.status).filter(Boolean))].sort();
+        },
+        severityOpts() {
+            if (!this.rows || !this.rows.some(r => r.severity)) return [];
+            return [...new Set(this.rows.map(r => r.severity).filter(Boolean))].sort();
         },
         statusLabel(s) { return STATUS_DE[String(s).toLowerCase()] || s; },
         typeLabel(t) { const M = {vacation:'Urlaub',sick:'Krank',other:'Sonstiges',question:'Frage',feedback:'Feedback',maintenance:'Wartung',safety:'Sicherheit',general:'Allgemein',external:'Extern',internal:'Intern',onboarding:'Onboarding',video:'Video',document:'Dokument',workshop:'Workshop',audit:'Audit',inspection:'Prüfung',training:'Schulung',financial:'Finanzen',quality:'Qualität',environment:'Umwelt',risk:'Risiko',strategic:'Strategisch',operational:'Operativ',low:'Niedrig',medium:'Mittel',high:'Hoch',analysis:'Analyse'}; return M[String(t).toLowerCase()] || t; },
