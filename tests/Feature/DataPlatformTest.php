@@ -1276,6 +1276,25 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertExactJson(['count' => 1]);
     }
 
+    public function test_notifications_unread_count_filters_by_window_and_muted(): void
+    {
+        $tenant = Tenant::create(['name' => 'UW GmbH']);
+        $user = $this->acting($tenant);
+        $this->putJson('/api/v1/me/notification-prefs', ['muted_kinds' => ['anmeldung']], ['X-Tenant' => $tenant->id])->assertOk();
+
+        $user->notify(new PasswordChangedAlert('Passwort geändert'));
+        $user->notify(new NewLoginAlert('1.2.3.4', null));
+
+        $this->getJson('/api/v1/notifications/unread-count?before='.now()->addDay()->toDateString(), ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['count' => 1]);
+        $this->getJson('/api/v1/notifications/unread-count?before='.now()->subDay()->toDateString(), ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['count' => 0]);
+        $this->getJson('/api/v1/notifications/unread-count?after='.now()->addDay()->toDateString(), ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['count' => 0]);
+        $this->getJson('/api/v1/notifications/unread-count?muted=1', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['count' => 1]);
+    }
+
     public function test_notifications_destroy_all_filters_by_code(): void
     {
         $tenant = Tenant::create(['name' => 'DC GmbH']);
