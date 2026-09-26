@@ -290,6 +290,34 @@ class ComplianceTest extends TestCase
         $this->assertNotNull(Project::first()->reminded_at);
     }
 
+    public function test_risk_review_reminder_uses_assessor_email(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'GB GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/persons', [
+            'first_name' => 'Karl',
+            'last_name' => 'Prüfer',
+            'email' => $user->email,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $personId = $this->getJson('/api/v1/persons', ['X-Tenant' => $tenant->id])->json('data.0.id');
+
+        $this->postJson('/api/v1/risk-assessments', [
+            'title' => 'GB Werkstatt',
+            'person_id' => $personId,
+            'review_at' => now()->addHours(12)->toISOString(),
+            'status' => 'open',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, function (ComplianceDueSoon $n) {
+            return $n->kind === 'gefaehrdungsbeurteilung';
+        });
+    }
+
     public function test_compliance_routes_require_auth(): void
     {
         $tenant = Tenant::create(['name' => 'Auth2 GmbH']);
