@@ -1321,4 +1321,32 @@ class DataPlatformTest extends TestCase
 
         $this->assertDatabaseCount('insight_notifications', 1);
     }
+
+    public function test_insights_notify_expires_dedupe_keys_after_30_days(): void
+    {
+        $tenant = Tenant::create(['name' => 'Ablauf GmbH']);
+        $admin = $this->acting($tenant);
+
+        $company = $this->postJson('/api/v1/companies', ['name' => 'AblaufCo'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/financial-reports', [
+            'company_id' => $company['id'],
+            'period' => now()->format('Y-m'),
+            'liquidity' => -100,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        // Ein 31 Tage alter Dedupe-Key für denselben Hinweis.
+        DB::table('insight_notifications')->insert([
+            'tenant_id' => $tenant->id,
+            'dedupe_key' => sha1('fin_negative_liquidity|1 Unternehmen mit negativer Liquidität im laufenden Monat.'),
+            'created_at' => now()->subDays(31),
+            'updated_at' => now()->subDays(31),
+        ]);
+
+        NotificationFacade::fake();
+
+        Artisan::call('insights:notify');
+
+        // Alter Key wurde gelöscht → Hinweis wird erneut verschickt.
+        NotificationFacade::assertSentToTimes($admin, CriticalInsight::class, 1);
+    }
 }
