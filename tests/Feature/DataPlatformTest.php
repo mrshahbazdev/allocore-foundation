@@ -1457,6 +1457,27 @@ class DataPlatformTest extends TestCase
         $this->assertSame(1, $user->notifications()->count());
     }
 
+    public function test_notifications_filters_by_entity_id(): void
+    {
+        $tenant = Tenant::create(['name' => 'EID GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new Assigned('aufgabe', 'ent-1', 'A'));
+        $user->notify(new Assigned('aufgabe', 'ent-2', 'B'));
+
+        $res = $this->getJson('/api/v1/notifications?entity_id=ent-1', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $res);
+        $this->assertSame('A', $res[0]['title']);
+
+        $this->getJson('/api/v1/notifications/unread-count?entity_id=ent-2', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['count' => 1]);
+        $this->getJson('/api/v1/notifications/stats?entity_id=ent-2', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 1, 'read' => 0, 'muted' => 0]);
+
+        $this->deleteJson('/api/v1/notifications?entity_id=ent-1', [], ['X-Tenant' => $tenant->id])->assertJson(['deleted' => 1]);
+        $this->assertSame(1, $user->notifications()->count());
+    }
+
     public function test_notifications_read_all_honors_kind_filter(): void
     {
         $tenant = Tenant::create(['name' => 'NK GmbH']);
