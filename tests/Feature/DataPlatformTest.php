@@ -374,6 +374,32 @@ class DataPlatformTest extends TestCase
         $this->assertContains('tasks_due_soon', $codes);
     }
 
+    public function test_insights_reports_investments_drawdown_and_capital_need(): void
+    {
+        $tenant = Tenant::create(['name' => 'Kapital GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $portfolio = $this->postJson('/api/v1/portfolios', ['name' => 'Hauptportfolio'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/investments', [
+            'portfolio_id' => $portfolio['id'], 'name' => 'Verlustposition',
+            'cost_basis' => 10000, 'current_value' => 8000,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $this->postJson('/api/v1/participations', [
+            'name' => 'Beteiligung AG', 'stake_pct' => 25, 'capital_need' => 5000, 'status' => 'active',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('investments_drawdown', $codes);
+        $this->assertContains('participations_capital_need', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
