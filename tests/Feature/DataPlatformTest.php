@@ -984,6 +984,40 @@ class DataPlatformTest extends TestCase
         $this->assertTrue($res[0]['read']);
     }
 
+    public function test_notifications_prune_removes_old_read(): void
+    {
+        $tenant = Tenant::create(['name' => 'P GmbH']);
+        $user = $this->acting($tenant);
+
+        $notif = new class extends Notification
+        {
+            public function via($n)
+            {
+                return ['database'];
+            }
+
+            public function toArray($n)
+            {
+                return ['title' => 'X', 'kind' => 'frist'];
+            }
+        };
+        $user->notify($notif);
+        $user->notify($notif);
+        $user->notify($notif);
+
+        $ids = $user->notifications()->pluck('id');
+        // 1: gelesen + alt -> wird geloescht; 2: gelesen + neu -> bleibt; 3: ungelesen + alt -> bleibt
+        DB::table('notifications')->where('id', $ids[0])->update(['read_at' => now(), 'created_at' => now()->subDays(100)]);
+        DB::table('notifications')->where('id', $ids[1])->update(['read_at' => now()]);
+        DB::table('notifications')->where('id', $ids[2])->update(['created_at' => now()->subDays(100)]);
+
+        $this->artisan('notifications:prune')->assertSuccessful();
+
+        $remaining = $user->fresh()->notifications()->pluck('id')->sort()->values()->all();
+        $this->assertEquals(collect([$ids[1], $ids[2]])->sort()->values()->all(), $remaining);
+        $this->assertNull(DB::table('notifications')->where('id', $ids[0])->first());
+    }
+
     public function test_notification_can_be_deleted(): void
     {
         $tenant = Tenant::create(['name' => 'D GmbH']);

@@ -4,6 +4,7 @@ namespace Modules\DataPlatform\Providers;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Modules\DataPlatform\Console\AggregateMetrics;
+use Modules\DataPlatform\Console\PruneNotifications;
 use Modules\DataPlatform\Support\ActivityRecorder;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
@@ -15,6 +16,7 @@ class DataPlatformServiceProvider extends ModuleServiceProvider
 
     protected array $commands = [
         AggregateMetrics::class,
+        PruneNotifications::class,
     ];
 
     protected array $providers = [
@@ -32,5 +34,6 @@ class DataPlatformServiceProvider extends ModuleServiceProvider
     protected function configureSchedules(Schedule $schedule): void
     {
         $schedule->command('analytics:aggregate')->daily();
+        $schedule->command('notifications:prune')->daily();
     }
 }
