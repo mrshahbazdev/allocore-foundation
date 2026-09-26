@@ -411,6 +411,34 @@ class ComplianceTest extends TestCase
         });
     }
 
+    public function test_instruction_renewal_reminder_notifies_responsible(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Renew GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $id = \DB::table('instructions')->insertGetId([
+            'tenant_id' => $tenant->id,
+            'title' => 'Brandschutz jährlich',
+            'responsible_id' => $user->id,
+            'status' => 'completed',
+            'interval_months' => 6,
+            'completed_at' => now()->subMonths(7),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentToTimes($user, ComplianceDueSoon::class, 1);
+        Notification::assertSentTo($user, function (ComplianceDueSoon $n) {
+            return $n->kind === 'unterweisung_wiederholung';
+        });
+        $this->assertNotNull(\DB::table('instructions')->where('id', $id)->value('renewal_reminded_at'));
+    }
+
     public function test_compliance_routes_require_auth(): void
     {
         $tenant = Tenant::create(['name' => 'Auth2 GmbH']);
