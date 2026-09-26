@@ -36,6 +36,8 @@ class SearchController extends Controller
         'graph-edges' => 'graph_edges',
         'ai-analyses' => 'ai_analyses',
         'events' => 'stored_events',
+        'audits' => 'audits',
+        'audit-findings' => 'audit_findings',
     ];
 
     private const TENANT_COLS = ['stored_events' => 'meta_data->tenant_id'];
