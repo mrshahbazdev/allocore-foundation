@@ -194,6 +194,18 @@ class DataPlatformTest extends TestCase
         $this->assertSame(1, count(array_filter(explode("\n", trim($resId->streamedContent())))));
     }
 
+    public function test_events_show_returns_single_event(): void
+    {
+        $tenant = Tenant::create(['name' => 'ShowEv GmbH']);
+        $this->acting($tenant);
+        Company::create(['tenant_id' => $tenant->id, 'name' => 'ShowCo']);
+
+        $id = DB::table('stored_events')->where('meta_data->tenant_id', $tenant->id)->value('id');
+        $res = $this->getJson('/api/v1/events/'.$id, ['X-Tenant' => $tenant->id]);
+        $res->assertOk()->assertJsonPath('id', $id);
+        $this->getJson('/api/v1/events/'.($id + 999), ['X-Tenant' => $tenant->id])->assertNotFound();
+    }
+
     public function test_notifications_test_endpoint_creates_self_notification(): void
     {
         $tenant = Tenant::create(['name' => 'Test GmbH']);
