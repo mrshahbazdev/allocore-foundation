@@ -3,12 +3,22 @@
 namespace Modules\Compliance\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Modules\Core\Concerns\NotifiesLinkedUserOnCreate;
 use Modules\Core\Models\Person;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class RiskAssessment extends Model
 {
     use BelongsToTenant;
+    use NotifiesLinkedUserOnCreate;
+
+    protected const PERSON_REL = 'assessor';
+
+    protected const PERSON_KIND = 'gefaehrdungsbeurteilung';
+
+    protected const PERSON_LABEL = 'Gefährdungsbeurteilung';
+
+    protected const PERSON_DUE_FIELD = 'review_at';
 
     public const RISK_LOW = 'low';
 
