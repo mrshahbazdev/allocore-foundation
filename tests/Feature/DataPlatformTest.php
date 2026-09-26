@@ -400,6 +400,29 @@ class DataPlatformTest extends TestCase
         $this->assertContains('participations_capital_need', $codes);
     }
 
+    public function test_insights_reports_machines_and_risk_reviews(): void
+    {
+        $tenant = Tenant::create(['name' => 'Maschinen GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/machines', ['name' => 'Fräse 1', 'status' => 'maintenance'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/machines', ['name' => 'Drucker 1', 'status' => 'active'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/risk-assessments', [
+            'title' => 'GB Galvanik', 'review_at' => now()->subDays(5)->toISOString(), 'status' => 'open',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('machines_in_maintenance', $codes);
+        $this->assertContains('machines_idle', $codes);
+        $this->assertContains('risk_reviews_overdue', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
