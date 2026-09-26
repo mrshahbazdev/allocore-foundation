@@ -130,7 +130,7 @@
                 <div class="text-[11px] text-[#6B7280] truncate">{{ $user->email }}</div>
                 <div x-show="me && me.roles && me.roles.length" class="mt-1 flex flex-wrap gap-1">
                     <template x-for="r in (me ? (me.roles || []) : [])" :key="r">
-                        <span class="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-[#FACC15] text-black" x-text="roleLabel(r)" :title="r"></span>
+                        <a :href="'/app/users?role=' + encodeURIComponent(r)" class="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-[#FACC15] text-black hover:bg-[#FDE047]" x-text="roleLabel(r)" :title="'Team: ' + roleLabel(r)"></a>
                     </template>
                 </div>
             </div>
