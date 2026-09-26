@@ -191,6 +191,27 @@ class ComplianceTest extends TestCase
         });
     }
 
+    public function test_audit_reminder_notifies_responsible(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Audit GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/audits', [
+            'title' => 'Externes Audit QM',
+            'responsible_id' => $user->id,
+            'starts_on' => now()->addHours(12)->toDateString(),
+            'status' => 'planned',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, function (ComplianceDueSoon $n) {
+            return $n->kind === 'audit';
+        });
+    }
+
     public function test_project_reminder_notifies_owner(): void
     {
         Notification::fake();
