@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Modules\DataPlatform\Events\DomainEvent;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -130,6 +131,7 @@ class RoleController extends Controller
         $roles = $validated['roles'] ?? ['mitarbeiter'];
         $user = User::where('email', $validated['email'])->first();
         $initialPassword = null;
+        $created = false;
 
         if (! $user) {
             $initialPassword = $validated['password'] ?? Str::password(16);
@@ -138,9 +140,12 @@ class RoleController extends Controller
                 'email' => $validated['email'],
                 'password' => Hash::make($initialPassword),
             ]);
+            $created = true;
         }
 
         $user->syncRoles($roles);
+
+        $this->recordMemberEvent($created ? 'added' : 'roles_updated', $user, ['roles' => $roles]);
 
         $payload = $this->userRoles($user)->getData(true);
         if ($initialPassword && ! isset($validated['password'])) {
@@ -162,6 +167,8 @@ class RoleController extends Controller
 
         $user->syncRoles($validated['roles']);
 
+        $this->recordMemberEvent('roles_updated', $user, ['roles' => $validated['roles']]);
+
         return $this->userRoles($user);
     }
 
@@ -175,6 +182,21 @@ class RoleController extends Controller
             ->where('model_id', $user->id)
             ->delete();
 
+        $this->recordMemberEvent('removed', $user);
+
         return response()->noContent();
+    }
+
+    private function recordMemberEvent(string $action, User $user, array $payload = []): void
+    {
+        $event = new DomainEvent(
+            type: "user.{$action}",
+            tenantId: (string) tenant()->getTenantKey(),
+            subject: ['type' => 'user', 'id' => $user->id, 'title' => $user->name],
+            payload: $payload + ['email' => $user->email],
+        );
+        $event->setMetaData(['tenant_id' => (string) tenant()->getTenantKey()]);
+
+        event($event);
     }
 }

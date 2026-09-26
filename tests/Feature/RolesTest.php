@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -264,6 +265,37 @@ class RolesTest extends TestCase
         $this->deleteJson("/api/v1/roles/{$roleB->id}", [], ['X-Tenant' => $tenantA])
             ->assertNotFound();
         $this->assertDatabaseHas('roles', ['id' => $roleB->id]);
+    }
+
+    public function test_member_actions_emit_user_events(): void
+    {
+        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Ev GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+
+        $this->postJson('/api/v1/users', [
+            'name' => 'Evt Mitglied', 'email' => 'evt@example.test', 'roles' => ['mitarbeiter'],
+        ], ['X-Tenant' => $tenant])->assertCreated();
+
+        $member = User::where('email', 'evt@example.test')->firstOrFail();
+
+        $events = DB::table('stored_events')
+            ->where('meta_data->tenant_id', $tenant)
+            ->pluck('event_properties')
+            ->map(fn ($p) => json_decode($p, true));
+        $types = $events->pluck('type');
+        $this->assertContains('user.added', $types);
+
+        $this->putJson("/api/v1/users/{$member->id}/roles", ['roles' => ['auditor']], ['X-Tenant' => $tenant])->assertOk();
+        $types = DB::table('stored_events')->where('meta_data->tenant_id', $tenant)
+            ->pluck('event_properties')->map(fn ($p) => json_decode($p, true)['type']);
+        $this->assertContains('user.roles_updated', $types);
+
+        $this->deleteJson("/api/v1/users/{$member->id}", [], ['X-Tenant' => $tenant])->assertNoContent();
+        $types = DB::table('stored_events')->where('meta_data->tenant_id', $tenant)
+            ->pluck('event_properties')->map(fn ($p) => json_decode($p, true)['type']);
+        $this->assertContains('user.removed', $types);
     }
 
     public function test_every_permission_domain_in_workspace_map_exists(): void

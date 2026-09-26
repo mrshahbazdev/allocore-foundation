@@ -39,6 +39,7 @@ Neue Modelle: nur in `WATCHED` eintragen — keine Änderung am Listener nötig.
 | `ai_analysis.*` | Ai | KI-Analysen |
 | `exec_report.*` | Executive | Executive-Reports |
 | `audit.*` / `audit_finding.*` | Audits | Audits und Feststellungen |
+| `user.added` / `user.roles_updated` / `user.removed` | Core | Mitglied angelegt, Rollen geändert, Mitglied entfernt (manuell emittiert, kein Eloquent-Event) |
 
 ## Lesen
 

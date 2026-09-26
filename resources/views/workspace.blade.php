@@ -2031,7 +2031,7 @@ function workspace(initial) {
             const p = e && e.event_properties;
             if (!p || !p.subject || p.subject.id === undefined || p.subject.id === null) return null;
             const g = String(e.event_type || '').split('.')[0];
-            const M = {task:'tasks',company:'companies',person:'persons',document:'documents',instruction:'instructions',inspection:'inspections',deadline:'deadlines',tender:'tenders',question:'questions',machine:'machines',production_order:'production-orders',financial_report:'financial-reports',leave_request:'leave-requests',participation:'participations',data_object:'data-objects',portfolio:'portfolios',investment:'investments',graph_entity:'graph-entities',graph_edge:'graph-edges',strategy:'strategies',project:'projects',measure:'measures',ai_analysis:'ai-analyses',risk_assessment:'risk-assessments',operating_instruction:'operating-instructions',audit:'audits',audit_finding:'audit-findings',expert_profile:'expert-profiles',tender_application:'tenders',answer:'questions',exec_report:'executive',user:'team'};
+            const M = {task:'tasks',company:'companies',person:'persons',document:'documents',instruction:'instructions',inspection:'inspections',deadline:'deadlines',tender:'tenders',question:'questions',machine:'machines',production_order:'production-orders',financial_report:'financial-reports',leave_request:'leave-requests',participation:'participations',data_object:'data-objects',portfolio:'portfolios',investment:'investments',graph_entity:'graph-entities',graph_edge:'graph-edges',strategy:'strategies',project:'projects',measure:'measures',ai_analysis:'ai-analyses',risk_assessment:'risk-assessments',operating_instruction:'operating-instructions',audit:'audits',audit_finding:'audit-findings',expert_profile:'expert-profiles',tender_application:'tenders',answer:'questions',exec_report:'executive',user:'users'};
             return M[g] ? '/app/' + M[g] + '?tenant=' + this.tenant + '&open=' + p.subject.id : null;
         },
         eventGroup(t) {
@@ -2040,7 +2040,7 @@ function workspace(initial) {
         },
         eventLabel(t) {
             const a = String(t || '').split('.').pop();
-            return {created: 'erstellt', updated: 'aktualisiert', deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: 'hochgeladen', answered: 'beantwortet', created_event: 'erstellt'}[a] || a;
+            return {created: 'erstellt', updated: 'aktualisiert', deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: 'hochgeladen', answered: 'beantwortet', created_event: 'erstellt', added: 'hinzugefügt', roles_updated: 'Rollen geändert', removed: 'entfernt'}[a] || a;
         },
         createFields() {
             const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes', 'role_names']);
