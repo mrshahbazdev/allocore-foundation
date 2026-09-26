@@ -136,4 +136,20 @@ class AuditsTest extends TestCase
 
         Notification::assertSentTo($user, ComplianceDueSoon::class, fn ($n) => $n->kind === 'massnahme');
     }
+
+    public function test_tender_deadline_reminder_notifies_creator(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'H GmbH']);
+        $user = $this->acting($tenant);
+
+        $this->postJson('/api/v1/tenders', [
+            'title' => 'Gebäudereinigung', 'deadline_at' => now()->addHours(12)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, ComplianceDueSoon::class, fn ($n) => $n->kind === 'ausschreibung');
+    }
 }
