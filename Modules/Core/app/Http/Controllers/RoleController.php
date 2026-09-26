@@ -186,6 +186,7 @@ class RoleController extends Controller
 
         $user->update(['password' => Hash::make($validated['password'])]);
         $user->tokens()->delete();
+        $this->recordMemberEvent('password_changed', $user);
 
         return response()->json(['message' => 'Passwort geändert — alle API-Token wurden widerrufen.']);
     }
