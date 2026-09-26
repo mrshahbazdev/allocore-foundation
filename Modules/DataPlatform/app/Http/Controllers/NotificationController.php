@@ -110,11 +110,16 @@ class NotificationController extends Controller
                 ? $q->whereIn('data->kind', $muted)
                 : $q->whereNotIn('data->kind', $muted));
 
+        $byKind = (clone $base)->reorder()
+            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`data`, '$.kind')) as kind, COUNT(*) as n")
+            ->groupBy('kind')->pluck('n', 'kind');
+
         return response()->json([
             'total' => (clone $base)->count(),
             'unread' => (clone $base)->whereNull('read_at')->count(),
             'read' => (clone $base)->whereNotNull('read_at')->count(),
             'muted' => $muted === [] ? 0 : (clone $base)->whereIn('data->kind', $muted)->count(),
+            'by_kind' => $byKind,
         ]);
     }
 

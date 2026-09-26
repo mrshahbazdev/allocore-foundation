@@ -1472,7 +1472,7 @@ class DataPlatformTest extends TestCase
         $this->getJson('/api/v1/notifications/unread-count?entity_id=ent-2', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson(['count' => 1]);
         $this->getJson('/api/v1/notifications/stats?entity_id=ent-2', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 1, 'read' => 0, 'muted' => 0]);
+            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 1, 'read' => 0, 'muted' => 0, 'by_kind' => ['aufgabe' => 1]]);
 
         $this->deleteJson('/api/v1/notifications?entity_id=ent-1', [], ['X-Tenant' => $tenant->id])->assertJson(['deleted' => 1]);
         $this->assertSame(1, $user->notifications()->count());
@@ -1700,22 +1700,22 @@ class DataPlatformTest extends TestCase
         $user->notifications()->where('data->kind', 'anmeldung')->first()->update(['read_at' => now()]);
 
         $this->getJson('/api/v1/notifications/stats', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['total' => 2, 'unread' => 1, 'read' => 1, 'muted' => 1]);
+            ->assertOk()->assertExactJson(['total' => 2, 'unread' => 1, 'read' => 1, 'muted' => 1, 'by_kind' => ['anmeldung' => 1, 'passwort_geaendert' => 1]]);
 
         $this->getJson('/api/v1/notifications/stats?kind=passwort_geaendert', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 1, 'read' => 0, 'muted' => 0]);
+            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 1, 'read' => 0, 'muted' => 0, 'by_kind' => ['passwort_geaendert' => 1]]);
         $this->getJson('/api/v1/notifications/stats?kind=anmeldung', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 0, 'read' => 1, 'muted' => 1]);
+            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 0, 'read' => 1, 'muted' => 1, 'by_kind' => ['anmeldung' => 1]]);
         $this->getJson('/api/v1/notifications/stats?before='.now()->subDay()->toDateString(), ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['total' => 0, 'unread' => 0, 'read' => 0, 'muted' => 0]);
+            ->assertOk()->assertExactJson(['total' => 0, 'unread' => 0, 'read' => 0, 'muted' => 0, 'by_kind' => []]);
         $this->getJson('/api/v1/notifications/stats?muted=1', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 0, 'read' => 1, 'muted' => 1]);
+            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 0, 'read' => 1, 'muted' => 1, 'by_kind' => ['anmeldung' => 1]]);
         $this->getJson('/api/v1/notifications/stats?muted=0', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 1, 'read' => 0, 'muted' => 0]);
+            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 1, 'read' => 0, 'muted' => 0, 'by_kind' => ['passwort_geaendert' => 1]]);
         $this->getJson('/api/v1/notifications/stats?q=Anmeldung', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 0, 'read' => 1, 'muted' => 1]);
+            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 0, 'read' => 1, 'muted' => 1, 'by_kind' => ['anmeldung' => 1]]);
         $this->getJson('/api/v1/notifications/stats?q=nomatch', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['total' => 0, 'unread' => 0, 'read' => 0, 'muted' => 0]);
+            ->assertOk()->assertExactJson(['total' => 0, 'unread' => 0, 'read' => 0, 'muted' => 0, 'by_kind' => []]);
     }
 
     public function test_notifications_unread_filter_and_mark_unread(): void
