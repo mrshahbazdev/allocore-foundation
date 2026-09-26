@@ -1533,6 +1533,12 @@ function workspace(initial) {
                     this.toast('Sitzung abgelaufen — bitte neu anmelden.');
                     setTimeout(() => { location.href = '/login'; }, 1400);
                 }
+                if (r.status === 429 && !this._rlToast) {
+                    this._rlToast = true;
+                    const s = r.headers.get('Retry-After') || 60;
+                    this.toast('Anfrage fehlgeschlagen — Rate-Limit erreicht, bitte ' + s + ' s warten.');
+                    setTimeout(() => { this._rlToast = false; }, Math.min(s, 15) * 1000);
+                }
                 return r;
             });
         },
