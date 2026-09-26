@@ -1424,6 +1424,7 @@ function workspace(initial) {
             });
         },
         loadNavBadges() {
+            this.loadNotifications();
             const apply = pairs => {
                 this.navBadges = Object.fromEntries(pairs.map(([k, v]) => [k, v[0]]));
                 this.navBadgesToday = Object.fromEntries(pairs.map(([k, v]) => [k, v[1]]));
