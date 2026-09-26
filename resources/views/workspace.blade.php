@@ -2255,7 +2255,7 @@ function workspace(initial) {
         },
         eventLabel(t) {
             const a = String(t || '').split('.').pop();
-            return {created: 'erstellt', updated: 'aktualisiert', deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: 'hochgeladen', answered: 'beantwortet', created_event: 'erstellt', added: 'hinzugefügt', roles_updated: 'Rollen geändert', removed: 'entfernt', left: 'verlassen', permissions_updated: 'Rechte geändert', password_changed: 'Passwort geändert'}[a] || a;
+            return {created: 'erstellt', updated: 'aktualisiert', deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: 'hochgeladen', answered: 'beantwortet', created_event: 'erstellt', added: 'hinzugefügt', roles_updated: 'Rollen geändert', removed: 'entfernt', left: 'verlassen', permissions_updated: 'Rechte geändert', password_changed: 'Passwort geändert', logged_in: 'angemeldet'}[a] || a;
         },
         createFields() {
             const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes', 'role_names']);

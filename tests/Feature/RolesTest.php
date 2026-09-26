@@ -15,6 +15,7 @@ use Modules\Core\Notifications\NewLoginAlert;
 use Modules\DataPlatform\Events\DomainEvent;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 class RolesTest extends TestCase
@@ -240,6 +241,25 @@ class RolesTest extends TestCase
             ->assertOk()
             ->assertJson(['status' => 'ok', 'deleted' => 3]);
         $this->assertSame(0, $user->tokens()->count());
+    }
+
+    public function test_login_records_event_in_tenant_feed(): void
+    {
+        $tenant = Tenant::create(['name' => 'EVT']);
+        $user = User::factory()->create(['password' => 'NeuPasswort123']);
+        PermissionRegistrar::class;
+        Role::firstOrCreate(['name' => 'administrator', 'guard_name' => 'web']);
+        $user->assignRole(Role::where('name', 'administrator')->first());
+        \DB::table('model_has_roles')->where('model_id', $user->id)->update(['team_id' => $tenant->id]);
+
+        $this->post('/login', ['email' => $user->email, 'password' => 'NeuPasswort123']);
+
+        $this->assertTrue(
+            \DB::table('stored_events')
+                ->where('event_properties->type', 'user.logged_in')
+                ->where('meta_data->tenant_id', (string) $tenant->id)
+                ->exists()
+        );
     }
 
     public function test_login_lockout_notifies_user_once(): void
