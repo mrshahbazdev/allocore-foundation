@@ -14,6 +14,8 @@ class InstructionController extends Controller
         return Instruction::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->q, fn ($q, $s) => $q->where('title', 'like', '%'.$s.'%'))
+            ->when($request->boolean('overdue'), fn ($q) => $q->where('status', 'pending')->where('due_at', '<', now()))
+            ->when($request->boolean('due_soon'), fn ($q) => $q->where('status', 'pending')->whereBetween('due_at', [now(), now()->addDays(7)]))
             ->with('person:id,first_name,last_name', 'responsible:id,name')
             ->paginate(min(request()->integer('per_page', 200), 200));
     }

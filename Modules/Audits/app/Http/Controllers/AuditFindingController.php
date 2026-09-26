@@ -18,6 +18,8 @@ class AuditFindingController extends Controller
             ->when($request->audit_id, fn ($q) => $q->where('audit_id', $request->audit_id))
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->q, fn ($q, $s) => $q->where('title', 'like', '%'.$s.'%'))
+            ->when($request->boolean('overdue'), fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->where('due_at', '<', now()))
+            ->when($request->boolean('due_soon'), fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->whereBetween('due_at', [now(), now()->addDays(7)]))
             ->when($request->severity, fn ($q) => $q->where('severity', $request->severity))
             ->with('audit:id,title', 'responsible:id,name')
             ->orderBy('due_at')

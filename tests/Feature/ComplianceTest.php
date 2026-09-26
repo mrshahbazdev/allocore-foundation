@@ -467,4 +467,32 @@ class ComplianceTest extends TestCase
         $miss = $this->getJson('/api/v1/deadlines?q=KeinTrefferXYZ', ['X-Tenant' => $tenant->id]);
         $this->assertCount(0, $miss->json('data'));
     }
+
+    public function test_deadlines_filter_by_overdue_and_due_soon(): void
+    {
+        $tenant = Tenant::create(['name' => 'Due GmbH']);
+        $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Überfällig', 'status' => 'open',
+            'due_at' => now()->subDay()->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Bald fällig', 'status' => 'open',
+            'due_at' => now()->addDays(3)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Erledigt', 'status' => 'completed',
+            'due_at' => now()->subDay()->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $overdue = $this->getJson('/api/v1/deadlines?overdue=1', ['X-Tenant' => $tenant->id]);
+        $this->assertCount(1, $overdue->json('data'));
+        $this->assertSame('Überfällig', $overdue->json('data.0.title'));
+
+        $soon = $this->getJson('/api/v1/deadlines?due_soon=1', ['X-Tenant' => $tenant->id]);
+        $titles = collect($soon->json('data'))->pluck('title');
+        $this->assertTrue($titles->contains('Bald fällig'));
+        $this->assertFalse($titles->contains('Erledigt'));
+    }
 }
