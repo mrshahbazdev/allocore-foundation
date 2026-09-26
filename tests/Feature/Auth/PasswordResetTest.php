@@ -70,4 +70,27 @@ class PasswordResetTest extends TestCase
             return true;
         });
     }
+
+    public function test_password_reset_revokes_personal_access_tokens(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create();
+        $user->createToken('api');
+
+        $this->post('/forgot-password', ['email' => $user->email]);
+
+        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+            $this->post('/reset-password', [
+                'token' => $notification->token,
+                'email' => $user->email,
+                'password' => 'Passw0rd12345',
+                'password_confirmation' => 'Passw0rd12345',
+            ])->assertSessionHasNoErrors();
+
+            return true;
+        });
+
+        $this->assertDatabaseCount('personal_access_tokens', 0);
+    }
 }
