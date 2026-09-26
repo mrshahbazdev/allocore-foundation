@@ -41,6 +41,7 @@ class ComplianceDueSoon extends Notification
             'gefaehrdungsbeurteilung' => 'Gefaehrdungsbeurteilung-Review',
             'projekt' => 'Projekt',
             'auftrag' => 'Produktionsauftrag',
+            'ausschreibung' => 'Ausschreibung',
         ][$this->kind] ?? ucfirst($this->kind);
     }
 

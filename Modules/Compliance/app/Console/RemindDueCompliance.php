@@ -14,6 +14,7 @@ use Modules\Compliance\Models\RiskAssessment;
 use Modules\Compliance\Notifications\ComplianceDueSoon;
 use Modules\CorporateDev\Models\Measure;
 use Modules\CorporateDev\Models\Project;
+use Modules\ExpertNetwork\Models\Tender;
 use Modules\Production\Models\ProductionOrder;
 
 class RemindDueCompliance extends Command
@@ -69,6 +70,9 @@ class RemindDueCompliance extends Command
 
         $count += $this->remindRiskReviews($horizon);
         $count += $this->remindProductionOrders($horizon);
+        $count += $this->remind(
+            Tender::query()->where('status', Tender::STATUS_OPEN)->whereNotNull('deadline_at')->where('deadline_at', '<=', $horizon),
+            'ausschreibung', 'deadline_at', 'created_by', 'creator');
 
         $this->info("{$count} Erinnerung(en) versendet.");
 
