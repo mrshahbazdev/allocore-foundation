@@ -1264,6 +1264,21 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertExactJson(['count' => 1]);
     }
 
+    public function test_notifications_destroy_all_filters_by_code(): void
+    {
+        $tenant = Tenant::create(['name' => 'DC GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new CriticalInsight($tenant->id, 'orders_overdue', 'x'));
+        $user->notify(new CriticalInsight($tenant->id, 'demo_seed', 'y'));
+
+        $this->deleteJson('/api/v1/notifications?code=orders_overdue', [], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['deleted' => 1]);
+
+        $this->assertSame(1, $user->notifications()->count());
+        $this->assertSame('demo_seed', $user->notifications()->first()->data['code']);
+    }
+
     public function test_notifications_index_filters_by_code(): void
     {
         $tenant = Tenant::create(['name' => 'CF GmbH']);

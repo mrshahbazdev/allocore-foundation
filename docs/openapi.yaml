@@ -2161,7 +2161,7 @@ paths:
 
     delete:
       tags: [metrics]
-      summary: "DELETE /api/v1/notifications — Benachrichtigungen des Users löschen {deleted: n} (ohne Filter alle; kind=/read=1/unread=1 grenzt ein)"
+      summary: "DELETE /api/v1/notifications — Benachrichtigungen des Users löschen {deleted: n} (ohne Filter alle; kind=/read=1/unread=1/code= grenzt ein)"
       parameters:
         - name: kind
           in: query
