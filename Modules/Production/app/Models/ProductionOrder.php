@@ -16,6 +16,7 @@ class ProductionOrder extends Model
     protected $fillable = [
         'order_no', 'product', 'quantity', 'machine_id', 'assigned_to',
         'status', 'scrap_qty', 'due_at', 'started_at', 'finished_at',
+        'reminded_at',
     ];
 
     protected function casts(): array
@@ -24,6 +25,7 @@ class ProductionOrder extends Model
             'due_at' => 'date',
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
+            'reminded_at' => 'datetime',
         ];
     }
 
