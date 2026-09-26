@@ -1123,7 +1123,7 @@ function workspace(initial) {
         {key:'audits_planned',label:'Geplante Audits',to:'audits'},{key:'audits_in_progress',label:'Laufende Audits',to:'audits'},
         {key:'audit_findings_open',label:'Offene Feststellungen',to:'audit-findings'},{key:'audit_findings_overdue',label:'Überfällige Feststellungen',to:'audit-findings'},
         {key:'production_orders_open',label:'Laufende Aufträge',to:'production-orders'},{key:'projects_open',label:'Offene Projekte',to:'projects'},
-        {key:'machines_active',label:'Maschinen aktiv',to:'machines'},{key:'leave_requests_pending',label:'Urlaubsanträge offen',to:'leave-requests'},
+        {key:'machines_active',label:'Maschinen aktiv',to:'machines'},{key:'leave_requests_pending',label:'Urlaubsanträge offen',to:'leave-requests'},{key:'questions_open',label:'Offene Fragen',to:'questions'},{key:'ai_analyses',label:'KI-Analysen',to:'ai-analyses'},{key:'strategies_active',label:'Aktive Strategien',to:'strategies'},{key:'graph_entities',label:'Wissensgraph',to:'graph-entities'},
         {key:'investments_active',label:'Investitionen aktiv',to:'investments'},{key:'participations_active',label:'Beteiligungen aktiv',to:'participations'},
     ];
     return {
