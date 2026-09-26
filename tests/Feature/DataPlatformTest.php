@@ -1129,6 +1129,18 @@ class DataPlatformTest extends TestCase
         $this->assertNull(DB::table('notifications')->where('id', $ids[0])->first());
     }
 
+    public function test_notifications_index_exposes_code_field(): void
+    {
+        $tenant = Tenant::create(['name' => 'Code GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new CriticalInsight($tenant->id, 'demo_seed', 'Demo-Hinweis'));
+
+        $res = $this->getJson('/api/v1/notifications', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame('demo_seed', $res[0]['code']);
+        $this->assertSame('hinweis', $res[0]['kind']);
+    }
+
     public function test_notifications_prune_removes_old_insight_dedupe_keys(): void
     {
         $tenant = Tenant::create(['name' => 'PK GmbH']);
