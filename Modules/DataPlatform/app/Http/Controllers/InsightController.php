@@ -2,6 +2,7 @@
 
 namespace Modules\DataPlatform\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 
@@ -574,6 +575,17 @@ class InsightController extends Controller
         $opDrafts = $count('operating_instructions', fn ($q) => $q->where('status', 'draft'));
         if ($opDrafts) {
             $insights[] = $this->hit('info', 'op_instructions_draft', "{$opDrafts} Betriebsanweisung(en) im Entwurfsstatus — prüfen und aktivieren.", ['count' => $opDrafts]);
+        }
+
+        $neverLoggedIn = DB::table('users')
+            ->whereIn('id', DB::table('model_has_roles')
+                ->where('team_id', $t)
+                ->where('model_type', User::class)
+                ->select('model_id'))
+            ->whereNull('last_login_at')
+            ->count();
+        if ($neverLoggedIn) {
+            $insights[] = $this->hit('info', 'members_never_logged_in', "{$neverLoggedIn} Mitglied(er) haben sich noch nie angemeldet.", ['count' => $neverLoggedIn]);
         }
 
         if (! $insights) {
