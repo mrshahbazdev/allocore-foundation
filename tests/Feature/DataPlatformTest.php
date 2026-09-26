@@ -147,6 +147,11 @@ class DataPlatformTest extends TestCase
             'audit_id' => $starting['id'], 'title' => 'Bald fällig', 'due_at' => now()->addDays(3)->toDateString(),
         ], ['X-Tenant' => $tenant->id]);
 
+        $machine = $this->postJson('/api/v1/machines', ['name' => 'Fräse 1'], ['X-Tenant' => $tenant->id])->json();
+        $this->postJson('/api/v1/production-orders', [
+            'order_no' => 'AUF-1', 'product' => 'Krone', 'quantity' => 5, 'machine_id' => $machine['id'],
+        ], ['X-Tenant' => $tenant->id]);
+
         $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
             ->pluck('code')->all();
 
@@ -157,6 +162,7 @@ class DataPlatformTest extends TestCase
         $this->assertContains('audit_findings_due_soon', $codes);
         $this->assertContains('audit_findings_unassigned', $codes);
         $this->assertContains('audits_unassigned', $codes);
+        $this->assertContains('orders_unassigned', $codes);
     }
 
     public function test_nav_counts_returns_overdue_and_today(): void
