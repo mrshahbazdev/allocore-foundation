@@ -27,7 +27,7 @@ class NotificationController extends Controller
             ->when($request->filled('due_after'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '>=', $request->date('due_after')))
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
-            ->orderByDesc('created_at')
+            ->reorder('created_at', strtolower((string) $request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc')
             ->limit($limit)
             ->get()
             ->map(fn ($n) => [

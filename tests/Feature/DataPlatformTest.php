@@ -1478,6 +1478,22 @@ class DataPlatformTest extends TestCase
         $this->assertSame(1, $user->notifications()->count());
     }
 
+    public function test_notifications_index_honors_dir_sort(): void
+    {
+        $tenant = Tenant::create(['name' => 'NSD GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new Assigned('aufgabe', 'e1', 'Alt'));
+        $user->notify(new Assigned('aufgabe', 'e2', 'Neu'));
+        DB::table('notifications')->where('data->title', 'Alt')->update(['created_at' => now()->subDays(2)]);
+
+        $desc = $this->getJson('/api/v1/notifications', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame('Neu', $desc[0]['title']);
+
+        $asc = $this->getJson('/api/v1/notifications?dir=asc', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame('Alt', $asc[0]['title']);
+    }
+
     public function test_notifications_read_all_honors_kind_filter(): void
     {
         $tenant = Tenant::create(['name' => 'NK GmbH']);
