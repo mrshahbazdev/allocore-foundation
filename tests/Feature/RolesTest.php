@@ -249,6 +249,23 @@ class RolesTest extends TestCase
         $this->assertTrue($rows[0]['muted']);
     }
 
+    public function test_notifications_muted_param_filters(): void
+    {
+        $tenant = Tenant::create(['name' => 'NMF GmbH']);
+        $user = $this->actingAsUser($tenant);
+        $this->putJson('/api/v1/me/notification-prefs', ['muted_kinds' => ['passwort_geaendert']], ['X-Tenant' => $tenant->id])->assertOk();
+        $user->notify(new PasswordChangedAlert('T'));
+        $user->notify(new NewLoginAlert('1.2.3.4', null));
+
+        $muted = $this->getJson('/api/v1/notifications?muted=1', ['X-Tenant' => $tenant->id])->json();
+        $this->assertCount(1, $muted);
+        $this->assertSame('passwort_geaendert', $muted[0]['kind']);
+
+        $loud = $this->getJson('/api/v1/notifications?muted=0', ['X-Tenant' => $tenant->id])->json();
+        $this->assertCount(1, $loud);
+        $this->assertSame('anmeldung', $loud[0]['kind']);
+    }
+
     public function test_delete_all_tokens_endpoint(): void
     {
         $tenant = Tenant::create(['name' => 'TokAll GmbH']);
