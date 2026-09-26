@@ -39,7 +39,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 `/instructions`, `/inspections`, `/deadlines` (morphTo subject — an beliebiges Objekt anhängbar),
 `/risk-assessments`, `/operating-instructions` — je `compliance.view`/`compliance.manage`.
 `/audits`, `/audit-findings` — je `audits.view`/`audits.manage` (Auditor-Rolle hat beides).
-Erinnerungen: `compliance:remind` (stündlich).
+Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, Fristen, Feststellungen, Audit-Starts und Maßnahmen (Mail + Glocke).
 
 ## ExpertNetwork (`experts`)
 
