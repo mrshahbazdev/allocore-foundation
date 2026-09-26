@@ -647,7 +647,7 @@
                         <tbody>
                             <template x-for="it in renderRows()" :key="it.t === 'h' ? 'h-'+it.label : it.r.id">
                                 <tr @click="it.t === 'r' ? (detail = it.r) : toggleGroupHeader(it.label)" @dblclick="it.t === 'r' && canEdit() && (detail = it.r, openEdit())"
-                                    :class="it.t === 'h' ? 'bg-[#F0F3F7] hover:bg-[#E4E9F0] cursor-pointer' : ([overdue(it.r) ? 'bg-[#A6362E]/5' : '', selected[it.r.id] ? 'bg-[#FFFBEB]' : '', detail && detail.id === it.r.id ? 'bg-[#FACC15]/10' : '', it.i % 2 ? 'bg-[#FAFBFC]/50' : ''].join(' ') + ' hover:bg-[#F3F6FA] cursor-pointer')"
+                                    :class="it.t === 'h' ? 'bg-[#F0F3F7] hover:bg-[#E4E9F0] cursor-pointer' : ([overdue(it.r) ? 'bg-[#A6362E]/5' : '', selected[it.r.id] ? 'bg-[#FFFBEB]' : '', detail && detail.id === it.r.id ? 'bg-[#FACC15]/10' : '', it.i % 2 ? 'bg-[#FAFBFC]/50' : '', section === 'notifications' && it.r.read ? 'opacity-50' : ''].join(' ') + ' hover:bg-[#F3F6FA] cursor-pointer')"
                                     class="border-b border-[#F0F3F7] last:border-b-0" :title="it.t === 'r' ? 'Doppelklick: Bearbeiten' : 'Klick: einklappen/ausklappen'">
                                     <template x-if="it.t === 'h'">
                                         <td :colspan="visCols().length + 1 + (writable() ? 1 : 0) + (sectionActions().length || canEdit() ? 1 : 0)" class="px-5 py-2 text-[11px] font-semibold text-[#5B6B7E]">
