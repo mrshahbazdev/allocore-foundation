@@ -1533,6 +1533,20 @@ function workspace(initial) {
                     this.toast('Sitzung abgelaufen — bitte neu anmelden.');
                     setTimeout(() => { location.href = '/login'; }, 1400);
                 }
+                if (r.status === 400 && !this._tenantToast) {
+                    this._tenantToast = true;
+                    r.clone().json().then(d => {
+                        if (d && /X-Tenant/.test(d.message || '')) {
+                            this.toast(d.message + ' Auswahl zurückgesetzt.');
+                            localStorage.removeItem('allocore.tenant');
+                            const bad = this.tenant;
+                            this.tenantList = this.tenantList.filter(t => t.id !== bad);
+                            this.tenant = this.tenantList.length ? this.sortedTenants()[0].id : null;
+                            if (this.tenant) { this.loadSection(); this.loadNavBadges(); }
+                        }
+                    }).catch(() => {});
+                    setTimeout(() => { this._tenantToast = false; }, 3000);
+                }
                 if (r.status === 429 && !this._rlToast) {
                     this._rlToast = true;
                     const s = r.headers.get('Retry-After') || 60;
