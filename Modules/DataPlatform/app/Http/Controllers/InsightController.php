@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $leaveDecidedNoStamp = $count('leave_requests', fn ($q) => $q->whereIn('status', ['approved', 'rejected'])->whereNull('decided_at'));
+        if ($leaveDecidedNoStamp) {
+            $insights[] = $this->hit('info', 'leave_decided_no_stamp', "{$leaveDecidedNoStamp} entschiedene(r) Urlaubsantrag/-anträge ohne Entscheidungsdatum.", ['count' => $leaveDecidedNoStamp]);
+        }
+
+        $partExitedStake = $count('participations', fn ($q) => $q->where('status', 'exited')->where('stake_pct', '>', 0));
+        if ($partExitedStake) {
+            $insights[] = $this->hit('warning', 'participations_exited_with_stake', "{$partExitedStake} beendete Beteiligung(en) mit Anteil > 0 %.", ['count' => $partExitedStake]);
+        }
+
         $projectsNoStrategy = $count('projects', fn ($q) => $q->whereIn('status', ['planned', 'active'])->whereNull('strategy_id'));
         if ($projectsNoStrategy) {
             $insights[] = $this->hit('warning', 'projects_no_strategy', "{$projectsNoStrategy} offene(s) Projekt(e) ohne zugeordnete Strategie.", ['count' => $projectsNoStrategy]);
