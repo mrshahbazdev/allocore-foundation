@@ -209,6 +209,22 @@ class RolesTest extends TestCase
         );
     }
 
+    public function test_email_change_resets_email_verified_at(): void
+    {
+        $tenant = $this->createTenantApi(['name' => 'Mail GmbH'])->json('id');
+        $user = $this->actingAsUser();
+        $user->forceFill(['email_verified_at' => now()])->save();
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $user->assignRole('auditor');
+        tenancy()->end();
+
+        $this->putJson('/api/v1/me', ['email' => 'neu@example.test'], ['X-Tenant' => $tenant])
+            ->assertOk();
+
+        $this->assertNull($user->fresh()->email_verified_at);
+    }
+
     public function test_password_update_stamps_password_changed_at_and_me_returns_it(): void
     {
         $tenant = $this->createTenantApi(['name' => 'Pw GmbH'])->json('id');
