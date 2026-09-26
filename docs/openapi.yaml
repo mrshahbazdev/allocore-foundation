@@ -2194,7 +2194,7 @@ paths:
 
     delete:
       tags: [metrics]
-      summary: "DELETE /api/v1/notifications — Benachrichtigungen des Users löschen {deleted: n} (ohne Filter alle; kind=/read=1/unread=1/code=/muted=1/before=/after=/due_before=/due_after= grenzt ein)"
+      summary: "DELETE /api/v1/notifications — Benachrichtigungen des Users löschen {deleted: n} (ohne Filter alle; kind=/read=1/unread=1/code=/muted=1/before=/after=/due_before=/due_after= grenzt ein; entity_id= auf Datensatz)"
       parameters:
         - name: kind
           in: query
@@ -2310,7 +2310,7 @@ paths:
   /api/v1/notifications/read-all:
     post:
       tags: [metrics]
-      summary: "POST /api/v1/notifications/read-all — alle ungelesenen als gelesen markieren (?kind=/?code=/?muted=1/?before=/?after=/due_before=/due_after= grenzt ein)"
+      summary: "POST /api/v1/notifications/read-all — alle ungelesenen als gelesen markieren (?kind=/?code=/?muted=1/?before=/?after=/due_before=/due_after= grenzt ein; entity_id= auf Datensatz)"
       parameters:
         - name: X-Tenant
           in: header
@@ -2340,7 +2340,7 @@ paths:
   /api/v1/notifications/unread-count:
     get:
       tags: [metrics]
-      summary: 'GET /api/v1/notifications/unread-count — {count} ungelesener Benachrichtigungen (stumme Arten ausgenommen, include_muted=1 für Gesamtzahl, kind=/code= für eine Art/Code; muted=1 nur stumme; before=/after= Zeitraum auf created_at; due_before=/due_after= auf due_at; q= Titel-Teiltext)'
+      summary: 'GET /api/v1/notifications/unread-count — {count} ungelesener Benachrichtigungen (stumme Arten ausgenommen, include_muted=1 für Gesamtzahl, kind=/code= für eine Art/Code; muted=1 nur stumme; before=/after= Zeitraum auf created_at; due_before=/due_after= auf due_at; q= Titel-Teiltext; entity_id= auf Datensatz)'
       parameters:
         - name: include_muted
           in: query
