@@ -1083,6 +1083,18 @@
                             </template>
                         </div>
                     </div>
+                    <div x-show="section === 'tokens' && !editing">
+                        <label class="block text-[13px] font-medium text-[#42536A] mb-1">Rechte (Abilities)</label>
+                        <div class="flex flex-wrap gap-x-3 gap-y-1 max-h-32 overflow-y-auto">
+                            <template x-for="a in tokenAbilities" :key="a">
+                                <label class="flex items-center gap-1.5 text-[11px] text-[#42536A]">
+                                    <input type="checkbox" :value="a" x-model="form.abilities" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                    <span x-text="a"></span>
+                                </label>
+                            </template>
+                        </div>
+                        <p class="text-[11px] text-[#9CA3AF] mt-1">leer = * (alle Rechte)</p>
+                    </div>
                     <div x-show="['documents','data-objects'].includes(section) && !editing">
                         <label class="block text-[13px] font-medium text-[#42536A] mb-1">Datei</label>
                         <input type="file" x-ref="fileInput" class="w-full text-sm">
@@ -1211,7 +1223,7 @@ function workspace(initial) {
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], spark: {}, exec: null, execReports: [], reportOpen: {}, reportData: {}, lookups: {}, navOpen: false, collapsed: {}, me: null, upcoming: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
-        form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, toasts: [],
+        form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', unreadOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
@@ -2172,7 +2184,7 @@ function workspace(initial) {
                     .then(r => { if (r.ok) this.loadSection(); else this.toast('Analyse fehlgeschlagen (HTTP '+r.status+')'); });
                 return;
             }
-            this.editing = null; this.dupMode = false; this.form = prefill || {}; if (this.section === 'users') { this.form.roles = this.form.roles || []; if (!this.allRoles.length) this.api('/api/v1/roles').then(r => r.ok ? r.json() : []).then(d => { this.allRoles = Array.isArray(d) ? d : (d.data || []); }); } this.formError = ''; this.formDirty = false; this.showCreate = true;
+            this.editing = null; this.dupMode = false; this.form = prefill || {}; if (this.section === 'tokens') { this.form.abilities = this.form.abilities || []; if (!this.tokenAbilities.length) this.api('/api/v1/tokens/abilities').then(r => r.ok ? r.json() : []).then(d => { this.tokenAbilities = d; }); } if (this.section === 'users') { this.form.roles = this.form.roles || []; if (!this.allRoles.length) this.api('/api/v1/roles').then(r => r.ok ? r.json() : []).then(d => { this.allRoles = Array.isArray(d) ? d : (d.data || []); }); } this.formError = ''; this.formDirty = false; this.showCreate = true;
             this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select'); if (el) el.focus(); });
         },
         views() {
@@ -2324,6 +2336,7 @@ function workspace(initial) {
                 if (v !== undefined && v !== '') body[f.key] = v;
             });
             if (this.section === 'users' && Array.isArray(this.form.roles) && this.form.roles.length) body.roles = this.form.roles;
+            if (this.section === 'tokens' && Array.isArray(this.form.abilities) && this.form.abilities.length) body.abilities = this.form.abilities;
             const method = this.editing ? 'PUT' : 'POST';
             const url = this.item().ep + (this.editing ? '/' + this.editing.id : '');
             let fetchOpts = {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)};

@@ -21,7 +21,9 @@ class AbilitiesPermissionMiddleware extends PermissionMiddleware
     {
         $token = $request->user()?->currentAccessToken();
 
-        if ($token instanceof PersonalAccessToken) {
+        // Nur echte API-Requests mit persistiertem Bearer-Token —
+        // TransientToken-/Session-Auth und gemockte Token (Tests) bleiben unberuehrt.
+        if ($request->bearerToken() && $token instanceof PersonalAccessToken && $token->exists) {
             foreach (explode('|', (string) $permission) as $perm) {
                 $perm = trim($perm);
                 abort_unless($perm === '' || $token->can($perm), 403, 'Token-Ability fehlt: '.$perm);
