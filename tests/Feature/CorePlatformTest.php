@@ -7,8 +7,12 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 use Modules\Core\Models\Company;
+use Modules\Tasks\Models\Task;
+use Modules\Tasks\Notifications\TaskDueSoon;
 use Tests\TestCase;
 
 class CorePlatformTest extends TestCase
@@ -70,6 +74,25 @@ class CorePlatformTest extends TestCase
         $this->getJson('/api/v1/tasks', ['X-Tenant' => $tenant->id])
             ->assertOk()
             ->assertJsonPath('data.0.title', 'Unterweisung planen');
+    }
+
+    public function test_tasks_remind_notifies_assignee_and_stamps_reminded_at(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Remind GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/tasks', [
+            'title' => 'Protokoll abgeben',
+            'assignee_id' => $user->id,
+            'due_at' => now()->addHours(12)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('tasks:remind');
+
+        Notification::assertSentTo($user, TaskDueSoon::class);
+        $this->assertNotNull(Task::first()->reminded_at);
     }
 
     public function test_list_endpoints_honor_per_page_param_and_cap(): void
