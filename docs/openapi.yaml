@@ -550,8 +550,18 @@ paths:
     get:
       tags: [events]
       summary: GET /api/v1/events/export — NDJSON-Stream aller Mandanten-Events (Audit-Export)
-      description: Gleiche Filter wie /events (type, subject_id, subject_type, action, since, until) plus group (Präfix auf event type, z. B. task für task.*). Antwort ist ein chunked NDJSON-Stream mit Content-Disposition-Attachment.
+      description: Gleiche Filter wie /events (id, type, subject_id, subject_type, action, q, since, until) plus group (Präfix auf event type, z. B. task für task.*). Antwort ist ein chunked NDJSON-Stream mit Content-Disposition-Attachment.
       parameters:
+        - name: id
+          in: query
+          required: false
+          schema: {type: integer}
+          description: Ein einzelnes Ereignis per id
+        - name: q
+          in: query
+          required: false
+          schema: {type: string}
+          description: Titel-Suche in event_properties.subject.title
         - name: X-Tenant
           in: header
           required: true
