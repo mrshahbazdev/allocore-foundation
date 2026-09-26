@@ -2,6 +2,7 @@
 
 namespace Modules\DataPlatform\Console;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +11,8 @@ use Modules\DataPlatform\Support\InsightService;
 
 class NotifyCriticalInsights extends Command
 {
-    protected $signature = 'insights:notify {--warnings : Auch Warnungen verschicken (wöchentlicher Lauf)}';
+    protected $signature = 'insights:notify {--warnings : Auch Warnungen verschicken (wöchentlicher Lauf)}
+                            {--tenant= : Nur diesen Mandanten bearbeiten}';
 
     protected $description = 'Kritische Insights als Benachrichtigung an Mitglieder mit roles.manage';
 
@@ -22,10 +24,19 @@ class NotifyCriticalInsights extends Command
             ->where('created_at', '<', now()->subDays(30))
             ->delete();
 
-        $tenantIds = DB::table('tenants')->pluck('id');
+        $tenantIds = $this->option('tenant')
+            ? collect([(string) $this->option('tenant')])
+            : DB::table('tenants')->pluck('id');
 
         foreach ($tenantIds as $tenantId) {
             $tenantId = (string) $tenantId;
+            $tenant = Tenant::find($tenantId);
+            if (! $tenant) {
+                continue;
+            }
+            // Permission-Team-Kontext setzen: hasPermissionTo() wertet die
+            // model_has_roles-Zeilen sonst gegen den falschen/keinen Mandanten aus.
+            tenancy()->initialize($tenant);
 
             $memberIds = DB::table('model_has_roles')
                 ->where('team_id', $tenantId)
