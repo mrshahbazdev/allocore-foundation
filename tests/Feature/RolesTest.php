@@ -209,6 +209,23 @@ class RolesTest extends TestCase
         );
     }
 
+    public function test_password_change_notifies_user(): void
+    {
+        $tenant = $this->createTenantApi(['name' => 'PW GmbH'])->json('id');
+        $user = $this->actingAsUser($tenant);
+
+        $this->putJson('/api/v1/me/password', [
+            'current_password' => 'password',
+            'password' => 'NeuPasswort123',
+            'password_confirmation' => 'NeuPasswort123',
+        ], ['X-Tenant' => $tenant])->assertOk();
+
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $user->id,
+            'notifiable_type' => User::class,
+        ]);
+    }
+
     public function test_email_change_resets_email_verified_at(): void
     {
         $tenant = $this->createTenantApi(['name' => 'Mail GmbH'])->json('id');
