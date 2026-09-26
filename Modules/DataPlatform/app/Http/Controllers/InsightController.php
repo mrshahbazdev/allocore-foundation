@@ -205,6 +205,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'audits_overdue', "{$auditsOverdue} Audit(s) über Enddatum hinaus offen.", ['count' => $auditsOverdue]);
         }
 
+        $auditsUnassigned = $count('audits', fn ($q) => $q->whereIn('status', ['planned', 'in_progress'])->whereNull('responsible_id'));
+        if ($auditsUnassigned) {
+            $insights[] = $this->hit('warning', 'audits_unassigned', "{$auditsUnassigned} offene(s) Audit(s) ohne Verantwortlichen.", ['count' => $auditsUnassigned]);
+        }
+
         if (! $insights) {
             $insights[] = $this->hit('info', 'all_clear', 'Keine Auffälligkeiten — alle Kennzahlen im grünen Bereich.');
         }
