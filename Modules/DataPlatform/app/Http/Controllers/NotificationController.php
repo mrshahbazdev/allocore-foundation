@@ -11,6 +11,8 @@ class NotificationController extends Controller
     {
         $limit = min($request->integer('per_page', $request->integer('limit', 10)), 200);
 
+        $muted = $request->user()->notification_muted ?? [];
+
         return $request->user()->notifications()
             ->when($request->boolean('unread'), fn ($q) => $q->whereNull('read_at'))
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
@@ -24,6 +26,7 @@ class NotificationController extends Controller
                 'due_at' => $n->data['due_at'] ?? null,
                 'entity_id' => $n->data['id'] ?? null,
                 'read' => $n->read_at !== null,
+                'muted' => in_array($n->data['kind'] ?? null, $muted, true),
                 'created_at' => $n->created_at,
             ]);
     }

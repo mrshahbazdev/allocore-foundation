@@ -134,6 +134,7 @@ class RoleController extends Controller
             'tokens_count' => $user->tokens()->count(),
             'password_changed_at' => $user->password_changed_at,
             'tenants' => $this->memberships($user),
+            'muted_kinds' => $user->notification_muted ?? [],
         ]);
     }
 
@@ -181,6 +182,17 @@ class RoleController extends Controller
             'name' => $user->name,
             'email' => $user->email,
         ]);
+    }
+
+    public function updateNotificationPrefs(Request $request)
+    {
+        $data = $request->validate([
+            'muted_kinds' => 'required|array|max:100',
+            'muted_kinds.*' => 'string|max:100',
+        ]);
+        $request->user()->forceFill(['notification_muted' => array_values($data['muted_kinds'])])->save();
+
+        return response()->json(['muted_kinds' => array_values($data['muted_kinds'])]);
     }
 
     public function updatePassword(Request $request)

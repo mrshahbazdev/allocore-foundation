@@ -31,6 +31,7 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'password_changed_at' => 'datetime',
             'password' => 'hashed',
+            'notification_muted' => 'array',
         ];
     }
 }
