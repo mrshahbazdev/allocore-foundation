@@ -206,6 +206,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $tendersAwardGap = $count('tenders', fn ($q) => $q->where('status', 'awarded')->whereNotExists(fn ($sub) => $sub->selectRaw(1)->from('tender_applications')->whereColumn('tender_applications.tender_id', 'tenders.id')->where('tender_applications.status', 'awarded')));
+        if ($tendersAwardGap) {
+            $insights[] = $this->hit('warning', 'tenders_awarded_no_winner', "{$tendersAwardGap} vergebene(r) Ausschreibung(en) ohne vergebene Bewerbung.", ['count' => $tendersAwardGap]);
+        }
+
         $opInstrNoDoc = $count('operating_instructions', fn ($q) => $q->whereNull('document_id'));
         if ($opInstrNoDoc) {
             $insights[] = $this->hit('info', 'op_instructions_no_document', "{$opInstrNoDoc} Betriebsanweisung(en) ohne verknüpftes Dokument.", ['count' => $opInstrNoDoc]);
