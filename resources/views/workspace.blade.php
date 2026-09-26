@@ -768,6 +768,7 @@
                 </div>
                 <div x-show="section === 'notifications'" class="px-6 py-3 border-t border-[#E4E9F0] flex flex-wrap gap-2">
                     <button @click="toggleNotifRead(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" x-text="detail && detail.read ? 'Als ungelesen markieren' : 'Als gelesen markieren'"></button>
+                    <button @click="dismissNotif(detail)" class="text-xs px-3 py-1.5 border border-[#A6362E]/50 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/10">Entfernen</button>
                 </div>
                 <div x-show="section === 'tenders'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">BEWERBUNGEN</div>
@@ -1547,7 +1548,7 @@ function workspace(initial) {
             this.api(url, {method: 'POST'}).then(r => { if (r.ok) { n.read = !n.read; this.navBadges['notifications'] = this.unreadNotifs(); this.loadSection(true); } }).catch(() => {});
         },
         dismissNotif(n) {
-            this.api('/api/v1/notifications/' + n.id, {method: 'DELETE'}).then(r => { if (r.ok) { this.dbNotifs = this.dbNotifs.filter(x => x.id !== n.id); this.navBadges['notifications'] = this.unreadNotifs(); } }).catch(() => {});
+            this.api('/api/v1/notifications/' + n.id, {method: 'DELETE'}).then(r => { if (r.ok) { this.dbNotifs = this.dbNotifs.filter(x => x.id !== n.id); this.navBadges['notifications'] = this.unreadNotifs(); this.rows = (this.rows || []).filter(x => x.id !== n.id); if (this.detail && this.detail.id === n.id) this.detail = null; this.toast('Benachrichtigung entfernt'); } }).catch(() => {});
         },
         markAllNotifsRead() {
             this.api('/api/v1/notifications/read-all', {method: 'POST'}).then(r => { if (r.ok) { this.dbNotifs.forEach(n => n.read = true); this.navBadges['notifications'] = this.unreadNotifs(); } }).catch(() => {});
