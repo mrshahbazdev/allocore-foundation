@@ -1500,6 +1500,21 @@ class DataPlatformTest extends TestCase
         $this->assertLessThan(now()->subDays(30), $user->notifications()->first()->created_at);
     }
 
+    public function test_notifications_index_filters_by_window(): void
+    {
+        $tenant = Tenant::create(['name' => 'NW GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new PasswordChangedAlert('x'));
+        $user->notifications()->first()->forceFill(['created_at' => now()->subDays(40)])->save();
+        $user->notify(new PasswordChangedAlert('y'));
+
+        $items = $this->getJson('/api/v1/notifications?after='.now()->subDays(30)->toDateString(), ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $items);
+        $items = $this->getJson('/api/v1/notifications?before='.now()->subDays(30)->toDateString(), ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $items);
+    }
+
     public function test_notifications_stats_counts(): void
     {
         $tenant = Tenant::create(['name' => 'NS GmbH']);

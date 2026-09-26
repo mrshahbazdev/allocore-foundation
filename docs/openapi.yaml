@@ -2142,6 +2142,14 @@ paths:
           required: false
           schema: {type: boolean, default: false}
           description: Nur gelesene Benachrichtigungen liefern
+        - name: before
+          in: query
+          schema: {type: string, format: date}
+          description: Nur Benachrichtigungen vor Datum
+        - name: after
+          in: query
+          schema: {type: string, format: date}
+          description: Nur Benachrichtigungen ab Datum
         - name: kind
           in: query
           required: false
