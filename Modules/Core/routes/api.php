@@ -22,6 +22,7 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v
         ->only(['store', 'update', 'destroy'])->middleware('permission:persons.manage')->names('persons');
 
     Route::get('me', [RoleController::class, 'me'])->name('me.show');
+    Route::put('me/password', [RoleController::class, 'updatePassword'])->name('me.password');
     Route::get('tokens/abilities', [TokenController::class, 'abilities'])->name('tokens.abilities');
     Route::get('tokens', [TokenController::class, 'index'])->name('tokens.index');
     Route::post('tokens', [TokenController::class, 'store'])->name('tokens.store');

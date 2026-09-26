@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Modules\Core\Notifications\MemberJoined;
 use Modules\Core\Notifications\MemberRemoved;
 use Modules\Core\Notifications\RolesChanged;
@@ -125,6 +126,24 @@ class RoleController extends Controller
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
         ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'confirmed', Password::defaults()],
+        ]);
+
+        $user = $request->user();
+        if (! Hash::check($validated['current_password'], $user->password)) {
+            return response()->json(['message' => 'Aktuelles Passwort ist falsch.'], 422);
+        }
+
+        $user->update(['password' => Hash::make($validated['password'])]);
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Passwort geändert — alle API-Token wurden widerrufen.']);
     }
 
     public function userRoles(User $user)

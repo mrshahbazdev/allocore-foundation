@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 use Modules\Core\Models\Company;
@@ -215,6 +216,38 @@ class CorePlatformTest extends TestCase
         $this->getJson('/api/v1/companies?per_page=9999', ['X-Tenant' => $tenant->id])
             ->assertOk()
             ->assertJsonPath('per_page', 200);
+    }
+
+    public function test_me_password_update_revokes_tokens(): void
+    {
+        $tenant = Tenant::create(['name' => 'PW GmbH']);
+        $user = $this->actingWithTenant($tenant);
+        $user->update(['password' => bcrypt('Altes-Passwort-1')]);
+        Sanctum::actingAs($user->fresh());
+        $user->createToken('api')->plainTextToken;
+        $this->assertSame(1, $user->tokens()->count());
+
+        $this->putJson('/api/v1/me/password', [
+            'current_password' => 'Altes-Passwort-1',
+            'password' => 'Neues-Passwort-1',
+            'password_confirmation' => 'Neues-Passwort-1',
+        ], ['X-Tenant' => $tenant->id])->assertOk();
+
+        $this->assertSame(0, $user->tokens()->count());
+        $this->assertTrue(Hash::check('Neues-Passwort-1', $user->fresh()->password));
+    }
+
+    public function test_me_password_update_rejects_wrong_current(): void
+    {
+        $tenant = Tenant::create(['name' => 'PW2 GmbH']);
+        $user = $this->actingWithTenant($tenant);
+        $user->update(['password' => bcrypt('Altes-Passwort-1')]);
+
+        $this->putJson('/api/v1/me/password', [
+            'current_password' => 'falsch',
+            'password' => 'Neues-Passwort-1',
+            'password_confirmation' => 'Neues-Passwort-1',
+        ], ['X-Tenant' => $tenant->id])->assertUnprocessable();
     }
 
     public function test_tenant_routes_require_auth(): void
