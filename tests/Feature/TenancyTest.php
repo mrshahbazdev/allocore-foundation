@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Tenant;
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -50,6 +51,29 @@ class TenancyTest extends TestCase
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($tenantId);
         $this->assertTrue($user->fresh()->hasRole('administrator'));
+    }
+
+    public function test_non_member_cannot_enter_tenant(): void
+    {
+        $tenantA = Tenant::create(['name' => 'Mitglied GmbH']);
+        $tenantB = Tenant::create(['name' => 'Fremd GmbH']);
+
+        RoleSeeder::forTenant($tenantA);
+
+        $user = User::factory()->create();
+        $user->assignRole('mitarbeiter');
+
+        Sanctum::actingAs($user);
+        $this->getJson('/api/v1/context', ['X-Tenant' => $tenantA->id])->assertOk();
+        $this->getJson('/api/v1/context', ['X-Tenant' => $tenantB->id])->assertForbidden();
+    }
+
+    public function test_user_without_memberships_may_enter_any_tenant(): void
+    {
+        $tenant = Tenant::create(['name' => 'Offen GmbH']);
+
+        Sanctum::actingAs(User::factory()->create());
+        $this->getJson('/api/v1/context', ['X-Tenant' => $tenant->id])->assertOk();
     }
 
     public function test_tenants_endpoints_require_auth(): void

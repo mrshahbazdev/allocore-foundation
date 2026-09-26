@@ -66,7 +66,8 @@ class DataLakeTest extends TestCase
         $id = $res->json('id');
 
         Sanctum::actingAs(User::find($user->id));
-        $this->getJson("/api/v1/data-objects/{$id}", ['X-Tenant' => $tenantB->id])->assertNotFound();
+        // Nicht-Mitglied von B → kein Zutritt in den Mandanten-Kontext.
+        $this->getJson("/api/v1/data-objects/{$id}", ['X-Tenant' => $tenantB->id])->assertForbidden();
 
         tenancy()->initialize($tenantB);
         User::find($user->id)->assignRole('auditor');

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AbilitiesPermissionMiddleware;
+use App\Http\Middleware\EnsureTenantMembership;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -9,7 +10,6 @@ use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedByRequestDataException;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
-use Stancl\Tenancy\Middleware\InitializeTenancyByRequestData;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -23,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             // Tenancy identification (R4 Mandantenfähigkeit)
             'tenant.domain' => InitializeTenancyByDomain::class,
-            'tenant.request' => InitializeTenancyByRequestData::class,
+            'tenant.request' => EnsureTenantMembership::class,
             'tenant.central-guard' => PreventAccessFromCentralDomains::class,
             // RBAC (Dokument C — spatie/laravel-permission)
             'role' => RoleMiddleware::class,

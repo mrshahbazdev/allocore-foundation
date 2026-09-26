@@ -26,8 +26,12 @@ class ExecutiveLayerTest extends TestCase
 
     public function test_overview_rolls_up_all_tenants(): void
     {
-        [$tenantA] = $this->auth();
+        [$tenantA, $user] = $this->auth();
         $tenantB = Tenant::create(['name' => 'Exec B']);
+        tenancy()->initialize($tenantB);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
 
         $this->postJson('/api/v1/companies', ['name' => 'ACME', 'domain' => 'acme'], ['X-Tenant' => $tenantA->id]);
         $this->postJson('/api/v1/risk-assessments', [

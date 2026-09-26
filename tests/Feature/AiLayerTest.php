@@ -64,8 +64,12 @@ class AiLayerTest extends TestCase
 
     public function test_cross_tenant_isolation(): void
     {
-        [$tenantA] = $this->auth();
+        [$tenantA, $user] = $this->auth();
         $tenantB = Tenant::create(['name' => 'Ai B']);
+        tenancy()->initialize($tenantB);
+        $user->assignRole('mitarbeiter');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
 
         $res = $this->postJson('/api/v1/ai-analyses', [], ['X-Tenant' => $tenantA->id]);
         $id = $res->json('id');

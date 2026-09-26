@@ -51,6 +51,7 @@ class AuditsTest extends TestCase
             ->assertOk()->assertJsonCount(1, 'data');
 
         // audit-FK muss zum Tenant gehören: Audit aus B nicht referenzierbar
+        $this->acting($tenantB);
         $auditB = $this->postJson('/api/v1/audits', ['title' => 'B Audit'], ['X-Tenant' => $tenantB->id])->assertCreated()->json();
         Sanctum::actingAs(User::find($user->id));
         $this->postJson('/api/v1/audit-findings', ['audit_id' => $auditB['id'], 'title' => 'x'], ['X-Tenant' => $tenantA->id])

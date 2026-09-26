@@ -64,8 +64,12 @@ class KnowledgeGraphTest extends TestCase
 
     public function test_cross_tenant_isolation(): void
     {
-        [$tenantA] = $this->auth();
+        [$tenantA, $user] = $this->auth();
         $tenantB = Tenant::create(['name' => 'Graph B']);
+        tenancy()->initialize($tenantB);
+        $user->assignRole('mitarbeiter');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
 
         $id = $this->postJson('/api/v1/graph-entities', [
             'type' => 'x', 'name' => 'A-entity',
