@@ -313,6 +313,40 @@ class DataPlatformTest extends TestCase
         $this->assertContains('measures_due_soon', $codes);
     }
 
+    public function test_insights_reports_inspections_and_instructions(): void
+    {
+        $tenant = Tenant::create(['name' => 'Compliance GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/inspections', [
+            'title' => 'Alte Prüfung', 'status' => 'scheduled',
+            'scheduled_at' => now()->subDays(3)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/inspections', [
+            'title' => 'Baldige Prüfung', 'status' => 'scheduled', 'responsible_id' => $user->id,
+            'scheduled_at' => now()->addDays(4)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $this->postJson('/api/v1/instructions', [
+            'title' => 'Sicherheitsunterweisung', 'due_at' => now()->addDays(3)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/instructions', [
+            'title' => 'Überfällige Unterweisung', 'due_at' => now()->subDays(2)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('inspections_overdue', $codes);
+        $this->assertContains('inspections_due_soon', $codes);
+        $this->assertContains('instructions_due_soon', $codes);
+        $this->assertContains('instructions_overdue', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
