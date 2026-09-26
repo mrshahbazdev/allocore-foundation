@@ -983,4 +983,36 @@ class DataPlatformTest extends TestCase
         $res = $this->getJson('/api/v1/notifications', ['X-Tenant' => $tenant->id])->assertOk()->json();
         $this->assertTrue($res[0]['read']);
     }
+
+    public function test_notifications_read_all_and_unread_count(): void
+    {
+        $tenant = Tenant::create(['name' => 'N2 GmbH']);
+        $user = $this->acting($tenant);
+
+        $notif = new class extends Notification
+        {
+            public function via($n)
+            {
+                return ['database'];
+            }
+
+            public function toArray($n)
+            {
+                return ['title' => 'X', 'kind' => 'frist'];
+            }
+        };
+        $user->notify($notif);
+        $user->notify($notif);
+        $other = User::factory()->create();
+        $other->notify($notif);
+
+        $this->getJson('/api/v1/notifications/unread-count', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJson(['count' => 2]);
+
+        $this->postJson('/api/v1/notifications/read-all', [], ['X-Tenant' => $tenant->id])->assertOk();
+
+        $this->getJson('/api/v1/notifications/unread-count', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJson(['count' => 0]);
+        $this->assertEquals(1, $other->fresh()->unreadNotifications()->count());
+    }
 }
