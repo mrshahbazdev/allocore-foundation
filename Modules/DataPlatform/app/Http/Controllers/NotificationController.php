@@ -40,6 +40,7 @@ class NotificationController extends Controller
     {
         $request->user()->unreadNotifications()
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
+            ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
             ->update(['read_at' => now()]);
 
         return response()->json(['status' => 'ok']);
