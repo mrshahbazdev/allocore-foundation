@@ -29,6 +29,19 @@ class RoleController extends Controller
             ->map(fn (User $u) => $u->setAttribute('role_names', $u->getRoleNames()));
     }
 
+    public function me(Request $request)
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => $user->getRoleNames(),
+            'permissions' => $user->getAllPermissions()->pluck('name'),
+        ]);
+    }
+
     public function userRoles(User $user)
     {
         return response()->json([
