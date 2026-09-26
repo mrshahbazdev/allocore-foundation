@@ -11,7 +11,8 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 | GET | `/health` | Liveness + Readiness — `checks.database` + `checks.migrations` (ausstehende Migrationen → `pending:N`), 503 bei `degraded`; ohne Auth |
 | GET/POST | `/tenants` | Mandantenliste / Mandant anlegen (seedet Rollenmodell) |
 | GET | `/context` | (auth) aktueller User + Tenant-Kontext |
-| GET | `/me` | (auth+tenant) aktueller Nutzer im Mandanten — `id`, `name`, `email`, `roles`, `permissions` |
+| GET/POST, DELETE | `/tokens`, `/tokens/{id}` | auth | Personal Access Tokens — Klartext nur bei POST-Antwort; Workspace-Token werden pro Seitenaufruf rotiert |
+| `/me` | (auth+tenant) aktueller Nutzer im Mandanten — `id`, `name`, `email`, `roles`, `permissions` |
 | GET | `/roles` | (auth+tenant) verfügbare Rollen des Tenants |
 | POST | `/roles` | (auth+tenant, `roles.manage`) eigene Rolle anlegen — `name` (snake_case, eindeutig je Mandant), optional `permissions` |
 | PUT | `/roles/{role}` | (auth+tenant, `roles.manage`) Permissions einer Rolle setzen — `permissions: string[]`; Rollen anderer Mandanten → 404 |

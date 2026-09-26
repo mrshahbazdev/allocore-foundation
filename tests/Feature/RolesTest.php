@@ -422,6 +422,40 @@ class RolesTest extends TestCase
         }
     }
 
+    public function test_tokens_create_list_revoke(): void
+    {
+        $tenant = Tenant::create(['name' => 'Tok GmbH']);
+        $user = $this->actingAsUser($tenant);
+
+        $created = $this->postJson('/api/v1/tokens', ['name' => 'cli'], ['X-Tenant' => $tenant->id])
+            ->assertCreated();
+        $this->assertNotEmpty($created->json('token'));
+        $id = $created->json('id');
+
+        $list = $this->getJson('/api/v1/tokens', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $names = collect($list)->pluck('name');
+        $this->assertContains('cli', $names);
+        $this->assertArrayNotHasKey('token', $list[0] ?? []);
+
+        // fremder Token eines anderen Users ist nicht löschbar
+        $other = User::factory()->create();
+        $otherToken = $other->createToken('foreign');
+        $this->deleteJson('/api/v1/tokens/'.$otherToken->accessToken->id, [], ['X-Tenant' => $tenant->id])
+            ->assertNotFound();
+
+        $this->deleteJson('/api/v1/tokens/'.$id, [], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->assertNull($user->tokens()->find($id));
+    }
+
+    public function test_tokens_expiry_validation(): void
+    {
+        $tenant = Tenant::create(['name' => 'Tok2 GmbH']);
+        $this->actingAsUser($tenant);
+
+        $this->postJson('/api/v1/tokens', ['name' => 'x', 'expires_in_days' => 0], ['X-Tenant' => $tenant->id])
+            ->assertUnprocessable();
+    }
+
     protected function actingAsUser(Tenant|string|null $tenant = null): User
     {
         $user = User::factory()->create();

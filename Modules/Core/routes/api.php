@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Core\Http\Controllers\CompanyController;
 use Modules\Core\Http\Controllers\PersonController;
 use Modules\Core\Http\Controllers\RoleController;
+use Modules\Core\Http\Controllers\TokenController;
 use Modules\DataPlatform\Events\DomainEvent;
 
 Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
@@ -20,6 +21,9 @@ Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(funct
         ->only(['store', 'update', 'destroy'])->middleware('permission:persons.manage')->names('persons');
 
     Route::get('me', [RoleController::class, 'me'])->name('me.show');
+    Route::get('tokens', [TokenController::class, 'index'])->name('tokens.index');
+    Route::post('tokens', [TokenController::class, 'store'])->name('tokens.store');
+    Route::delete('tokens/{id}', [TokenController::class, 'destroy'])->name('tokens.destroy');
     Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('permissions', [RoleController::class, 'permissions'])->name('permissions.index');
     Route::post('roles', [RoleController::class, 'storeRole'])
