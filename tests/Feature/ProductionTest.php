@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
+use Modules\Core\Notifications\Assigned;
 use Tests\TestCase;
 
 class ProductionTest extends TestCase
@@ -60,6 +62,49 @@ class ProductionTest extends TestCase
 
         Sanctum::actingAs(User::find($user->id));
         $this->getJson('/api/v1/production-orders', ['X-Tenant' => $tenantB->id])->assertForbidden();
+    }
+
+    public function test_order_assignment_notifies_linked_user(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Prod GmbH']);
+        $this->acting($tenant);
+        $worker = User::factory()->create();
+
+        $this->postJson('/api/v1/persons', [
+            'first_name' => 'Max',
+            'last_name' => 'Tech',
+            'email' => $worker->email,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $personId = $this->getJson('/api/v1/persons', ['X-Tenant' => $tenant->id])->json('data.0.id');
+
+        $order = $this->postJson('/api/v1/production-orders', [
+            'order_no' => 'AUF-2001',
+            'product' => 'Inlay',
+            'quantity' => 5,
+            'assigned_to' => $personId,
+            'due_at' => today()->addDays(2)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+
+        Notification::assertSentTo($worker, function (Assigned $n) {
+            return $n->kind === 'auftrag';
+        });
+
+        $other = User::factory()->create();
+        $this->postJson('/api/v1/persons', [
+            'first_name' => 'Ute',
+            'last_name' => 'Zwei',
+            'email' => $other->email,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $personId2 = $this->getJson('/api/v1/persons', ['X-Tenant' => $tenant->id])->json('data.1.id');
+
+        $this->putJson("/api/v1/production-orders/{$order['id']}", [
+            'assigned_to' => $personId2,
+        ], ['X-Tenant' => $tenant->id])->assertOk();
+
+        Notification::assertSentTo($other, function (Assigned $n) {
+            return $n->kind === 'auftrag';
+        });
     }
 
     public function test_write_requires_manage_permission(): void
