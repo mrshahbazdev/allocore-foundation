@@ -130,6 +130,24 @@ class DataPlatformTest extends TestCase
         $this->assertEmpty($this->getJson('/api/v1/events?q=NoSuchTitle', ['X-Tenant' => $tenant->id])->json('data'));
     }
 
+    public function test_notifications_export_streams_ndjson(): void
+    {
+        $tenant = Tenant::create(['name' => 'Ex GmbH']);
+        $user = $this->acting($tenant);
+        $user->notify(new Assigned('aufgabe', 'x-1', 'ExportMe'));
+
+        $res = $this->get('/api/v1/notifications/export', ['X-Tenant' => $tenant->id]);
+        $res->assertOk();
+        $this->assertStringContainsString('x-ndjson', $res->headers->get('content-type'));
+        $lines = array_values(array_filter(explode("\n", $res->streamedContent())));
+        $this->assertNotEmpty($lines);
+        $row = json_decode($lines[0], true);
+        $this->assertSame('aufgabe', $row['data']['kind']);
+        $this->assertSame('ExportMe', $row['data']['title']);
+
+        $this->assertEmpty(array_filter(explode("\n", $this->get('/api/v1/notifications/export?kind=audit', ['X-Tenant' => $tenant->id])->streamedContent())));
+    }
+
     public function test_events_summary_endpoint(): void
     {
         $tenant = Tenant::create(['name' => 'Sum GmbH']);

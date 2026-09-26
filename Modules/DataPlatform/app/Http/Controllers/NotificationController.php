@@ -43,6 +43,44 @@ class NotificationController extends Controller
             ]);
     }
 
+    /** Export eigener Benachrichtigungen als NDJSON-Stream (Filter wie index). */
+    public function export(Request $request)
+    {
+        $muted = $request->user()->notification_muted ?? [];
+
+        $query = $request->user()->notifications()
+            ->when($request->boolean('unread'), fn ($q) => $q->whereNull('read_at'))
+            ->when($request->boolean('read'), fn ($q) => $q->whereNotNull('read_at'))
+            ->when($request->filled('muted'), fn ($q) => $request->boolean('muted')
+                ? $q->whereIn('data->kind', $muted)
+                : $q->whereNotIn('data->kind', $muted))
+            ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
+            ->when($request->filled('entity_id'), fn ($q) => $q->where('data->id', $request->string('entity_id')->toString()))
+            ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
+            ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
+            ->when($request->filled('due_before'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', $request->date('due_before')))
+            ->when($request->filled('due_after'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '>=', $request->date('due_after')))
+            ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
+            ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
+            ->reorder('created_at')
+            ->select('id', 'type', 'data', 'read_at', 'created_at', 'updated_at');
+
+        return response()->stream(function () use ($query) {
+            $query->chunk(500, function ($rows) {
+                foreach ($rows as $row) {
+                    if (is_string($row->data)) {
+                        $row->data = json_decode($row->data, true);
+                    }
+                    echo json_encode($row, JSON_UNESCAPED_UNICODE), "\n";
+                }
+            });
+        }, 200, [
+            'Content-Type' => 'application/x-ndjson; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="allocore-notifications-'.now()->format('Ymd-His').'.ndjson"',
+            'X-Accel-Buffering' => 'no',
+        ]);
+    }
+
     public function markAllRead(Request $request)
     {
         $muted = $request->user()->notification_muted ?? [];
