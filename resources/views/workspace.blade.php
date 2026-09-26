@@ -951,6 +951,7 @@
                     <button @click="copyJson()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="jsonCopied ? 'Kopiert' : 'JSON'"></button>
                     <button @click="copyText()" title="Alle Felder als lesbarer Text" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="textCopied ? 'Kopiert' : 'Text'"></button>
                     <a x-show="section === 'events' && eventLink(detail)" :href="eventLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Datensatz öffnen</a>
+                    <a x-show="section === 'notifications' && notifLink(detail)" :href="notifLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Zum Datensatz</a>
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" title="Duplizieren (d)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Duplizieren</button>
                     <button x-show="canEdit()" @click="openEdit()" title="Bearbeiten (e)" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
@@ -2062,6 +2063,11 @@ function workspace(initial) {
             if (s < 3600) return 'vor ' + Math.round(s / 60) + ' Min.';
             if (s < 86400) return 'vor ' + Math.round(s / 3600) + ' Std.';
             return 'vor ' + Math.round(s / 86400) + ' T';
+        },
+        notifLink(n) {
+            if (!n || !n.entity_id) return null;
+            const M = {unterweisung:'instructions',pruefung:'inspections',frist:'deadlines',feststellung:'audit-findings',audit:'audits',massnahme:'measures',aufgabe:'tasks',gefaehrdungsbeurteilung:'risk-assessments',projekt:'projects',auftrag:'production-orders',ausschreibung:'tenders',antwort:'questions',frage:'questions',urlaub:'leave-requests',rollen:'users'};
+            return M[n.kind] ? '/app/' + M[n.kind] + '?tenant=' + this.tenant + '&open=' + n.entity_id : null;
         },
         eventLink(e) {
             const p = e && e.event_properties;
