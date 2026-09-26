@@ -260,6 +260,32 @@ class DataPlatformTest extends TestCase
         $this->assertContains('leave_active_today', $codes);
     }
 
+    public function test_insights_reports_strategies_overdue_and_tenders_overdue(): void
+    {
+        $tenant = Tenant::create(['name' => 'StrategyTender GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/strategies', [
+            'name' => 'Veraltete Strategie', 'status' => 'active',
+            'starts_at' => now()->subDays(60)->toDateString(),
+            'ends_at' => now()->subDays(3)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $this->postJson('/api/v1/tenders', [
+            'title' => 'Überfällige Ausschreibung', 'deadline_at' => now()->subDays(2)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('strategies_overdue', $codes);
+        $this->assertContains('tenders_overdue', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
