@@ -185,6 +185,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'audit_findings_due_soon', "{$findingsSoon} Audit-Feststellung(en) innerhalb von 7 Tagen fällig.", ['count' => $findingsSoon]);
         }
 
+        $findingsUnassigned = $count('audit_findings', fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->whereNull('responsible_id'));
+        if ($findingsUnassigned) {
+            $insights[] = $this->hit('warning', 'audit_findings_unassigned', "{$findingsUnassigned} offene Audit-Feststellung(en) ohne Verantwortlichen.", ['count' => $findingsUnassigned]);
+        }
+
         $findingsCritical = $count('audit_findings', fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->whereIn('severity', ['high', 'critical']));
         if ($findingsCritical) {
             $insights[] = $this->hit('critical', 'audit_findings_critical', "{$findingsCritical} offene Audit-Feststellung(en) mit hoher/kritischer Schwere.", ['count' => $findingsCritical]);
