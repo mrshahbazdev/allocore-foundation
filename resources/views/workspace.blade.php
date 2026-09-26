@@ -1706,7 +1706,8 @@ function workspace(initial) {
         },
         loadAuditFindings(id) {
             this.api('/api/v1/audit-findings?audit_id=' + id + '&per_page=200').then(r => r.ok ? r.json() : []).then(d => {
-                this.auditFindings = Array.isArray(d) ? d : (d.data || []);
+                const sevRank = {critical: 0, high: 1, medium: 2, low: 3};
+                this.auditFindings = (Array.isArray(d) ? d : (d.data || [])).slice().sort((a, b) => (sevRank[a.severity] ?? 9) - (sevRank[b.severity] ?? 9));
             }).catch(() => this.auditFindings = []);
         },
         loadDocVersions(id) {
