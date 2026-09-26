@@ -170,7 +170,7 @@
                             <button x-show="unreadNotifs()" @click="markAllNotifsRead()" class="text-[10px] text-[#CA8A04] hover:underline">alle gelesen</button>
                         </div>
                         <template x-for="n in dbNotifs">
-                            <a :href="'/app/' + ({unterweisung:'instructions',pruefung:'inspections',frist:'deadlines',feststellung:'audit-findings',audit:'audits',massnahme:'measures'}[n.kind] || 'dashboard') + '?tenant=' + tenant + '&open=' + encodeURIComponent(n.entity_id || '')" @click="n.read || markNotifRead(n)" class="px-3 py-1.5 flex items-start gap-2 text-xs hover:bg-[#FAFBFC]" :class="n.read && 'opacity-50'">
+                            <a :href="'/app/' + ({unterweisung:'instructions',pruefung:'inspections',frist:'deadlines',feststellung:'audit-findings',audit:'audits',massnahme:'measures',aufgabe:'tasks'}[n.kind] || 'dashboard') + '?tenant=' + tenant + '&open=' + encodeURIComponent(n.entity_id || '')" @click="n.read || markNotifRead(n)" class="px-3 py-1.5 flex items-start gap-2 text-xs hover:bg-[#FAFBFC]" :class="n.read && 'opacity-50'">
                                 <span class="w-1.5 h-1.5 mt-1 rounded-full shrink-0" :class="n.read ? 'bg-[#D1D5DB]' : 'bg-[#CA8A04]'"></span>
                                 <span class="flex-1"><span x-text="n.title"></span><span class="block text-[10px] text-[#9CA3AF]" x-text="n.due_at ? 'Fällig ' + n.due_at : ''"></span></span>
                                 <span class="text-[9px] text-[#9CA3AF] font-mono shrink-0" x-text="n.rel"></span>
