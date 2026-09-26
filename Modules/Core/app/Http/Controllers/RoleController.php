@@ -340,6 +340,21 @@ class RoleController extends Controller
         return response()->noContent();
     }
 
+    public function deleteMe(Request $request)
+    {
+        $user = $request->user();
+        $memberships = DB::table('model_has_roles')
+            ->where('model_type', User::class)
+            ->where('model_id', $user->id)
+            ->count();
+        abort_if($memberships > 0, 422, 'Bitte zuerst alle Mandanten verlassen.');
+
+        $user->tokens()->delete();
+        $user->delete();
+
+        return response()->noContent();
+    }
+
     public function remove(Request $request, User $user)
     {
         abort_if($request->user()->is($user), 422, 'Eigenes Mitglied kann nicht entfernt werden.');

@@ -211,6 +211,33 @@ class RolesTest extends TestCase
         $this->getJson('/api/v1/users', ['X-Tenant' => $tenant])->assertForbidden();
     }
 
+    public function test_delete_me_requires_no_memberships_and_revokes_tokens(): void
+    {
+        $tenant = $this->createTenantApi(['name' => 'Delete GmbH'])->json('id');
+        $user = $this->actingAsUser();
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $user->assignRole('mitarbeiter');
+        tenancy()->end();
+
+        $token = $user->createToken('api')->plainTextToken;
+
+        $this->deleteJson('/api/v1/me', [], ['X-Tenant' => $tenant])
+            ->assertStatus(422);
+
+        DB::table('model_has_roles')
+            ->where('model_type', User::class)
+            ->where('model_id', $user->id)
+            ->delete();
+
+        Sanctum::actingAs($user->fresh());
+        $this->deleteJson('/api/v1/me', [], ['X-Tenant' => $tenant])
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+        $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id, 'tokenable_type' => User::class]);
+    }
+
     public function test_role_update_requires_roles_manage_and_same_tenant(): void
     {
         $tenant = $this->createTenantApi(['name' => 'Guard GmbH'])->json('id');
