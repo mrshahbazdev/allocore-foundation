@@ -2340,7 +2340,7 @@ paths:
   /api/v1/notifications/unread-count:
     get:
       tags: [metrics]
-      summary: 'GET /api/v1/notifications/unread-count — {count} ungelesener Benachrichtigungen (stumme Arten ausgenommen, include_muted=1 für Gesamtzahl, kind=/code= für eine Art/Code; muted=1 nur stumme; before=/after= Zeitraum)'
+      summary: 'GET /api/v1/notifications/unread-count — {count} ungelesener Benachrichtigungen (stumme Arten ausgenommen, include_muted=1 für Gesamtzahl, kind=/code= für eine Art/Code; muted=1 nur stumme; before=/after= Zeitraum auf created_at; due_before=/due_after= auf due_at)'
       parameters:
         - name: include_muted
           in: query
