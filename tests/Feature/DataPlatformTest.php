@@ -1279,6 +1279,21 @@ class DataPlatformTest extends TestCase
         $this->assertSame('demo_seed', $user->notifications()->first()->data['code']);
     }
 
+    public function test_notifications_destroy_all_filters_by_muted(): void
+    {
+        $tenant = Tenant::create(['name' => 'DM GmbH']);
+        $user = $this->acting($tenant);
+        $this->putJson('/api/v1/me/notification-prefs', ['muted_kinds' => ['anmeldung']], ['X-Tenant' => $tenant->id])->assertOk();
+
+        $user->notify(new PasswordChangedAlert('Passwort geändert'));
+        $user->notify(new NewLoginAlert('1.2.3.4', null));
+
+        $this->deleteJson('/api/v1/notifications?muted=1', [], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['deleted' => 1]);
+
+        $this->assertSame(1, $user->notifications()->count());
+    }
+
     public function test_notifications_index_filters_by_code(): void
     {
         $tenant = Tenant::create(['name' => 'CF GmbH']);
