@@ -160,6 +160,37 @@ class AuditsTest extends TestCase
         Notification::assertNotSentTo($creator, Assigned::class);
     }
 
+    public function test_resolved_finding_notifies_audit_responsible(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'J GmbH']);
+        $resolver = $this->acting($tenant);
+        $auditor = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $auditor->assignRole('auditor');
+        tenancy()->end();
+
+        $audit = $this->postJson('/api/v1/audits', [
+            'title' => 'ISO Audit', 'responsible_id' => $auditor->id,
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+
+        $finding = $this->postJson('/api/v1/audit-findings', [
+            'audit_id' => $audit['id'], 'title' => 'Offene F1',
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+
+        $this->putJson('/api/v1/audit-findings/'.$finding['id'], ['status' => 'resolved'], ['X-Tenant' => $tenant->id])
+            ->assertOk();
+
+        Notification::assertSentTo($auditor, Assigned::class,
+            fn ($n) => $n->kind === 'feststellung' && str_contains($n->title, 'gelöst'));
+
+        // erneutes Update ohne Statuswechsel → keine weitere Meldung
+        // (insgesamt 3: Audit-Zuweisung + neue Feststellung + gelöst)
+        $this->putJson('/api/v1/audit-findings/'.$finding['id'], ['title' => 'Offene F1 x'], ['X-Tenant' => $tenant->id])
+            ->assertOk();
+        Notification::assertSentTo($auditor, Assigned::class, 3);
+    }
+
     public function test_tender_deadline_reminder_notifies_creator(): void
     {
         Notification::fake();

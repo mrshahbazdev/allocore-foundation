@@ -71,7 +71,18 @@ class AuditFindingController extends Controller
             'responsible_id' => ['nullable', 'exists:users,id'],
         ]);
 
+        $wasResolved = $auditFinding->status !== 'resolved';
         $auditFinding->update($validated);
+
+        if ($wasResolved && $auditFinding->status === 'resolved' && $auditFinding->audit
+            && $auditFinding->audit->responsible_id
+            && (int) $auditFinding->audit->responsible_id !== (int) $request->user()->id) {
+            User::find($auditFinding->audit->responsible_id)?->notify(new Assigned(
+                'feststellung',
+                $auditFinding->id,
+                'Feststellung gelöst: '.$auditFinding->title.' (Audit "'.$auditFinding->audit->title.'")',
+            ));
+        }
 
         return $auditFinding;
     }
