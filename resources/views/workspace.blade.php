@@ -169,6 +169,7 @@
                             <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF]">BENACHRICHTIGUNGEN</span>
                             <button x-show="unreadNotifs()" @click="markAllNotifsRead()" class="text-[10px] text-[#CA8A04] hover:underline">alle gelesen</button>
                         </div>
+                        <div class="max-h-80 overflow-y-auto">
                         <template x-for="n in dbNotifs">
                             <a :href="'/app/' + ({unterweisung:'instructions',pruefung:'inspections',frist:'deadlines',feststellung:'audit-findings',audit:'audits',massnahme:'measures',aufgabe:'tasks'}[n.kind] || 'dashboard') + '?tenant=' + tenant + '&open=' + encodeURIComponent(n.entity_id || '')" @click="n.read || markNotifRead(n)" class="px-3 py-1.5 flex items-start gap-2 text-xs hover:bg-[#FAFBFC]" :class="n.read && 'opacity-50'">
                                 <span class="w-1.5 h-1.5 mt-1 rounded-full shrink-0" :class="n.read ? 'bg-[#D1D5DB]' : 'bg-[#CA8A04]'"></span>
@@ -176,6 +177,7 @@
                                 <span class="text-[9px] text-[#9CA3AF] font-mono shrink-0" x-text="n.rel"></span>
                             </a>
                         </template>
+                        </div>
                         <div x-show="!overdueSections().length && !todaySections().length && !dbNotifs.length" class="px-3 py-2 text-xs text-[#5B6B7E]">Alles im grünen Bereich.</div>
                         <template x-for="o in overdueSections()"><a :href="'/app/' + o.key + '?tenant=' + tenant + '&overdue=1'" class="px-3 py-1.5 flex items-center justify-between gap-3 text-xs hover:bg-[#FAFBFC]"><span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#A6362E]"></span><span class="w-4 text-center text-[11px] text-[#9CA3AF]" x-text="icons[o.key] || '·'"></span><span x-text="o.label"></span></span><span class="font-mono text-[#A6362E]" x-text="o.count"></span></a></template>
                         <template x-for="o in todaySections()"><a :href="'/app/' + o.key + '?tenant=' + tenant + '&today=1'" class="px-3 py-1.5 flex items-center justify-between gap-3 text-xs hover:bg-[#FAFBFC]"><span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#CA8A04]"></span><span class="w-4 text-center text-[11px] text-[#9CA3AF]" x-text="icons[o.key] || '·'"></span><span x-text="o.label"></span></span><span class="font-mono text-[#CA8A04]" x-text="o.count"></span></a></template>
