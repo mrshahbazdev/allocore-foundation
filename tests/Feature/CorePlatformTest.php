@@ -250,6 +250,32 @@ class CorePlatformTest extends TestCase
         ], ['X-Tenant' => $tenant->id])->assertUnprocessable();
     }
 
+    public function test_me_update_changes_name_and_email(): void
+    {
+        $tenant = Tenant::create(['name' => 'Me GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->putJson('/api/v1/me', [
+            'name' => 'Neuer Name',
+            'email' => 'neu@example.de',
+        ], ['X-Tenant' => $tenant->id])
+            ->assertOk()
+            ->assertJsonPath('name', 'Neuer Name')
+            ->assertJsonPath('email', 'neu@example.de');
+
+        $this->assertSame('Neuer Name', $user->fresh()->name);
+    }
+
+    public function test_me_update_rejects_taken_email(): void
+    {
+        $tenant = Tenant::create(['name' => 'Me2 GmbH']);
+        $this->actingWithTenant($tenant);
+        User::factory()->create(['email' => 'vergeben@example.de']);
+
+        $this->putJson('/api/v1/me', ['email' => 'vergeben@example.de'], ['X-Tenant' => $tenant->id])
+            ->assertUnprocessable();
+    }
+
     public function test_tenant_routes_require_auth(): void
     {
         $tenant = Tenant::create(['name' => 'Auth GmbH']);
