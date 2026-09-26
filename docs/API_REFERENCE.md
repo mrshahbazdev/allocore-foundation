@@ -71,6 +71,9 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 | `/search?q=` | `metrics.view` | Globale Suche über alle Module (inkl. Data Lake, Graph, KI-Analysen, Events): `[{section, id, label}]` — `q` ≥ 2 Zeichen, optional `sections=tasks,companies`, `limit=1–50` (Default 20) |
 | `/notifications` | `metrics.view` | Datenbank-Benachrichtigungen des Users (z. B. aus `compliance:remind`): `[{id, kind, title, due_at, read, created_at}]` — `limit` ≤ 50 (Default 10) |
 | POST `/notifications/{id}/read` | `metrics.view` | Benachrichtigung als gelesen markieren |
+| POST `/notifications/read-all` | `metrics.view` | Alle ungelesenen Benachrichtigungen als gelesen markieren |
+| `/notifications/unread-count` | `metrics.view` | Anzahl ungelesener Benachrichtigungen: `{count}` |
+| DELETE `/notifications/{id}` | `metrics.view` | Einzelne Benachrichtigung löschen (404 bei fremder) |
 | POST `/demo-seed` | `roles.manage` | Demodaten für den aktuellen Tenant laden (idempotent; wie `php artisan demo:seed {tenant}`) |
 
 ## DataLake (`datalake`) — Layer 4
