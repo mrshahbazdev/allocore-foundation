@@ -107,6 +107,32 @@ class ProductionTest extends TestCase
         });
     }
 
+    public function test_order_done_notifies_linked_user(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'ProdFertig GmbH']);
+        $this->acting($tenant);
+        $worker = User::factory()->create();
+
+        $this->postJson('/api/v1/persons', [
+            'first_name' => 'Max',
+            'last_name' => 'Fertig',
+            'email' => $worker->email,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $personId = $this->getJson('/api/v1/persons', ['X-Tenant' => $tenant->id])->json('data.0.id');
+
+        $order = $this->postJson('/api/v1/production-orders', [
+            'order_no' => 'AUF-2002',
+            'product' => 'Krone',
+            'quantity' => 3,
+            'assigned_to' => $personId,
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+
+        $this->putJson("/api/v1/production-orders/{$order['id']}", ['status' => 'done'], ['X-Tenant' => $tenant->id])->assertOk();
+
+        Notification::assertSentToTimes($worker, Assigned::class, 2);
+    }
+
     public function test_write_requires_manage_permission(): void
     {
         $tenant = Tenant::create(['name' => 'X GmbH']);
