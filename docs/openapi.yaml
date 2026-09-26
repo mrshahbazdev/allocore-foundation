@@ -476,6 +476,11 @@ paths:
           required: false
           schema: {type: string}
           description: Filter auf event_properties.type
+        - name: id
+          in: query
+          required: false
+          schema: {type: integer}
+          description: Ein einzelnes Ereignis per id
         - name: group
           in: query
           required: false
