@@ -206,6 +206,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $gbNoPerson = $count('risk_assessments', fn ($q) => $q->where('status', 'open')->whereNull('person_id'));
+        if ($gbNoPerson) {
+            $insights[] = $this->hit('info', 'risk_assessments_no_person', "{$gbNoPerson} offene Gefährdungsbeurteilung(en) ohne zugeordnete Person.", ['count' => $gbNoPerson]);
+        }
+
         $auditsNoFindings = $count('audits', fn ($q) => $q->where('status', 'done')->whereNotExists(fn ($sub) => $sub->selectRaw(1)->from('audit_findings')->whereColumn('audit_findings.audit_id', 'audits.id')));
         if ($auditsNoFindings) {
             $insights[] = $this->hit('info', 'audits_no_findings', "{$auditsNoFindings} abgeschlossene(s) Audit(s) ohne Feststellungen.", ['count' => $auditsNoFindings]);
