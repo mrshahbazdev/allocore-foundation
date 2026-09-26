@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $projectsDoneGap = $count('projects', fn ($q) => $q->where('status', 'done')->where('progress', '<', 100));
+        if ($projectsDoneGap) {
+            $insights[] = $this->hit('warning', 'projects_done_incomplete', "{$projectsDoneGap} als erledigt markierte(s) Projekt(e) mit Fortschritt <100%.", ['count' => $projectsDoneGap]);
+        }
+
+        $ordersDoneNoQty = $count('production_orders', fn ($q) => $q->where('status', 'done')->where('scrap_qty', '>', 0));
+        if ($ordersDoneNoQty) {
+            $insights[] = $this->hit('warning', 'orders_done_incomplete', "{$ordersDoneNoQty} fertige(r) Auftrag/Aufträge mit Ausschuss.", ['count' => $ordersDoneNoQty]);
+        }
+
         $tendersAwardGap = $count('tenders', fn ($q) => $q->where('status', 'awarded')->whereNotExists(fn ($sub) => $sub->selectRaw(1)->from('tender_applications')->whereColumn('tender_applications.tender_id', 'tenders.id')->where('tender_applications.status', 'awarded')));
         if ($tendersAwardGap) {
             $insights[] = $this->hit('warning', 'tenders_awarded_no_winner', "{$tendersAwardGap} vergebene(r) Ausschreibung(en) ohne vergebene Bewerbung.", ['count' => $tendersAwardGap]);
