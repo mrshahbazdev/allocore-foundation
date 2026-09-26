@@ -1823,7 +1823,7 @@ function workspace(initial) {
             return [...new Set(this.rows.map(r => r.severity).filter(Boolean))].sort();
         },
         statusLabel(s) { return STATUS_DE[String(s).toLowerCase()] || s; },
-        typeLabel(t) { const M = {vacation:'Urlaub',sick:'Krank',other:'Sonstiges',question:'Frage',feedback:'Feedback',maintenance:'Wartung',safety:'Sicherheit',general:'Allgemein',external:'Extern',internal:'Intern',onboarding:'Onboarding',video:'Video',document:'Dokument',workshop:'Workshop',audit:'Audit',inspection:'Prüfung',training:'Schulung',financial:'Finanzen',quality:'Qualität',environment:'Umwelt',risk:'Risiko',strategic:'Strategisch',operational:'Operativ',low:'Niedrig',medium:'Mittel',high:'Hoch',analysis:'Analyse'}; return M[String(t).toLowerCase()] || t; },
+        typeLabel(t) { const M = {vacation:'Urlaub',sick:'Krank',other:'Sonstiges',question:'Frage',feedback:'Feedback',maintenance:'Wartung',safety:'Sicherheit',general:'Allgemein',external:'Extern',internal:'Intern',onboarding:'Onboarding',video:'Video',document:'Dokument',workshop:'Workshop',audit:'Audit',inspection:'Prüfung',training:'Schulung',financial:'Finanzen',quality:'Qualität',environment:'Umwelt',risk:'Risiko',strategic:'Strategisch',operational:'Operativ',low:'Niedrig',medium:'Mittel',high:'Hoch',critical:'Kritisch',warning:'Warnung',info:'Info',analysis:'Analyse'}; return M[String(t).toLowerCase()] || t; },
         insightKey(i) { return (this.tenant || '') + '|' + (i.code || '') + '|' + (i.message || ''); },
         visibleInsights() { return (this.insights || []).filter(i => !this.insDismissed.includes(this.insightKey(i))); },
         dismissInsight(i) {
