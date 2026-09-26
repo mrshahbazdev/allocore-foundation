@@ -983,6 +983,10 @@
                     <a x-show="section === 'events' && eventLink(detail)" :href="eventLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Datensatz öffnen</a>
                     <a x-show="section === 'notifications' && notifLink(detail)" :href="notifLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Zum Datensatz</a>
                     <button x-show="section === 'notifications' && detail && detail.kind" @click="toggleMute(detail.kind)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="(me && me.muted_kinds || []).includes(detail.kind) ? 'Stummschaltung aufheben' : 'Art stummschalten'"></button>
+                    <button x-show="section === 'notifications' && detail && detail.kind && rows && rows.filter(r => r.kind === detail.kind).length > 1" @click="confirmKindDel ? deleteKind(detail.kind) : (confirmKindDel = true, setTimeout(() => confirmKindDel = false, 3000))"
+                            class="text-xs px-3 py-1.5 border rounded-lg transition"
+                            :class="confirmKindDel ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E]'"
+                            x-text="confirmKindDel ? 'Wirklich?' : 'Art entfernen'"></button>
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" title="Duplizieren (d)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Duplizieren</button>
                     <button x-show="canEdit()" @click="openEdit()" title="Bearbeiten (e)" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
@@ -1290,7 +1294,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, confirmKindDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
@@ -1720,6 +1724,17 @@ function workspace(initial) {
                 (this.rows || []).forEach(n => { if (n.kind === kind) n.muted = muted; });
                 if (this.detail && this.detail.kind === kind) this.detail = {...this.detail, muted};
                 this.toast(muted ? 'Art "' + kind + '" stummgeschaltet' : 'Stummschaltung aufgehoben');
+            }).catch(() => {});
+        },
+        deleteKind(kind) {
+            this.confirmKindDel = false;
+            this.api('/api/v1/notifications?kind=' + encodeURIComponent(kind), {method: 'DELETE'}).then(r => r.ok ? r.json() : null).then(d => {
+                if (!d) return;
+                const ids = new Set((this.rows || []).filter(n => n.kind === kind).map(n => n.id));
+                this.dbNotifs = this.dbNotifs.filter(n => !ids.has(n.id));
+                this.rows = (this.rows || []).filter(n => n.kind !== kind);
+                this.detail = null;
+                this.toast(d.deleted + ' Benachrichtigungen entfernt');
             }).catch(() => {});
         },
         deleteReadNotifs() {
