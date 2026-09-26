@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $opInstrNoDoc = $count('operating_instructions', fn ($q) => $q->whereNull('document_id'));
+        if ($opInstrNoDoc) {
+            $insights[] = $this->hit('info', 'op_instructions_no_document', "{$opInstrNoDoc} Betriebsanweisung(en) ohne verknüpftes Dokument.", ['count' => $opInstrNoDoc]);
+        }
+
+        $instrNoDoc = $count('instructions', fn ($q) => $q->whereNull('document_id'));
+        if ($instrNoDoc) {
+            $insights[] = $this->hit('info', 'instructions_no_document', "{$instrNoDoc} Unterweisung(en) ohne verknüpftes Dokument.", ['count' => $instrNoDoc]);
+        }
+
         $questionsNoAnswer = $count('questions', fn ($q) => $q->whereIn('status', ['answered', 'closed'])->whereNotExists(fn ($sub) => $sub->selectRaw(1)->from('answers')->whereColumn('answers.question_id', 'questions.id')));
         if ($questionsNoAnswer) {
             $insights[] = $this->hit('info', 'questions_no_answers', "{$questionsNoAnswer} Frage(n) beantwortet/geschlossen ohne Antwort.", ['count' => $questionsNoAnswer]);
