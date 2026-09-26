@@ -24,6 +24,7 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v
     Route::get('me', [RoleController::class, 'me'])->name('me.show');
     Route::put('me', [RoleController::class, 'updateMe'])->name('me.update');
     Route::delete('me/membership', [RoleController::class, 'leaveTenant'])->name('me.membership.leave');
+    Route::get('me/notification-prefs', [RoleController::class, 'notificationPrefs'])->name('me.notification_prefs.show');
     Route::put('me/notification-prefs', [RoleController::class, 'updateNotificationPrefs'])->name('me.notification_prefs');
     Route::put('me/password', [RoleController::class, 'updatePassword'])->name('me.password');
     Route::get('tokens/abilities', [TokenController::class, 'abilities'])->name('tokens.abilities');
