@@ -568,6 +568,7 @@
                             </div>
                         </div>
                         <button @click="exportCsv()" title="CSV exportieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
+                        <button x-show="section === 'notifications'" @click="exportNotifs()" title="Benachrichtigungen als NDJSON exportieren (aktive Filter werden übernommen)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">NDJSON</button>
                         <button x-show="section === 'events'" @click="exportEvents()" title="Serverseitiger Audit-Export (NDJSON, alle Einträge)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">NDJSON</button>
                         <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren (i)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
                         <button @click="window.print()" title="Drucken" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">Drucken</button>
@@ -2546,6 +2547,27 @@ function workspace(initial) {
             a.click();
             URL.revokeObjectURL(a.href);
             this.toast('Ereignisse exportiert');
+        },
+        async exportNotifs() {
+            let url = '/api/v1/notifications/export';
+            const params = [];
+            if (this.unreadOnly) params.push('unread=1');
+            if (this.mutedOnly) params.push('muted=1');
+            if (this.kindFilter) params.push('kind=' + encodeURIComponent(this.kindFilter));
+            if (this.codeFilter) params.push('code=' + encodeURIComponent(this.codeFilter));
+            if (this.query) params.push('q=' + encodeURIComponent(this.query));
+            if (params.length) url += '?' + params.join('&');
+            const r = await this.api(url);
+            if (!r.ok) { this.toast('Export fehlgeschlagen', 'error'); return; }
+            const blob = await r.blob();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            const dispo = r.headers.get('Content-Disposition') || '';
+            const m = dispo.match(/filename="?([^";]+)/);
+            a.download = m ? m[1] : this.exportName('ndjson');
+            a.click();
+            URL.revokeObjectURL(a.href);
+            this.toast('Benachrichtigungen exportiert');
         },
         exportName(ext) {
             const t = this.tenantName().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'export';
