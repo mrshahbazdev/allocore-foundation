@@ -151,6 +151,31 @@ class RolesTest extends TestCase
         $this->assertContains($admin->id, $ids);
     }
 
+    public function test_role_update_requires_roles_manage_and_same_tenant(): void
+    {
+        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Guard GmbH'])->json('id');
+        $other = $this->postJson('/api/v1/tenants', ['name' => 'Fremd GmbH'])->json('id');
+        $user = $this->actingAsUser();
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $user->assignRole('mitarbeiter');
+        $role = Role::where('team_id', $tenant)->where('name', 'auditor')->firstOrFail();
+        $foreignRole = Role::where('team_id', $other)->where('name', 'auditor')->firstOrFail();
+
+        $this->putJson("/api/v1/roles/{$role->id}", ['permissions' => ['tasks.view']], ['X-Tenant' => $tenant])
+            ->assertForbidden();
+
+        tenancy()->end();
+        $admin = User::factory()->create();
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+        tenancy()->end();
+        Sanctum::actingAs($admin);
+
+        $this->putJson("/api/v1/roles/{$foreignRole->id}", ['permissions' => ['tasks.view']], ['X-Tenant' => $tenant])
+            ->assertNotFound();
+    }
+
     public function test_admin_can_update_role_permissions(): void
     {
         $tenant = $this->postJson('/api/v1/tenants', ['name' => 'PermsEdit GmbH'])->json('id');
