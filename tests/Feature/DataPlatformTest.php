@@ -446,6 +446,28 @@ class DataPlatformTest extends TestCase
         $this->assertContains('projects_unassigned', $codes);
     }
 
+    public function test_insights_reports_unassigned_measures_and_inspections(): void
+    {
+        $tenant = Tenant::create(['name' => 'Unzuständig GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $project = $this->postJson('/api/v1/projects', ['name' => 'PSA'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/measures', ['title' => 'Ohne Responsible', 'project_id' => $project['id']], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/inspections', ['title' => 'Ohne Responsible'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/questions', ['title' => 'Ohne Zuständige'], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('measures_unassigned', $codes);
+        $this->assertContains('inspections_unassigned', $codes);
+        $this->assertContains('questions_unassigned', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
