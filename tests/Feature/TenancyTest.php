@@ -19,7 +19,7 @@ class TenancyTest extends TestCase
     public function test_creates_a_tenant_via_the_central_api(): void
     {
         $before = Tenant::count();
-        $response = $this->postJson('/api/v1/tenants', ['name' => 'DISAVO Holding GmbH']);
+        $response = $this->createTenantApi(['name' => 'DISAVO Holding GmbH']);
 
         $response->assertCreated();
         $this->assertSame($before + 1, Tenant::count());
@@ -27,7 +27,7 @@ class TenancyTest extends TestCase
 
     public function test_tenant_creation_emits_event(): void
     {
-        $response = $this->postJson('/api/v1/tenants', ['name' => 'Event GmbH']);
+        $response = $this->createTenantApi(['name' => 'Event GmbH']);
 
         $id = $response->json('id');
         $types = DB::table('stored_events')
@@ -39,10 +39,17 @@ class TenancyTest extends TestCase
         $this->assertContains('tenant.created', $types);
     }
 
+    public function test_tenants_endpoints_require_auth(): void
+    {
+        $this->getJson('/api/v1/tenants')->assertUnauthorized();
+        $this->postJson('/api/v1/tenants', ['name' => 'X GmbH'])->assertUnauthorized();
+    }
+
     public function test_lists_tenants_via_the_central_api(): void
     {
         Tenant::create(['name' => 'ALLOCORE GmbH']);
 
+        Sanctum::actingAs(User::factory()->create());
         $this->getJson('/api/v1/tenants')
             ->assertOk()
             ->assertJsonFragment(['name' => 'ALLOCORE GmbH']);
@@ -105,5 +112,12 @@ class TenancyTest extends TestCase
         $this->assertTrue(Schema::hasTable('stored_events'));
         $this->assertTrue(Schema::hasTable('tenants'));
         $this->assertTrue(Schema::hasTable('personal_access_tokens'));
+    }
+
+    protected function createTenantApi(array $data)
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        return $this->postJson('/api/v1/tenants', $data);
     }
 }
