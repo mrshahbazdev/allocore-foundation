@@ -1441,6 +1441,8 @@ function workspace(initial) {
                     this.api('/api/v1/deadlines').then(r => r.ok ? r.json() : []).then(d => (Array.isArray(d) ? d : (d.data || [])).filter(x => x.status !== 'completed' && x.due_at).map(x => ({sec: 'deadlines', id: x.id, title: x.title, due: x.due_at}))),
                     this.api('/api/v1/tasks').then(r => r.ok ? r.json() : []).then(d => (Array.isArray(d) ? d : (d.data || [])).filter(x => ['open','in_progress'].includes(String(x.status)) && x.due_at).map(x => ({sec: 'tasks', id: x.id, title: x.title, due: x.due_at}))),
                     this.api('/api/v1/inspections').then(r => r.ok ? r.json() : []).then(d => (Array.isArray(d) ? d : (d.data || [])).filter(x => x.status === 'scheduled' && x.scheduled_at).map(x => ({sec: 'inspections', id: x.id, title: x.title, due: x.scheduled_at}))),
+                    this.api('/api/v1/audits').then(r => r.ok ? r.json() : []).then(d => (Array.isArray(d) ? d : (d.data || [])).filter(x => ['planned','in_progress'].includes(String(x.status)) && x.starts_on).map(x => ({sec: 'audits', id: x.id, title: x.title, due: x.starts_on}))),
+                    this.api('/api/v1/audit-findings').then(r => r.ok ? r.json() : []).then(d => (Array.isArray(d) ? d : (d.data || [])).filter(x => ['open','in_progress'].includes(String(x.status)) && x.due_at).map(x => ({sec: 'audit-findings', id: x.id, title: x.title, due: x.due_at}))),
                 ]).then(list => {
                     this.upcoming = list.flat().sort((a, b) => new Date(a.due) - new Date(b.due)).slice(0, 6);
                 });
