@@ -26,6 +26,18 @@ class NotificationController extends Controller
             ]);
     }
 
+    public function markAllRead(Request $request)
+    {
+        $request->user()->unreadNotifications->each->markAsRead();
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function unreadCount(Request $request)
+    {
+        return response()->json(['count' => $request->user()->unreadNotifications()->count()]);
+    }
+
     public function markRead(Request $request, string $id)
     {
         $n = $request->user()->notifications()->where('id', $id)->firstOrFail();

@@ -1522,7 +1522,7 @@ function workspace(initial) {
             this.api('/api/v1/notifications/' + n.id + '/read', {method: 'POST'}).then(r => { if (r.ok) { n.read = true; } }).catch(() => {});
         },
         markAllNotifsRead() {
-            this.dbNotifs.filter(n => !n.read).forEach(n => this.markNotifRead(n));
+            this.api('/api/v1/notifications/read-all', {method: 'POST'}).then(r => { if (r.ok) { this.dbNotifs.forEach(n => n.read = true); } }).catch(() => {});
         },
         loadSection(soft) {
             if (!this.tenant) { this.rows = null; return; }
