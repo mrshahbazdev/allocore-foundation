@@ -13,6 +13,7 @@ use Laravel\Sanctum\Sanctum;
 use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\RiskAssessment;
 use Modules\Compliance\Notifications\ComplianceDueSoon;
+use Modules\CorporateDev\Models\Project;
 use Tests\TestCase;
 
 class ComplianceTest extends TestCase
@@ -114,6 +115,28 @@ class ComplianceTest extends TestCase
             return $n->kind === 'gefaehrdungsbeurteilung';
         });
         $this->assertNotNull(RiskAssessment::first()->reminded_at);
+    }
+
+    public function test_project_reminder_notifies_owner(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Projekt GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/projects', [
+            'name' => 'ERP-Einführung',
+            'owner_id' => $user->id,
+            'ends_at' => now()->addHours(12)->toDateString(),
+            'status' => 'active',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, function (ComplianceDueSoon $n) {
+            return $n->kind === 'projekt';
+        });
+        $this->assertNotNull(Project::first()->reminded_at);
     }
 
     public function test_compliance_routes_require_auth(): void

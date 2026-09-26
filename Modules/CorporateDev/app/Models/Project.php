@@ -16,7 +16,7 @@ class Project extends Model
 
     protected $fillable = [
         'strategy_id', 'name', 'description', 'status', 'progress',
-        'owner_id', 'starts_at', 'ends_at',
+        'owner_id', 'starts_at', 'ends_at', 'reminded_at',
     ];
 
     protected function casts(): array
