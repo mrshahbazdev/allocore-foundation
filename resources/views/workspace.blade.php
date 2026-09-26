@@ -1751,11 +1751,11 @@ function workspace(initial) {
         },
         toggleMute(kind) {
             const cur = (this.me && this.me.muted_kinds) || [];
-            const next = cur.includes(kind) ? cur.filter(k => k !== kind) : [...cur, kind];
-            this.api('/api/v1/me/notification-prefs', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({muted_kinds: next})}).then(r => r.ok ? r.json() : null).then(d => {
+            const op = cur.includes(kind) ? {unmute: kind} : {mute: kind};
+            this.api('/api/v1/me/notification-prefs', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(op)}).then(r => r.ok ? r.json() : null).then(d => {
                 if (!d) return;
                 this.me = {...this.me, muted_kinds: d.muted_kinds};
-                const muted = cur.includes(kind);
+                const muted = !cur.includes(kind);
                 (this.rows || []).forEach(n => { if (n.kind === kind) n.muted = muted; });
                 (this.dbNotifs || []).forEach(n => { if (n.kind === kind) n.muted = muted; });
                 if (this.detail && this.detail.kind === kind) this.detail = {...this.detail, muted};
