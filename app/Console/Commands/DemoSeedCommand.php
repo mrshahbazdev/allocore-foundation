@@ -162,6 +162,14 @@ class DemoSeedCommand extends Command
             ['audit_id' => $audit->id, 'title' => 'Fehlende Gefährdungsbeurteilung Lager'],
             ['description' => 'Für den Lagerbereich liegt keine aktuelle GB vor.', 'severity' => 'high', 'status' => 'open', 'due_at' => now()->addDays(21), 'responsible_id' => $user?->id]
         );
+        AuditFinding::firstOrCreate(
+            ['audit_id' => $audit->id, 'title' => 'Sicherheitsunterweisung Produktion rückständig'],
+            ['description' => 'Jahresunterweisung Produktion ist nicht dokumentiert.', 'severity' => 'critical', 'status' => 'open', 'due_at' => now()->subDays(5), 'responsible_id' => $user?->id]
+        );
+        AuditFinding::firstOrCreate(
+            ['audit_id' => $audit->id, 'title' => 'Notfallausrüstung prüfen'],
+            ['description' => 'Augenspülstation im Labor monatlich prüfen.', 'severity' => 'medium', 'status' => 'in_progress', 'due_at' => now()->addDays(4), 'responsible_id' => $user?->id]
+        );
 
         $this->call('analytics:aggregate');
         $this->info("Demo-Daten für Mandant {$tenant->name} angelegt.");
