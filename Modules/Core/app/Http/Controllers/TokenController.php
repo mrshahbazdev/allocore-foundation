@@ -4,11 +4,25 @@ declare(strict_types=1);
 
 namespace Modules\Core\Http\Controllers;
 
+use Database\Seeders\RoleSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Validation\Rule;
 
 class TokenController extends Controller
 {
+    /** Erlaubte Token-Abilities: alle <domain>.view/.manage + Sonderrechte (entspricht dem Rollenmodell). */
+    public static function allowedAbilities(): array
+    {
+        $abilities = ['*'];
+        foreach (RoleSeeder::DOMAINS as $domain) {
+            $abilities[] = $domain.'.view';
+            $abilities[] = $domain.'.manage';
+        }
+
+        return array_merge($abilities, RoleSeeder::EXTRA_PERMISSIONS);
+    }
+
     /** Eigene API-Token des Nutzers (ohne Token-Wert — der wird nur einmal bei Erstellung ausgegeben). */
     public function index(Request $request)
     {
@@ -24,18 +38,22 @@ class TokenController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'expires_in_days' => ['nullable', 'integer', 'min:1', 'max:365'],
+            'abilities' => ['nullable', 'array', 'max:50'],
+            'abilities.*' => ['string', Rule::in(self::allowedAbilities())],
         ]);
 
         $expiresAt = isset($validated['expires_in_days'])
             ? now()->addDays((int) $validated['expires_in_days'])
             : null;
 
-        $token = $request->user()->createToken($validated['name'], ['*'], $expiresAt);
+        $abilities = $validated['abilities'] ?? ['*'];
+        $token = $request->user()->createToken($validated['name'], $abilities, $expiresAt);
 
         return response()->json([
             'id' => $token->accessToken->id,
             'name' => $validated['name'],
             'token' => $token->plainTextToken,
+            'abilities' => $abilities,
             'expires_at' => $expiresAt?->toISOString(),
         ], 201);
     }

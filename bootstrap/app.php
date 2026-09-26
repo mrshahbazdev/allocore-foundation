@@ -1,10 +1,10 @@
 <?php
 
+use App\Http\Middleware\AbilitiesPermissionMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
@@ -26,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant.central-guard' => PreventAccessFromCentralDomains::class,
             // RBAC (Dokument C — spatie/laravel-permission)
             'role' => RoleMiddleware::class,
-            'permission' => PermissionMiddleware::class,
+            'permission' => AbilitiesPermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
     })
