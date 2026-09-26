@@ -22,6 +22,7 @@ class ExecutiveController extends Controller
             'companies', 'persons', 'tasks_open', 'deadlines_open',
             'high_risks', 'data_objects', 'audits_open', 'findings_open',
             'leave_pending', 'orders_open',
+            'documents', 'questions_open', 'investments_active', 'participations_active',
         ], 0);
 
         foreach (Tenant::all() as $tenant) {
@@ -44,6 +45,10 @@ class ExecutiveController extends Controller
                 'tenders_open' => $this->count('tenders', $key, "status = 'open'"),
                 'instructions_open' => $this->count('instructions', $key, "status = 'pending'"),
                 'machines_active' => $this->count('machines', $key, "status = 'active'"),
+                'documents' => $this->count('documents', $key),
+                'questions_open' => $this->count('questions', $key, "status = 'open'"),
+                'investments_active' => $this->count('investments', $key, 'disposed_at IS NULL'),
+                'participations_active' => $this->count('participations', $key, "status = 'active'"),
             ];
             $row['compliance_rate'] = $this->complianceRate($key);
 
