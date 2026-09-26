@@ -229,6 +229,14 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'investments_drawdown', "{$drawdown} Investition(en) unter Einstandskurs — Bewertung prüfen.", ['count' => $drawdown]);
         }
 
+        $graphOrphans = DB::table('graph_entities')->where('tenant_id', $t)
+            ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('graph_edges')
+                ->whereColumn('graph_edges.tenant_id', 'graph_entities.tenant_id')
+                ->where(fn ($q2) => $q2->whereColumn('from_entity_id', 'graph_entities.id')->orWhereColumn('to_entity_id', 'graph_entities.id')))->count();
+        if ($graphOrphans) {
+            $insights[] = $this->hit('info', 'graph_orphans', "{$graphOrphans} Graph-Entität(en) ohne Verknüpfungen.", ['count' => $graphOrphans]);
+        }
+
         $openQuestions = $count('questions', fn ($q) => $q->where('status', 'open'));
         if ($openQuestions) {
             $insights[] = $this->hit('info', 'questions_open', "{$openQuestions} offene Frage(n) im Expertennetzwerk.", ['count' => $openQuestions]);
