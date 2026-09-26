@@ -1560,15 +1560,15 @@ class DataPlatformTest extends TestCase
         $this->putJson('/api/v1/me/notification-prefs', ['muted_kinds' => ['anmeldung']], ['X-Tenant' => $tenant->id])->assertOk();
         $user->notify(new PasswordChangedAlert('x'));
         $user->notify(new NewLoginAlert('1.2.3.4', null));
-        $user->notifications()->first()->update(['read_at' => now()]);
+        $user->notifications()->where('data->kind', 'anmeldung')->first()->update(['read_at' => now()]);
 
         $this->getJson('/api/v1/notifications/stats', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson(['total' => 2, 'unread' => 1, 'read' => 1, 'muted' => 1]);
 
         $this->getJson('/api/v1/notifications/stats?kind=passwort_geaendert', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 0, 'read' => 1, 'muted' => 0]);
+            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 1, 'read' => 0, 'muted' => 0]);
         $this->getJson('/api/v1/notifications/stats?kind=anmeldung', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 1, 'read' => 0, 'muted' => 1]);
+            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 0, 'read' => 1, 'muted' => 1]);
         $this->getJson('/api/v1/notifications/stats?before='.now()->subDay()->toDateString(), ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson(['total' => 0, 'unread' => 0, 'read' => 0, 'muted' => 0]);
     }
