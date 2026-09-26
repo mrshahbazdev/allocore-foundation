@@ -1603,6 +1603,7 @@ function workspace(initial) {
             });
         },
         sectionActions() {
+            if (!this.canManage()) return [];
             const A = {
                 'leave-requests': [['Genehmigen','approved'],['Ablehnen','rejected']],
                 'tasks': [['Starten','in_progress'],['Erledigen','done'],['Absagen','cancelled'],['Wieder öffnen','open']],
@@ -1983,9 +1984,15 @@ function workspace(initial) {
             const m = this.lookups[table] || {};
             return Object.entries(m).sort((a,b) => String(a[1]).localeCompare(String(b[1]), 'de'));
         },
-        writable() { return !['events','ai-analyses','metrics','users'].includes(this.section); },
+        hasPerm(p) { return !this.me || !Array.isArray(this.me.permissions) || this.me.permissions.includes(p); },
+        managePerm() {
+            const M = {companies:'companies',persons:'persons',documents:'documents',tasks:'tasks',instructions:'compliance',inspections:'compliance',deadlines:'compliance','risk-assessments':'compliance','operating-instructions':'compliance','expert-profiles':'experts',questions:'experts',tenders:'experts',strategies:'projects',projects:'projects',measures:'projects',portfolios:'investments',investments:'investments',participations:'participations',machines:'production','production-orders':'production','leave-requests':'hr','financial-reports':'finance',audits:'audits','audit-findings':'audits','data-objects':'datalake','ai-analyses':'ai','graph-entities':'graph','graph-edges':'graph',users:'roles'};
+            return M[this.section] || null;
+        },
+        canManage() { const p = this.managePerm(); return !p || this.hasPerm(p + '.manage'); },
+        writable() { return !['events','ai-analyses','metrics','users'].includes(this.section) && this.canManage(); },
         canEdit() { return this.writable() && this.section !== 'data-objects'; },
-        canCreate() { return this.section === 'ai-analyses' || this.section === 'users' || this.writable(); },
+        canCreate() { return this.section === 'ai-analyses' ? this.hasPerm('ai.manage') : (this.section === 'users' ? this.hasPerm('roles.manage') : this.writable()); },
         openCreate(prefill) {
             if (this.section === 'ai-analyses') {
                 this.api('/api/v1/ai-analyses', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'})
