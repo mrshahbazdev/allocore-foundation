@@ -138,7 +138,7 @@
                     </template>
                 </div>
             </div>
-            <button title="Passwort ändern" @click="pwOpen = true; pwErr = ''; pwForm = {current:'',next:'',confirm:''}" class="text-[#9CA3AF] hover:text-white mr-3">
+            <button title="Profil bearbeiten" @click="pwOpen = true; pwErr = ''; pwForm = {name: (me && me.name) || '', email: (me && me.email) || '', current:'',next:'',confirm:''}" class="text-[#9CA3AF] hover:text-white mr-3">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z"/></svg>
             </button>
             <form method="POST" action="{{ route('logout') }}">
@@ -1154,17 +1154,19 @@
 <div x-show="pwOpen" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none">
     <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="pwOpen = false"></div>
     <div class="relative w-full max-w-sm bg-white rounded-xl shadow-xl" role="dialog" aria-modal="true" aria-label="Passwort ändern">
-        <div class="px-6 py-4 border-b border-[#E4E9F0]"><h2 class="font-semibold text-[#0B0B0F]">Passwort ändern</h2></div>
+        <div class="px-6 py-4 border-b border-[#E4E9F0]"><h2 class="font-semibold text-[#0B0B0F]">Profil bearbeiten</h2></div>
         <div class="p-6 space-y-3" @keydown.enter="submitPassword()">
             <div x-show="pwErr" class="text-xs text-[#A6362E] bg-[#A6362E]/10 rounded-lg px-3 py-2" x-text="pwErr"></div>
-            <input type="password" x-model="pwForm.current" placeholder="Aktuelles Passwort" autocomplete="current-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+            <input type="text" x-model="pwForm.name" placeholder="Name" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+            <input type="email" x-model="pwForm.email" placeholder="E-Mail" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+            <input type="password" x-model="pwForm.current" placeholder="Aktuelles Passwort (nur für Passwort-Änderung)" autocomplete="current-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
             <input type="password" x-model="pwForm.next" placeholder="Neues Passwort (min. 12 Zeichen, Groß-/Kleinbuchstabe, Zahl)" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
             <input type="password" x-model="pwForm.confirm" placeholder="Neues Passwort wiederholen" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
             <p class="text-[11px] text-[#5B6B7E]">Nach der Änderung werden alle API-Token widerrufen — die Seite lädt neu.</p>
         </div>
         <div class="px-6 py-3 border-t border-[#E4E9F0] flex justify-end gap-2">
             <button @click="pwOpen = false" class="px-3 py-1.5 text-sm rounded-lg border border-[#D6DEE9] text-[#5B6B7E]">Abbrechen</button>
-            <button @click="submitPassword()" :disabled="!pwForm.current || !pwForm.next || pwForm.next !== pwForm.confirm" class="px-4 py-1.5 text-sm rounded-lg bg-[#FACC15] text-black font-semibold disabled:opacity-50">Ändern</button>
+            <button @click="submitPassword()" :disabled="(!pwForm.current && !(pwForm.name && pwForm.email)) || (pwForm.next && pwForm.next !== pwForm.confirm)" class="px-4 py-1.5 text-sm rounded-lg bg-[#FACC15] text-black font-semibold disabled:opacity-50">Ändern</button>
         </div>
     </div>
 </div>
@@ -1250,7 +1252,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', unreadOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {current:'',next:'',confirm:''},
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''},
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
@@ -1547,15 +1549,21 @@ function workspace(initial) {
             setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== t.id); }, 4500);
         },
         submitPassword() {
-            if (!this.pwForm.current || !this.pwForm.next) return;
-            if (this.pwForm.next !== this.pwForm.confirm) { this.pwErr = 'Passwörter stimmen nicht überein.'; return; }
-            this.api('/api/v1/me/password', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({current_password: this.pwForm.current, password: this.pwForm.next, password_confirmation: this.pwForm.confirm})})
-                .then(async r => {
-                    if (r.ok) { this.toast('Passwort geändert — Seite wird neu geladen.'); setTimeout(() => location.reload(), 1200); return; }
-                    const d = await r.json().catch(() => null);
-                    this.pwErr = (d && d.message) ? d.message : 'Fehler ' + r.status;
-                })
+            this.pwErr = '';
+            const profileChanged = this.me && (this.pwForm.name !== this.me.name || this.pwForm.email !== this.me.email);
+            const pwChanged = !!this.pwForm.next;
+            if (pwChanged && (!this.pwForm.current || this.pwForm.next !== this.pwForm.confirm)) { this.pwErr = 'Passwort-Felder unvollständig oder ungleich.'; return; }
+            const done = (msg) => { this.toast(msg); this.pwOpen = false; if (pwChanged) setTimeout(() => location.reload(), 1200); };
+            const fail = async (r) => { const d = await r.json().catch(() => null); this.pwErr = (d && d.message) ? d.message : 'Fehler ' + r.status; };
+            const savePw = () => this.api('/api/v1/me/password', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({current_password: this.pwForm.current, password: this.pwForm.next, password_confirmation: this.pwForm.confirm})})
+                .then(r => { if (r.ok) done('Passwort geändert — Seite wird neu geladen.'); else fail(r); })
                 .catch(() => { this.pwErr = 'Netzwerkfehler.'; });
+            if (profileChanged) {
+                this.api('/api/v1/me', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: this.pwForm.name, email: this.pwForm.email})})
+                    .then(r => { if (!r.ok) return fail(r); if (pwChanged) savePw(); else { this.me.name = this.pwForm.name; this.me.email = this.pwForm.email; done('Profil aktualisiert.'); } })
+                    .catch(() => { this.pwErr = 'Netzwerkfehler.'; });
+            } else if (pwChanged) savePw();
+            else this.pwErr = 'Keine Änderung.';
         },
         fetchTenantInfo() {
             if (!this.tenant) { this.tenantInfo = null; return; }
