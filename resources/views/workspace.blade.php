@@ -60,6 +60,7 @@
                     <option :value="t.id" x-text="t.name"></option>
                 </template>
             </select>
+            <div x-show="tenantInfo" class="mt-1.5 text-[11px] text-[#5B6B7E]" x-text="tenantInfo ? tenantInfo.members_count + ' Mitglied(er)' : ''"></div>
             <div class="mt-2 flex gap-3">
                 <button @click="createTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]">+ Neuer Mandant</button>
                 <button x-show="tenant && hasPerm('roles.manage')" @click="renameTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]">&#9998; Umbenennen</button>
@@ -1227,7 +1228,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', unreadOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [],
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], tenantInfo: null,
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
@@ -1294,7 +1295,7 @@ function workspace(initial) {
             });
             this.$watch('groupBy', v => { try { localStorage.setItem('af_group_' + this.section, v); localStorage.removeItem('af_gc_' + this.section); } catch (e) {} this.collapsedGroups = {}; this.syncUrl(); });
             this.$watch('tenant', v => {
-                if (v) { localStorage.setItem('allocore.tenant', v); this.loadMe(); } else { localStorage.removeItem('allocore.tenant'); this.me = null; }
+                if (v) { localStorage.setItem('allocore.tenant', v); this.loadMe(); this.fetchTenantInfo(); } else { localStorage.removeItem('allocore.tenant'); this.me = null; this.tenantInfo = null; }
                 this.setDocTitle();
             });
             this.$watch('rows', () => this.setDocTitle());
@@ -1522,6 +1523,10 @@ function workspace(initial) {
             this.toasts.push(t);
             if (action) { this._undo = {tid: t.id, fn: action.fn, label: action.label}; setTimeout(() => { if (this._undo && this._undo.tid === t.id) this._undo = null; }, 4500); }
             setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== t.id); }, 4500);
+        },
+        fetchTenantInfo() {
+            if (!this.tenant) { this.tenantInfo = null; return; }
+            this.api('/api/v1/tenant').then(r => r.ok ? r.json() : null).then(d => this.tenantInfo = d).catch(() => this.tenantInfo = null);
         },
         api(path, opts={}) {
             opts.headers = Object.assign({
