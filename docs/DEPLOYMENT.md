@@ -42,6 +42,8 @@ docker run -p 8000:8000 \
 
 ## Scheduler (Reminders + Aggregation)
 
-Produktiv: `php artisan schedule:run` per Cron (`* * * * *`) —
-`tasks:remind`, `compliance:remind` stündlich, `analytics:aggregate` täglich.
-Alternativ `php artisan queue:work` falls Queue aktiv.
+Im Docker-Container läuft der Scheduler automatisch: das `CMD` startet
+`php artisan schedule:work` im Hintergrund neben `php artisan serve` —
+kein separater Cron nötig (`tasks:remind`, `compliance:remind` stündlich,
+`analytics:aggregate` täglich). Außerhalb des Containers:
+`php artisan schedule:run` per Cron (`* * * * *`).
