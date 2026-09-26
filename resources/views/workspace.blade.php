@@ -130,7 +130,7 @@
                 <div class="text-[11px] text-[#6B7280] truncate">{{ $user->email }}</div>
                 <div x-show="me && me.roles && me.roles.length" class="mt-1 flex flex-wrap gap-1">
                     <template x-for="r in (me ? (me.roles || []) : [])" :key="r">
-                        <span class="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-[#FACC15] text-black" x-text="r"></span>
+                        <span class="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-[#FACC15] text-black" x-text="roleLabel(r)" :title="r"></span>
                     </template>
                 </div>
             </div>
@@ -580,7 +580,7 @@
                         <template x-for="rn in roleOpts()" :key="'role-' + rn">
                             <button @click="roleFilter = roleFilter === rn ? '' : rn" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="roleFilter === rn ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">
-                                <span x-text="'Rolle ' + rn + ' · ' + rows.filter(r => (r.role_names || []).includes(rn)).length"></span>
+                                <span x-text="'Rolle ' + roleLabel(rn) + ' · ' + rows.filter(r => (r.role_names || []).includes(rn)).length"></span>
                             </button>
                         </template>
                     </div>
@@ -816,7 +816,7 @@
                         <div>
                             <div class="flex items-center gap-2.5 text-sm text-[#1A2433]">
                                 <input type="checkbox" :value="r.name" x-model="userRoles" :disabled="!hasPerm('roles.manage')" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30 disabled:opacity-50">
-                                <span x-text="r.name"></span>
+                                <span x-text="roleLabel(r.name)" :title="r.name"></span>
                                 <span class="text-[11px] text-[#9CA3AF]" x-text="'(' + (r.permissions || []).length + ' Rechte)'"></span>
                                 <button x-show="hasPerm('roles.manage')" @click="openRoleEdit(r)" class="text-[10px] text-[#9CA3AF] hover:text-[#CA8A04] underline underline-offset-2" title="Rechte der Rolle bearbeiten">bearbeiten</button>
                                 <button x-show="hasPerm('roles.manage') && !['holding','administrator'].includes(r.name)" @click="deleteRole(r)" class="text-[10px] text-[#9CA3AF] hover:text-[#A6362E] underline underline-offset-2" title="Rolle löschen">löschen</button>
@@ -1045,7 +1045,7 @@
                             <template x-for="r in allRoles" :key="r.id">
                                 <label class="flex items-center gap-1.5 text-[11px] text-[#42536A]">
                                     <input type="checkbox" :value="r.name" x-model="form.roles" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
-                                    <span x-text="r.name"></span>
+                                    <span x-text="roleLabel(r.name)"></span>
                                 </label>
                             </template>
                         </div>
@@ -1928,6 +1928,7 @@ function workspace(initial) {
             if (!this.rows || !this.rows.some(r => r.severity)) return [];
             return [...new Set(this.rows.map(r => r.severity).filter(Boolean))].sort();
         },
+        roleLabel(n) { const M = {holding:'Holding',administrator:'Administrator',geschaeftsfuehrer:'Geschäftsführer',mitarbeiter:'Mitarbeiter',berater:'Berater',auditor:'Auditor',kunde:'Kunde'}; return M[String(n).toLowerCase()] || n; },
         statusLabel(s) { return STATUS_DE[String(s).toLowerCase()] || s; },
         typeLabel(t) { const M = {vacation:'Urlaub',sick:'Krank',other:'Sonstiges',question:'Frage',feedback:'Feedback',maintenance:'Wartung',safety:'Sicherheit',general:'Allgemein',external:'Extern',internal:'Intern',onboarding:'Onboarding',video:'Video',document:'Dokument',workshop:'Workshop',audit:'Audit',inspection:'Prüfung',training:'Schulung',financial:'Finanzen',quality:'Qualität',environment:'Umwelt',risk:'Risiko',strategic:'Strategisch',operational:'Operativ',low:'Niedrig',medium:'Mittel',high:'Hoch',critical:'Kritisch',warning:'Warnung',info:'Info',analysis:'Analyse'}; return M[String(t).toLowerCase()] || t; },
         insightKey(i) { return (this.tenant || '') + '|' + (i.code || '') + '|' + (i.message || ''); },
@@ -2527,7 +2528,7 @@ function workspace(initial) {
             }
             if (c === 'role_names' && Array.isArray(v)) {
                 if (!v.length) return '—';
-                return v.map(n => `<span class="inline-block text-[10px] px-1.5 py-0.5 rounded bg-[#F4F6F9] text-[#42536A] font-mono mr-1 mb-0.5">${n}</span>`).join('');
+                return v.map(n => `<span class="inline-block text-[10px] px-1.5 py-0.5 rounded bg-[#F4F6F9] text-[#42536A] font-mono mr-1 mb-0.5" title="${n}">${this.roleLabel(n)}</span>`).join('');
             }
             if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
             if (typeof v === 'string' && /^\d+(\.\d+)?$/.test(v) && c !== 'id' && !c.endsWith('_id') && !/_date|_at|no$|number|phone|zip/i.test(c)) v = parseFloat(v);
