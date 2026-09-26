@@ -14,6 +14,7 @@ class OperatingInstructionController extends Controller
         return OperatingInstruction::query()
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->q, fn ($q, $s) => $q->where('title', 'like', '%'.$s.'%'))
+            ->when($request->document_id, fn ($q, $v) => $q->where('document_id', $v))
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
