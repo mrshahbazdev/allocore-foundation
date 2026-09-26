@@ -63,6 +63,13 @@ class NotificationController extends Controller
         return response()->json(['deleted' => $count]);
     }
 
+    public function destroyAll(Request $request)
+    {
+        $count = $request->user()->notifications()->delete();
+
+        return response()->json(['deleted' => $count]);
+    }
+
     public function destroy(Request $request, string $id)
     {
         $request->user()->notifications()->where('id', $id)->firstOrFail()->delete();

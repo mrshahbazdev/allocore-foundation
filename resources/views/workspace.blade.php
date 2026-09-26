@@ -610,6 +610,7 @@
                                 x-text="'Ungelesen · ' + rows.filter(r => !r.read).length"></button>
                         <button x-show="section === 'notifications' && rows && rows.some(r => !r.read)" @click="markAllNotifsRead(); toast('Alle als gelesen markiert')" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 transition">Alle gelesen</button>
                         <button x-show="section === 'notifications' && rows && rows.some(r => r.read)" @click="deleteReadNotifs()" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition">Gelesene entfernen</button>
+                        <button x-show="section === 'notifications' && rows && rows.length > 1" @click="if (confirm('Alle Benachrichtigungen entfernen?')) this.api('/api/v1/notifications', {method: 'DELETE'}).then(r => r.ok ? r.json() : null).then(d => { if (d) { this.toast((d.deleted ?? 0) + ' entfernt'); this.loadSection(); } })" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition">Alle entfernen</button>
                         </template>
                         <template x-for="rn in roleOpts()" :key="'role-' + rn">
                             <button @click="roleFilter = roleFilter === rn ? '' : rn" class="text-[11px] px-2.5 py-1 rounded-full border transition"
