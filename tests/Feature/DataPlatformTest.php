@@ -1494,6 +1494,25 @@ class DataPlatformTest extends TestCase
         $this->assertSame('Alt', $asc[0]['title']);
     }
 
+    public function test_notifications_q_filter_on_mutating_ops(): void
+    {
+        $tenant = Tenant::create(['name' => 'NQ GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new Assigned('aufgabe', 'e1', 'Bericht Q1'));
+        $user->notify(new Assigned('aufgabe', 'e2', 'Sonstiges'));
+
+        $this->postJson('/api/v1/notifications/read-all?q=Bericht', [], ['X-Tenant' => $tenant->id])->assertOk()->assertJson(['updated' => 1]);
+        $this->assertNotNull($user->notifications()->where('data->title', 'Bericht Q1')->first()->read_at);
+        $this->assertNull($user->notifications()->where('data->title', 'Sonstiges')->first()->read_at);
+
+        $this->postJson('/api/v1/notifications/delete-read?q=Bericht', [], ['X-Tenant' => $tenant->id])->assertOk()->assertJson(['deleted' => 1]);
+        $this->assertSame(1, $user->notifications()->count());
+
+        $this->deleteJson('/api/v1/notifications?q=fehlt', [], ['X-Tenant' => $tenant->id])->assertOk()->assertJson(['deleted' => 0]);
+        $this->assertSame(1, $user->notifications()->count());
+    }
+
     public function test_notifications_read_all_honors_kind_filter(): void
     {
         $tenant = Tenant::create(['name' => 'NK GmbH']);
