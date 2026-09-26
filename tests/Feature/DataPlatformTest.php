@@ -1079,4 +1079,45 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertJson(['count' => 0]);
         $this->assertEquals(1, $other->fresh()->unreadNotifications()->count());
     }
+
+    public function test_notifications_unread_filter_and_mark_unread(): void
+    {
+        $tenant = Tenant::create(['name' => 'NU GmbH']);
+        $user = $this->acting($tenant);
+
+        $notif = new class extends Notification
+        {
+            public function via($n)
+            {
+                return ['database'];
+            }
+
+            public function toArray($n)
+            {
+                return ['title' => 'X', 'kind' => 'frist'];
+            }
+        };
+        $user->notify($notif);
+        $user->notify($notif);
+
+        $first = $user->notifications()->first();
+        $this->postJson("/api/v1/notifications/{$first->id}/read", [], ['X-Tenant' => $tenant->id])->assertOk();
+
+        $res = $this->getJson('/api/v1/notifications?unread=1', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $res);
+        $this->assertFalse($res[0]['read']);
+
+        $this->postJson("/api/v1/notifications/{$first->id}/unread", [], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->assertNull($first->fresh()->read_at);
+
+        $this->getJson('/api/v1/notifications/unread-count', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJson(['count' => 2]);
+
+        // fremder User kann nichts togglen
+        $other = User::factory()->create();
+        $other->notify($notif);
+        $foreign = $other->notifications()->first();
+        $this->postJson("/api/v1/notifications/{$foreign->id}/unread", [], ['X-Tenant' => $tenant->id])
+            ->assertNotFound();
+    }
 }
