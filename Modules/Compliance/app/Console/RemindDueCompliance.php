@@ -14,6 +14,7 @@ use Modules\Compliance\Models\RiskAssessment;
 use Modules\Compliance\Notifications\ComplianceDueSoon;
 use Modules\CorporateDev\Models\Measure;
 use Modules\CorporateDev\Models\Project;
+use Modules\Production\Models\ProductionOrder;
 
 class RemindDueCompliance extends Command
 {
@@ -67,6 +68,7 @@ class RemindDueCompliance extends Command
         );
 
         $count += $this->remindRiskReviews($horizon);
+        $count += $this->remindProductionOrders($horizon);
 
         $this->info("{$count} Erinnerung(en) versendet.");
 
@@ -103,6 +105,31 @@ class RemindDueCompliance extends Command
                 continue;
             }
             $user->notify(new ComplianceDueSoon($item, 'gefaehrdungsbeurteilung', $item->review_at->format('d.m.Y H:i')));
+            $item->update(['reminded_at' => now()]);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    private function remindProductionOrders(Carbon $horizon): int
+    {
+        $items = ProductionOrder::query()
+            ->whereIn('status', ['queued', 'running'])
+            ->whereNotNull('due_at')
+            ->where('due_at', '<=', $horizon)
+            ->whereNull('reminded_at')
+            ->whereNotNull('assigned_to')
+            ->with('assignee')
+            ->get();
+
+        $count = 0;
+        foreach ($items as $item) {
+            $user = $item->assignee?->email ? User::where('email', $item->assignee->email)->first() : null;
+            if (! $user) {
+                continue;
+            }
+            $user->notify(new ComplianceDueSoon($item, 'auftrag', $item->due_at->format('d.m.Y')));
             $item->update(['reminded_at' => now()]);
             $count++;
         }
