@@ -2262,7 +2262,7 @@ paths:
   /api/v1/notifications/unread-count:
     get:
       tags: [metrics]
-      summary: 'GET /api/v1/notifications/unread-count — {count} ungelesener Benachrichtigungen (stumme Arten ausgenommen, include_muted=1 für Gesamtzahl)'
+      summary: 'GET /api/v1/notifications/unread-count — {count} ungelesener Benachrichtigungen (stumme Arten ausgenommen, include_muted=1 für Gesamtzahl, kind= für eine Art)'
       parameters:
         - name: include_muted
           in: query
