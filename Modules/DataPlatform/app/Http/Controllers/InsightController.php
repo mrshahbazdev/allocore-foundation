@@ -236,6 +236,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'strategies_no_projects', "{$strategiesNoProjects} aktive Strategie(n) ohne verknüpftes Projekt.", ['count' => $strategiesNoProjects]);
         }
 
+        $projectsNoMeasures = $count('projects', fn ($q) => $q->whereIn('status', ['planned', 'active'])->whereNotExists(fn ($sub) => $sub->selectRaw(1)->from('measures')->whereColumn('measures.project_id', 'projects.id')));
+        if ($projectsNoMeasures) {
+            $insights[] = $this->hit('info', 'projects_no_measures', "{$projectsNoMeasures} Projekt(e) ohne Maßnahmen — Umsetzung fehlt.", ['count' => $projectsNoMeasures]);
+        }
+
         $strategiesOverdue = $count('strategies', fn ($q) => $q->where('status', 'active')->where('ends_at', '<', now()));
         if ($strategiesOverdue) {
             $insights[] = $this->hit('info', 'strategies_overdue', "{$strategiesOverdue} aktive Strategie(n) über Enddatum — Status prüfen.", ['count' => $strategiesOverdue]);
