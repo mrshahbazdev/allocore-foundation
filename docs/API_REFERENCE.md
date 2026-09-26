@@ -4,6 +4,8 @@ Alle Endpunkte unter `/api/v1`. Auth: `Authorization: Bearer <sanctum-token>`.
 Tenant-Scope: Header `X-Tenant: <tenant-uuid>` (Pflicht auf allen Domänen-Endpunkten). Mitgliedschaft Pflicht: Nutzer dürfen nur Mandanten betreten, in denen sie Mitglied sind — sonst `403 Kein Mitglied dieses Mandanten.` (Einstiegspunkt: der Ersteller eines neuen Mandanten wird automatisch `administrator`; weitere Nutzer werden per `POST /users` eines Mitglieds angebunden).
 RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 
+**Security-Defaults:** Alle Antworten tragen Security-Header (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`). Passwort-Policy: min. 12 Zeichen + Groß-/Kleinbuchstabe + Zahl. Passwort-Änderung und -Reset widerrufen alle persönlichen API-Tokens. Auth-Routen (Registrierung, Login, Passwort vergessen/zurücksetzen/bestätigen) sind auf 6 Versuche/Minute pro IP gedrosselt.
+
 ## Zentral (kein Tenant-Header nötig)
 
 | Methode | Pfad | Zweck |
