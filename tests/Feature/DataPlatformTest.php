@@ -139,6 +139,18 @@ class DataPlatformTest extends TestCase
             'title' => 'GB Review bald', 'risk_level' => 'low', 'review_at' => now()->addDays(5)->toISOString(),
         ], ['X-Tenant' => $tenant->id]);
 
+        $person = $this->postJson('/api/v1/persons', [
+            'first_name' => 'Anna', 'last_name' => 'Urlaub',
+        ], ['X-Tenant' => $tenant->id]);
+        $leave = $this->postJson('/api/v1/leave-requests', [
+            'person_id' => $person->json('id'),
+            'type' => 'vacation', 'starts_on' => now()->addDays(10)->toDateString(), 'ends_on' => now()->addDays(12)->toDateString(),
+        ], ['X-Tenant' => $tenant->id]);
+        if ($leave->status() === 201) {
+            DB::table('leave_requests')->where('id', $leave->json('id'))
+                ->update(['created_at' => now()->subDays(8)]);
+        }
+
         $this->postJson('/api/v1/audits', [
             'title' => 'Überfälliges Audit', 'ends_on' => now()->subDay()->toDateString(),
         ], ['X-Tenant' => $tenant->id]);
@@ -168,6 +180,8 @@ class DataPlatformTest extends TestCase
         $this->assertContains('audits_unassigned', $codes);
         $this->assertContains('orders_unassigned', $codes);
         $this->assertContains('risk_reviews_due_soon', $codes);
+        $this->assertContains('leave_requests_pending', $codes);
+        $this->assertContains('leave_pending_stale', $codes);
     }
 
     public function test_nav_counts_returns_overdue_and_today(): void
