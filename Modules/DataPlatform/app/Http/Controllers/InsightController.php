@@ -117,6 +117,15 @@ class InsightController extends Controller
             $insights[] = $this->hit('critical', 'fin_negative_liquidity', "{$negLiquidity} Unternehmen mit negativer Liquidität im laufenden Monat.", ['count' => $negLiquidity]);
         }
 
+        $missingReports = DB::table('companies')->where('tenant_id', $t)
+            ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('financial_reports')
+                ->whereColumn('financial_reports.company_id', 'companies.id')
+                ->where('financial_reports.tenant_id', $t)
+                ->where('period', now()->format('Y-m')))->count();
+        if ($missingReports) {
+            $insights[] = $this->hit('info', 'fin_reports_missing', "{$missingReports} Unternehmen ohne Finanzbericht für den laufenden Monat.", ['count' => $missingReports]);
+        }
+
         $leave = $count('leave_requests', fn ($q) => $q->where('status', 'pending'));
         if ($leave) {
             $insights[] = $this->hit('info', 'leave_requests_pending', "{$leave} Urlaubs-/Fehlzeitenantrag/-anträge zur Genehmigung offen.", ['count' => $leave]);
