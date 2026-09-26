@@ -2126,7 +2126,7 @@ paths:
   /api/v1/notifications:
     get:
       tags: [metrics]
-      summary: "GET /api/v1/notifications — Datenbank-Benachrichtigungen des Users [{id, kind, title, due_at, read, created_at}]"
+      summary: "GET /api/v1/notifications — Datenbank-Benachrichtigungen des Users [{id, kind, title, due_at, code, read, created_at}] (code = Insight-/Seed-Code oder null)"
       parameters:
         - name: limit
           in: query
