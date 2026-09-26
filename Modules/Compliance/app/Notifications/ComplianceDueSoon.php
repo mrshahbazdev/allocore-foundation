@@ -33,6 +33,7 @@ class ComplianceDueSoon extends Notification
     {
         return [
             'unterweisung' => 'Unterweisung',
+            'unterweisung_wiederholung' => 'Unterweisung-Wiederholung',
             'pruefung' => 'Pruefung',
             'frist' => 'Frist',
             'feststellung' => 'Audit-Feststellung',

@@ -46,7 +46,7 @@ class Instruction extends Model
 
     protected $fillable = [
         'title', 'content', 'document_id', 'person_id', 'responsible_id',
-        'status', 'interval_months', 'due_at', 'completed_at', 'reminded_at',
+        'status', 'interval_months', 'due_at', 'completed_at', 'reminded_at', 'renewal_reminded_at',
     ];
 
     protected function casts(): array

@@ -77,6 +77,8 @@ class RemindDueCompliance extends Command
             'owner',
         );
 
+        $count += $this->remindInstructionRenewals();
+
         $count += $this->remindRiskReviews($horizon);
         $count += $this->remindProductionOrders($horizon);
         $count += $this->remind(
@@ -109,6 +111,38 @@ class RemindDueCompliance extends Command
             }
             $user->notify(new ComplianceDueSoon($item, $kind, $item->{$dateColumn}->format('d.m.Y H:i')));
             $item->update(['reminded_at' => now()]);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    private function remindInstructionRenewals(): int
+    {
+        $items = Instruction::query()
+            ->where('status', 'completed')
+            ->whereNotNull('interval_months')
+            ->whereNotNull('completed_at')
+            ->whereRaw('DATE_ADD(completed_at, INTERVAL interval_months MONTH) <= ?', [now()])
+            ->whereNull('renewal_reminded_at')
+            ->where(function ($q) {
+                $q->whereNotNull('responsible_id')->orWhereNotNull('person_id');
+            })
+            ->with(['responsible', 'person'])
+            ->get();
+
+        $count = 0;
+        foreach ($items as $item) {
+            $user = $item->responsible;
+            if (! $user && $item->person?->email) {
+                $user = User::where('email', $item->person->email)->first();
+            }
+            if (! $user) {
+                continue;
+            }
+            $due = $item->completed_at->copy()->addMonths((int) $item->interval_months);
+            $user->notify(new ComplianceDueSoon($item, 'unterweisung_wiederholung', $due->format('d.m.Y H:i')));
+            $item->update(['renewal_reminded_at' => now()]);
             $count++;
         }
 
