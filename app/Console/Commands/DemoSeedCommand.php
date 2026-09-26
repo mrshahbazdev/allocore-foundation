@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Modules\Ai\Models\AiAnalysis;
 use Modules\Audits\Models\Audit;
 use Modules\Audits\Models\AuditFinding;
 use Modules\Compliance\Models\Deadline;
@@ -26,6 +27,8 @@ use Modules\Finance\Models\FinancialReport;
 use Modules\Hr\Models\LeaveRequest;
 use Modules\Investments\Models\Investment;
 use Modules\Investments\Models\Portfolio;
+use Modules\KnowledgeGraph\Models\GraphEdge;
+use Modules\KnowledgeGraph\Models\GraphEntity;
 use Modules\Participations\Models\Participation;
 use Modules\Production\Models\Machine;
 use Modules\Production\Models\ProductionOrder;
@@ -193,6 +196,24 @@ class DemoSeedCommand extends Command
         Audit::firstOrCreate(
             ['title' => 'Laufendes Audit Produktion'],
             ['type' => 'internal', 'standard' => 'DGUV', 'auditor' => 'Bernd Prüfer', 'company_id' => $company->id, 'responsible_id' => $user?->id, 'status' => 'in_progress', 'starts_on' => now()->subDays(3), 'ends_on' => now()->addDays(2)]
+        );
+
+        $eCompany = GraphEntity::firstOrCreate(
+            ['type' => 'company', 'name' => $company->name],
+            ['subject_type' => 'companies', 'subject_id' => $company->id]
+        );
+        $ePerson = GraphEntity::firstOrCreate(
+            ['type' => 'person', 'name' => "{$person->first_name} {$person->last_name}"],
+            ['subject_type' => 'persons', 'subject_id' => $person->id]
+        );
+        GraphEdge::firstOrCreate(
+            ['from_entity_id' => $ePerson->id, 'to_entity_id' => $eCompany->id, 'relation' => 'employed_at'],
+            ['properties' => ['role' => 'Leiter Produktion']]
+        );
+
+        AiAnalysis::firstOrCreate(
+            ['kind' => 'insights', 'provider' => 'heuristic'],
+            ['status' => 'completed', 'summary' => 'Compliance-Rate stabil, 2 überfällige Einträge.', 'findings' => [['code' => 'tasks_overdue', 'severity' => 'warning'], ['code' => 'high_risks_open', 'severity' => 'info']]]
         );
 
         $this->call('analytics:aggregate');
