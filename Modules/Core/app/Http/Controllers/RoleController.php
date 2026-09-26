@@ -128,6 +128,23 @@ class RoleController extends Controller
         ]);
     }
 
+    public function updateMe(Request $request)
+    {
+        $user = $request->user();
+        $validated = $request->validate([
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'email' => ['sometimes', 'required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+        ]);
+    }
+
     public function updatePassword(Request $request)
     {
         $validated = $request->validate([
