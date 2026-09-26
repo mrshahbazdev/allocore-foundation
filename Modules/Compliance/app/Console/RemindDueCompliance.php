@@ -9,6 +9,7 @@ use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\Inspection;
 use Modules\Compliance\Models\Instruction;
 use Modules\Compliance\Notifications\ComplianceDueSoon;
+use Modules\CorporateDev\Models\Measure;
 
 class RemindDueCompliance extends Command
 {
@@ -40,6 +41,11 @@ class RemindDueCompliance extends Command
         $count += $this->remind(
             AuditFinding::query()->whereIn('status', ['open', 'in_progress'])->whereNotNull('due_at')->where('due_at', '<=', $horizon),
             'feststellung',
+        );
+
+        $count += $this->remind(
+            Measure::query()->whereIn('status', ['open', 'in_progress'])->whereNotNull('due_at')->where('due_at', '<=', $horizon),
+            'massnahme',
         );
 
         $count += $this->remind(

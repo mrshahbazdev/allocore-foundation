@@ -14,12 +14,12 @@ class Measure extends Model
     public const STATUSES = ['open', 'in_progress', 'done', 'cancelled'];
 
     protected $fillable = [
-        'project_id', 'title', 'description', 'status', 'responsible_id', 'due_at',
+        'project_id', 'title', 'description', 'status', 'responsible_id', 'due_at', 'reminded_at',
     ];
 
     protected function casts(): array
     {
-        return ['due_at' => 'date'];
+        return ['due_at' => 'date', 'reminded_at' => 'datetime'];
     }
 
     public function project(): BelongsTo
