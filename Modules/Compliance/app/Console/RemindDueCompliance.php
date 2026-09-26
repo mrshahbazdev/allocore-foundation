@@ -3,6 +3,7 @@
 namespace Modules\Compliance\Console;
 
 use Illuminate\Console\Command;
+use Modules\Audits\Models\Audit;
 use Modules\Audits\Models\AuditFinding;
 use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\Inspection;
@@ -39,6 +40,12 @@ class RemindDueCompliance extends Command
         $count += $this->remind(
             AuditFinding::query()->whereIn('status', ['open', 'in_progress'])->whereNotNull('due_at')->where('due_at', '<=', $horizon),
             'feststellung',
+        );
+
+        $count += $this->remind(
+            Audit::query()->where('status', 'planned')->whereNotNull('starts_on')->where('starts_on', '<=', $horizon),
+            'audit',
+            'starts_on',
         );
 
         $this->info("{$count} Erinnerung(en) versendet.");
