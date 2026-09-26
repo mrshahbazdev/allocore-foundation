@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $mZeroCap = $count('machines', fn ($q) => $q->where('status', 'active')->where('capacity_units_per_day', '<=', 0));
+        if ($mZeroCap) {
+            $insights[] = $this->hit('info', 'machines_zero_capacity', "{$mZeroCap} aktive Maschine(n) ohne Kapazität.", ['count' => $mZeroCap]);
+        }
+
+        $pStalled = $count('projects', fn ($q) => $q->where('status', 'active')->where('progress', 0)->where('created_at', '<', now()->subDays(30)));
+        if ($pStalled) {
+            $insights[] = $this->hit('warning', 'projects_stalled', "{$pStalled} aktive(s) Projekt(e) seit >30 Tagen ohne Fortschritt.", ['count' => $pStalled]);
+        }
+
         $tNoBudget = $count('tenders', fn ($q) => $q->where('status', 'open')->whereNull('budget'));
         if ($tNoBudget) {
             $insights[] = $this->hit('info', 'tenders_no_budget', "{$tNoBudget} offene Ausschreibung(en) ohne Budgetangabe.", ['count' => $tNoBudget]);
