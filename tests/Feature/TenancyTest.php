@@ -68,12 +68,12 @@ class TenancyTest extends TestCase
         $this->getJson('/api/v1/context', ['X-Tenant' => $tenantB->id])->assertForbidden();
     }
 
-    public function test_user_without_memberships_may_enter_any_tenant(): void
+    public function test_user_without_memberships_cannot_enter_tenant(): void
     {
         $tenant = Tenant::create(['name' => 'Offen GmbH']);
 
         Sanctum::actingAs(User::factory()->create());
-        $this->getJson('/api/v1/context', ['X-Tenant' => $tenant->id])->assertOk();
+        $this->getJson('/api/v1/context', ['X-Tenant' => $tenant->id])->assertForbidden();
     }
 
     public function test_tenants_endpoints_require_auth(): void
