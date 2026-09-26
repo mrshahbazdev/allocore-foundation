@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
@@ -206,5 +207,35 @@ class DataPlatformTest extends TestCase
 
         $this->getJson('/api/v1/search?q=a', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson([]);
+    }
+
+    public function test_notifications_endpoint_lists_and_marks_read(): void
+    {
+        $tenant = Tenant::create(['name' => 'N GmbH']);
+        $user = $this->acting($tenant);
+
+        $notif = new class extends Notification
+        {
+            public function via($n)
+            {
+                return ['database'];
+            }
+
+            public function toArray($n)
+            {
+                return ['title' => 'Test', 'kind' => 'frist', 'due_at' => '01.01.2027'];
+            }
+        };
+        $user->notify($notif);
+        $other = User::factory()->create();
+        $other->notify($notif);
+
+        $res = $this->getJson('/api/v1/notifications', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $res);
+        $this->assertFalse($res[0]['read']);
+
+        $this->postJson('/api/v1/notifications/'.$res[0]['id'].'/read', [], ['X-Tenant' => $tenant->id])->assertOk();
+        $res = $this->getJson('/api/v1/notifications', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertTrue($res[0]['read']);
     }
 }
