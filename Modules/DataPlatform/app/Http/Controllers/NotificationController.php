@@ -15,6 +15,7 @@ class NotificationController extends Controller
 
         return $request->user()->notifications()
             ->when($request->boolean('unread'), fn ($q) => $q->whereNull('read_at'))
+            ->when($request->boolean('read'), fn ($q) => $q->whereNotNull('read_at'))
             ->when($request->filled('muted'), fn ($q) => $request->boolean('muted')
                 ? $q->whereIn('data->kind', $muted)
                 : $q->whereNotIn('data->kind', $muted))

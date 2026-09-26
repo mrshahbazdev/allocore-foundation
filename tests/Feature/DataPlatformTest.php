@@ -1382,6 +1382,21 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertJsonPath('0.kind', 'passwort_geaendert');
     }
 
+    public function test_notifications_index_filters_by_read(): void
+    {
+        $tenant = Tenant::create(['name' => 'NR GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new PasswordChangedAlert('x'));
+        $user->notify(new NewLoginAlert('1.2.3.4', null));
+        $user->notifications()->where('data->kind', 'anmeldung')->update(['read_at' => now()]);
+
+        $res = $this->getJson('/api/v1/notifications?read=1', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $res);
+        $this->assertSame('anmeldung', $res[0]['kind']);
+        $this->assertTrue($res[0]['read']);
+    }
+
     public function test_notifications_unread_filter_and_mark_unread(): void
     {
         $tenant = Tenant::create(['name' => 'NU GmbH']);
