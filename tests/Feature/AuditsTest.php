@@ -117,4 +117,23 @@ class AuditsTest extends TestCase
         Notification::assertSentTo($user, ComplianceDueSoon::class, fn ($n) => $n->kind === 'audit');
         $this->assertNotNull(Audit::first()->reminded_at);
     }
+
+    public function test_measure_reminder_notifies_responsible(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'G GmbH']);
+        $user = $this->acting($tenant);
+
+        $strategy = $this->postJson('/api/v1/strategies', ['name' => 'S1'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $project = $this->postJson('/api/v1/projects', ['strategy_id' => $strategy['id'], 'name' => 'P1'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/measures', [
+            'project_id' => $project['id'], 'title' => 'M1',
+            'responsible_id' => $user->id, 'due_at' => now()->addHours(12)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, ComplianceDueSoon::class, fn ($n) => $n->kind === 'massnahme');
+    }
 }
