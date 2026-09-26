@@ -53,7 +53,9 @@ class AggregateMetrics extends Command
             'data_objects' => 'data_objects',
             'audits' => 'audits',
             'audits_planned' => ['audits', "status = 'planned'"],
+            'audits_in_progress' => ['audits', "status = 'in_progress'"],
             'audit_findings_open' => ['audit_findings', "status IN ('open','in_progress')"],
+            'audit_findings_overdue' => ['audit_findings', "status IN ('open','in_progress') AND due_at < NOW()"],
         ];
     }
 
