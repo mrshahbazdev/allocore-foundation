@@ -19,4 +19,13 @@ class ExampleTest extends TestCase
             ->assertJsonPath('checks.database', 'ok')
             ->assertJsonPath('checks.migrations', 'ok');
     }
+
+    public function test_version_endpoint_returns_build_info(): void
+    {
+        $response = $this->get('/api/v1/version');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('platform', 'allocore-foundation')
+            ->assertJsonStructure(['app_version', 'laravel', 'php']);
+    }
 }
