@@ -48,6 +48,10 @@ class NewPasswordController extends Controller
                     'remember_token' => Str::random(60),
                 ])->save();
 
+                // Zugehörige API-Tokens ebenfalls widerrufen — ein gekaperter
+                // Token soll das Passwort-Reset nicht überleben.
+                $user->tokens()->delete();
+
                 event(new PasswordReset($user));
             }
         );
