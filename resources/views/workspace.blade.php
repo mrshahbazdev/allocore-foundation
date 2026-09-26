@@ -139,7 +139,7 @@
                     </template>
                 </div>
             </div>
-            <button title="Profil bearbeiten" @click="pwOpen = true; pwErr = ''; pwForm = {name: (me && me.name) || '', email: (me && me.email) || '', current:'',next:'',confirm:''}" class="text-[#9CA3AF] hover:text-white mr-3">
+            <button title="Profil bearbeiten" @click="pwOpen = true; pwErr = ''; pwForm = {name: (me && me.name) || '', email: (me && me.email) || '', current:'',next:'',confirm:''}; loadLoginHistory()" class="text-[#9CA3AF] hover:text-white mr-3">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z"/></svg>
             </button>
             <form method="POST" action="{{ route('logout') }}">
@@ -1187,6 +1187,16 @@
                     </div>
                 </div>
             </template>
+            <template x-if="loginHistory.length">
+                <div class="pt-2 border-t border-[#E4E9F0]">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[#8A97A6] mb-1.5">Anmelde-Verlauf</p>
+                    <div class="space-y-1">
+                        <template x-for="e in loginHistory" :key="e.id">
+                            <p class="text-[11px] text-[#5B6B7E]"><span x-text="new Date(e.created_at).toLocaleString('de-DE')"></span> · <span x-text="e.event_properties?.payload?.ip || '—'"></span></p>
+                        </template>
+                    </div>
+                </div>
+            </template>
         </div>
         <div class="px-6 py-3 border-t border-[#E4E9F0] flex items-center gap-2">
             <button @click="deleteAccount()" class="px-3 py-1.5 text-xs rounded-lg border border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/10">Konto löschen</button>
@@ -1278,7 +1288,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', unreadOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''},
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
@@ -1573,6 +1583,12 @@ function workspace(initial) {
             this.toasts.push(t);
             if (action) { this._undo = {tid: t.id, fn: action.fn, label: action.label}; setTimeout(() => { if (this._undo && this._undo.tid === t.id) this._undo = null; }, 4500); }
             setTimeout(() => { this.toasts = this.toasts.filter(x => x.id !== t.id); }, 4500);
+        },
+        loadLoginHistory() {
+            if (!this.me || !this.me.id) return;
+            this.api('/api/v1/events?per_page=5&type=user.logged_in&subject_id=' + encodeURIComponent(this.me.id)).then(r => r.ok ? r.json() : {data: []})
+                .then(d => { this.loginHistory = (d && d.data) || (Array.isArray(d) ? d : []); })
+                .catch(() => {});
         },
         submitPassword() {
             this.pwErr = '';
