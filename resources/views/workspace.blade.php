@@ -114,8 +114,8 @@
                             <a :href="'/app/' + item.key + (tenant ? '?tenant='+tenant : '')"
                                class="flex-1 px-5 py-2 flex items-center gap-2.5"><span class="w-4 text-center text-[11px] opacity-70" x-text="icons[item.key] || '·'"></span><span x-text="item.label"></span></a>
                             <a x-show="navBadges[item.key] > 0" x-text="navBadges[item.key]"
-                               :href="'/app/' + item.key + '?overdue=1' + (tenant ? '&tenant='+tenant : '')"
-                               title="Überfällige Einträge anzeigen"
+                               :href="'/app/' + item.key + '?' + (item.key === 'notifications' ? 'unread=1' : 'overdue=1') + (tenant ? '&tenant='+tenant : '')"
+                               :title="item.key === 'notifications' ? 'Ungelesene anzeigen' : 'Überfällige Einträge anzeigen'"
                                class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#A6362E] text-white min-w-[1.1rem] text-center hover:bg-[#8C2B24]"></a>
                             <a x-show="navBadgesToday[item.key] > 0" x-text="navBadgesToday[item.key]"
                                :href="'/app/' + item.key + '?today=1' + (tenant ? '&tenant='+tenant : '')"
@@ -1229,6 +1229,7 @@ function workspace(initial) {
             if (p.get('today')) this.dueTodayOnly = true;
             if (p.get('my')) this.myOnly = true;
             if (p.get('unassigned')) this.unassignedOnly = true;
+            if (p.get('unread')) this.unreadOnly = true;
             if (p.get('group')) this.groupBy = p.get('group');
             if (p.get('eg')) this.evGroup = p.get('eg');
             this._urlSort = p.get('sort') || null;
@@ -1241,6 +1242,7 @@ function workspace(initial) {
             this.$watch('dueTodayOnly', () => this.syncUrl());
             this.$watch('myOnly', () => this.syncUrl());
             this.$watch('unassignedOnly', () => this.syncUrl());
+            this.$watch('unreadOnly', () => this.syncUrl());
             this.$watch('evGroup', () => this.syncUrl());
             this.$watch('paletteQ', q => {
                 clearTimeout(this.globTimer); this.globHits = [];
@@ -1311,6 +1313,7 @@ function workspace(initial) {
             if (this.dueTodayOnly) url.searchParams.set('today', '1'); else url.searchParams.delete('today');
             if (this.myOnly) url.searchParams.set('my', '1'); else url.searchParams.delete('my');
             if (this.unassignedOnly) url.searchParams.set('unassigned', '1'); else url.searchParams.delete('unassigned');
+            if (this.unreadOnly) url.searchParams.set('unread', '1'); else url.searchParams.delete('unread');
             if (this.groupBy) url.searchParams.set('group', this.groupBy); else url.searchParams.delete('group');
             if (this.evGroup) url.searchParams.set('eg', this.evGroup); else url.searchParams.delete('eg');
             history.replaceState(null, '', url);
