@@ -231,6 +231,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'strategies_ending_soon', "{$strategiesEnding} Strategie(n) — Enddatum in ≤7 Tagen.", ['count' => $strategiesEnding]);
         }
 
+        $portfoliosNoInvestments = $count('portfolios', fn ($q) => $q->whereNotExists(fn ($sub) => $sub->selectRaw(1)->from('investments')->whereColumn('investments.portfolio_id', 'portfolios.id')->whereNull('disposed_at')));
+        if ($portfoliosNoInvestments) {
+            $insights[] = $this->hit('info', 'portfolios_no_investments', "{$portfoliosNoInvestments} Portfolio(s) ohne aktive Investitionen.", ['count' => $portfoliosNoInvestments]);
+        }
+
         $strategiesNoProjects = $count('strategies', fn ($q) => $q->where('status', 'active')->whereNotExists(fn ($sub) => $sub->selectRaw(1)->from('projects')->whereColumn('projects.strategy_id', 'strategies.id')));
         if ($strategiesNoProjects) {
             $insights[] = $this->hit('info', 'strategies_no_projects', "{$strategiesNoProjects} aktive Strategie(n) ohne verknüpftes Projekt.", ['count' => $strategiesNoProjects]);
