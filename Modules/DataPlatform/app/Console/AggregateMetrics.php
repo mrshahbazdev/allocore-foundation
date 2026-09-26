@@ -63,6 +63,12 @@ class AggregateMetrics extends Command
             'audits_in_progress' => ['audits', "status = 'in_progress'"],
             'audit_findings_open' => ['audit_findings', "status IN ('open','in_progress')"],
             'audit_findings_overdue' => ['audit_findings', "status IN ('open','in_progress') AND due_at < NOW()"],
+            'audits_done' => ['audits', "status = 'done'"],
+            'tenders_awarded' => ['tenders', "status = 'awarded'"],
+            'machines' => 'machines',
+            'deadlines' => 'deadlines',
+            'leave_requests' => 'leave_requests',
+            'production_orders_done' => ['production_orders', "status = 'done'"],
         ];
     }
 
