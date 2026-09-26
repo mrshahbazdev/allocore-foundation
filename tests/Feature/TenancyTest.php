@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -20,6 +21,20 @@ class TenancyTest extends TestCase
 
         $response->assertCreated();
         $this->assertSame($before + 1, Tenant::count());
+    }
+
+    public function test_tenant_creation_emits_event(): void
+    {
+        $response = $this->postJson('/api/v1/tenants', ['name' => 'Event GmbH']);
+
+        $id = $response->json('id');
+        $types = DB::table('stored_events')
+            ->where('meta_data->tenant_id', $id)
+            ->pluck('event_properties')
+            ->map(fn ($p) => json_decode($p, true)['type'] ?? null)
+            ->all();
+
+        $this->assertContains('tenant.created', $types);
     }
 
     public function test_lists_tenants_via_the_central_api(): void
