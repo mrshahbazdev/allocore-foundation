@@ -20,6 +20,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 | DELETE | `/me` | (auth) Eigenes Konto löschen — nur wenn keine Mitgliedschaften bestehen (sonst 422); widerruft API-Tokens, kein `X-Tenant` nötig |
 | DELETE | `/me/membership` | (auth+tenant) Mandant verlassen — entfernt eigene Rollen; 422 für letztes Mitglied mit `roles.manage` |
 | PUT | `/me/password` | (auth+tenant) eigenes Passwort ändern — `current_password` + `password` + `password_confirmation`; 422 bei falschem aktuellem Passwort; widerruft alle API-Tokens |
+| GET | `/me/notification-prefs` | (auth+tenant) Eigene Stummschaltung lesen — `{muted_kinds: []}` |
 | PUT | `/me/notification-prefs` | (auth+tenant) Benachrichtigungs-Preferences — `muted_kinds` (Array von Art-Kinds) stumm schalten; `GET /me` liefert `muted_kinds`, Listeneinträge von `/notifications` tragen `muted`; stummgeschaltete Arten werden weiterhin gespeichert, aber in der UI ausgegraut |
 | GET | `/roles` | (auth+tenant) verfügbare Rollen des Tenants |
 | POST | `/roles` | (auth+tenant, `roles.manage`) eigene Rolle anlegen — `name` (snake_case, eindeutig je Mandant), optional `permissions` |
