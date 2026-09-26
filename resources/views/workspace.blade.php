@@ -530,6 +530,7 @@
                             </div>
                         </div>
                         <button @click="exportCsv()" title="CSV exportieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
+                        <button x-show="section === 'events'" @click="exportEvents()" title="Serverseitiger Audit-Export (NDJSON, alle Einträge)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">NDJSON</button>
                         <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren (i)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
                         <button @click="window.print()" title="Drucken" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">Drucken</button>
                         <button x-show="canCreate()" @click="openCreate()" :title="'Neu anlegen: ' + title() + ' (n)'" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
@@ -2220,6 +2221,23 @@ function workspace(initial) {
             a.download = this.exportName('json');
             a.click();
             this.toast(rows.length + ' ' + this.eintrag(rows.length) + ' exportiert (JSON).');
+        },
+        async exportEvents() {
+            let url = '/api/v1/events/export';
+            const params = [];
+            if (this.evGroup) params.push('group=' + encodeURIComponent(this.evGroup));
+            if (params.length) url += '?' + params.join('&');
+            const r = await this.api(url);
+            if (!r.ok) { this.toast('Export fehlgeschlagen', 'error'); return; }
+            const blob = await r.blob();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            const dispo = r.headers.get('Content-Disposition') || '';
+            const m = dispo.match(/filename="?([^";]+)/);
+            a.download = m ? m[1] : this.exportName('ndjson');
+            a.click();
+            URL.revokeObjectURL(a.href);
+            this.toast('Ereignisse exportiert');
         },
         exportName(ext) {
             const t = this.tenantName().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'export';
