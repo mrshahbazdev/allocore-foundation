@@ -1164,6 +1164,22 @@
             <input type="password" x-model="pwForm.next" placeholder="Neues Passwort (min. 12 Zeichen, Groß-/Kleinbuchstabe, Zahl)" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
             <input type="password" x-model="pwForm.confirm" placeholder="Neues Passwort wiederholen" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
             <p class="text-[11px] text-[#5B6B7E]">Nach der Änderung werden alle API-Token widerrufen — die Seite lädt neu.</p>
+            <template x-if="me && me.tenants && me.tenants.length">
+                <div class="pt-2 border-t border-[#E4E9F0]">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[#8A97A6] mb-1.5">Mitgliedschaften</p>
+                    <div class="space-y-1 max-h-32 overflow-y-auto">
+                        <template x-for="t in me.tenants" :key="t.id">
+                            <div class="flex items-center gap-2 text-xs">
+                                <span class="font-medium text-[#0B0B0F]" x-text="t.name || t.id"></span>
+                                <span class="flex-1"></span>
+                                <template x-for="r in (t.roles || [])" :key="r">
+                                    <span class="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-[#FACC15]/20 text-[#854D0E]" x-text="roleLabel(r)"></span>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
         </div>
         <div class="px-6 py-3 border-t border-[#E4E9F0] flex items-center gap-2">
             <button @click="deleteAccount()" class="px-3 py-1.5 text-xs rounded-lg border border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/10">Konto löschen</button>
