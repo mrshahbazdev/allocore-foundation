@@ -206,6 +206,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $questionsStale = $count('questions', fn ($q) => $q->where('status', 'open')->where('created_at', '<', now()->subDays(14)));
+        if ($questionsStale) {
+            $insights[] = $this->hit('warning', 'questions_stale', "{$questionsStale} Frage(n) seit >14 Tagen unbeantwortet.", ['count' => $questionsStale]);
+        }
+
         $opInstrExpired = $count('operating_instructions', fn ($q) => $q->where('status', 'active')->whereNotNull('valid_from')->where('valid_from', '<', now()->subYear()));
         if ($opInstrExpired) {
             $insights[] = $this->hit('info', 'op_instructions_review', "{$opInstrExpired} Betriebsanweisung(en) älter als 1 Jahr — Review fällig.", ['count' => $opInstrExpired]);
