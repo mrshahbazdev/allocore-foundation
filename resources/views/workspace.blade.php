@@ -1163,6 +1163,7 @@
             <input type="password" x-model="pwForm.current" placeholder="Aktuelles Passwort (nur für Passwort-Änderung)" autocomplete="current-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
             <input type="password" x-model="pwForm.next" placeholder="Neues Passwort (min. 12 Zeichen, Groß-/Kleinbuchstabe, Zahl)" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
             <input type="password" x-model="pwForm.confirm" placeholder="Neues Passwort wiederholen" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+            <p class="text-[11px] text-[#5B6B7E]" x-show="me && me.password_changed_at" x-text="'Zuletzt geändert: ' + new Date(me.password_changed_at).toLocaleString('de-DE')"></p>
             <p class="text-[11px] text-[#5B6B7E]">Nach der Änderung werden alle API-Token widerrufen — die Seite lädt neu.</p>
             <template x-if="me && me.tenants && me.tenants.length">
                 <div class="pt-2 border-t border-[#E4E9F0]">
