@@ -859,6 +859,31 @@ class DataPlatformTest extends TestCase
         }
     }
 
+    public function test_every_event_group_and_action_has_german_labels(): void
+    {
+        $workspace = file_get_contents(resource_path('views/workspace.blade.php'));
+
+        preg_match('/eventGroup\(t\).*?\}\[g\]/s', $workspace, $groupMatch);
+        preg_match('/eventLabel\(t\).*?\}\[a\]/s', $workspace, $labelMatch);
+        $groups = $groupMatch[0] ?? '';
+        $labels = $labelMatch[0] ?? '';
+        $this->assertNotEmpty($groups, 'eventGroup-Map nicht gefunden');
+        $this->assertNotEmpty($labels, 'eventLabel-Map nicht gefunden');
+
+        $recorder = file_get_contents(base_path('Modules/DataPlatform/app/Support/ActivityRecorder.php'));
+        preg_match('/WATCHED\s*=\s*\[(.*?)\];/s', $recorder, $watchedMatch);
+        preg_match_all("/=>\s*'([a-z_]+)'/", $watchedMatch[1] ?? '', $prefixMatch);
+        $expectedGroups = array_merge(array_unique($prefixMatch[1]), ['user', 'role', 'tenant']);
+
+        foreach ($expectedGroups as $g) {
+            $this->assertStringContainsString("{$g}: '", $groups, "eventGroup fehlt Label für {$g}");
+        }
+
+        foreach (['created', 'updated', 'deleted', 'completed', 'approved', 'awarded', 'uploaded', 'answered', 'added', 'roles_updated', 'removed', 'permissions_updated'] as $a) {
+            $this->assertStringContainsString("{$a}: ", $labels, "eventLabel fehlt Label für {$a}");
+        }
+    }
+
     public function test_nav_counts_returns_overdue_and_today(): void
     {
         $tenant = Tenant::create(['name' => 'Nav GmbH']);
