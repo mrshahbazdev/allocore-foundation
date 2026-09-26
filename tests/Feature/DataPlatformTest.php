@@ -200,6 +200,14 @@ class DataPlatformTest extends TestCase
         $this->assertContains('risk_reviews_due_soon', $codes);
         $this->assertContains('leave_requests_pending', $codes);
         $this->assertContains('leave_pending_stale', $codes);
+
+        $severities = collect($this->getJson('/api/v1/insights?severity=critical', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('severity')->unique()->all();
+        $this->assertSame(['critical'], $severities);
+
+        $hits = $this->getJson('/api/v1/insights?code=tasks_overdue', ['X-Tenant' => $tenant->id])->json();
+        $this->assertCount(1, $hits);
+        $this->assertSame('tasks_overdue', $hits[0]['code']);
     }
 
     public function test_insights_reports_negative_liquidity(): void
