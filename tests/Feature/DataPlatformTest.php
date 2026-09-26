@@ -208,6 +208,32 @@ class DataPlatformTest extends TestCase
         $this->assertContains('fin_negative_liquidity', $codes);
     }
 
+    public function test_insights_reports_projects_overdue_and_tenders_deadline_soon(): void
+    {
+        $tenant = Tenant::create(['name' => 'ProjektAusschreibung GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/projects', [
+            'name' => 'Überfälliges Projekt', 'status' => 'active',
+            'starts_at' => now()->subDays(30)->toDateString(),
+            'ends_at' => now()->subDays(2)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $this->postJson('/api/v1/tenders', [
+            'title' => 'Pramoterin gesucht', 'deadline_at' => now()->addDays(4)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('projects_overdue', $codes);
+        $this->assertContains('tenders_deadline_soon', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
