@@ -28,10 +28,17 @@ Neue Modelle: nur in `WATCHED` eintragen — keine Änderung am Listener nötig.
 | `answer.*` | ExpertNetwork\Answer | Antworten |
 | `tender.*` | ExpertNetwork\Tender | Ausschreibungen |
 | `tender_application.*` | ExpertNetwork\TenderApplication | Bewerbungen/Award |
-| `strategy.*` / `project.*` / `measure.*` | CorporateDev | Unternehmensentwicklung (in Review, PR #10) |
-| `portfolio.*` / `investment.*` | Investments | Investments (PR #11) |
-| `participation.*` | Participations | Beteiligungen (PR #12) |
-| `machine.*` / `production_order.*` | Production | Zahntechnik-Produktion (PR #13) |
+| `strategy.*` / `project.*` / `measure.*` | CorporateDev | Strategien, Projekte, Maßnahmen |
+| `portfolio.*` / `investment.*` | Investments | Portfolios und Einzelinvestitionen |
+| `participation.*` | Participations | Beteiligungen |
+| `machine.*` / `production_order.*` | Production | Maschinen, Produktionsaufträge |
+| `financial_report.*` | Finance | Monatliche Finanzberichte |
+| `leave_request.*` | HR | Urlaubs-/Abwesenheitsanträge |
+| `data_object.*` | DataPlatform | Data-Lake-Objekte |
+| `graph_entity.*` / `graph_edge.*` | DataPlatform | Knowledge-Graph Entitäten/Kanten |
+| `ai_analysis.*` | Ai | KI-Analysen |
+| `exec_report.*` | Executive | Executive-Reports |
+| `audit.*` / `audit_finding.*` | Audits | Audits und Feststellungen |
 
 ## Lesen
 
