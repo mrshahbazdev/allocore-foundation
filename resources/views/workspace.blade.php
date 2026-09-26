@@ -1393,7 +1393,7 @@ function workspace(initial) {
             this.$watch('mutedOnly', () => this.syncUrl());
             this.$watch('kindFilter', () => this.syncUrl());
             this.$watch('codeFilter', () => this.syncUrl());
-            this.$watch('evGroup', () => this.syncUrl());
+            this.$watch('evGroup', () => { this.syncUrl(); if (this.section === 'events') this.loadSection(true); });
             this.$watch('paletteQ', q => {
                 clearTimeout(this.globTimer); this.globHits = [];
                 const t = (q || '').trim();
@@ -1875,7 +1875,7 @@ function workspace(initial) {
                 return;
             }
             this.loadLookups();
-            this.api(this.item().ep + '?per_page=200').then(r => {
+            this.api(this.item().ep + '?per_page=200' + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '')).then(r => {
                 if (!r.ok) { const dom = this.permDom(this.section); this.error = r.status === 403 ? 'Keine Berechtigung ('+(dom ? dom+'.view' : 'Zugriff')+')' : 'HTTP '+r.status+' — Fehler beim Laden'; this.rows=[]; this.loading=false; return null; }
                 return r.json();
             }).then(d => {
@@ -1896,7 +1896,7 @@ function workspace(initial) {
                     const sec = this.section;
                     const loadRest = (page) => {
                         if (this.section !== sec) return;
-                        this.api(this.item().ep + '?per_page=200&page=' + page).then(r => r.ok ? r.json() : null).then(d2 => {
+                        this.api(this.item().ep + '?per_page=200&page=' + page + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '')).then(r => r.ok ? r.json() : null).then(d2 => {
                             if (!d2 || this.section !== sec) return;
                             const more = Array.isArray(d2) ? d2 : (d2.data || []);
                             if (!more.length) return;
