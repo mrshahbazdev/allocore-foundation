@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
+use Modules\Core\Notifications\Assigned;
 use Modules\ExpertNetwork\Notifications\AnswerAccepted;
 use Modules\ExpertNetwork\Notifications\ApplicationDecided;
 use Modules\ExpertNetwork\Notifications\QuestionAnswered;
@@ -125,6 +126,39 @@ class ExpertNetworkTest extends TestCase
         $this->postJson("/api/v1/answers/{$a}/accept", [], ['X-Tenant' => $tenant->id])->assertOk();
 
         Notification::assertSentTo($answerer, AnswerAccepted::class);
+    }
+
+    public function test_new_application_notifies_tender_creator(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'App GmbH']);
+        $creator = $this->acting($tenant);
+
+        $tender = $this->postJson('/api/v1/tenders', [
+            'title' => 'ISO-Audit', 'deadline_at' => now()->addDays(5)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json('id');
+
+        // anderer Tenant-User bewirbt sich
+        $applicant = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $applicant->assignRole('holding');
+        tenancy()->end();
+        Sanctum::actingAs($applicant);
+
+        $person = $this->postJson('/api/v1/persons', [
+            'first_name' => 'Eva', 'last_name' => 'Pro',
+        ], ['X-Tenant' => $tenant->id])->json('id');
+        $profile = $this->postJson('/api/v1/expert-profiles', [
+            'person_id' => $person, 'skills' => ['audit'],
+        ], ['X-Tenant' => $tenant->id])->json('id');
+
+        $this->postJson("/api/v1/tenders/{$tender}/applications", [
+            'expert_profile_id' => $profile, 'price' => 4500,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        Notification::assertSentTo($creator, Assigned::class,
+            fn ($n) => $n->kind === 'ausschreibung' && str_contains($n->title, 'Eva Pro'));
+        Notification::assertNotSentTo($applicant, Assigned::class);
     }
 
     public function test_tender_apply_and_award(): void
