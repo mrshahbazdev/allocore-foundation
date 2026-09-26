@@ -369,6 +369,39 @@ class RolesTest extends TestCase
         );
     }
 
+    public function test_removed_member_notifies_roles_manage_users(): void
+    {
+        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'MR GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+        $admin2 = User::factory()->create();
+        $worker = User::factory()->create();
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+        $admin2->assignRole('administrator');
+        $worker->assignRole('mitarbeiter');
+
+        $this->postJson('/api/v1/users', [
+            'name' => 'Weg Mitglied', 'email' => 'weg@example.test', 'roles' => ['kunde'],
+        ], ['X-Tenant' => $tenant])->assertCreated();
+        $member = User::where('email', 'weg@example.test')->firstOrFail();
+
+        $this->deleteJson("/api/v1/users/{$member->id}", [], ['X-Tenant' => $tenant])->assertNoContent();
+
+        $this->assertTrue(
+            DB::table('notifications')
+                ->where('notifiable_id', $admin2->id)
+                ->where('data->kind', 'rollen')
+                ->where('data->title', 'like', 'Mitglied entfernt:%')
+                ->exists()
+        );
+        $this->assertFalse(
+            DB::table('notifications')
+                ->where('notifiable_id', $worker->id)
+                ->where('data->title', 'like', 'Mitglied entfernt:%')
+                ->exists()
+        );
+    }
+
     public function test_every_permission_domain_in_workspace_map_exists(): void
     {
         $this->postJson('/api/v1/tenants', ['name' => 'Perms GmbH'])->assertCreated();

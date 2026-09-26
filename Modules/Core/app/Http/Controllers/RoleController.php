@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Modules\Core\Notifications\MemberJoined;
+use Modules\Core\Notifications\MemberRemoved;
 use Modules\Core\Notifications\RolesChanged;
 use Modules\DataPlatform\Events\DomainEvent;
 use Spatie\Permission\Models\Permission;
@@ -198,6 +199,7 @@ class RoleController extends Controller
 
         $this->recordMemberEvent('removed', $user);
         $user->notify(new RolesChanged($user, 'removed'));
+        $this->notifyMemberRemoved($request->user(), $user);
 
         return response()->noContent();
     }
@@ -214,6 +216,20 @@ class RoleController extends Controller
             ->get()
             ->filter(fn (User $u) => $u->hasPermissionTo('roles.manage'))
             ->each(fn (User $u) => $u->notify(new MemberJoined($member)));
+    }
+
+    private function notifyMemberRemoved(User $actor, User $member): void
+    {
+        $memberIds = DB::table('model_has_roles')
+            ->where('team_id', tenant()->getTenantKey())
+            ->where('model_type', User::class)
+            ->pluck('model_id');
+
+        User::whereIn('id', $memberIds)
+            ->whereNotIn('id', [$actor->id, $member->id])
+            ->get()
+            ->filter(fn (User $u) => $u->hasPermissionTo('roles.manage'))
+            ->each(fn (User $u) => $u->notify(new MemberRemoved($member)));
     }
 
     private function recordMemberEvent(string $action, User $user, array $payload = []): void
