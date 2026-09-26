@@ -19,7 +19,7 @@ class Tender extends Model
 
     protected $fillable = [
         'title', 'description', 'required_skills', 'budget', 'company_id',
-        'created_by', 'status', 'deadline_at',
+        'created_by', 'status', 'deadline_at', 'reminded_at',
     ];
 
     protected function casts(): array
@@ -27,6 +27,7 @@ class Tender extends Model
         return [
             'required_skills' => 'array',
             'deadline_at' => 'datetime',
+            'reminded_at' => 'datetime',
         ];
     }
 
