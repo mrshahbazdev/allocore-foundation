@@ -42,6 +42,8 @@ class ExecutiveController extends Controller
                 'projects_open' => $this->count('projects', $key, "status IN ('planned','active','on_hold')"),
                 'measures_open' => $this->count('measures', $key, "status IN ('open','in_progress')"),
                 'tenders_open' => $this->count('tenders', $key, "status = 'open'"),
+                'instructions_open' => $this->count('instructions', $key, "status = 'pending'"),
+                'machines_active' => $this->count('machines', $key, "status = 'active'"),
             ];
             $row['compliance_rate'] = $this->complianceRate($key);
 
