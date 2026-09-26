@@ -1,0 +1,35 @@
+<?php
+
+namespace Modules\DataPlatform\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+
+class NotificationController extends Controller
+{
+    public function index(Request $request)
+    {
+        $limit = min($request->integer('limit', 10), 50);
+
+        return $request->user()->notifications()
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($n) => [
+                'id' => $n->id,
+                'kind' => $n->data['kind'] ?? null,
+                'title' => $n->data['title'] ?? '',
+                'due_at' => $n->data['due_at'] ?? null,
+                'read' => $n->read_at !== null,
+                'created_at' => $n->created_at,
+            ]);
+    }
+
+    public function markRead(Request $request, string $id)
+    {
+        $n = $request->user()->notifications()->where('id', $id)->firstOrFail();
+        $n->markAsRead();
+
+        return response()->json(['status' => 'ok']);
+    }
+}
