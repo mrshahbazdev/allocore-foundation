@@ -45,6 +45,7 @@ class NotificationController extends Controller
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
             ->when($request->boolean('muted') && $muted !== [], fn ($q) => $q->whereIn('data->kind', $muted))
+            ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->update(['read_at' => now()]);
 
         return response()->json(['status' => 'ok']);

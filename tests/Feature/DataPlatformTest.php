@@ -1412,6 +1412,21 @@ class DataPlatformTest extends TestCase
         $this->assertTrue($res[0]['read']);
     }
 
+    public function test_notifications_read_all_honors_before_filter(): void
+    {
+        $tenant = Tenant::create(['name' => 'RB GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new PasswordChangedAlert('alt'));
+        $user->notify(new PasswordChangedAlert('neu'));
+        $user->notifications()->where('data->title', 'like', '%alt%')->first()->forceFill(['created_at' => now()->subDays(40)])->save();
+
+        $this->postJson('/api/v1/notifications/read-all?before='.now()->subDays(30)->toDateString(), [], ['X-Tenant' => $tenant->id])
+            ->assertOk();
+        $this->assertNotNull($user->notifications()->where('data->title', 'like', '%alt%')->first()->fresh()->read_at);
+        $this->assertNull($user->notifications()->where('data->title', 'like', '%neu%')->first()->fresh()->read_at);
+    }
+
     public function test_notifications_read_all_honors_muted_filter(): void
     {
         $tenant = Tenant::create(['name' => 'RM2 GmbH']);
