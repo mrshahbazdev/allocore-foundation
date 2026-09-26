@@ -45,4 +45,11 @@ class NotificationController extends Controller
 
         return response()->json(['status' => 'ok']);
     }
+
+    public function destroy(Request $request, string $id)
+    {
+        $request->user()->notifications()->where('id', $id)->firstOrFail()->delete();
+
+        return response()->noContent();
+    }
 }

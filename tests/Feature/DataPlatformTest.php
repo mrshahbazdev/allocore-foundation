@@ -984,6 +984,36 @@ class DataPlatformTest extends TestCase
         $this->assertTrue($res[0]['read']);
     }
 
+    public function test_notification_can_be_deleted(): void
+    {
+        $tenant = Tenant::create(['name' => 'D GmbH']);
+        $user = $this->acting($tenant);
+
+        $notif = new class extends Notification
+        {
+            public function via($n)
+            {
+                return ['database'];
+            }
+
+            public function toArray($n)
+            {
+                return ['title' => 'X', 'kind' => 'frist'];
+            }
+        };
+        $user->notify($notif);
+        $other = User::factory()->create();
+        $other->notify($notif);
+        $otherId = $other->notifications()->first()->id;
+
+        $id = $user->notifications()->first()->id;
+        $this->deleteJson('/api/v1/notifications/'.$id, [], ['X-Tenant' => $tenant->id])->assertNoContent();
+        $this->assertNull($user->fresh()->notifications()->first());
+
+        $this->deleteJson('/api/v1/notifications/'.$otherId, [], ['X-Tenant' => $tenant->id])->assertNotFound();
+        $this->assertEquals(1, $other->fresh()->notifications()->count());
+    }
+
     public function test_notifications_read_all_and_unread_count(): void
     {
         $tenant = Tenant::create(['name' => 'N2 GmbH']);
