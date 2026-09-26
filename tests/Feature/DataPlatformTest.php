@@ -184,6 +184,28 @@ class DataPlatformTest extends TestCase
         $this->assertContains('leave_pending_stale', $codes);
     }
 
+    public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
+    {
+        $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
+        preg_match_all("/hit\\('(?:critical|warning|info)',\\s*'([a-z0-9_]+)'/", $controller, $m);
+        $codes = array_diff(array_unique($m[1]), ['all_clear']);
+        $this->assertNotEmpty($codes);
+
+        $workspace = file_get_contents(resource_path('views/workspace.blade.php'));
+        $docs = file_get_contents(base_path('docs/API_REFERENCE.md'));
+
+        preg_match('/insightSection\\(code\\).*?\\}\\)\\[code\\]/s', $workspace, $secMatch);
+        preg_match('/insightFilter\\(code\\).*?\\}\\)\\[code\\]/s', $workspace, $filterMatch);
+        $sections = $secMatch[0] ?? '';
+        $filters = $filterMatch[0] ?? '';
+
+        foreach ($codes as $code) {
+            $this->assertStringContainsString("`{$code}`", $docs, "insight {$code} fehlt in docs/API_REFERENCE.md");
+            $this->assertStringContainsString("{$code}:'", $sections, "insight {$code} fehlt in insightSection");
+            $this->assertStringContainsString("{$code}:", $filters, "insight {$code} fehlt in insightFilter");
+        }
+    }
+
     public function test_nav_counts_returns_overdue_and_today(): void
     {
         $tenant = Tenant::create(['name' => 'Nav GmbH']);
