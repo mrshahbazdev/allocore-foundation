@@ -820,6 +820,21 @@ class DataPlatformTest extends TestCase
         $this->assertContains('graph_edges_no_relation', $codes);
     }
 
+    public function test_insights_reports_all_clear_on_empty_tenant(): void
+    {
+        $tenant = Tenant::create(['name' => 'Sauber GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertSame(['all_clear'], $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
