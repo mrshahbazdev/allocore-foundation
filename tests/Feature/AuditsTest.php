@@ -5,7 +5,11 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
+use Modules\Audits\Models\AuditFinding;
+use Modules\Compliance\Notifications\ComplianceDueSoon;
 use Tests\TestCase;
 
 class AuditsTest extends TestCase
@@ -74,5 +78,24 @@ class AuditsTest extends TestCase
         tenancy()->end();
 
         $this->postJson('/api/v1/audits', ['title' => 'Externes Audit'], ['X-Tenant' => $tenant->id])->assertCreated();
+    }
+
+    public function test_finding_reminder_notifies_responsible(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'E GmbH']);
+        $user = $this->acting($tenant);
+
+        $audit = $this->postJson('/api/v1/audits', ['title' => 'ISO Audit'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/audit-findings', [
+            'audit_id' => $audit['id'], 'title' => 'Kritisch', 'severity' => 'high',
+            'responsible_id' => $user->id, 'due_at' => now()->addHours(12)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, ComplianceDueSoon::class, fn ($n) => $n->kind === 'feststellung');
+        $this->assertNotNull(AuditFinding::first()->reminded_at);
     }
 }
