@@ -13,6 +13,7 @@ class NotificationController extends Controller
 
         return $request->user()->notifications()
             ->when($request->boolean('unread'), fn ($q) => $q->whereNull('read_at'))
+            ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get()
