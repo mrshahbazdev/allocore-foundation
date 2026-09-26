@@ -163,6 +163,7 @@ class RoleController extends Controller
         ]);
 
         $user->update($validated);
+        $this->recordMemberEvent('updated', $user);
 
         return response()->json([
             'id' => $user->id,

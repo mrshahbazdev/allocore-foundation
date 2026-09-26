@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
+use Modules\DataPlatform\Events\DomainEvent;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -182,6 +183,30 @@ class RolesTest extends TestCase
         $ids = collect($this->getJson('/api/v1/users', ['X-Tenant' => $tenant])->json())->pluck('id');
         $this->assertNotContains($target->id, $ids);
         $this->assertContains($admin->id, $ids);
+    }
+
+    public function test_profile_update_records_user_updated_event(): void
+    {
+        $tenant = $this->createTenantApi(['name' => 'Profil GmbH'])->json('id');
+        $user = $this->actingAsUser();
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $user->assignRole('auditor');
+        tenancy()->end();
+
+        $this->putJson('/api/v1/me', ['name' => 'Neuer Name'], ['X-Tenant' => $tenant])
+            ->assertOk();
+
+        $this->assertDatabaseHas('stored_events', [
+            'event_class' => DomainEvent::class,
+            'meta_data->tenant_id' => $tenant,
+        ]);
+        $this->assertTrue(
+            \DB::table('stored_events')
+                ->where('event_properties->type', 'user.updated')
+                ->where('event_properties->subject->id', $user->id)
+                ->exists()
+        );
     }
 
     public function test_member_can_leave_tenant_but_last_manager_cannot(): void
