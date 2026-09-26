@@ -134,11 +134,16 @@ class DataPlatformTest extends TestCase
             'title' => 'Laser-Arbeitsplatz', 'risk_level' => 'high',
         ], ['X-Tenant' => $tenant->id]);
 
+        $this->postJson('/api/v1/audits', [
+            'title' => 'Überfälliges Audit', 'ends_on' => now()->subDay()->toDateString(),
+        ], ['X-Tenant' => $tenant->id]);
+
         $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
             ->pluck('code')->all();
 
         $this->assertContains('tasks_overdue', $codes);
         $this->assertContains('high_risks_open', $codes);
+        $this->assertContains('audits_overdue', $codes);
     }
 
     public function test_nav_counts_returns_overdue_and_today(): void
