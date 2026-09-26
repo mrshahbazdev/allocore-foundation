@@ -108,6 +108,10 @@ class DemoSeedCommand extends Command
             ['title' => 'Ausschreibung Implantatversorgung Q4'],
             ['description' => '200 Einheiten, Krone/Abutment.', 'required_skills' => ['cad_cam', 'implantology'], 'budget' => 45000, 'company_id' => $company->id, 'status' => 'open', 'deadline_at' => now()->addDays(30)]
         );
+        Tender::firstOrCreate(
+            ['title' => 'Ausschreibung KFO-Arbeiten (dringend)'],
+            ['description' => 'KFO-Geräte, kurzfristige Fertigung.', 'required_skills' => ['orthodontics'], 'budget' => 12000, 'company_id' => $company->id, 'status' => 'open', 'created_by' => $user?->id, 'deadline_at' => now()->addDays(4)]
+        );
 
         $strategy = Strategy::firstOrCreate(
             ['name' => 'Digitale Expansion 2026'],
