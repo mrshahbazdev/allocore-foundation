@@ -21,6 +21,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 | PUT | `/roles/{role}` | (auth+tenant, `roles.manage`) Permissions einer Rolle setzen — `permissions: string[]`; Rollen anderer Mandanten → 404; Rechte der letzten `roles.manage`-Rolle kappen → 422 |
 | DELETE | `/roles/{role}` | (auth+tenant, `roles.manage`) Rolle löschen; System-Rollen (`holding`, `administrator`) → 422; letzte `roles.manage`-Rolle (wenn kein Mitglied die Rechte anderweitig behält) → 422 |
 | GET | `/permissions` | (auth+tenant) alle bekannten Permissions (für Rollen-Editor) |
+| GET | `/tenant` | (auth+tenant) aktueller Mandant — `{id, name, members_count, created_at}` |
 | PUT | `/tenant` | (auth+tenant, `roles.manage`) aktuellen Mandanten umbenennen — `name` |
 | GET | `/users` | (auth+tenant) Mitglieder des Tenants (User mit zugewiesener Rolle) |
 | POST | `/users` | (auth+tenant, `roles.manage`) Benutzer anlegen bzw. vorhandenen per `email` anhängen — `name`, `email`, optional `password` + `roles`; ohne `password` wird `initial_password` einmalig zurückgegeben; Abstufung des letzten `roles.manage`-Mitglieds → 422 |
