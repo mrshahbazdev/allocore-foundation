@@ -972,7 +972,7 @@ class DataPlatformTest extends TestCase
 
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
-        $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
+        $controller = file_get_contents(base_path('Modules/DataPlatform/app/Support/InsightService.php'));
         preg_match_all("/hit\\('(?:critical|warning|info)',\\s*'([a-z0-9_]+)'/", $controller, $m);
         $codes = array_diff(array_unique($m[1]), ['all_clear']);
         $this->assertNotEmpty($codes);
