@@ -613,6 +613,8 @@
                             <button x-show="section === 'notifications'" @click="codeFilter = codeFilter === c ? '' : c" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="codeFilter === c ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
                                     x-text="'Code ' + c + ' · ' + rows.filter(r => r.code === c).length"></button>
+                        <span x-show="section === 'notifications' && notifStats" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E]"
+                              x-text="'Gesamt ' + notifStats.total + ' · Ungelesen ' + notifStats.unread + ' · Gelesen ' + notifStats.read + ' · Stumm ' + notifStats.muted"></span>
                         <button x-show="section === 'notifications' && rows && rows.some(r => !r.read)" @click="unreadOnly = !unreadOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="unreadOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
                                 x-text="'Ungelesen · ' + rows.filter(r => !r.read).length"></button>
@@ -1324,7 +1326,7 @@ function workspace(initial) {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
@@ -1731,6 +1733,7 @@ function workspace(initial) {
             }).catch(() => {});
             this.api('/api/v1/notifications/kinds').then(r => r.ok ? r.json() : []).then(d => { this.notifKinds = d || []; }).catch(() => {});
             this.api('/api/v1/notifications/codes').then(r => r.ok ? r.json() : []).then(d => { this.notifCodes = d || []; }).catch(() => {});
+            this.api('/api/v1/notifications/stats').then(r => r.ok ? r.json() : null).then(d => { this.notifStats = d || null; }).catch(() => {});
             this.api('/api/v1/notifications/unread-count').then(r => r.ok ? r.json() : null).then(d => {
                 if (d && d.count !== undefined) this.navBadges['notifications'] = d.count;
             }).catch(() => {});
