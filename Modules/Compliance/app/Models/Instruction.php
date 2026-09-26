@@ -5,6 +5,7 @@ namespace Modules\Compliance\Models;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Core\Concerns\NotifiesAssigneeOnChange;
+use Modules\Core\Concerns\NotifiesLinkedUserOnCreate;
 use Modules\Core\Models\Person;
 use Modules\Documents\Models\Document;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
@@ -13,6 +14,7 @@ class Instruction extends Model
 {
     use BelongsToTenant;
     use NotifiesAssigneeOnChange;
+    use NotifiesLinkedUserOnCreate;
 
     protected const ASSIGNEE_FIELD = 'responsible_id';
 
@@ -21,6 +23,14 @@ class Instruction extends Model
     protected const ASSIGNEE_LABEL = 'Unterweisung';
 
     protected const ASSIGNEE_DUE_FIELD = 'due_at';
+
+    protected const PERSON_REL = 'person';
+
+    protected const PERSON_KIND = 'unterweisung';
+
+    protected const PERSON_LABEL = 'Unterweisung';
+
+    protected const PERSON_DUE_FIELD = 'due_at';
 
     public const STATUS_PENDING = 'pending';
 

@@ -188,6 +188,56 @@ class ComplianceTest extends TestCase
         Notification::assertSentTo($responsible, Assigned::class);
     }
 
+    public function test_instruction_creation_notifies_linked_person_user(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'UWLinked GmbH']);
+        $this->actingWithTenant($tenant);
+        $instructed = User::factory()->create();
+
+        $this->postJson('/api/v1/persons', [
+            'first_name' => 'Erika',
+            'last_name' => 'Muster',
+            'email' => $instructed->email,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $personId = $this->getJson('/api/v1/persons', ['X-Tenant' => $tenant->id])->json('data.0.id');
+
+        $this->postJson('/api/v1/instructions', [
+            'title' => 'Brandschutz',
+            'person_id' => $personId,
+            'due_at' => now()->addDay()->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        Notification::assertSentTo($instructed, function (Assigned $n) {
+            return $n->kind === 'unterweisung';
+        });
+    }
+
+    public function test_risk_assessment_creation_notifies_linked_assessor(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'GBLinked GmbH']);
+        $this->actingWithTenant($tenant);
+        $assessor = User::factory()->create();
+
+        $this->postJson('/api/v1/persons', [
+            'first_name' => 'Karl',
+            'last_name' => 'Beurteiler',
+            'email' => $assessor->email,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $personId = $this->getJson('/api/v1/persons', ['X-Tenant' => $tenant->id])->json('data.0.id');
+
+        $this->postJson('/api/v1/risk-assessments', [
+            'title' => 'Arbeitsplatz GB',
+            'person_id' => $personId,
+            'risk_level' => 'medium',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        Notification::assertSentTo($assessor, function (Assigned $n) {
+            return $n->kind === 'gefaehrdungsbeurteilung';
+        });
+    }
+
     public function test_deadline_reminder_notifies_responsible(): void
     {
         Notification::fake();
