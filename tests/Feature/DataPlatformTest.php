@@ -116,6 +116,20 @@ class DataPlatformTest extends TestCase
         $this->assertEmpty($this->getJson('/api/v1/events?group=task', ['X-Tenant' => $tenant->id])->json('data'));
     }
 
+    public function test_events_endpoint_filters_by_subject_title_q(): void
+    {
+        $tenant = Tenant::create(['name' => 'Q GmbH']);
+        $this->acting($tenant);
+        $this->postJson('/api/v1/companies', ['name' => 'QFindCo'], ['X-Tenant' => $tenant->id]);
+
+        $hits = $this->getJson('/api/v1/events?q=QFindCo', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
+        $this->assertNotEmpty($hits);
+        foreach ($hits as $row) {
+            $this->assertStringContainsString('QFindCo', $row['event_properties']['subject']['title'] ?? '');
+        }
+        $this->assertEmpty($this->getJson('/api/v1/events?q=NoSuchTitle', ['X-Tenant' => $tenant->id])->json('data'));
+    }
+
     public function test_events_summary_endpoint(): void
     {
         $tenant = Tenant::create(['name' => 'Sum GmbH']);
