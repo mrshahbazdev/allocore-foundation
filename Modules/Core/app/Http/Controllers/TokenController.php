@@ -64,6 +64,19 @@ class TokenController extends Controller
         ], 201);
     }
 
+    /** Alle eigenen Tokens widerrufen (Ausser der aktuell verwendeten). */
+    public function destroyAll(Request $request)
+    {
+        $current = $request->user()->currentAccessToken();
+        $query = $request->user()->tokens();
+        if ($current) {
+            $query->where('id', '!=', $current->id);
+        }
+        $deleted = $query->delete();
+
+        return response()->json(['status' => 'ok', 'deleted' => $deleted]);
+    }
+
     /** Eigenen Token widerrufen. */
     public function destroy(Request $request, string $id)
     {

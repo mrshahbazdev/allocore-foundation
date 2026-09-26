@@ -548,6 +548,7 @@
                         <button x-show="section === 'events'" @click="exportEvents()" title="Serverseitiger Audit-Export (NDJSON, alle Einträge)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">NDJSON</button>
                         <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren (i)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
                         <button @click="window.print()" title="Drucken" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">Drucken</button>
+                        <button x-show="section === 'tokens' && rows && rows.length > 1" @click="revokeAllTokens()" title="Alle API-Token widerrufen" class="text-xs px-3 py-1.5 border border-[#A6362E] text-[#A6362E] rounded-lg hover:bg-[#A6362E] hover:text-white transition shrink-0">Alle widerrufen</button>
                         <button x-show="canCreate()" @click="openCreate()" :title="'Neu anlegen: ' + title() + ' (n)'" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
                     </div>
                     <div x-show="rows && recentRows().some(r => r.key === section)" class="flex items-center gap-1.5 px-5 py-1.5 border-b border-[#E4E9F0] print:hidden overflow-x-auto">
@@ -1697,6 +1698,14 @@ function workspace(initial) {
         markAllNotifsRead() {
             this.api('/api/v1/notifications/read-all', {method: 'POST'}).then(r => { if (r.ok) { this.dbNotifs.forEach(n => n.read = true); (this.rows || []).forEach(n => n.read = true); this.navBadges['notifications'] = this.unreadNotifs(); } }).catch(() => {});
         },
+        async revokeAllTokens() {
+            if (!confirm('Alle API-Token widerrufen? Der aktuell verwendete bleibt aktiv.')) return;
+            const r = await this.api('/api/v1/tokens', {method: 'DELETE'});
+            const d = await r.json().catch(() => ({}));
+            if (r.ok) { this.toast((d.deleted ?? 0) + ' Token widerrufen'); this.loadSection(); }
+            else this.toast(d.message || 'Fehler beim Widerrufen', 'error');
+        }
+
         loadSection(soft) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
