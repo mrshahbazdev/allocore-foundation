@@ -184,6 +184,11 @@ class RoleController extends Controller
         ]);
     }
 
+    public function notificationPrefs(Request $request)
+    {
+        return response()->json(['muted_kinds' => $request->user()->notification_muted ?? []]);
+    }
+
     public function updateNotificationPrefs(Request $request)
     {
         $data = $request->validate([
