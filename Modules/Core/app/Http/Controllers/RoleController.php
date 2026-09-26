@@ -127,6 +127,7 @@ class RoleController extends Controller
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
             'last_login_at' => $user->last_login_at,
+            'password_changed_at' => $user->password_changed_at,
             'tenants' => $this->memberships($user),
         ]);
     }
@@ -184,7 +185,7 @@ class RoleController extends Controller
             return response()->json(['message' => 'Aktuelles Passwort ist falsch.'], 422);
         }
 
-        $user->update(['password' => Hash::make($validated['password'])]);
+        $user->update(['password' => Hash::make($validated['password']), 'password_changed_at' => now()]);
         $user->tokens()->delete();
         $this->recordMemberEvent('password_changed', $user);
 
