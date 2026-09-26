@@ -21,6 +21,10 @@ class DataObjectController extends Controller
             ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->when($request->mime, fn ($q, $m) => $q->where('mime_type', 'like', $m.'%'))
             ->latest()
+            ->when(
+                in_array($request->sort, ['name', 'category', 'size_bytes', 'mime_type', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

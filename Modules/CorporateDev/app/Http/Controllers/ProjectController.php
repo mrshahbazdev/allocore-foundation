@@ -18,6 +18,10 @@ class ProjectController extends Controller
             ->when($request->owner_id, fn ($q, $v) => $q->where('owner_id', $v))
             ->with('owner:id,name')
             ->withCount('measures')
+            ->when(
+                in_array($request->sort, ['name', 'status', 'progress', 'ends_at', 'owner_id', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

@@ -18,6 +18,10 @@ class PersonController extends Controller
                     ->orWhere('last_name', 'like', '%'.$s.'%')
                     ->orWhere('email', 'like', '%'.$s.'%');
             }))
+            ->when(
+                in_array($request->sort, ['first_name', 'last_name', 'email', 'company_id', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

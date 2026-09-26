@@ -22,6 +22,10 @@ class LeaveRequestController extends Controller
             ->when($request->person_id, fn ($q, $v) => $q->where('person_id', $v))
             ->with('person:id,first_name,last_name')
             ->orderByDesc('starts_on')
+            ->when(
+                in_array($request->sort, ['starts_on', 'ends_on', 'status', 'type', 'person_id', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

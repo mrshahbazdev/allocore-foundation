@@ -16,6 +16,10 @@ class ExpertProfileController extends Controller
             ->when($request->q, fn ($q, $s) => $q->where('headline', 'like', '%'.$s.'%'))
             ->when($request->person_id, fn ($q, $v) => $q->where('person_id', $v))
             ->with('person:id,first_name,last_name,email')
+            ->when(
+                in_array($request->sort, ['headline', 'hourly_rate', 'status', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

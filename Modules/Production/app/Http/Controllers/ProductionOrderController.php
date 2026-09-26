@@ -19,6 +19,10 @@ class ProductionOrderController extends Controller
             ->when($request->assigned_to, fn ($q, $v) => $q->where('assigned_to', $v))
             ->with('machine:id,name', 'assignee:id,first_name,last_name')
             ->orderBy('due_at')
+            ->when(
+                in_array($request->sort, ['due_at', 'status', 'order_no', 'product', 'quantity', 'machine_id', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

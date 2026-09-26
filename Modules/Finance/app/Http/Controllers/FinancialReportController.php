@@ -16,6 +16,10 @@ class FinancialReportController extends Controller
             ->when($request->to, fn ($q) => $q->where('period', '<=', $request->to))
             ->with('company:id,name')
             ->orderBy('period')
+            ->when(
+                in_array($request->sort, ['period', 'company_id', 'revenue', 'ebitda', 'liquidity', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

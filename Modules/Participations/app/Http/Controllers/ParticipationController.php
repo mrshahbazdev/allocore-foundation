@@ -16,6 +16,10 @@ class ParticipationController extends Controller
             ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->when($request->company_id, fn ($q, $v) => $q->where('company_id', $v))
             ->with('company:id,name')
+            ->when(
+                in_array($request->sort, ['name', 'status', 'stake_pct', 'invested_amount', 'current_valuation', 'acquired_at', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

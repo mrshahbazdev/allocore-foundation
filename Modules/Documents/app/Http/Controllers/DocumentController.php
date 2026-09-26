@@ -16,6 +16,10 @@ class DocumentController extends Controller
         return Document::with('currentVersion')
             ->when($request->category, fn ($q, $c) => $q->where('category', $c))
             ->when($request->q, fn ($q, $s) => $q->where('title', 'like', '%'.$s.'%'))
+            ->when(
+                in_array($request->sort, ['title', 'category', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

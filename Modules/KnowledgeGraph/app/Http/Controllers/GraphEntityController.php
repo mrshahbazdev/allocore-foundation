@@ -13,6 +13,10 @@ class GraphEntityController extends Controller
         return GraphEntity::query()
             ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->when($request->type, fn ($q, $t) => $q->where('type', $t))
+            ->when(
+                in_array($request->sort, ['name', 'type', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
