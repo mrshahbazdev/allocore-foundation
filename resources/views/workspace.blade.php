@@ -560,10 +560,10 @@
                         </template>
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
-                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || evGroup || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
-                        <button x-show="query || statusFilter || evGroup || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly" @click="query = ''; statusFilter = ''; evGroup = ''; overdueOnly = false; dueSoonOnly = false; dueTodayOnly = false; myOnly = false; unassignedOnly = false"
+                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || severityFilter || evGroup || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
+                        <button x-show="query || statusFilter || severityFilter || evGroup || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly" @click="query = ''; statusFilter = ''; severityFilter = ''; evGroup = ''; overdueOnly = false; dueSoonOnly = false; dueTodayOnly = false; myOnly = false; unassignedOnly = false"
                                 title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
-                        <button x-show="canCreate() && !query && !statusFilter && !evGroup && !overdueOnly && !dueSoonOnly && !dueTodayOnly && !myOnly && !unassignedOnly" @click="openCreate()"
+                        <button x-show="canCreate() && !query !query && !statusFilter && !evGroup!query && !statusFilter && !evGroup !statusFilter !query && !statusFilter && !evGroup!query && !statusFilter && !evGroup !severityFilter !query && !statusFilter && !evGroup!query && !statusFilter && !evGroup !evGroup && !overdueOnly && !dueSoonOnly && !dueTodayOnly && !myOnly && !unassignedOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
                     </div>
                     <div x-show="selCount() > 0" class="flex flex-wrap items-center gap-2 px-5 py-2.5 border-b border-[#E4E9F0] bg-[#FFFBEB]">
@@ -1103,7 +1103,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [],
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
@@ -1125,6 +1125,7 @@ function workspace(initial) {
             if (p.get('new')) this.$nextTick(() => { if (this.tenant && this.canCreate()) this.openCreate(p.get('from') ? {from_entity_id: p.get('from')} : (p.get('audit') ? {audit_id: p.get('audit')} : {})); });
             if (p.get('q')) this.query = p.get('q');
             if (p.get('status')) this.statusFilter = p.get('status');
+            if (p.get('severity')) this.severityFilter = p.get('severity');
             if (p.get('overdue')) this.overdueOnly = true;
             if (p.get('dueSoon')) this.dueSoonOnly = true;
             if (p.get('today')) this.dueTodayOnly = true;
@@ -1135,6 +1136,7 @@ function workspace(initial) {
             this._urlSort = p.get('sort') || null;
             this.$watch('query', () => this.syncUrl());
             this.$watch('statusFilter', () => this.syncUrl());
+            this.$watch('severityFilter', () => this.syncUrl());
             this.$watch('overdueOnly', () => this.syncUrl());
             this.$watch('dueSoonOnly', () => this.syncUrl());
             this.$watch('dueTodayOnly', () => this.syncUrl());
@@ -1203,6 +1205,7 @@ function workspace(initial) {
             const url = new URL(location.href);
             if (this.query) url.searchParams.set('q', this.query); else url.searchParams.delete('q');
             if (this.statusFilter) url.searchParams.set('status', this.statusFilter); else url.searchParams.delete('status');
+            if (this.severityFilter) url.searchParams.set('severity', this.severityFilter); else url.searchParams.delete('severity');
             if (this.overdueOnly) url.searchParams.set('overdue', '1'); else url.searchParams.delete('overdue');
             if (this.dueSoonOnly) url.searchParams.set('dueSoon', '1'); else url.searchParams.delete('dueSoon');
             if (this.dueTodayOnly) url.searchParams.set('today', '1'); else url.searchParams.delete('today');
@@ -1315,7 +1318,7 @@ function workspace(initial) {
             if (it.action === 'gsearch') { location.href = '/app/' + it.section + '?tenant=' + this.tenant + '&open=' + encodeURIComponent(it.id); return; }
             if (it.action === 'openrowcur') { const r = (this.rows || []).find(x => String(x.id) === String(it.id)); if (r) this.detail = r; return; }
             if (it.action === 'filter') {
-                if (it.filter === '_reset') { this.query = ''; this.statusFilter = ''; this.evGroup = ''; this.overdueOnly = this.dueSoonOnly = this.dueTodayOnly = this.myOnly = this.unassignedOnly = false; }
+                if (it.filter === '_reset') { this.query = ''; this.statusFilter = ''; this.severityFilter = ''; this.evGroup = ''; this.overdueOnly = this.dueSoonOnly = this.dueTodayOnly = this.myOnly = this.unassignedOnly = false; }
                 else this[it.filter] = !this[it.filter];
                 return;
             }
@@ -1419,7 +1422,7 @@ function workspace(initial) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
             this.loading = true; this.error = '';
-            if (!soft) { this.limit = 100; this.statusFilter = ''; this.evGroup = ''; this.unassignedOnly = false; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; try { this.collapsedGroups = JSON.parse(localStorage.getItem('af_gc_' + this.section) || '{}') || {}; } catch (e) { this.collapsedGroups = {}; } }
+            if (!soft) { this.limit = 100; this.statusFilter = ''; this.severityFilter = ''; this.evGroup = ''; this.unassignedOnly = false; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; try { this.collapsedGroups = JSON.parse(localStorage.getItem('af_gc_' + this.section) || '{}') || {}; } catch (e) { this.collapsedGroups = {}; } }
             try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             if (this._urlSort) { const m = this._urlSort.match(/^(.+?)(?::(asc|desc))?$/); this.sortKey = m[1]; this.sortAsc = m[2] !== 'desc'; this._urlSort = null; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
@@ -1760,6 +1763,7 @@ function workspace(initial) {
             if (this.myOnly) rs = rs.filter(r => String(r.assignee_id || r.responsible_id || r.owner_id || '') === String(this.meId));
             if (this.unassignedOnly) rs = rs.filter(r => !(r.assignee_id || r.responsible_id || r.owner_id));
             if (this.statusFilter) rs = rs.filter(r => String(r.status || '') === this.statusFilter);
+            if (this.severityFilter) rs = rs.filter(r => String(r.severity || '') === this.severityFilter);
             if (this.evGroup) rs = rs.filter(r => this.eventGroup(r.event_type) === this.evGroup);
             const q = this.query.trim().toLowerCase();
             if (!q) return rs;
@@ -2204,7 +2208,7 @@ function workspace(initial) {
             else if (e.key === 'o') { if (!this.detail && !this.showCreate && !this.palette && this.filtered().length) this.detail = this.filtered()[0]; }
             else if (e.key === 'l') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.filtered().length > this.limit) this.limit = this.filtered().length; }
             else if (e.key === 't') { this.toggleDark(); }
-            else if (e.key === 'x') { if (!this.detail && !this.showCreate && !this.palette && (this.query || this.statusFilter || this.evGroup || this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.unassignedOnly)) { this.query = ''; this.statusFilter = ''; this.evGroup = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.unassignedOnly = false; } }
+            else if (e.key === 'x') { if (!this.detail && !this.showCreate && !this.palette && (this.query || this.statusFilter || this.severityFilter || this.evGroup || this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.unassignedOnly)) { this.query = ''; this.statusFilter = ''; this.severityFilter = ''; this.evGroup = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.unassignedOnly = false; } }
             else if (e.key === 'c') { if (!this.detail && !this.showCreate && !this.palette && this.rows) this.colPicker = !this.colPicker; }
             else if (e.key === 'v') { if (!this.detail && !this.showCreate && !this.palette && this.rows) this.viewPicker = !this.viewPicker; }
             else if (e.key === 's') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.dueSoon(r))) this.dueSoonOnly = !this.dueSoonOnly; }
