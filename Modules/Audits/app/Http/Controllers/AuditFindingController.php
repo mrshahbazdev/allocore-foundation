@@ -24,6 +24,10 @@ class AuditFindingController extends Controller
             ->when($request->responsible_id, fn ($q, $v) => $q->where('responsible_id', $v))
             ->with('audit:id,title', 'responsible:id,name')
             ->orderBy('due_at')
+            ->when(
+                in_array($request->sort, ['due_at', 'status', 'severity', 'title', 'responsible_id', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min($request->integer('per_page', 200), 200));
     }
 

@@ -19,6 +19,10 @@ class InstructionController extends Controller
             ->when($request->person_id, fn ($q, $v) => $q->where('person_id', $v))
             ->when($request->document_id, fn ($q, $v) => $q->where('document_id', $v))
             ->with('person:id,first_name,last_name', 'responsible:id,name')
+            ->when(
+                in_array($request->sort, ['due_at', 'status', 'title', 'person_id', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

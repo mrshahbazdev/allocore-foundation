@@ -21,6 +21,10 @@ class TaskController extends Controller
             ->when($request->boolean('overdue'), fn ($q) => $q->where('due_at', '<', now())->where('status', '!=', 'done'))
             ->when($request->created_by, fn ($q, $v) => $q->where('created_by', $v))
             ->with('assignee:id,name,email')
+            ->when(
+                in_array($request->sort, ['due_at', 'status', 'title', 'assignee_id', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

@@ -515,4 +515,28 @@ class ComplianceTest extends TestCase
         $this->assertCount(1, $res->json('data'));
         $this->assertSame('Verantwortlich', $res->json('data.0.title'));
     }
+
+    public function test_deadlines_sort_by_due_at_desc(): void
+    {
+        $tenant = Tenant::create(['name' => 'Sort GmbH']);
+        $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Spät', 'status' => 'open',
+            'due_at' => now()->addDays(30)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Früh', 'status' => 'open',
+            'due_at' => now()->addDays(3)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $desc = $this->getJson('/api/v1/deadlines?sort=due_at&dir=desc', ['X-Tenant' => $tenant->id]);
+        $this->assertSame('Spät', $desc->json('data.0.title'));
+
+        $asc = $this->getJson('/api/v1/deadlines?sort=due_at&dir=asc', ['X-Tenant' => $tenant->id]);
+        $this->assertSame('Früh', $asc->json('data.0.title'));
+
+        $invalid = $this->getJson('/api/v1/deadlines?sort=id") OR 1=1--', ['X-Tenant' => $tenant->id]);
+        $this->assertCount(2, $invalid->json('data'));
+    }
 }
