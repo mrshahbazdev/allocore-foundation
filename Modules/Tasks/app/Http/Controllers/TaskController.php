@@ -2,9 +2,11 @@
 
 namespace Modules\Tasks\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Notifications\Assigned;
 use Modules\Tasks\Models\Task;
 
 class TaskController extends Controller
@@ -51,7 +53,17 @@ class TaskController extends Controller
             $validated['completed_at'] = now();
         }
 
+        $wasOpen = $task->status !== Task::STATUS_DONE;
         $task->update($validated);
+
+        if ($wasOpen && $task->status === Task::STATUS_DONE
+            && $task->created_by && (int) $task->created_by !== (int) $request->user()->id) {
+            User::find($task->created_by)?->notify(new Assigned(
+                'aufgabe',
+                $task->id,
+                'Aufgabe erledigt: '.$task->title,
+            ));
+        }
 
         return $task;
     }

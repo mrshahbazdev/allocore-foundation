@@ -118,6 +118,31 @@ class CorePlatformTest extends TestCase
         Notification::assertSentTo($other, Assigned::class);
     }
 
+    public function test_task_done_notifies_creator(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Done GmbH']);
+        $creator = $this->actingWithTenant($tenant);
+        $assignee = User::factory()->create();
+
+        $this->postJson('/api/v1/tasks', [
+            'title' => 'Bericht prüfen',
+            'assignee_id' => $assignee->id,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        $assignee->assignRole('holding');
+        tenancy()->end();
+        Sanctum::actingAs($assignee->fresh());
+
+        $this->putJson('/api/v1/tasks/'.Task::first()->id, [
+            'status' => 'done',
+        ], ['X-Tenant' => $tenant->id])->assertOk();
+
+        Notification::assertSentTo($creator, Assigned::class,
+            fn ($n) => $n->kind === 'aufgabe' && str_contains($n->title, 'erledigt'));
+    }
+
     public function test_tasks_remind_skips_already_reminded_tasks(): void
     {
         Notification::fake();
