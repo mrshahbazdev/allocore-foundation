@@ -982,6 +982,18 @@
                     </template>
                     <button x-show="rowEvents.length > evShown" @click="evShown += 20" class="text-[11px] text-[#CA8A04] hover:underline mt-1" x-text="'+ ' + Math.min(20, rowEvents.length - evShown) + ' weitere'"></button>
                 </div>
+                <div x-show="rowNotifs.length" class="px-6 py-4 border-t border-[#E4E9F0]">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">BENACHRICHTIGUNGEN <span class="text-[#9CA3AF] font-normal" x-text="'(' + rowNotifs.length + ')'"></span></div>
+                        <a :href="'/app/notifications?tenant=' + tenant + '&q=' + encodeURIComponent(detail.id || '')" class="text-[10px] text-[#CA8A04] hover:underline" title="Alle Benachrichtigungen zu diesem Datensatz">Alle →</a>
+                    </div>
+                    <template x-for="(n, i) in rowNotifs.slice(0, 6)" :key="i">
+                        <a :href="'/app/notifications?tenant=' + tenant + '&open=' + n.id" class="flex items-center justify-between text-xs py-1 rounded hover:bg-[#FAFBFC] -mx-1 px-1" :class="n.read ? 'opacity-60' : ''">
+                            <span class="text-[#1A2433] truncate"><span class="text-[#CA8A04] font-semibold uppercase text-[10px] tracking-wide" x-text="NOTIF_KIND[n.kind] || n.kind"></span> <span x-text="n.title"></span></span>
+                            <span class="text-[10px] text-[#9CA3AF] font-mono ml-2 shrink-0" x-text="ago(n.created_at)"></span>
+                        </a>
+                    </template>
+                </div>
                 <div x-show="detail && (detail.created_at || detail.updated_at)" class="px-6 py-2.5 border-t border-[#F0F3F7] text-[10px] text-[#9CA3AF] flex gap-4">
                     <span x-show="detail && detail.created_at">Erstellt: <span x-text="detail && new Date(detail.created_at).toLocaleString('de-DE')"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.created_at) + ')'"></span></span>
                     <span x-show="detail && detail.updated_at">Geändert: <span x-text="detail && new Date(detail.updated_at).toLocaleString('de-DE')"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.updated_at) + ')'"></span></span>
@@ -1325,7 +1337,7 @@ function workspace(initial) {
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
-        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
+        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, rowNotifs: [], allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
@@ -1419,8 +1431,9 @@ function workspace(initial) {
                 if (v && v.id) url.searchParams.set('open', v.id); else url.searchParams.delete('open');
                 history.replaceState(null, '', url);
                 this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null; this.auditFindings = []; this.userRoles = []; this.userPerms = []; this.roleEdit = null; this.rolePerms = [];
-                this.confirmDel = false; this.rowEvents = []; this.evShown = 6;
+                this.confirmDel = false; this.rowEvents = []; this.evShown = 6; this.rowNotifs = [];
                 if (v && v.id && !['events','metrics','ai-analyses','executive','dashboard'].includes(this.section)) this.loadRowEvents(v.id);
+                if (v && v.id && !['events','metrics','ai-analyses','executive','dashboard','notifications'].includes(this.section)) this.loadRowNotifs(v.id);
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
                 if (v && this.section === 'tenders') this.loadApps(v.id);
                 if (v && this.section === 'users') this.loadUserRoles(v.id);
@@ -2023,6 +2036,11 @@ function workspace(initial) {
             this.api('/api/v1/events?per_page=100&subject_id=' + encodeURIComponent(id)).then(r => r.ok ? r.json() : {data: []})
                 .then(d => { const es = (d.data || d || []); this.rowEvents = es.filter(e => e.event_properties && e.event_properties.subject && String(e.event_properties.subject.id) === String(id)).slice(0, 25); })
                 .catch(() => this.rowEvents = []);
+        },
+        loadRowNotifs(id) {
+            this.api('/api/v1/notifications?entity_id=' + encodeURIComponent(id)).then(r => r.ok ? r.json() : [])
+                .then(d => { this.rowNotifs = Array.isArray(d) ? d : (d.data || []); })
+                .catch(() => this.rowNotifs = []);
         },
         loadUserRoles(id) {
             this.api('/api/v1/roles').then(r => r.ok ? r.json() : []).then(d => { this.allRoles = Array.isArray(d) ? d : (d.data || []); });
