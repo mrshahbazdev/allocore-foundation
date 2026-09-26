@@ -103,6 +103,27 @@ class DataPlatformTest extends TestCase
         }
     }
 
+    public function test_events_endpoint_filters_by_id_cursors(): void
+    {
+        $tenant = Tenant::create(['name' => 'Cur GmbH']);
+        $this->acting($tenant);
+
+        $this->postJson('/api/v1/companies', ['name' => 'C1'], ['X-Tenant' => $tenant->id]);
+        $this->postJson('/api/v1/companies', ['name' => 'C2'], ['X-Tenant' => $tenant->id]);
+        $this->postJson('/api/v1/companies', ['name' => 'C3'], ['X-Tenant' => $tenant->id]);
+
+        $all = $this->getJson('/api/v1/events?per_page=200', ['X-Tenant' => $tenant->id])->json('data');
+        $ids = array_map(fn ($r) => $r['id'], $all);
+        $mid = $ids[intdiv(count($ids) - 1, 2)];
+
+        foreach ($this->getJson('/api/v1/events?after_id='.$mid, ['X-Tenant' => $tenant->id])->json('data') as $row) {
+            $this->assertGreaterThan($mid, $row['id']);
+        }
+        foreach ($this->getJson('/api/v1/events?before_id='.$mid, ['X-Tenant' => $tenant->id])->json('data') as $row) {
+            $this->assertLessThan($mid, $row['id']);
+        }
+    }
+
     public function test_events_endpoint_is_tenant_scoped(): void
     {
         $tenantA = Tenant::create(['name' => 'EA GmbH']);
