@@ -21,6 +21,7 @@ class ExecutiveController extends Controller
         $totals = array_fill_keys([
             'companies', 'persons', 'tasks_open', 'deadlines_open',
             'high_risks', 'data_objects', 'audits_open', 'findings_open',
+            'leave_pending', 'orders_open',
         ], 0);
 
         foreach (Tenant::all() as $tenant) {
@@ -36,6 +37,8 @@ class ExecutiveController extends Controller
                 'data_objects' => $this->count('data_objects', $key),
                 'audits_open' => $this->count('audits', $key, "status IN ('planned','in_progress')"),
                 'findings_open' => $this->count('audit_findings', $key, "status IN ('open','in_progress')"),
+                'leave_pending' => $this->count('leave_requests', $key, "status = 'pending'"),
+                'orders_open' => $this->count('production_orders', $key, "status IN ('queued','running')"),
             ];
             $row['compliance_rate'] = $this->complianceRate($key);
 
