@@ -158,6 +158,9 @@ class RolesTest extends TestCase
             ->assertJsonPath('email', $user->email)
             ->assertJsonPath('roles.0', 'auditor');
         $this->assertContains('compliance.view', $res->json('permissions'));
+        $res->assertJsonPath('tenants.0.id', $tenant)
+            ->assertJsonPath('tenants.0.name', 'Me GmbH')
+            ->assertJsonPath('tenants.0.roles.0', 'auditor');
     }
 
     public function test_admin_can_remove_member_but_not_self(): void
