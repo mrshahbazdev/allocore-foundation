@@ -15,6 +15,10 @@ class StrategyController extends Controller
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->withCount('projects')
+            ->when(
+                in_array($request->sort, ['name', 'status', 'starts_at', 'ends_at', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

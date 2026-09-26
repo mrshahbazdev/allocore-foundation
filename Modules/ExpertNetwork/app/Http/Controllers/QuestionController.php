@@ -17,6 +17,10 @@ class QuestionController extends Controller
             ->when($request->category, fn ($q) => $q->where('category', $request->category))
             ->with('asker:id,name', 'expertProfile:id,headline')
             ->withCount('answers')
+            ->when(
+                in_array($request->sort, ['title', 'status', 'category', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

@@ -15,6 +15,10 @@ class PortfolioController extends Controller
             ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
             ->when($request->type, fn ($q) => $q->where('type', $request->type))
             ->withCount('investments')
+            ->when(
+                in_array($request->sort, ['name', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

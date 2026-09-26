@@ -18,6 +18,10 @@ class TenderController extends Controller
             ->when($request->created_by, fn ($q, $v) => $q->where('created_by', $v))
             ->with('company:id,name', 'creator:id,name')
             ->withCount('applications')
+            ->when(
+                in_array($request->sort, ['title', 'status', 'deadline_at', 'budget', 'company_id', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

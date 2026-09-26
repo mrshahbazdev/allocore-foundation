@@ -17,6 +17,10 @@ class InvestmentController extends Controller
             ->when($request->asset_class, fn ($q) => $q->where('asset_class', $request->asset_class))
             ->when($request->active === '1', fn ($q) => $q->whereNull('disposed_at'))
             ->with('portfolio:id,name')
+            ->when(
+                in_array($request->sort, ['name', 'current_value', 'cost_basis', 'valued_at', 'acquired_at', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
