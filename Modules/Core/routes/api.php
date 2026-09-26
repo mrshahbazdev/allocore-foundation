@@ -18,6 +18,7 @@ Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(funct
     Route::apiResource('persons', PersonController::class)
         ->only(['store', 'update', 'destroy'])->middleware('permission:persons.manage')->names('persons');
 
+    Route::get('me', [RoleController::class, 'me'])->name('me.show');
     Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('users', [RoleController::class, 'users'])->name('users.index');
     Route::post('users', [RoleController::class, 'store'])

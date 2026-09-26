@@ -113,6 +113,21 @@ class RolesTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_me_returns_current_user_roles_and_permissions(): void
+    {
+        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'Me GmbH'])->json('id');
+        $user = $this->actingAsUser();
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $user->assignRole('auditor');
+
+        $res = $this->getJson('/api/v1/me', ['X-Tenant' => $tenant])->assertOk();
+        $res->assertJsonPath('id', $user->id)
+            ->assertJsonPath('email', $user->email)
+            ->assertJsonPath('roles.0', 'auditor');
+        $this->assertContains('compliance.view', $res->json('permissions'));
+    }
+
     protected function actingAsUser(Tenant|string|null $tenant = null): User
     {
         $user = User::factory()->create();
