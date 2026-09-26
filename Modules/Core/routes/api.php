@@ -90,3 +90,8 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v
         return response()->json(['status' => 'ok']);
     })->middleware('permission:roles.manage')->name('demo-seed');
 });
+
+// Ohne Tenant-Kontext: nur erreichbar, wenn keine Mitgliedschaften mehr bestehen.
+Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(function () {
+    Route::delete('me', [RoleController::class, 'deleteMe'])->name('me.delete');
+});
