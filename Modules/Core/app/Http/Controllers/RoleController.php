@@ -53,6 +53,8 @@ class RoleController extends Controller
         $role->save();
         $role->syncPermissions($validated['permissions'] ?? []);
 
+        $this->recordRoleEvent('created', $role);
+
         return response()->json([
             'id' => $role->id,
             'name' => $role->name,
@@ -66,6 +68,8 @@ class RoleController extends Controller
         abort_if(in_array($role->name, ['holding', 'administrator']), 422, 'System-Rolle kann nicht gelöscht werden.');
 
         $role->delete();
+
+        $this->recordRoleEvent('deleted', $role);
 
         return response()->noContent();
     }
@@ -85,6 +89,8 @@ class RoleController extends Controller
         ]);
 
         $role->syncPermissions($validated['permissions']);
+
+        $this->recordRoleEvent('permissions_updated', $role, ['permissions' => $validated['permissions']]);
 
         return response()->json([
             'id' => $role->id,
@@ -194,6 +200,19 @@ class RoleController extends Controller
             tenantId: (string) tenant()->getTenantKey(),
             subject: ['type' => 'user', 'id' => $user->id, 'title' => $user->name],
             payload: $payload + ['email' => $user->email],
+        );
+        $event->setMetaData(['tenant_id' => (string) tenant()->getTenantKey()]);
+
+        event($event);
+    }
+
+    private function recordRoleEvent(string $action, Role $role, array $payload = []): void
+    {
+        $event = new DomainEvent(
+            type: "role.{$action}",
+            tenantId: (string) tenant()->getTenantKey(),
+            subject: ['type' => 'role', 'id' => $role->id, 'title' => $role->name],
+            payload: $payload,
         );
         $event->setMetaData(['tenant_id' => (string) tenant()->getTenantKey()]);
 

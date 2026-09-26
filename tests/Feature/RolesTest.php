@@ -296,6 +296,16 @@ class RolesTest extends TestCase
         $types = DB::table('stored_events')->where('meta_data->tenant_id', $tenant)
             ->pluck('event_properties')->map(fn ($p) => json_decode($p, true)['type']);
         $this->assertContains('user.removed', $types);
+
+        $roleRes = $this->postJson('/api/v1/roles', ['name' => 'testrolle'], ['X-Tenant' => $tenant])->assertCreated();
+        $roleId = $roleRes->json('id');
+        $this->putJson("/api/v1/roles/{$roleId}", ['permissions' => ['tasks.view']], ['X-Tenant' => $tenant])->assertOk();
+        $this->deleteJson("/api/v1/roles/{$roleId}", [], ['X-Tenant' => $tenant])->assertNoContent();
+        $types = DB::table('stored_events')->where('meta_data->tenant_id', $tenant)
+            ->pluck('event_properties')->map(fn ($p) => json_decode($p, true)['type']);
+        $this->assertContains('role.created', $types);
+        $this->assertContains('role.permissions_updated', $types);
+        $this->assertContains('role.deleted', $types);
     }
 
     public function test_every_permission_domain_in_workspace_map_exists(): void
