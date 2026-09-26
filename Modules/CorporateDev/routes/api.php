@@ -5,7 +5,7 @@ use Modules\CorporateDev\Http\Controllers\MeasureController;
 use Modules\CorporateDev\Http\Controllers\ProjectController;
 use Modules\CorporateDev\Http\Controllers\StrategyController;
 
-Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v1')->group(function () {
     foreach ([
         'strategies' => StrategyController::class,
         'projects' => ProjectController::class,

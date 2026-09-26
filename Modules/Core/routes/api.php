@@ -9,7 +9,7 @@ use Modules\Core\Http\Controllers\RoleController;
 use Modules\Core\Http\Controllers\TokenController;
 use Modules\DataPlatform\Events\DomainEvent;
 
-Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v1')->group(function () {
     Route::apiResource('companies', CompanyController::class)
         ->only(['index', 'show'])->middleware('permission:companies.view')->names('companies');
     Route::apiResource('companies', CompanyController::class)

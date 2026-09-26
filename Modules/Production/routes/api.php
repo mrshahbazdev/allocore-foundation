@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Production\Http\Controllers\MachineController;
 use Modules\Production\Http\Controllers\ProductionOrderController;
 
-Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v1')->group(function () {
     foreach ([
         'machines' => MachineController::class,
         'production-orders' => ProductionOrderController::class,
