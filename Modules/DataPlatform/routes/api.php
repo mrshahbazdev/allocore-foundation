@@ -11,6 +11,7 @@ use Modules\DataPlatform\Http\Controllers\SearchController;
 
 Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api', 'permission:metrics.view'])->prefix('v1')->group(function () {
     Route::get('events', [EventController::class, 'index'])->name('data-platform.events');
+    Route::get('events/summary', [EventController::class, 'summary'])->name('data-platform.events.summary');
     Route::get('events/export', [EventController::class, 'export'])->name('data-platform.events.export');
     Route::get('metrics', [MetricController::class, 'index'])->name('data-platform.metrics');
     Route::get('insights', [InsightController::class, 'index'])->name('data-platform.insights');
