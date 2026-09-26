@@ -175,7 +175,10 @@
                     <div x-show="notif" @click.outside="notif = false" class="absolute right-0 mt-1.5 w-72 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-2 z-30" style="display:none">
                         <div class="px-3 pb-1.5 flex items-center justify-between">
                             <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF]">BENACHRICHTIGUNGEN</span>
-                            <button x-show="unreadNotifs()" @click="markAllNotifsRead()" class="text-[10px] text-[#CA8A04] hover:underline">alle gelesen</button>
+                            <span class="flex items-center gap-2">
+                                <button x-show="unreadNotifs()" @click="markAllNotifsRead()" class="text-[10px] text-[#CA8A04] hover:underline">alle gelesen</button>
+                                <a :href="'/app/notifications?tenant=' + tenant" class="text-[10px] text-[#CA8A04] hover:underline">alle →</a>
+                            </span>
                         </div>
                         <div class="max-h-80 overflow-y-auto">
                         <template x-for="n in dbNotifs">
