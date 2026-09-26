@@ -592,6 +592,7 @@
                                 :class="unreadOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
                                 x-text="'Ungelesen · ' + rows.filter(r => !r.read).length"></button>
                         <button x-show="section === 'notifications' && rows && rows.some(r => !r.read)" @click="markAllNotifsRead(); toast('Alle als gelesen markiert')" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 transition">Alle gelesen</button>
+                        <button x-show="section === 'notifications' && rows && rows.some(r => r.read)" @click="deleteReadNotifs()" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition">Gelesene entfernen</button>
                         </template>
                         <template x-for="rn in roleOpts()" :key="'role-' + rn">
                             <button @click="roleFilter = roleFilter === rn ? '' : rn" class="text-[11px] px-2.5 py-1 rounded-full border transition"
@@ -1557,6 +1558,15 @@ function workspace(initial) {
         },
         dismissNotif(n) {
             this.api('/api/v1/notifications/' + n.id, {method: 'DELETE'}).then(r => { if (r.ok) { this.dbNotifs = this.dbNotifs.filter(x => x.id !== n.id); this.navBadges['notifications'] = this.unreadNotifs(); this.rows = (this.rows || []).filter(x => x.id !== n.id); if (this.detail && this.detail.id === n.id) this.detail = null; this.toast('Benachrichtigung entfernt'); } }).catch(() => {});
+        },
+        deleteReadNotifs() {
+            this.api('/api/v1/notifications/delete-read', {method: 'POST'}).then(r => r.ok ? r.json() : null).then(d => {
+                if (!d) return;
+                this.dbNotifs = this.dbNotifs.filter(n => !n.read);
+                this.rows = (this.rows || []).filter(n => !n.read);
+                if (this.detail && this.detail.read) this.detail = null;
+                this.toast(d.deleted + ' gelesene Benachrichtigungen entfernt');
+            }).catch(() => {});
         },
         markAllNotifsRead() {
             this.api('/api/v1/notifications/read-all', {method: 'POST'}).then(r => { if (r.ok) { this.dbNotifs.forEach(n => n.read = true); (this.rows || []).forEach(n => n.read = true); this.navBadges['notifications'] = this.unreadNotifs(); } }).catch(() => {});

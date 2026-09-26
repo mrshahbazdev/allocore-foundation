@@ -984,6 +984,34 @@ class DataPlatformTest extends TestCase
         $this->assertTrue($res[0]['read']);
     }
 
+    public function test_notifications_delete_read_removes_only_read(): void
+    {
+        $tenant = Tenant::create(['name' => 'D GmbH']);
+        $user = $this->acting($tenant);
+
+        $notif = new class extends Notification
+        {
+            public function via($n)
+            {
+                return ['database'];
+            }
+
+            public function toArray($n)
+            {
+                return ['title' => 'X', 'kind' => 'frist'];
+            }
+        };
+        $user->notify($notif);
+        $user->notify($notif);
+        $ids = $user->notifications()->pluck('id');
+        DB::table('notifications')->where('id', $ids[0])->update(['read_at' => now()]);
+
+        $res = $this->postJson('/api/v1/notifications/delete-read', [], ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame(1, $res['deleted']);
+        $this->assertCount(1, $user->fresh()->notifications);
+        $this->assertNull(DB::table('notifications')->where('id', $ids[0])->first());
+    }
+
     public function test_notifications_prune_removes_old_read(): void
     {
         $tenant = Tenant::create(['name' => 'P GmbH']);
