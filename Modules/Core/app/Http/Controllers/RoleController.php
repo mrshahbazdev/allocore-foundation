@@ -2,6 +2,7 @@
 
 namespace Modules\Core\Http\Controllers;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -126,7 +127,31 @@ class RoleController extends Controller
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
             'last_login_at' => $user->last_login_at,
+            'tenants' => $this->memberships($user),
         ]);
+    }
+
+    private function memberships(User $user): array
+    {
+        $rows = DB::table('model_has_roles')
+            ->where('model_type', User::class)
+            ->where('model_id', $user->id)
+            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->select('model_has_roles.team_id', 'roles.name')
+            ->get()
+            ->groupBy('team_id');
+
+        if ($rows->isEmpty()) {
+            return [];
+        }
+
+        $tenants = Tenant::whereIn('id', $rows->keys())->get()->keyBy('id');
+
+        return $rows->map(fn ($roles, $teamId) => [
+            'id' => $teamId,
+            'name' => $tenants->get($teamId)?->name,
+            'roles' => $roles->pluck('name')->values()->all(),
+        ])->values()->all();
     }
 
     public function updateMe(Request $request)
