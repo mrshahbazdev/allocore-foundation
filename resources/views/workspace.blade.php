@@ -1527,6 +1527,9 @@ function workspace(initial) {
                 }));
                 this.navBadges['notifications'] = this.unreadNotifs();
             }).catch(() => {});
+            this.api('/api/v1/notifications/unread-count').then(r => r.ok ? r.json() : null).then(d => {
+                if (d && d.count !== undefined) this.navBadges['notifications'] = d.count;
+            }).catch(() => {});
         },
         markNotifRead(n) {
             this.api('/api/v1/notifications/' + n.id + '/read', {method: 'POST'}).then(r => { if (r.ok) { n.read = true; this.navBadges['notifications'] = this.unreadNotifs(); } }).catch(() => {});
