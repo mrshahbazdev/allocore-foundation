@@ -845,6 +845,18 @@
                     <div x-show="entityEdges.length === 0" class="text-xs text-[#9CA3AF]">Keine Kanten zu dieser Entität.</div>
                     <a :href="'/app/graph-edges?tenant=' + tenant + '&new=1&from=' + detail.id" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Kante anlegen</a>
                 </div>
+                <div x-show="section === 'audits'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-2">
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">FESTSTELLUNGEN <span class="text-[#9CA3AF] font-normal" x-text="'(' + auditFindings.length + ')'"></span></div>
+                    <template x-for="f in auditFindings" :key="f.id">
+                        <a :href="'/app/audit-findings?tenant=' + tenant + '&open=' + f.id" class="flex items-center gap-2 rounded-lg border border-[#E4E9F0] px-3 py-2 text-xs hover:border-[#CA8A04]/60 transition">
+                            <span class="w-2 h-2 rounded-full shrink-0" :class="statusColor(f.severity || f.status)"></span>
+                            <span class="font-medium text-[#1A2433] truncate" x-text="f.title"></span>
+                            <span class="ml-auto text-[#9CA3AF] shrink-0" x-text="statusLabel(f.status)"></span>
+                        </a>
+                    </template>
+                    <div x-show="auditFindings.length === 0" class="text-xs text-[#9CA3AF]">Keine Feststellungen.</div>
+                    <a :href="'/app/audit-findings?tenant=' + tenant + '&new=1&audit=' + detail.id" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Feststellung anlegen</a>
+                </div>
                 <div x-show="rowEvents.length" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="flex items-center justify-between mb-2">
                         <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERLAUF <span class="text-[#9CA3AF] font-normal" x-text="'(' + rowEvents.length + ')'"></span></div>
@@ -1090,7 +1102,7 @@ function workspace(initial) {
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', linkCopied: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
-        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [],
+        docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, allRoles: [], userRoles: [], userPerms: [],
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'),
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
@@ -1107,7 +1119,7 @@ function workspace(initial) {
             if (t) this.tenant = t;
             else if (localStorage.getItem('allocore.tenant')) this.tenant = localStorage.getItem('allocore.tenant');
             if (this.tenant) { this.loadSection(); this.loadNavBadges(); }
-            if (p.get('new')) this.$nextTick(() => { if (this.tenant && this.canCreate()) this.openCreate(p.get('from') ? {from_entity_id: p.get('from')} : {}); });
+            if (p.get('new')) this.$nextTick(() => { if (this.tenant && this.canCreate()) this.openCreate(p.get('from') ? {from_entity_id: p.get('from')} : (p.get('audit') ? {audit_id: p.get('audit')} : {})); });
             if (p.get('q')) this.query = p.get('q');
             if (p.get('status')) this.statusFilter = p.get('status');
             if (p.get('overdue')) this.overdueOnly = true;
@@ -1167,7 +1179,7 @@ function workspace(initial) {
                 const url = new URL(location.href);
                 if (v && v.id) url.searchParams.set('open', v.id); else url.searchParams.delete('open');
                 history.replaceState(null, '', url);
-                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null; this.userRoles = []; this.userPerms = [];
+                this.answers = []; this.answerText = ''; this.apps = []; this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.docVersions = []; this.entityEdges = []; this.expandedEdge = null; this.auditFindings = []; this.userRoles = []; this.userPerms = [];
                 this.confirmDel = false; this.rowEvents = []; this.evShown = 6;
                 if (v && v.id && !['events','metrics','ai-analyses','executive','dashboard'].includes(this.section)) this.loadRowEvents(v.id);
                 if (v && this.section === 'questions') this.loadAnswers(v.id);
@@ -1175,6 +1187,7 @@ function workspace(initial) {
                 if (v && this.section === 'users') this.loadUserRoles(v.id);
                 if (v && this.section === 'documents') this.loadDocVersions(v.id);
                 if (v && this.section === 'graph-entities') this.loadEntityEdges(v.id);
+                if (v && this.section === 'audits') this.loadAuditFindings(v.id);
             });
             ['detail', 'showCreate', 'palette', 'kbdHelp', 'navOpen'].forEach(p =>
                 this.$watch(p, () => {
@@ -1671,6 +1684,11 @@ function workspace(initial) {
                         return {dir: out ? '→' : '←', relation: e.relation, other, name: names[other] || other};
                     });
             }).catch(() => this.entityEdges = []);
+        },
+        loadAuditFindings(id) {
+            this.api('/api/v1/audit-findings?audit_id=' + id + '&per_page=200').then(r => r.ok ? r.json() : []).then(d => {
+                this.auditFindings = Array.isArray(d) ? d : (d.data || []);
+            }).catch(() => this.auditFindings = []);
         },
         loadDocVersions(id) {
             this.api('/api/v1/documents/' + id).then(r => r.ok ? r.json() : {versions: []}).then(d => {
