@@ -89,7 +89,7 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 | POST `/notifications/{id}/read` | `metrics.view` | Benachrichtigung als gelesen markieren |
 | POST `/notifications/{id}/unread` | `metrics.view` | Benachrichtigung als ungelesen markieren (404 bei fremder) |
 | POST `/notifications/read-all` | `metrics.view` | Alle ungelesenen Benachrichtigungen als gelesen markieren; `?kind=` nur eine Art |
-| POST `/notifications/delete-read` | `metrics.view` | Alle gelesenen Benachrichtigungen löschen — `{deleted: n}` |
+| POST `/notifications/delete-read` | `metrics.view` | Alle gelesenen Benachrichtigungen löschen — `{deleted: n}`; `?kind=`/`?code=` grenzt ein |
 | `/notifications/unread-count` | `metrics.view` | Anzahl ungelesener Benachrichtigungen: `{count}` — stummgeschaltete Arten (`PUT /me/notification-prefs`) werden nicht mitgezählt; `include_muted=1` liefert die Gesamtzahl; `kind=` nur eine Art zählen |
 | DELETE `/notifications/{id}` | `metrics.view` | Einzelne Benachrichtigung löschen (404 bei fremder) |
 | DELETE `/notifications` | `metrics.view` | Benachrichtigungen des Users löschen — `{deleted: n}`; ohne Filter alle, mit `?kind=`/ `?read=1` / `?unread=1` / `?code=` / `?muted=1` nur passende |
