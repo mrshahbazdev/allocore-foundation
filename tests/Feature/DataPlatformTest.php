@@ -18,6 +18,7 @@ use Modules\Core\Models\Company;
 use Modules\CorporateDev\Models\Project;
 use Modules\Documents\Models\Document;
 use Modules\ExpertNetwork\Models\TenderApplication;
+use Modules\Hr\Models\LeaveRequest;
 use Tests\TestCase;
 
 class DataPlatformTest extends TestCase
@@ -685,6 +686,43 @@ class DataPlatformTest extends TestCase
         $this->assertContains('applications_no_proposal', $codes);
         $this->assertContains('applications_stale', $codes);
         $this->assertContains('tenders_awarded_no_winner', $codes);
+    }
+
+    public function test_insights_reports_leave_and_compliance_gaps(): void
+    {
+        $tenant = Tenant::create(['name' => 'Lücken GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $person = $this->postJson('/api/v1/persons', ['first_name' => 'Urla', 'last_name' => 'Uber'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $leave = $this->postJson('/api/v1/leave-requests', ['person_id' => $person['id'], 'type' => 'vacation', 'starts_on' => now()->addWeek()->toDateString(), 'ends_on' => now()->addDays(10)->toDateString()], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/risk-assessments', ['title' => 'GB ohne Person', 'risk_level' => 'low', 'review_at' => now()->addMonth()->toDateString()], ['X-Tenant' => $tenant->id])->assertCreated();
+        $auditDone = $this->postJson('/api/v1/audits', ['title' => 'Leeres Audit', 'starts_on' => now()->subDays(3)->toDateString(), 'ends_on' => now()->subDay()->toDateString()], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->putJson("/api/v1/audits/{$auditDone['id']}", ['status' => 'done'], ['X-Tenant' => $tenant->id])->assertOk();
+        $auditOpen = $this->postJson('/api/v1/audits', ['title' => 'Aktives Audit'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/audit-findings', ['audit_id' => $auditOpen['id'], 'title' => 'Kritisch', 'severity' => 'critical', 'due_at' => now()->subDays(2)->toDateString()], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        LeaveRequest::whereKey($leave['id'])->update(['created_at' => now()->subDays(10)]);
+        LeaveRequest::create(['person_id' => $person['id'], 'type' => 'sick', 'starts_on' => now()->subDays(2)->toDateString(), 'ends_on' => now()->subDay()->toDateString(), 'status' => 'rejected']);
+        Instruction::create(['title' => 'Ohne Stempel', 'status' => 'completed']);
+        tenancy()->end();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('leave_pending_stale', $codes);
+        $this->assertContains('leave_decided_no_stamp', $codes);
+        $this->assertContains('instructions_no_completed_at', $codes);
+        $this->assertContains('risk_assessments_no_person', $codes);
+        $this->assertContains('audits_no_findings', $codes);
+        $this->assertContains('audits_no_result', $codes);
+        $this->assertContains('audit_findings_critical', $codes);
+        $this->assertContains('audit_findings_overdue', $codes);
+        $this->assertContains('audit_findings_unassigned', $codes);
     }
 
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
