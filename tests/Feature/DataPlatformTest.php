@@ -16,6 +16,7 @@ use Modules\Ai\Models\AiAnalysis;
 use Modules\Compliance\Models\Instruction;
 use Modules\Core\Models\Company;
 use Modules\CorporateDev\Models\Project;
+use Modules\Documents\Models\Document;
 use Tests\TestCase;
 
 class DataPlatformTest extends TestCase
@@ -618,6 +619,40 @@ class DataPlatformTest extends TestCase
         $this->assertContains('inspections_no_result', $codes);
         $this->assertContains('op_instructions_draft', $codes);
         $this->assertContains('op_instructions_no_document', $codes);
+    }
+
+    public function test_insights_reports_missing_relations(): void
+    {
+        $tenant = Tenant::create(['name' => 'Waisenhaus GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/companies', ['name' => 'Solo AG'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/persons', ['first_name' => 'Max', 'last_name' => 'Frei'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/strategies', ['name' => 'Ohne Projekte', 'status' => 'active'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/projects', ['name' => 'Ohne Strategie'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/portfolios', ['name' => 'Leer'], ['X-Tenant' => $tenant->id])->assertCreated();
+        $this->postJson('/api/v1/deadlines', ['title' => 'Ohne Datensatz', 'due_at' => now()->addMonth()], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Document::create(['title' => 'Ohne Version']);
+        tenancy()->end();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('companies_no_persons', $codes);
+        $this->assertContains('persons_without_company', $codes);
+        $this->assertContains('strategies_no_projects', $codes);
+        $this->assertContains('projects_no_strategy', $codes);
+        $this->assertContains('projects_no_measures', $codes);
+        $this->assertContains('portfolios_no_investments', $codes);
+        $this->assertContains('deadlines_no_subject', $codes);
+        $this->assertContains('documents_no_version', $codes);
+        $this->assertContains('documents_no_category', $codes);
     }
 
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
