@@ -2605,6 +2605,9 @@ function workspace(initial) {
                 }
                 return out;
             }
+            if (c === 'kind' && NOTIF_KIND[String(v).toLowerCase()]) {
+                return `<span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-[#CA8A04]"></span>${NOTIF_KIND[String(v).toLowerCase()]}</span>`;
+            }
             if (typeof v === 'string' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) && /mail/i.test(c))
                 return `<a href="mailto:${v}" onclick="event.stopPropagation()" class="text-[#CA8A04] hover:underline">${v}</a>`;
             if (typeof v === 'string' && /^[+0-9][0-9\s\/()-]{5,}$/.test(v) && /phone|tel|mobile/i.test(c))
