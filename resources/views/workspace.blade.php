@@ -183,6 +183,7 @@
                                 <span class="w-1.5 h-1.5 mt-1 rounded-full shrink-0" :class="n.read ? 'bg-[#D1D5DB]' : 'bg-[#CA8A04]'"></span>
                                 <span class="flex-1"><span x-text="n.title"></span><span class="block text-[10px] text-[#9CA3AF]" x-text="(n.kind ? (NOTIF_KIND[n.kind] || n.kind) + (n.due_at ? ' · ' : '') : '') + (n.due_at ? 'Fällig ' + n.due_at : '')"></span></span>
                                 <span class="text-[9px] text-[#9CA3AF] font-mono shrink-0" x-text="n.rel"></span>
+                                <button @click.prevent.stop="dismissNotif(n)" aria-label="Benachrichtigung entfernen" title="Entfernen" class="text-[#9CA3AF] hover:text-[#A6362E] shrink-0 leading-none">×</button>
                             </a>
                         </template>
                         </div>
@@ -1520,6 +1521,9 @@ function workspace(initial) {
         },
         markNotifRead(n) {
             this.api('/api/v1/notifications/' + n.id + '/read', {method: 'POST'}).then(r => { if (r.ok) { n.read = true; } }).catch(() => {});
+        },
+        dismissNotif(n) {
+            this.api('/api/v1/notifications/' + n.id, {method: 'DELETE'}).then(r => { if (r.ok) { this.dbNotifs = this.dbNotifs.filter(x => x.id !== n.id); } }).catch(() => {});
         },
         markAllNotifsRead() {
             this.api('/api/v1/notifications/read-all', {method: 'POST'}).then(r => { if (r.ok) { this.dbNotifs.forEach(n => n.read = true); } }).catch(() => {});
