@@ -135,6 +135,10 @@ class DataPlatformTest extends TestCase
             'title' => 'Laser-Arbeitsplatz', 'risk_level' => 'high',
         ], ['X-Tenant' => $tenant->id]);
 
+        $this->postJson('/api/v1/risk-assessments', [
+            'title' => 'GB Review bald', 'risk_level' => 'low', 'review_at' => now()->addDays(5)->toISOString(),
+        ], ['X-Tenant' => $tenant->id]);
+
         $this->postJson('/api/v1/audits', [
             'title' => 'Überfälliges Audit', 'ends_on' => now()->subDay()->toDateString(),
         ], ['X-Tenant' => $tenant->id]);
@@ -163,6 +167,7 @@ class DataPlatformTest extends TestCase
         $this->assertContains('audit_findings_unassigned', $codes);
         $this->assertContains('audits_unassigned', $codes);
         $this->assertContains('orders_unassigned', $codes);
+        $this->assertContains('risk_reviews_due_soon', $codes);
     }
 
     public function test_nav_counts_returns_overdue_and_today(): void
