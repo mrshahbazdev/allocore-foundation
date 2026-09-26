@@ -20,6 +20,9 @@ Route::middleware(['auth:sanctum', 'tenant.request'])->prefix('v1')->group(funct
 
     Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('users', [RoleController::class, 'users'])->name('users.index');
+    Route::post('users', [RoleController::class, 'store'])
+        ->middleware('permission:roles.manage')
+        ->name('users.store');
     Route::get('users/{user}/roles', [RoleController::class, 'userRoles'])->name('users.roles.show');
     Route::put('users/{user}/roles', [RoleController::class, 'assign'])
         ->middleware('permission:roles.manage')

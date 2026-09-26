@@ -75,6 +75,34 @@ class RolesTest extends TestCase
         $this->assertSame(['mitarbeiter'], $memberRow['role_names']);
     }
 
+    public function test_admin_can_create_user_and_attach_existing(): void
+    {
+        $tenant = $this->postJson('/api/v1/tenants', ['name' => 'UserCreate GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+
+        $res = $this->postJson('/api/v1/users', [
+            'name' => 'Neu Mitarbeiter', 'email' => 'neu@example.test',
+        ], ['X-Tenant' => $tenant])->assertCreated()->json();
+
+        $this->assertArrayHasKey('initial_password', $res);
+        $this->assertSame(['mitarbeiter'], $res['roles']);
+
+        $existing = User::factory()->create();
+        $res2 = $this->postJson('/api/v1/users', [
+            'name' => 'Vorhanden', 'email' => $existing->email, 'roles' => ['auditor'],
+        ], ['X-Tenant' => $tenant])->assertCreated()->json();
+
+        $this->assertSame($existing->id, $res2['user_id']);
+        $this->assertSame(['auditor'], $res2['roles']);
+        $this->assertArrayNotHasKey('initial_password', $res2);
+
+        $memberless = $this->actingAsUser();
+        $this->postJson('/api/v1/users', ['name' => 'X', 'email' => 'x@x.test'], ['X-Tenant' => $tenant])
+            ->assertForbidden();
+    }
+
     public function test_roleless_user_cannot_assign_roles(): void
     {
         $tenant = $this->postJson('/api/v1/tenants', ['name' => 'NoPerm GmbH'])->json('id');

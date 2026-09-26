@@ -13,6 +13,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 | GET | `/context` | (auth) aktueller User + Tenant-Kontext |
 | GET | `/roles` | (auth+tenant) verfügbare Rollen des Tenants |
 | GET | `/users` | (auth+tenant) Mitglieder des Tenants (User mit zugewiesener Rolle) |
+| POST | `/users` | (auth+tenant, `roles.manage`) Benutzer anlegen bzw. vorhandenen per `email` anhängen — `name`, `email`, optional `password` + `roles`; ohne `password` wird `initial_password` einmalig zurückgegeben |
 | GET/PUT | `/users/{user}/roles` | (auth+tenant, `roles.manage`) Rollen eines Users lesen/setzen |
 
 ## Core (`companies`, `persons`)

@@ -1941,7 +1941,12 @@ function workspace(initial) {
             return {created: 'erstellt', updated: 'aktualisiert', deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: 'hochgeladen', answered: 'beantwortet', created_event: 'erstellt'}[a] || a;
         },
         createFields() {
-            const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes']);
+            const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes', 'role_names']);
+            if (this.section === 'users') return [
+                {key:'name', type:'text', req:true},
+                {key:'email', type:'text', req:true},
+                {key:'password', type:'text', req:false, hint:'leer = zufällig generiert'},
+            ];
             const LONGTEXT = new Set(['description','content','notes','measures','bio','body','proposal','result','message','answer','question','summary','goal','scope','rationale','findings']);
             const src = (this.rows && this.rows[0]) || {};
             const ENUMS = {
@@ -1965,7 +1970,7 @@ function workspace(initial) {
         },
         writable() { return !['events','ai-analyses','metrics','users'].includes(this.section); },
         canEdit() { return this.writable() && this.section !== 'data-objects'; },
-        canCreate() { return this.section === 'ai-analyses' || this.writable(); },
+        canCreate() { return this.section === 'ai-analyses' || this.section === 'users' || this.writable(); },
         openCreate(prefill) {
             if (this.section === 'ai-analyses') {
                 this.api('/api/v1/ai-analyses', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'})
@@ -2126,9 +2131,15 @@ function workspace(initial) {
                             this.formError = errs || (d && d.message ? d.message : 'HTTP ' + r.status + ' — Pflichtfelder fehlen?');
                         }).catch(() => { this.formError = 'HTTP ' + r.status + ' — Pflichtfelder fehlen?'; });
                     }
-                    if (keepOpen && !this.editing) { this.form = {}; this.formDirty = false; this.formError = ''; this.toast('Eintrag angelegt.'); this.loadSection(); this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select, #createForm textarea'); if (el) el.focus(); }); return r.json(); }
-                    this.showCreate = false; this.formDirty = false; this.detail = null; this.editing = null; this.loadSection(); return r.json();
+                    if (keepOpen && !this.editing) { this.form = {}; this.formDirty = false; this.formError = ''; this.toast('Eintrag angelegt.'); this.loadSection(); this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select, #createForm textarea'); if (el) el.focus(); }); return r.json().then(d => { this.afterCreate(d); return d; }); }
+                    this.showCreate = false; this.formDirty = false; this.detail = null; this.editing = null; this.loadSection(); return r.json().then(d => { this.afterCreate(d); return d; });
                 });
+        },
+        afterCreate(d) {
+            if (this.section === 'users' && d && d.initial_password) {
+                this.toast('Benutzer angelegt — Initiales Passwort: ' + d.initial_password);
+                try { navigator.clipboard.writeText(d.initial_password); } catch (_) {}
+            }
         },
         closeCreate() {
             if (this.showCreate && this.formDirty && !confirm('Ungespeicherte Änderungen verwerfen?')) return;
