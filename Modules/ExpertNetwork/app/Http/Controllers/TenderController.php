@@ -15,6 +15,7 @@ class TenderController extends Controller
             ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->when($request->q, fn ($q, $s) => $q->where('title', 'like', '%'.$s.'%'))
             ->when($request->company_id, fn ($q, $v) => $q->where('company_id', $v))
+            ->when($request->created_by, fn ($q, $v) => $q->where('created_by', $v))
             ->with('company:id,name', 'creator:id,name')
             ->withCount('applications')
             ->paginate(min(request()->integer('per_page', 200), 200));

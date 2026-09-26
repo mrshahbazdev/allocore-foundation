@@ -13,6 +13,8 @@ class GraphEdgeController extends Controller
     {
         return GraphEdge::with(['from:id,name,type', 'to:id,name,type'])
             ->when($request->relation, fn ($q, $r) => $q->where('relation', $r))
+            ->when($request->from_entity_id, fn ($q, $v) => $q->where('from_entity_id', $v))
+            ->when($request->to_entity_id, fn ($q, $v) => $q->where('to_entity_id', $v))
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

@@ -16,6 +16,7 @@ class ProductionOrderController extends Controller
             ->when($request->q, fn ($q, $s) => $q->where(fn ($w) => $w->where('order_no', 'like', '%'.$s.'%')->orWhere('product', 'like', '%'.$s.'%')))
             ->when($request->machine_id, fn ($q) => $q->where('machine_id', $request->machine_id))
             ->when($request->overdue === '1', fn ($q) => $q->whereIn('status', ['queued', 'running'])->where('due_at', '<', today()))
+            ->when($request->assigned_to, fn ($q, $v) => $q->where('assigned_to', $v))
             ->with('machine:id,name', 'assignee:id,first_name,last_name')
             ->orderBy('due_at')
             ->paginate(min(request()->integer('per_page', 200), 200));
