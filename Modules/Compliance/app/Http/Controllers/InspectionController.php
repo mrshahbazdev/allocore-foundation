@@ -19,6 +19,10 @@ class InspectionController extends Controller
             ->when($request->result, fn ($q) => $q->where('result', $request->result))
             ->when($request->person_id, fn ($q, $v) => $q->where('person_id', $v))
             ->with('person:id,first_name,last_name', 'responsible:id,name')
+            ->when(
+                in_array($request->sort, ['scheduled_at', 'status', 'title', 'person_id', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

@@ -19,6 +19,10 @@ class RiskAssessmentController extends Controller
             ->when($request->risk_level, fn ($q) => $q->where('risk_level', $request->risk_level))
             ->when($request->person_id, fn ($q, $v) => $q->where('person_id', $v))
             ->with('assessor:id,first_name,last_name')
+            ->when(
+                in_array($request->sort, ['review_at', 'status', 'title', 'person_id', 'risk_level', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 

@@ -20,6 +20,10 @@ class AuditController extends Controller
             ->when($request->responsible_id, fn ($q, $v) => $q->where('responsible_id', $v))
             ->with('company:id,name', 'responsible:id,name')
             ->orderByDesc('starts_on')
+            ->when(
+                in_array($request->sort, ['starts_on', 'ends_on', 'status', 'title', 'responsible_id', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min($request->integer('per_page', 200), 200));
     }
 

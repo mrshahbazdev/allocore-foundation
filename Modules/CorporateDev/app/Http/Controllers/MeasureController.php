@@ -19,6 +19,10 @@ class MeasureController extends Controller
             ->when($request->project_id, fn ($q) => $q->where('project_id', $request->project_id))
             ->when($request->responsible_id, fn ($q, $v) => $q->where('responsible_id', $v))
             ->with('responsible:id,name')
+            ->when(
+                in_array($request->sort, ['due_at', 'status', 'title', 'responsible_id', 'progress', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'asc' ? 'asc' : 'desc')
+            )
             ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
