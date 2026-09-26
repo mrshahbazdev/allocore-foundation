@@ -42,6 +42,15 @@ class DataLakeTest extends TestCase
         $this->getJson('/api/v1/data-objects?category=contract', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonCount(1, 'data');
 
+        $this->getJson('/api/v1/data-objects?q=Müller', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/data-objects?q=nichts', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(0, 'data');
+        $this->getJson('/api/v1/data-objects?mime=application/', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/data-objects?mime=image/', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(0, 'data');
+
         $this->deleteJson("/api/v1/data-objects/{$id}", [], ['X-Tenant' => $tenant->id])->assertNoContent();
         $this->getJson("/api/v1/data-objects/{$id}", ['X-Tenant' => $tenant->id])->assertNotFound();
     }

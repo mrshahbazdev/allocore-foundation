@@ -18,6 +18,8 @@ class DataObjectController extends Controller
     {
         return DataObject::query()
             ->when($request->category, fn ($q, $c) => $q->where('category', $c))
+            ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
+            ->when($request->mime, fn ($q, $m) => $q->where('mime_type', 'like', $m.'%'))
             ->latest()
             ->paginate(min(request()->integer('per_page', 200), 200));
     }

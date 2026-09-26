@@ -82,7 +82,7 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 
 | Pfad | Recht | Zweck |
 |---|---|---|
-| `/data-objects` | `datalake.view` / `datalake.manage` | Objektspeicher (PDFs, Bilder, Verträge, CAD, Produktionsdaten) — `category`-Filter |
+| `/data-objects` | `datalake.view` / `datalake.manage` | Objektspeicher (PDFs, Bilder, Verträge, CAD, Produktionsdaten) — Filter: `category`, `q` (Name), `mime` (Präfix, z. B. `image/`) |
 | `/data-objects/{id}/download` | `datalake.view` | Objekt herunterladen |
 
 ## KnowledgeGraph (`graph`) — Layer 6
