@@ -860,7 +860,10 @@
                         <a :href="'/app/audit-findings?tenant=' + tenant + '&open=' + f.id" class="flex items-center gap-2 rounded-lg border border-[#E4E9F0] px-3 py-2 text-xs hover:border-[#CA8A04]/60 transition">
                             <span class="w-2 h-2 rounded-full shrink-0" :class="statusColor(f.severity || f.status)"></span>
                             <span class="font-medium text-[#1A2433] truncate" x-text="f.title"></span>
-                            <span class="ml-auto text-[#9CA3AF] shrink-0" x-text="statusLabel(f.status)"></span>
+                            <span class="ml-auto shrink-0 flex items-center gap-1.5">
+                                <span x-show="f.due_at" class="text-[10px]" :class="overdue(f) ? 'text-[#A6362E] font-semibold' : 'text-[#9CA3AF]'" x-text="dueRel(f.due_at)"></span>
+                                <span class="text-[#9CA3AF]" x-text="statusLabel(f.status)"></span>
+                            </span>
                         </a>
                     </template>
                     <div x-show="auditFindings.length === 0" class="text-xs text-[#9CA3AF]">Keine Feststellungen.</div>
