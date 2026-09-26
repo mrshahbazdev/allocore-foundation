@@ -209,6 +209,29 @@ class RolesTest extends TestCase
         );
     }
 
+    public function test_password_update_stamps_password_changed_at_and_me_returns_it(): void
+    {
+        $tenant = $this->createTenantApi(['name' => 'Pw GmbH'])->json('id');
+        $user = $this->actingAsUser();
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $user->assignRole('auditor');
+        tenancy()->end();
+
+        $this->putJson('/api/v1/me/password', [
+            'current_password' => 'password',
+            'password' => 'NewPassword123',
+            'password_confirmation' => 'NewPassword123',
+        ], ['X-Tenant' => $tenant])->assertOk();
+
+        $this->assertNotNull($user->fresh()->password_changed_at);
+
+        Sanctum::actingAs($user->fresh());
+        $this->getJson('/api/v1/me', ['X-Tenant' => $tenant])
+            ->assertOk()
+            ->assertJsonStructure(['password_changed_at']);
+    }
+
     public function test_member_can_leave_tenant_but_last_manager_cannot(): void
     {
         $tenant = $this->createTenantApi(['name' => 'Leave GmbH'])->json('id');
