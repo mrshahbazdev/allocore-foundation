@@ -250,6 +250,22 @@ class RolesTest extends TestCase
         $this->assertDatabaseMissing('roles', ['id' => $roleId]);
     }
 
+    public function test_delete_role_of_foreign_tenant_returns_404(): void
+    {
+        $tenantA = $this->postJson('/api/v1/tenants', ['name' => 'DelA GmbH'])->json('id');
+        $tenantB = $this->postJson('/api/v1/tenants', ['name' => 'DelB GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+
+        $roleB = Role::where('team_id', $tenantB)->where('name', 'auditor')->firstOrFail();
+
+        tenancy()->initialize(Tenant::find($tenantA));
+        $admin->assignRole('administrator');
+
+        $this->deleteJson("/api/v1/roles/{$roleB->id}", [], ['X-Tenant' => $tenantA])
+            ->assertNotFound();
+        $this->assertDatabaseHas('roles', ['id' => $roleB->id]);
+    }
+
     public function test_every_permission_domain_in_workspace_map_exists(): void
     {
         $this->postJson('/api/v1/tenants', ['name' => 'Perms GmbH'])->assertCreated();
