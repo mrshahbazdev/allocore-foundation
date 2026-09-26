@@ -1894,8 +1894,8 @@ function workspace(initial) {
             const ENUMS = {
                 'leave-requests': {type: ['vacation','sick','other']},
                 'risk-assessments': {risk_level: ['low','medium','high']},
-                'audits': {type: ['internal','external']},
-                'audit-findings': {severity: ['low','medium','high','critical']},
+                'audits': {type: ['internal','external'], status: ['planned','in_progress','done','cancelled']},
+                'audit-findings': {severity: ['low','medium','high','critical'], status: ['open','in_progress','resolved','accepted']},
             };
             const enums = ENUMS[this.section] || {};
             return Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12).map(k => ({
