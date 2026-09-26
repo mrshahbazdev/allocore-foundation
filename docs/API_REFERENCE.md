@@ -15,7 +15,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 | GET/POST | `/tenants` | (auth) GET listet nur eigene Mitgliedschaften; POST legt Mandant an (seedet Rollenmodell) — Ersteller wird automatisch `administrator` |
 | GET | `/context` | (auth) aktueller User + Tenant-Kontext |
 | GET/POST, DELETE | `/tokens`, `/tokens/{id}` | auth | Personal Access Tokens — Klartext nur bei POST-Antwort; `abilities` optional (`['tasks.view', ...]` — scoped Token, enforced auf `permission:`-Routen; Whitelist: `GET /tokens/abilities`), `expires_in_days` 1–365; Workspace-Token werden pro Seitenaufruf rotiert |
-| GET | `/me` | (auth+tenant) aktueller Nutzer im Mandanten — `id`, `name`, `email`, `roles`, `permissions` |
+| GET | `/me` | (auth+tenant) aktueller Nutzer im Mandanten — `id`, `name`, `email`, `roles`, `permissions`, `last_login_at`, `password_changed_at`, `tenants` (eigene Mitgliedschaften mandantenübergreifend: `{id, name, roles[]}`) |
 | PUT | `/me` | (auth+tenant) eigenes Profil ändern — `name` und/oder `email` (email muss eindeutig sein, 422 bei Konflikt); liefert `{id,name,email}` |
 | DELETE | `/me` | (auth) Eigenes Konto löschen — nur wenn keine Mitgliedschaften bestehen (sonst 422); widerruft API-Tokens, kein `X-Tenant` nötig |
 | DELETE | `/me/membership` | (auth+tenant) Mandant verlassen — entfernt eigene Rollen; 422 für letztes Mitglied mit `roles.manage` |
