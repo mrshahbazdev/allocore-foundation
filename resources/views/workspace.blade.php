@@ -182,7 +182,7 @@
                         </div>
                         <div class="max-h-80 overflow-y-auto">
                         <template x-for="n in dbNotifs">
-                            <a :href="'/app/' + ({unterweisung:'instructions',pruefung:'inspections',frist:'deadlines',feststellung:'audit-findings',audit:'audits',massnahme:'measures',aufgabe:'tasks',gefaehrdungsbeurteilung:'risk-assessments',projekt:'projects',auftrag:'production-orders',ausschreibung:'tenders',antwort:'questions',frage:'questions',urlaub:'leave-requests',rollen:'users'}[n.kind] || 'dashboard') + '?tenant=' + tenant + '&open=' + encodeURIComponent(n.entity_id || '')" @click="n.read || markNotifRead(n)" class="px-3 py-1.5 flex items-start gap-2 text-xs hover:bg-[#FAFBFC]" :class="n.read && 'opacity-50'">
+                            <a :href="notifLink(n) || ('/app/notifications?tenant=' + tenant)" @click="n.read || markNotifRead(n)" class="px-3 py-1.5 flex items-start gap-2 text-xs hover:bg-[#FAFBFC]" :class="n.read && 'opacity-50'">
                                 <span class="w-1.5 h-1.5 mt-1 rounded-full shrink-0" :class="n.read ? 'bg-[#D1D5DB]' : 'bg-[#CA8A04]'"></span>
                                 <span class="flex-1"><span x-text="n.title"></span><span class="block text-[10px] text-[#9CA3AF]" x-text="(n.kind ? (NOTIF_KIND[n.kind] || n.kind) + (n.due_at ? ' · ' : '') : '') + (n.due_at ? 'Fällig ' + n.due_at : '')"></span></span>
                                 <span class="text-[9px] text-[#9CA3AF] font-mono shrink-0" x-text="n.rel"></span>
