@@ -2124,6 +2124,16 @@ paths:
           required: false
           schema: {type: boolean, default: false}
           description: Nur ungelesene Benachrichtigungen liefern
+        - name: kind
+          in: query
+          required: false
+          schema: {type: string}
+          description: Nach Art filtern (z. B. aufgabe, frist, hinweis)
+        - name: muted
+          in: query
+          required: false
+          schema: {type: boolean}
+          description: '1: nur stummgeschaltete Arten (notification_muted), 0: nur nicht-stumme'
         - name: X-Tenant
           in: header
           required: true
