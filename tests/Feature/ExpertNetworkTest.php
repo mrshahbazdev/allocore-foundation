@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
+use Modules\ExpertNetwork\Notifications\ApplicationDecided;
 use Modules\ExpertNetwork\Notifications\QuestionAnswered;
 use Tests\TestCase;
 
@@ -104,7 +105,37 @@ class ExpertNetworkTest extends TestCase
         ], ['X-Tenant' => $tenant->id])->assertOk()->assertJsonPath('status', 'awarded');
 
         $this->getJson("/api/v1/tenders/{$tender}", ['X-Tenant' => $tenant->id])
-            ->assertJsonPath('status', 'awarded');
+            ->assertOk()->assertJsonPath('status', 'awarded');
+    }
+
+    public function test_application_decision_notifies_applicant(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Dec GmbH']);
+        $this->acting($tenant);
+        $expertUser = User::factory()->create();
+
+        $person = $this->postJson('/api/v1/persons', [
+            'first_name' => 'Eva', 'last_name' => 'Pro', 'email' => $expertUser->email,
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json('id');
+
+        $profile = $this->postJson('/api/v1/expert-profiles', [
+            'person_id' => $person, 'skills' => ['audit'],
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json('id');
+
+        $tender = $this->postJson('/api/v1/tenders', [
+            'title' => 'ISO-Audit',
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json('id');
+
+        $app = $this->postJson("/api/v1/tenders/{$tender}/applications", [
+            'expert_profile_id' => $profile, 'price' => 4500,
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json('id');
+
+        $this->patchJson("/api/v1/tender-applications/{$app}", [
+            'status' => 'awarded',
+        ], ['X-Tenant' => $tenant->id])->assertOk();
+
+        Notification::assertSentTo($expertUser, ApplicationDecided::class);
     }
 
     public function test_match_endpoint_scores_skill_overlap(): void
