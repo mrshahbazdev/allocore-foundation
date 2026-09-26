@@ -82,6 +82,27 @@ class DataPlatformTest extends TestCase
         }
     }
 
+    public function test_events_endpoint_filters_by_action(): void
+    {
+        $tenant = Tenant::create(['name' => 'Act GmbH']);
+        $this->acting($tenant);
+
+        $res = $this->postJson('/api/v1/companies', ['name' => 'ActCo'], ['X-Tenant' => $tenant->id]);
+        $id = $res->json('id');
+        $this->putJson('/api/v1/companies/'.$id, ['name' => 'ActCo2'], ['X-Tenant' => $tenant->id]);
+
+        $created = $this->getJson('/api/v1/events?action=created', ['X-Tenant' => $tenant->id]);
+        $updated = $this->getJson('/api/v1/events?action=updated', ['X-Tenant' => $tenant->id]);
+
+        foreach ($created->json('data') as $row) {
+            $this->assertStringEndsWith('.created', $row['event_properties']['type']);
+        }
+        $this->assertNotEmpty($updated->json('data'));
+        foreach ($updated->json('data') as $row) {
+            $this->assertStringEndsWith('.updated', $row['event_properties']['type']);
+        }
+    }
+
     public function test_events_endpoint_is_tenant_scoped(): void
     {
         $tenantA = Tenant::create(['name' => 'EA GmbH']);
