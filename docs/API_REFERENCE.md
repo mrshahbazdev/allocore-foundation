@@ -1,7 +1,7 @@
 # ALLOCORE Foundation — API Referenz (v1)
 
 Alle Endpunkte unter `/api/v1`. Auth: `Authorization: Bearer <sanctum-token>`.
-Tenant-Scope: Header `X-Tenant: <tenant-uuid>` (Pflicht auf allen Domänen-Endpunkten).
+Tenant-Scope: Header `X-Tenant: <tenant-uuid>` (Pflicht auf allen Domänen-Endpunkten). Mitgliedschaft Pflicht: Nutzer mit Rollen-Zuweisungen dürfen nur Mandanten betreten, in denen sie Mitglied sind — sonst `403 Kein Mitglied dieses Mandanten.` (Nutzer ganz ohne Zuweisungen dürfen überall hin — Grace-Modus für Erst-Onboarding).
 RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 
 ## Zentral (kein Tenant-Header nötig)
@@ -10,7 +10,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 |---|---|---|
 | GET | `/health` | Liveness + Readiness — `checks.database` + `checks.migrations` (ausstehende Migrationen → `pending:N`), 503 bei `degraded`; ohne Auth |
 | GET | `/version` | Build-/Betriebs-Infos — `app_version` (APP_VERSION env), `laravel`, `php`, `commit` (Git-SHA aus .git/HEAD, falls vorhanden); ohne Auth |
-| GET/POST | `/tenants` | Mandantenliste / Mandant anlegen (seedet Rollenmodell) |
+| GET/POST | `/tenants` | (auth) GET listet nur eigene Mitgliedschaften; POST legt Mandant an (seedet Rollenmodell) — Ersteller wird automatisch `administrator` |
 | GET | `/context` | (auth) aktueller User + Tenant-Kontext |
 | GET/POST, DELETE | `/tokens`, `/tokens/{id}` | auth | Personal Access Tokens — Klartext nur bei POST-Antwort; `abilities` optional (`['tasks.view', ...]` — scoped Token, enforced auf `permission:`-Routen; Whitelist: `GET /tokens/abilities`), `expires_in_days` 1–365; Workspace-Token werden pro Seitenaufruf rotiert |
 | `/me` | (auth+tenant) aktueller Nutzer im Mandanten — `id`, `name`, `email`, `roles`, `permissions` |
