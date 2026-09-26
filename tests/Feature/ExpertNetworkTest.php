@@ -7,7 +7,9 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
+use Modules\ExpertNetwork\Notifications\QuestionAnswered;
 use Tests\TestCase;
 
 class ExpertNetworkTest extends TestCase
@@ -52,6 +54,28 @@ class ExpertNetworkTest extends TestCase
 
         $this->getJson("/api/v1/questions/{$q}", ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonPath('status', 'answered');
+    }
+
+    public function test_answer_notifies_question_asker(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'QA GmbH']);
+        $asker = $this->acting($tenant);
+
+        $q = $this->postJson('/api/v1/questions', [
+            'title' => 'DGUV-Frage',
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json('id');
+
+        $answerer = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $answerer->assignRole('holding');
+        Sanctum::actingAs($answerer->fresh());
+
+        $this->postJson("/api/v1/questions/{$q}/answers", [
+            'body' => 'Ja, verpflichtend.',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        Notification::assertSentTo($asker, QuestionAnswered::class);
     }
 
     public function test_tender_apply_and_award(): void
