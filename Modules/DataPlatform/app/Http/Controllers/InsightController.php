@@ -180,6 +180,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'audit_findings_overdue', "{$findingsOverdue} Audit-Feststellung(en) überfällig.", ['count' => $findingsOverdue]);
         }
 
+        $findingsSoon = $count('audit_findings', fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->whereBetween('due_at', [now(), now()->addDays(7)]));
+        if ($findingsSoon) {
+            $insights[] = $this->hit('info', 'audit_findings_due_soon', "{$findingsSoon} Audit-Feststellung(en) innerhalb von 7 Tagen fällig.", ['count' => $findingsSoon]);
+        }
+
         $findingsCritical = $count('audit_findings', fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->whereIn('severity', ['high', 'critical']));
         if ($findingsCritical) {
             $insights[] = $this->hit('critical', 'audit_findings_critical', "{$findingsCritical} offene Audit-Feststellung(en) mit hoher/kritischer Schwere.", ['count' => $findingsCritical]);
