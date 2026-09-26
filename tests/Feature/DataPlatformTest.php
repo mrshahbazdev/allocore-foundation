@@ -138,12 +138,22 @@ class DataPlatformTest extends TestCase
             'title' => 'Überfälliges Audit', 'ends_on' => now()->subDay()->toDateString(),
         ], ['X-Tenant' => $tenant->id]);
 
+        $starting = $this->postJson('/api/v1/audits', [
+            'title' => 'Audit bald', 'starts_on' => now()->addDays(4)->toDateString(),
+        ], ['X-Tenant' => $tenant->id]);
+
+        $this->postJson('/api/v1/audit-findings', [
+            'audit_id' => $starting['id'], 'title' => 'Bald fällig', 'due_at' => now()->addDays(3)->toDateString(),
+        ], ['X-Tenant' => $tenant->id]);
+
         $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
             ->pluck('code')->all();
 
         $this->assertContains('tasks_overdue', $codes);
         $this->assertContains('high_risks_open', $codes);
         $this->assertContains('audits_overdue', $codes);
+        $this->assertContains('audits_starting_soon', $codes);
+        $this->assertContains('audit_findings_due_soon', $codes);
     }
 
     public function test_nav_counts_returns_overdue_and_today(): void
