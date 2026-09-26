@@ -1165,7 +1165,9 @@
             <input type="password" x-model="pwForm.confirm" placeholder="Neues Passwort wiederholen" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
             <p class="text-[11px] text-[#5B6B7E]">Nach der Änderung werden alle API-Token widerrufen — die Seite lädt neu.</p>
         </div>
-        <div class="px-6 py-3 border-t border-[#E4E9F0] flex justify-end gap-2">
+        <div class="px-6 py-3 border-t border-[#E4E9F0] flex items-center gap-2">
+            <button @click="deleteAccount()" class="px-3 py-1.5 text-xs rounded-lg border border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/10">Konto löschen</button>
+            <span class="flex-1"></span>
             <button @click="pwOpen = false" class="px-3 py-1.5 text-sm rounded-lg border border-[#D6DEE9] text-[#5B6B7E]">Abbrechen</button>
             <button @click="submitPassword()" :disabled="(!pwForm.current && !(pwForm.name && pwForm.email)) || (pwForm.next && pwForm.next !== pwForm.confirm)" class="px-4 py-1.5 text-sm rounded-lg bg-[#FACC15] text-black font-semibold disabled:opacity-50">Ändern</button>
         </div>
@@ -1565,6 +1567,16 @@ function workspace(initial) {
                     .catch(() => { this.pwErr = 'Netzwerkfehler.'; });
             } else if (pwChanged) savePw();
             else this.pwErr = 'Keine Änderung.';
+        },
+        deleteAccount() {
+            if (!confirm('Eigenes Konto wirklich löschen? Nur möglich, wenn du in keinem Mandanten mehr Mitglied bist. Alle API-Tokens werden widerrufen.')) return;
+            this.api('/api/v1/me', {method: 'DELETE'})
+                .then(async r => {
+                    if (r.ok) { this.toast('Konto gelöscht.'); setTimeout(() => { location.href = '/login'; }, 1200); return; }
+                    const d = await r.json().catch(() => null);
+                    this.pwErr = (d && d.message) ? d.message : 'Fehler ' + r.status;
+                })
+                .catch(() => { this.pwErr = 'Netzwerkfehler.'; });
         },
         fetchTenantInfo() {
             if (!this.tenant) { this.tenantInfo = null; return; }
