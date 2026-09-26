@@ -49,6 +49,8 @@ class RoleController extends Controller
             'Rolle existiert bereits.'
         );
 
+        $this->guardPermissionSet($request, $validated['permissions'] ?? [], 'Rolle');
+
         $role = new Role;
         $role->name = $validated['name'];
         $role->guard_name = 'web';
@@ -65,10 +67,11 @@ class RoleController extends Controller
         ], 201);
     }
 
-    public function destroyRole(Role $role)
+    public function destroyRole(Request $request, Role $role)
     {
         abort_if($role->team_id !== tenant()->getTenantKey(), 404);
         abort_if(in_array($role->name, ['holding', 'administrator']), 422, 'System-Rolle kann nicht gelöscht werden.');
+        $this->guardRoleWithinOwnPermissions($request, $role);
 
         $role->delete();
 
@@ -91,6 +94,8 @@ class RoleController extends Controller
             'permissions.*' => ['string', 'exists:permissions,name'],
         ]);
 
+        $this->guardRoleWithinOwnPermissions($request, $role);
+        $this->guardPermissionSet($request, $validated['permissions'], 'Rolle');
         $role->syncPermissions($validated['permissions']);
 
         $this->recordRoleEvent('permissions_updated', $role, ['permissions' => $validated['permissions']]);
@@ -138,6 +143,7 @@ class RoleController extends Controller
         ]);
 
         $roles = $validated['roles'] ?? ['mitarbeiter'];
+        $this->guardAssignableRoles($request, $roles);
         $user = User::where('email', $validated['email'])->first();
         $initialPassword = null;
         $created = false;
@@ -179,12 +185,49 @@ class RoleController extends Controller
             ],
         ]);
 
+        $this->guardAssignableRoles($request, $validated['roles']);
         $user->syncRoles($validated['roles']);
 
         $this->recordMemberEvent('roles_updated', $user, ['roles' => $validated['roles']]);
         $user->notify(new RolesChanged($user, 'roles_updated', $validated['roles']));
 
         return $this->userRoles($user);
+    }
+
+    /**
+     * Privilege-Escalation-Guard: eine Rolle ist nur zuweisbar, wenn ihre
+     * Permissions eine Teilmenge der eigenen Permissions sind — sonst
+     * koennte ein eingeschraenkter roles.manager sich selbst 'administrator'
+     * geben.
+     */
+    private function guardAssignableRoles(Request $request, array $roleNames): void
+    {
+        $actorPermissions = $request->user()->getAllPermissions()->pluck('name');
+
+        foreach ($roleNames as $name) {
+            $role = Role::where('name', $name)
+                ->where('team_id', tenant()->getTenantKey())
+                ->first();
+            if (! $role) {
+                continue;
+            }
+            $missing = $role->permissions->pluck('name')->diff($actorPermissions);
+            abort_if($missing->isNotEmpty(), 403,
+                "Rolle '{$name}' uebersteigt eigene Berechtigungen (fehlend: {$missing->implode(', ')}).");
+        }
+    }
+
+    private function guardRoleWithinOwnPermissions(Request $request, Role $role): void
+    {
+        $this->guardPermissionSet($request, $role->permissions->pluck('name'),
+            "Rolle '{$role->name}'");
+    }
+
+    private function guardPermissionSet(Request $request, iterable $permissions, string $context): void
+    {
+        $missing = collect($permissions)->diff($request->user()->getAllPermissions()->pluck('name'));
+        abort_if($missing->isNotEmpty(), 403,
+            "{$context} uebersteigt eigene Berechtigungen (fehlend: {$missing->implode(', ')}).");
     }
 
     public function remove(Request $request, User $user)

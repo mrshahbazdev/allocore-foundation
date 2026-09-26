@@ -520,6 +520,47 @@ class RolesTest extends TestCase
         $response->assertStatus(429);
     }
 
+    public function test_eingeschraenkter_roles_manager_kann_sich_nicht_eskalieren(): void
+    {
+        $tenant = Tenant::find($this->createTenantApi(['name' => 'Guard GmbH'])->json('id'));
+        $target = User::factory()->create();
+
+        // Rolle mit roles.manage aber ohne 'ai.manage' anlegen (als Admin).
+        $admin = $this->actingAsUser($tenant);
+        $perms = Permission::pluck('name')->reject(fn ($p) => $p === 'ai.manage')->values();
+        $teamleiter = new Role;
+        $teamleiter->name = 'teamleiter';
+        $teamleiter->guard_name = 'web';
+        $teamleiter->team_id = $tenant->getTenantKey();
+        $teamleiter->save();
+        $teamleiter->syncPermissions($perms);
+
+        // Mitglied mit dieser Rolle einloggen.
+        $manager = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $manager->assignRole('teamleiter');
+        Sanctum::actingAs($manager->fresh());
+
+        // 'administrator' hat 'ai.manage' -> 403.
+        $this->putJson("/api/v1/users/{$target->id}/roles", ['roles' => ['administrator']], ['X-Tenant' => $tenant->id])
+            ->assertForbidden();
+
+        // 'mitarbeiter' ist Teilmenge -> ok.
+        $this->putJson("/api/v1/users/{$target->id}/roles", ['roles' => ['mitarbeiter']], ['X-Tenant' => $tenant->id])
+            ->assertOk();
+
+        // Eigene Rechte uebersteigende Rolle anlegen -> 403.
+        $this->postJson('/api/v1/roles', ['name' => 'superrolle', 'permissions' => ['ai.manage']], ['X-Tenant' => $tenant->id])
+            ->assertForbidden();
+
+        // Staerkere Rolle editieren/loeschen -> 403.
+        $adminRole = Role::where('team_id', $tenant->getTenantKey())->where('name', 'geschaeftsfuehrer')->first();
+        $this->putJson("/api/v1/roles/{$adminRole->id}", ['permissions' => ['tasks.view']], ['X-Tenant' => $tenant->id])
+            ->assertForbidden();
+        $this->deleteJson("/api/v1/roles/{$adminRole->id}", [], ['X-Tenant' => $tenant->id])
+            ->assertForbidden();
+    }
+
     protected function actingAsUser(Tenant|string|null $tenant = null): User
     {
         $user = User::factory()->create();
