@@ -3,6 +3,7 @@
 namespace Modules\DataPlatform\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 
@@ -13,10 +14,12 @@ use Illuminate\Support\Facades\DB;
  */
 class InsightController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         return collect($this->rules())
             ->filter()
+            ->when($request->filled('severity'), fn ($c) => $c->filter(fn ($i) => $i['severity'] === $request->string('severity')->toString()))
+            ->when($request->filled('code'), fn ($c) => $c->filter(fn ($i) => $i['code'] === $request->string('code')->toString()))
             ->sortBy(fn ($i) => array_search($i['severity'], ['critical', 'warning', 'info']))
             ->values();
     }
