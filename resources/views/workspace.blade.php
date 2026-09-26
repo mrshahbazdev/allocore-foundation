@@ -406,7 +406,7 @@
                             <div class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
                                 <table class="w-full text-sm">
                                     <thead><tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
-                                        <template x-for="h in ['Mandant','Unternehmen','Personen','Offene Aufgaben','Offene Fristen','Hohe Risiken','Data Lake','Audits offen','Festst. offen','Compliance %']" :key="h">
+                                        <template x-for="h in ['Mandant','Unternehmen','Personen','Offene Aufgaben','Offene Fristen','Hohe Risiken','Data Lake','Audits offen','Festst. offen','Urlaub offen','Aufträge offen','Compliance %']" :key="h">
                                             <th scope="col" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E]" x-text="h"></th>
                                         </template>
                                     </tr></thead>
@@ -422,6 +422,8 @@
                                                 <td class="px-5 py-3 font-mono" x-text="t.data_objects"></td>
                                                 <td class="px-5 py-3 font-mono" x-text="t.audits_open"></td>
                                                 <td class="px-5 py-3 font-mono" :class="t.findings_open > 0 ? 'text-[#B45309] font-semibold' : ''" x-text="t.findings_open"></td>
+                                                <td class="px-5 py-3 font-mono" x-text="t.leave_pending"></td>
+                                                <td class="px-5 py-3 font-mono" x-text="t.orders_open"></td>
                                                 <td class="px-5 py-3 font-mono" :class="t.compliance_rate < 50 ? 'text-[#A6362E] font-semibold' : (t.compliance_rate < 80 ? 'text-[#B45309]' : 'text-[#15803D]')" x-text="t.compliance_rate"></td>
                                             </tr>
                                         </template>
@@ -1359,7 +1361,7 @@ function workspace(initial) {
         insightFilter(code) { return ({tasks_overdue:'overdue=1',tasks_due_soon:'dueSoon=1',tasks_unassigned:'unassigned=1',deadlines_due_soon:'dueSoon=1',deadlines_unassigned:'unassigned=1',inspections_due_soon:'dueSoon=1',inspections_unassigned:'unassigned=1',fin_negative_liquidity:'',machines_in_maintenance:'status=maintenance',orders_overdue:'overdue=1',orders_due_soon:'dueSoon=1',orders_unassigned:'unassigned=1',risk_reviews_overdue:'overdue=1',measures_overdue:'overdue=1',measures_due_soon:'dueSoon=1',measures_unassigned:'unassigned=1',projects_overdue:'overdue=1',projects_ending_soon:'dueSoon=1',projects_unassigned:'unassigned=1',instructions_due_soon:'dueSoon=1',instructions_overdue:'overdue=1',instructions_unassigned:'unassigned=1',deadlines_overdue:'overdue=1',high_risks_open:'status=open',tenders_open:'status=open',questions_open:'status=open',tenders_deadline_soon:'dueSoon=1',investments_drawdown:'',strategies_overdue:'overdue=1',participations_capital_need:'status=active',inspections_overdue:'overdue=1',leave_requests_pending:'status=pending',leave_active_today:'status=approved',audit_findings_overdue:'overdue=1',audit_findings_critical:'severity=critical',audit_findings_due_soon:'dueSoon=1',audit_findings_unassigned:'unassigned=1',audits_starting_soon:'status=planned',audits_overdue:'overdue=1',audits_unassigned:'unassigned=1'})[code] || ''; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
         sortedTenants() { return [...this.tenantList].sort((a, b) => String(a.name).localeCompare(String(b.name), 'de')); },
-        execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake'}; return M[k] || k; },
+        execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake',audits_open:'Audits offen',findings_open:'Festst. offen',leave_pending:'Urlaub offen',orders_open:'Aufträge offen'}; return M[k] || k; },
         createExecReport() {
             const title = prompt('Report-Titel', 'Executive Report ' + new Date().toLocaleDateString('de-DE'));
             if (!title) return;

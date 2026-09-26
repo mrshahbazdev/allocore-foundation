@@ -21,6 +21,7 @@ class ExecutiveController extends Controller
         $totals = array_fill_keys([
             'companies', 'persons', 'tasks_open', 'deadlines_open',
             'high_risks', 'data_objects', 'audits_open', 'findings_open',
+            'leave_pending', 'orders_open',
         ], 0);
 
         foreach (Tenant::all() as $tenant) {
