@@ -171,6 +171,15 @@ class DemoSeedCommand extends Command
             ['description' => 'Augenspülstation im Labor monatlich prüfen.', 'severity' => 'medium', 'status' => 'in_progress', 'due_at' => now()->addDays(4), 'responsible_id' => $user?->id]
         );
 
+        Audit::firstOrCreate(
+            ['title' => 'Externes Audit Qualitätsmanagement'],
+            ['type' => 'external', 'standard' => 'ISO 9001', 'auditor' => 'TÜV Süd', 'company_id' => $company->id, 'responsible_id' => $user?->id, 'status' => 'planned', 'starts_on' => now()->addDays(5), 'ends_on' => now()->addDays(6)]
+        );
+        Audit::firstOrCreate(
+            ['title' => 'Laufendes Audit Produktion'],
+            ['type' => 'internal', 'standard' => 'DGUV', 'auditor' => 'Bernd Prüfer', 'company_id' => $company->id, 'responsible_id' => $user?->id, 'status' => 'in_progress', 'starts_on' => now()->subDays(3), 'ends_on' => now()->addDays(2)]
+        );
+
         $this->call('analytics:aggregate');
         $this->info("Demo-Daten für Mandant {$tenant->name} angelegt.");
 
