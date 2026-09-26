@@ -1120,4 +1120,34 @@ class DataPlatformTest extends TestCase
         $this->postJson("/api/v1/notifications/{$foreign->id}/unread", [], ['X-Tenant' => $tenant->id])
             ->assertNotFound();
     }
+
+    public function test_notifications_kind_filter(): void
+    {
+        $tenant = Tenant::create(['name' => 'NK GmbH']);
+        $user = $this->acting($tenant);
+
+        $mk = fn (string $kind) => new class($kind) extends Notification
+        {
+            public function __construct(private string $k) {}
+
+            public function via($n)
+            {
+                return ['database'];
+            }
+
+            public function toArray($n)
+            {
+                return ['title' => 'X', 'kind' => $this->k];
+            }
+        };
+        $user->notify($mk('frist'));
+        $user->notify($mk('rollen'));
+
+        $all = $this->getJson('/api/v1/notifications', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(2, $all);
+
+        $res = $this->getJson('/api/v1/notifications?kind=frist', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $res);
+        $this->assertSame('frist', $res[0]['kind']);
+    }
 }
