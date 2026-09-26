@@ -142,6 +142,7 @@ class NotificationController extends Controller
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
             ->when($request->boolean('muted') && $muted !== [], fn ($q) => $q->whereIn('data->kind', $muted))
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
+            ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
             ->delete();
 
         return response()->json(['deleted' => $count]);
