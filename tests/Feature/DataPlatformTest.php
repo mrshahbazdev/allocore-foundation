@@ -1571,6 +1571,10 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertExactJson(['total' => 1, 'unread' => 0, 'read' => 1, 'muted' => 1]);
         $this->getJson('/api/v1/notifications/stats?before='.now()->subDay()->toDateString(), ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson(['total' => 0, 'unread' => 0, 'read' => 0, 'muted' => 0]);
+        $this->getJson('/api/v1/notifications/stats?muted=1', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 0, 'read' => 1, 'muted' => 1]);
+        $this->getJson('/api/v1/notifications/stats?muted=0', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['total' => 1, 'unread' => 1, 'read' => 0, 'muted' => 0]);
     }
 
     public function test_notifications_unread_filter_and_mark_unread(): void

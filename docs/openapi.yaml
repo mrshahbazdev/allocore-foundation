@@ -2250,7 +2250,7 @@ paths:
   /api/v1/notifications/stats:
     get:
       tags: [metrics]
-      summary: "GET /api/v1/notifications/stats — Zählwerte {total, unread, read, muted} — ?kind=/?code=/?before=/?after= grenzen ein"
+      summary: "GET /api/v1/notifications/stats — Zählwerte {total, unread, read, muted} — ?kind=/?code=/?before=/?after=/?muted=1|0 grenzen ein"
       parameters:
         - name: X-Tenant
           in: header
