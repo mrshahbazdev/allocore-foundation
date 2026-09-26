@@ -38,6 +38,8 @@ paths:
                   permissions: {type: array, items: {type: string}}
                   last_login_at: {type: string, format: date-time, nullable: true}
                   password_changed_at: {type: string, format: date-time, nullable: true}
+                  email_verified: {type: boolean}
+                  created_at: {type: string, format: date-time}
                   tenants:
                     type: array
                     description: eigene Mitgliedschaften mandantenübergreifend
