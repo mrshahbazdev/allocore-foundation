@@ -128,6 +128,10 @@ class DataPlatformTest extends TestCase
         $this->assertArrayHasKey('company', $res['by_group']);
         $this->assertArrayHasKey('task', $res['by_group']);
         $this->assertArrayHasKey(now()->toDateString(), $res['per_day']);
+
+        $onlyCompany = $this->getJson('/api/v1/events/summary?group=company', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame(1, $onlyCompany['total']);
+        $this->assertSame(['company' => 1], $onlyCompany['by_group']);
     }
 
     public function test_events_endpoint_filters_by_id_cursors(): void

@@ -40,7 +40,8 @@ class EventController extends Controller
         $base = DB::table('stored_events')
             ->where('meta_data->tenant_id', tenant()->getTenantKey())
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
-            ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')));
+            ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
+            ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'));
 
         $byGroup = (clone $base)
             ->selectRaw("SUBSTRING_INDEX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')), '.', 1) as grp, COUNT(*) as n")
