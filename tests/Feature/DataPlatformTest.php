@@ -1264,6 +1264,18 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertExactJson(['count' => 1]);
     }
 
+    public function test_notifications_unread_count_filters_by_code(): void
+    {
+        $tenant = Tenant::create(['name' => 'UC GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new CriticalInsight($tenant->id, 'orders_overdue', 'x'));
+        $user->notify(new CriticalInsight($tenant->id, 'demo_seed', 'y'));
+
+        $this->getJson('/api/v1/notifications/unread-count?code=orders_overdue', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['count' => 1]);
+    }
+
     public function test_notifications_destroy_all_filters_by_code(): void
     {
         $tenant = Tenant::create(['name' => 'DC GmbH']);
