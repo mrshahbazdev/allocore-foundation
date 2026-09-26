@@ -36,6 +36,7 @@ class ComplianceDueSoon extends Notification
             'pruefung' => 'Pruefung',
             'frist' => 'Frist',
             'feststellung' => 'Audit-Feststellung',
+            'massnahme' => 'Massnahme',
             'audit' => 'Audit',
         ][$this->kind] ?? ucfirst($this->kind);
     }
