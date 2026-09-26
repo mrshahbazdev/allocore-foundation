@@ -127,6 +127,7 @@ class RoleController extends Controller
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
             'last_login_at' => $user->last_login_at,
+            'email_verified' => $user->email_verified_at !== null,
             'password_changed_at' => $user->password_changed_at,
             'tenants' => $this->memberships($user),
         ]);

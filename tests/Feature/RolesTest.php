@@ -223,6 +223,10 @@ class RolesTest extends TestCase
             ->assertOk();
 
         $this->assertNull($user->fresh()->email_verified_at);
+
+        Sanctum::actingAs($user->fresh());
+        $this->getJson('/api/v1/me', ['X-Tenant' => $tenant])
+            ->assertOk()->assertJson(['email_verified' => false]);
     }
 
     public function test_password_update_stamps_password_changed_at_and_me_returns_it(): void
