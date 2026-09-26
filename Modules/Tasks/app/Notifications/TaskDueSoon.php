@@ -28,7 +28,8 @@ class TaskDueSoon extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'task_id' => $this->task->id,
+            'kind' => 'aufgabe',
+            'id' => $this->task->id,
             'title' => $this->task->title,
             'due_at' => $this->task->due_at,
         ];
