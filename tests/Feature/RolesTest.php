@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 class RolesTest extends TestCase
@@ -126,6 +127,26 @@ class RolesTest extends TestCase
             ->assertJsonPath('email', $user->email)
             ->assertJsonPath('roles.0', 'auditor');
         $this->assertContains('compliance.view', $res->json('permissions'));
+    }
+
+    public function test_every_permission_domain_in_workspace_map_exists(): void
+    {
+        $this->postJson('/api/v1/tenants', ['name' => 'Perms GmbH'])->assertCreated();
+
+        $blade = file_get_contents(resource_path('views/workspace.blade.php'));
+        preg_match('/permDom\(key\) \{\s*const M = \{([^}]+)\}/', $blade, $m);
+        $this->assertNotEmpty($m[1] ?? null, 'permDom map not found in workspace.blade.php');
+        preg_match_all("/'([a-z-]+)':'([a-z]+)'/", $m[1], $pairs);
+        $domains = array_unique($pairs[2]);
+        $this->assertNotEmpty($domains);
+
+        $existing = Permission::pluck('name')->all();
+        $expected = ['metrics' => ['metrics.view'], 'roles' => ['roles.manage']];
+        foreach ($domains as $d) {
+            foreach ($expected[$d] ?? ["{$d}.view", "{$d}.manage"] as $p) {
+                $this->assertContains($p, $existing, "{$p} fehlt");
+            }
+        }
     }
 
     protected function actingAsUser(Tenant|string|null $tenant = null): User
