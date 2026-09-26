@@ -166,6 +166,23 @@ class NotificationController extends Controller
         return response()->json(['deleted' => $count]);
     }
 
+    public function batch(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => 'required|array|min:1|max:200',
+            'ids.*' => 'string',
+            'action' => 'required|in:read,unread,delete',
+        ]);
+        $q = $request->user()->notifications()->whereIn('id', $data['ids']);
+        $count = match ($data['action']) {
+            'read' => $q->update(['read_at' => now()]),
+            'unread' => $q->update(['read_at' => null]),
+            'delete' => $q->delete(),
+        };
+
+        return response()->json(['updated' => $count]);
+    }
+
     public function destroyAll(Request $request)
     {
         $muted = $request->user()->notification_muted ?? [];
