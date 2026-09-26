@@ -1172,7 +1172,8 @@
                     <div class="space-y-1 max-h-32 overflow-y-auto">
                         <template x-for="t in me.tenants" :key="t.id">
                             <div class="flex items-center gap-2 text-xs">
-                                <span class="font-medium text-[#0B0B0F]" x-text="t.name || t.id"></span>
+                                <button @click="t.id !== tenant && (pwOpen = false, tenant = t.id, loadSection(), loadNavBadges(), toast('Mandant: ' + (t.name || t.id)))" :class="t.id === tenant ? 'font-medium text-[#0B0B0F] cursor-default' : 'font-medium text-[#CA8A04] hover:underline'" x-text="t.name || t.id"></button>
+                                <span x-show="t.id === tenant" class="text-[9px] font-semibold uppercase tracking-wide text-[#8A97A6]">aktiv</span>
                                 <span class="flex-1"></span>
                                 <template x-for="r in (t.roles || [])" :key="r">
                                     <span class="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-[#FACC15]/20 text-[#854D0E]" x-text="roleLabel(r)"></span>
