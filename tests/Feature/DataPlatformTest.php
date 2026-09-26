@@ -234,6 +234,32 @@ class DataPlatformTest extends TestCase
         $this->assertContains('tenders_deadline_soon', $codes);
     }
 
+    public function test_insights_reports_questions_open_and_leave_active_today(): void
+    {
+        $tenant = Tenant::create(['name' => 'Netzwerk GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/questions', ['title' => 'Wie kalibriert man?'], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $person = $this->postJson('/api/v1/persons', ['first_name' => 'Lea', 'last_name' => 'Fern'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $leave = $this->postJson('/api/v1/leave-requests', [
+            'person_id' => $person['id'], 'type' => 'vacation',
+            'starts_on' => now()->subDay()->toDateString(),
+            'ends_on' => now()->addDay()->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->putJson("/api/v1/leave-requests/{$leave['id']}", ['status' => 'approved'], ['X-Tenant' => $tenant->id])->assertOk();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('questions_open', $codes);
+        $this->assertContains('leave_active_today', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
