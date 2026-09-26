@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
+use Modules\Core\Notifications\Assigned;
 use Modules\Hr\Notifications\LeaveDecided;
 use Tests\TestCase;
 
@@ -56,6 +57,32 @@ class HrTest extends TestCase
 
         Sanctum::actingAs(User::find($user->id));
         $this->getJson('/api/v1/leave-requests', ['X-Tenant' => $tenantB->id])->assertForbidden();
+    }
+
+    public function test_new_leave_request_notifies_hr_managers(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Mgr GmbH']);
+        $requester = $this->acting($tenant);
+
+        $manager = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $manager->assignRole('holding');
+        tenancy()->end();
+
+        $pid = $this->postJson('/api/v1/persons', [
+            'first_name' => 'Max', 'last_name' => 'Tech',
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json('id');
+
+        $this->postJson('/api/v1/leave-requests', [
+            'person_id' => $pid, 'type' => 'vacation',
+            'starts_on' => today()->toDateString(), 'ends_on' => today()->addDays(5)->toDateString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        Notification::assertSentTo($manager, Assigned::class,
+            fn ($n) => $n->kind === 'urlaub' && str_contains($n->title, 'Max Tech'));
+        Notification::assertNotSentTo($requester, Assigned::class,
+            fn ($n) => $n->kind === 'urlaub');
     }
 
     public function test_leave_decision_notifies_requester(): void

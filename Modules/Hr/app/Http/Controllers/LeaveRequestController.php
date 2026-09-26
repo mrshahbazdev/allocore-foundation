@@ -2,9 +2,12 @@
 
 namespace Modules\Hr\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Modules\Core\Notifications\Assigned;
 use Modules\Hr\Models\LeaveRequest;
 
 class LeaveRequestController extends Controller
@@ -31,7 +34,24 @@ class LeaveRequestController extends Controller
             'note' => ['nullable', 'string'],
         ]);
 
-        return response()->json(LeaveRequest::create($validated), 201);
+        $leaveRequest = LeaveRequest::create($validated);
+
+        $personName = trim(($leaveRequest->person->first_name ?? '').' '.($leaveRequest->person->last_name ?? ''));
+        $memberIds = DB::table('model_has_roles')
+            ->where('team_id', tenant()->getTenantKey())
+            ->where('model_type', User::class)
+            ->pluck('model_id');
+        User::whereIn('id', $memberIds)
+            ->get()
+            ->filter(fn (User $u) => (int) $u->id !== (int) $request->user()->id && $u->hasPermissionTo('hr.manage'))
+            ->each(fn (User $u) => $u->notify(new Assigned(
+                'urlaub',
+                $leaveRequest->id,
+                'Neuer '.$leaveRequest->type.'-Antrag von '.$personName.' ('.$leaveRequest->starts_on->format('d.m.Y').'–'.$leaveRequest->ends_on->format('d.m.Y').')',
+                $leaveRequest->starts_on->toDateString(),
+            )));
+
+        return response()->json($leaveRequest, 201);
     }
 
     public function show(LeaveRequest $leaveRequest)
