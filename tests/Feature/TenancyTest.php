@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 class TenancyTest extends TestCase
@@ -37,6 +38,18 @@ class TenancyTest extends TestCase
             ->all();
 
         $this->assertContains('tenant.created', $types);
+    }
+
+    public function test_tenant_creator_wird_administrator(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $tenantId = $this->postJson('/api/v1/tenants', ['name' => 'Neue GmbH'])
+            ->assertCreated()->json('id');
+
+        app(PermissionRegistrar::class)->setPermissionsTeamId($tenantId);
+        $this->assertTrue($user->fresh()->hasRole('administrator'));
     }
 
     public function test_tenants_endpoints_require_auth(): void
