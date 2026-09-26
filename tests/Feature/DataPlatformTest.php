@@ -1371,4 +1371,32 @@ class DataPlatformTest extends TestCase
         Artisan::call('insights:notify', ['--warnings' => true]);
         NotificationFacade::assertSentToTimes($admin, CriticalInsight::class, 1);
     }
+
+    public function test_insights_notify_tenant_option_limits_scope(): void
+    {
+        $tenantA = Tenant::create(['name' => 'A GmbH']);
+        $tenantB = Tenant::create(['name' => 'B GmbH']);
+        $adminA = $this->acting($tenantA);
+        $adminB = $this->acting($tenantB);
+
+        foreach ([$tenantA->id => $adminA, $tenantB->id => $adminB] as $tid => $admin) {
+            Sanctum::actingAs($admin);
+            $companyId = $this->postJson('/api/v1/companies', ['name' => 'Co '.$tid], ['X-Tenant' => $tid])
+                ->assertCreated()->json('id');
+            $this->postJson('/api/v1/financial-reports', [
+                'company_id' => $companyId,
+                'period' => now()->format('Y-m'),
+                'revenue' => 1000,
+                'ebitda' => 100,
+                'cashflow' => 50,
+                'liquidity' => -100,
+            ], ['X-Tenant' => $tid])->assertCreated();
+        }
+
+        NotificationFacade::fake();
+        Artisan::call('insights:notify', ['--tenant' => $tenantA->id]);
+
+        NotificationFacade::assertSentToTimes($adminA, CriticalInsight::class, 1);
+        NotificationFacade::assertNotSentTo($adminB, CriticalInsight::class);
+    }
 }
