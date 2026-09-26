@@ -286,6 +286,33 @@ class DataPlatformTest extends TestCase
         $this->assertContains('tenders_overdue', $codes);
     }
 
+    public function test_insights_reports_orders_overdue_and_measures_due_soon(): void
+    {
+        $tenant = Tenant::create(['name' => 'Produktion GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $this->postJson('/api/v1/production-orders', [
+            'order_no' => 'PO-OVER', 'product' => 'Brücke 4er',
+            'status' => 'running', 'due_at' => now()->subDays(2)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $project = $this->postJson('/api/v1/projects', ['name' => 'Qualität', 'status' => 'active'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/measures', [
+            'title' => 'Sicherheitsprüfung', 'project_id' => $project['id'],
+            'due_at' => now()->addDays(4)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('orders_overdue', $codes);
+        $this->assertContains('measures_due_soon', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
