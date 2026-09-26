@@ -1273,6 +1273,7 @@ function workspace(initial) {
             this.$watch('rows', () => this.setDocTitle());
             this.$watch('detail', d => {
                 if (d && d.id) {
+                    if (this.section === 'notifications' && !d.read) this.markNotifRead(d);
                     this.pushRecentRow(d);
                     if (!this._prevFocus) this._prevFocus = document.activeElement;
                     this.$nextTick(() => { this.$refs.drawer && this.$refs.drawer.focus(); });
