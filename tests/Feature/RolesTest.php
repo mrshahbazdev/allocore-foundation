@@ -262,6 +262,25 @@ class RolesTest extends TestCase
         );
     }
 
+    public function test_logout_records_event_in_tenant_feed(): void
+    {
+        $tenant = Tenant::create(['name' => 'EVT']);
+        $user = User::factory()->create(['password' => 'NeuPasswort123']);
+        Role::firstOrCreate(['name' => 'administrator', 'guard_name' => 'web']);
+        $user->assignRole(Role::where('name', 'administrator')->first());
+        \DB::table('model_has_roles')->where('model_id', $user->id)->update(['team_id' => $tenant->id]);
+
+        $this->post('/login', ['email' => $user->email, 'password' => 'NeuPasswort123']);
+        $this->post('/logout');
+
+        $this->assertTrue(
+            \DB::table('stored_events')
+                ->where('event_properties->type', 'user.logged_out')
+                ->where('meta_data->tenant_id', (string) $tenant->id)
+                ->exists()
+        );
+    }
+
     public function test_login_lockout_notifies_user_once(): void
     {
         Notification::fake();
