@@ -16,6 +16,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 | GET | `/context` | (auth) aktueller User + Tenant-Kontext |
 | GET/POST, DELETE | `/tokens`, `/tokens/{id}` | auth | Personal Access Tokens — Klartext nur bei POST-Antwort; `abilities` optional (`['tasks.view', ...]` — scoped Token, enforced auf `permission:`-Routen; Whitelist: `GET /tokens/abilities`), `expires_in_days` 1–365; Workspace-Token werden pro Seitenaufruf rotiert |
 | GET | `/me` | (auth+tenant) aktueller Nutzer im Mandanten — `id`, `name`, `email`, `roles`, `permissions` |
+| PUT | `/me` | (auth+tenant) eigenes Profil ändern — `name` und/oder `email` (email muss eindeutig sein, 422 bei Konflikt); liefert `{id,name,email}` |
 | PUT | `/me/password` | (auth+tenant) eigenes Passwort ändern — `current_password` + `password` + `password_confirmation`; 422 bei falschem aktuellem Passwort; widerruft alle API-Tokens |
 | GET | `/roles` | (auth+tenant) verfügbare Rollen des Tenants |
 | POST | `/roles` | (auth+tenant, `roles.manage`) eigene Rolle anlegen — `name` (snake_case, eindeutig je Mandant), optional `permissions` |
