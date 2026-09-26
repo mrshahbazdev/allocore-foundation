@@ -1120,6 +1120,9 @@ function workspace(initial) {
         {key:'team_members',label:'Team',to:'users'},
         {key:'audits_planned',label:'Geplante Audits',to:'audits'},{key:'audits_in_progress',label:'Laufende Audits',to:'audits'},
         {key:'audit_findings_open',label:'Offene Feststellungen',to:'audit-findings'},{key:'audit_findings_overdue',label:'Überfällige Feststellungen',to:'audit-findings'},
+        {key:'production_orders_open',label:'Laufende Aufträge',to:'production-orders'},{key:'projects_open',label:'Offene Projekte',to:'projects'},
+        {key:'machines_active',label:'Maschinen aktiv',to:'machines'},{key:'leave_requests_pending',label:'Urlaubsanträge offen',to:'leave-requests'},
+        {key:'investments_active',label:'Investitionen aktiv',to:'investments'},{key:'participations_active',label:'Beteiligungen aktiv',to:'participations'},
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI, icons: ICONS,
