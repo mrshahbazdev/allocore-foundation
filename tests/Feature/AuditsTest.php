@@ -11,6 +11,7 @@ use Laravel\Sanctum\Sanctum;
 use Modules\Audits\Models\Audit;
 use Modules\Audits\Models\AuditFinding;
 use Modules\Compliance\Notifications\ComplianceDueSoon;
+use Modules\Core\Notifications\Assigned;
 use Tests\TestCase;
 
 class AuditsTest extends TestCase
@@ -135,6 +136,28 @@ class AuditsTest extends TestCase
         Artisan::call('compliance:remind');
 
         Notification::assertSentTo($user, ComplianceDueSoon::class, fn ($n) => $n->kind === 'massnahme');
+    }
+
+    public function test_new_finding_notifies_audit_responsible(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'I GmbH']);
+        $creator = $this->acting($tenant);
+        $auditor = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $auditor->assignRole('auditor');
+        tenancy()->end();
+
+        $audit = $this->postJson('/api/v1/audits', [
+            'title' => 'ISO Audit', 'responsible_id' => $auditor->id,
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+
+        $this->postJson('/api/v1/audit-findings', [
+            'audit_id' => $audit['id'], 'title' => 'Fehlende Doku',
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        Notification::assertSentTo($auditor, Assigned::class, fn ($n) => $n->kind === 'feststellung');
+        Notification::assertNotSentTo($creator, Assigned::class);
     }
 
     public function test_tender_deadline_reminder_notifies_creator(): void

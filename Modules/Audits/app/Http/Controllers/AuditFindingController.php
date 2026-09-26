@@ -2,11 +2,13 @@
 
 namespace Modules\Audits\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
 use Modules\Audits\Models\Audit;
 use Modules\Audits\Models\AuditFinding;
+use Modules\Core\Notifications\Assigned;
 
 class AuditFindingController extends Controller
 {
@@ -33,11 +35,23 @@ class AuditFindingController extends Controller
             'responsible_id' => ['nullable', 'exists:users,id'],
         ]);
 
-        if (! Audit::whereKey($validated['audit_id'])->exists()) {
+        $audit = Audit::find($validated['audit_id']);
+        if (! $audit) {
             abort(404);
         }
 
-        return response()->json(AuditFinding::create($validated), 201);
+        $finding = AuditFinding::create($validated);
+
+        if ($audit->responsible_id && (int) $audit->responsible_id !== (int) $request->user()->id) {
+            User::find($audit->responsible_id)?->notify(new Assigned(
+                'feststellung',
+                $finding->id,
+                'Neue Feststellung in Audit "'.$audit->title.'": '.$finding->title,
+                $finding->due_at,
+            ));
+        }
+
+        return response()->json($finding, 201);
     }
 
     public function show(AuditFinding $auditFinding)
