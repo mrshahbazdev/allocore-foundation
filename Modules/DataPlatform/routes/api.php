@@ -20,6 +20,7 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'permission:metrics.view'])
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('data-platform.notifications.unread-count');
     Route::post('notifications/{id}/read', [NotificationController::class, 'markRead'])->name('data-platform.notifications.read');
     Route::post('notifications/{id}/unread', [NotificationController::class, 'markUnread'])->name('data-platform.notifications.unread');
+    Route::post('notifications/delete-read', [NotificationController::class, 'deleteRead'])->name('data-platform.notifications.delete-read');
     Route::delete('notifications/{id}', [NotificationController::class, 'destroy'])->name('data-platform.notifications.destroy');
     Route::get('analytics/trends', [AnalyticsController::class, 'trends'])->name('data-platform.analytics.trends');
     Route::get('metrics/{metric}', [MetricController::class, 'show'])->name('data-platform.metrics.show');
