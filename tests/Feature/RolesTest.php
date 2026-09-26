@@ -181,6 +181,36 @@ class RolesTest extends TestCase
         $this->assertContains($admin->id, $ids);
     }
 
+    public function test_member_can_leave_tenant_but_last_manager_cannot(): void
+    {
+        $tenant = $this->createTenantApi(['name' => 'Leave GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+        $member = User::factory()->create();
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+        $member->assignRole('mitarbeiter');
+        tenancy()->end();
+
+        Sanctum::actingAs($admin);
+
+        // Mandant-Ersteller (auto-'administrator') entfernen → $admin ist letzter Manager
+        DB::table('model_has_roles')
+            ->where('team_id', $tenant)
+            ->where('model_id', '!=', $admin->id)
+            ->whereIn('role_id', Role::where('team_id', $tenant)->where('name', 'administrator')->pluck('id'))
+            ->delete();
+
+        $this->deleteJson('/api/v1/me/membership', [], ['X-Tenant' => $tenant])
+            ->assertStatus(422);
+
+        Sanctum::actingAs($member);
+        $this->deleteJson('/api/v1/me/membership', [], ['X-Tenant' => $tenant])
+            ->assertNoContent();
+
+        $this->getJson('/api/v1/users', ['X-Tenant' => $tenant])->assertForbidden();
+    }
+
     public function test_role_update_requires_roles_manage_and_same_tenant(): void
     {
         $tenant = $this->createTenantApi(['name' => 'Guard GmbH'])->json('id');
