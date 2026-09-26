@@ -1485,6 +1485,20 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertExactJson(['demo_seed', 'orders_overdue']);
     }
 
+    public function test_notifications_stats_counts(): void
+    {
+        $tenant = Tenant::create(['name' => 'NS GmbH']);
+        $user = $this->acting($tenant);
+
+        $this->putJson('/api/v1/me/notification-prefs', ['muted_kinds' => ['anmeldung']], ['X-Tenant' => $tenant->id])->assertOk();
+        $user->notify(new PasswordChangedAlert('x'));
+        $user->notify(new NewLoginAlert('1.2.3.4', null));
+        $user->notifications()->first()->update(['read_at' => now()]);
+
+        $this->getJson('/api/v1/notifications/stats', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertExactJson(['total' => 2, 'unread' => 1, 'read' => 1, 'muted' => 1]);
+    }
+
     public function test_notifications_unread_filter_and_mark_unread(): void
     {
         $tenant = Tenant::create(['name' => 'NU GmbH']);
