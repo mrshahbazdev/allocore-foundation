@@ -37,6 +37,14 @@ class AiLayerTest extends TestCase
         $id = $res->json('id');
         $this->getJson('/api/v1/ai-analyses', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonFragment(['id' => $id]);
+        $this->getJson('/api/v1/ai-analyses?status=completed', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonFragment(['id' => $id]);
+        $this->getJson('/api/v1/ai-analyses?status=failed', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonMissing(['id' => $id]);
+        $this->getJson('/api/v1/ai-analyses?kind=analysis', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonFragment(['id' => $id]);
+        $this->getJson('/api/v1/ai-analyses?kind=other', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonMissing(['id' => $id]);
         $this->getJson("/api/v1/ai-analyses/{$id}", ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonPath('id', $id);
     }

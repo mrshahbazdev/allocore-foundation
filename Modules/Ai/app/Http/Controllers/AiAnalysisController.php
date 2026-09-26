@@ -11,7 +11,11 @@ class AiAnalysisController extends Controller
 {
     public function index(Request $request)
     {
-        return AiAnalysis::query()->latest('id')->paginate(min($request->integer('per_page', 50), 200), ['id', 'kind', 'provider', 'status', 'summary', 'created_at']);
+        return AiAnalysis::query()
+            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->kind, fn ($q) => $q->where('kind', $request->kind))
+            ->latest('id')
+            ->paginate(min($request->integer('per_page', 50), 200), ['id', 'kind', 'provider', 'status', 'summary', 'created_at']);
     }
 
     public function store(AiService $service)

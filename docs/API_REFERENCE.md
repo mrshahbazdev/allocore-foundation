@@ -97,7 +97,7 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 
 | Pfad | Recht | Zweck |
 |---|---|---|
-| `/ai-analyses` | `ai.view` / `ai.manage` | Analyse-Runs (provider-agnostic; Default `heuristic`, LLM-Provider steckbar) |
+| `/ai-analyses` | `ai.view` / `ai.manage` — Liste: `?status=`, `?kind=` | Analyse-Runs (provider-agnostic; Default `heuristic`, LLM-Provider steckbar) |
 
 ## Executive (`executive`) — Layer 9
 
