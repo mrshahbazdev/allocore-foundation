@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
+use Modules\ExpertNetwork\Notifications\AnswerAccepted;
 use Modules\ExpertNetwork\Notifications\ApplicationDecided;
 use Modules\ExpertNetwork\Notifications\QuestionAnswered;
 use Tests\TestCase;
@@ -77,6 +78,31 @@ class ExpertNetworkTest extends TestCase
         ], ['X-Tenant' => $tenant->id])->assertCreated();
 
         Notification::assertSentTo($asker, QuestionAnswered::class);
+    }
+
+    public function test_answer_acceptance_notifies_author(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Acc GmbH']);
+        $asker = $this->acting($tenant);
+
+        $q = $this->postJson('/api/v1/questions', [
+            'title' => 'Frage X',
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json('id');
+
+        $answerer = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $answerer->assignRole('holding');
+        Sanctum::actingAs($answerer->fresh());
+
+        $a = $this->postJson("/api/v1/questions/{$q}/answers", [
+            'body' => 'Antwort.',
+        ], ['X-Tenant' => $tenant->id])->assertCreated()->json('id');
+
+        Sanctum::actingAs(User::find($asker->id));
+        $this->postJson("/api/v1/answers/{$a}/accept", [], ['X-Tenant' => $tenant->id])->assertOk();
+
+        Notification::assertSentTo($answerer, AnswerAccepted::class);
     }
 
     public function test_tender_apply_and_award(): void
