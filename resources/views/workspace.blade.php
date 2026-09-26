@@ -815,7 +815,7 @@
                     <template x-for="r in allRoles" :key="r.id">
                         <div>
                             <div class="flex items-center gap-2.5 text-sm text-[#1A2433]">
-                                <input type="checkbox" :value="r.name" x-model="userRoles" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
+                                <input type="checkbox" :value="r.name" x-model="userRoles" :disabled="!hasPerm('roles.manage')" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30 disabled:opacity-50">
                                 <span x-text="r.name"></span>
                                 <span class="text-[11px] text-[#9CA3AF]" x-text="'(' + (r.permissions || []).length + ' Rechte)'"></span>
                                 <button x-show="hasPerm('roles.manage')" @click="openRoleEdit(r)" class="text-[10px] text-[#9CA3AF] hover:text-[#CA8A04] underline underline-offset-2" title="Rechte der Rolle bearbeiten">bearbeiten</button>
@@ -844,7 +844,7 @@
                     <div x-show="!allRoles.length" class="text-xs text-[#9CA3AF]">Keine Rollen für diesen Mandanten.</div>
                     <div class="flex items-center justify-between" x-show="allRoles.length">
                         <button x-show="hasPerm('roles.manage') && detail && me && detail.id !== me.id" @click="removeMember()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/10" title="Mitglied aus diesem Mandanten entfernen">Entfernen</button>
-                        <button @click="saveUserRoles()" :disabled="!userRoles.length" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 ml-auto">Rollen speichern</button>
+                        <button x-show="hasPerm('roles.manage')" @click="saveUserRoles()" :disabled="!userRoles.length" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 ml-auto">Rollen speichern</button>
                     </div>
                     <div x-show="userPerms.length" class="pt-2">
                         <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5">BERECHTIGUNGEN</div>
