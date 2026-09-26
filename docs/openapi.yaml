@@ -476,6 +476,11 @@ paths:
           required: false
           schema: {type: string}
           description: Filter auf event_properties.type
+        - name: group
+          in: query
+          required: false
+          schema: {type: string}
+          description: Präfix-Filter auf event_properties.type (z. B. company → company.*)
         - name: subject_id
           in: query
           required: false
