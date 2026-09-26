@@ -113,6 +113,9 @@ class NotificationController extends Controller
         $byKind = (clone $base)->reorder()
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`data`, '$.kind')) as kind, COUNT(*) as n")
             ->groupBy('kind')->pluck('n', 'kind');
+        $byCode = (clone $base)->reorder()
+            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`data`, '$.code')) as code, COUNT(*) as n")
+            ->groupBy('code')->pluck('n', 'code');
 
         return response()->json([
             'total' => (clone $base)->count(),
@@ -120,6 +123,7 @@ class NotificationController extends Controller
             'read' => (clone $base)->whereNotNull('read_at')->count(),
             'muted' => $muted === [] ? 0 : (clone $base)->whereIn('data->kind', $muted)->count(),
             'by_kind' => $byKind,
+            'by_code' => $byCode,
         ]);
     }
 
