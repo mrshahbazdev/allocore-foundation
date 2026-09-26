@@ -206,6 +206,16 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'tenders_deadline_soon', "{$tendersSoon} Ausschreibung(en) — Bewerbungsfrist endet in ≤7 Tagen.", ['count' => $tendersSoon]);
         }
 
+        $riskHighNoMeasures = $count('risk_assessments', fn ($q) => $q->whereIn('status', ['open', 'in_progress'])->whereIn('risk_level', ['high', 'critical'])->whereNull('measures'));
+        if ($riskHighNoMeasures) {
+            $insights[] = $this->hit('critical', 'risks_no_measures', "{$riskHighNoMeasures} hohe/kritische(r) Risiko(risiken) ohne Maßnahmen.", ['count' => $riskHighNoMeasures]);
+        }
+
+        $deadlinesCompletedNoStamp = $count('deadlines', fn ($q) => $q->where('status', 'completed')->whereNull('completed_at'));
+        if ($deadlinesCompletedNoStamp) {
+            $insights[] = $this->hit('info', 'deadlines_completed_no_stamp', "{$deadlinesCompletedNoStamp} erledigte(r) Frist(en) ohne Erledigt-Zeitpunkt.", ['count' => $deadlinesCompletedNoStamp]);
+        }
+
         $leaveDecidedNoStamp = $count('leave_requests', fn ($q) => $q->whereIn('status', ['approved', 'rejected'])->whereNull('decided_at'));
         if ($leaveDecidedNoStamp) {
             $insights[] = $this->hit('info', 'leave_decided_no_stamp', "{$leaveDecidedNoStamp} entschiedene(r) Urlaubsantrag/-anträge ohne Entscheidungsdatum.", ['count' => $leaveDecidedNoStamp]);
