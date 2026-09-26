@@ -825,7 +825,7 @@ class DataPlatformTest extends TestCase
     public function test_insights_reports_all_clear_on_empty_tenant(): void
     {
         $tenant = Tenant::create(['name' => 'Sauber GmbH']);
-        $user = User::factory()->create();
+        $user = User::factory()->create(['last_login_at' => now()]);
         tenancy()->initialize($tenant);
         $user->assignRole('holding');
         Sanctum::actingAs($user->fresh());
@@ -835,6 +835,26 @@ class DataPlatformTest extends TestCase
             ->pluck('code')->all();
 
         $this->assertSame(['all_clear'], $codes);
+    }
+
+    public function test_insights_reports_members_never_logged_in(): void
+    {
+        $tenant = Tenant::create(['name' => 'Login GmbH']);
+        $user = $this->acting($tenant);
+        $member = User::factory()->create();
+        $member->assignRole('mitarbeiter');
+        tenancy()->end();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('members_never_logged_in', $codes);
+
+        $user->forceFill(['last_login_at' => now()])->saveQuietly();
+        $member->forceFill(['last_login_at' => now()])->saveQuietly();
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+        $this->assertNotContains('members_never_logged_in', $codes);
     }
 
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
