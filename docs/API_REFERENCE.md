@@ -27,8 +27,8 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 
 | Pfad | Rechte |
 |---|---|
-| `/companies`, `/companies/{id}` | `companies.view` / `companies.manage` |
-| `/persons`, `/persons/{id}` | `persons.view` / `persons.manage` |
+| `/companies`, `/companies/{id}` | `companies.view` / `companies.manage` — Liste: `?q=` (Name) |
+| `/persons`, `/persons/{id}` | `persons.view` / `persons.manage` — Liste: `?company_id=`, `?q=` (Name/E-Mail) |
 
 ## Documents (`documents`)
 
@@ -40,7 +40,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 
 ## Tasks (`tasks`)
 
-`/tasks`, `/tasks/{id}` — Filter `status`. Erinnerungen: `tasks:remind` (stündlich).
+`/tasks`, `/tasks/{id}` — Filter `status`, `assignee_id`, `unassigned=1`, `overdue=1`. Erinnerungen: `tasks:remind` (stündlich).
 
 ## Compliance (`compliance`)
 

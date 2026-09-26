@@ -8,9 +8,11 @@ use Modules\Core\Models\Company;
 
 class CompanyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Company::withCount('persons')->paginate(min(request()->integer('per_page', 200), 200));
+        return Company::withCount('persons')
+            ->when($request->q, fn ($q, $s) => $q->where('name', 'like', '%'.$s.'%'))
+            ->paginate(min(request()->integer('per_page', 200), 200));
     }
 
     public function store(Request $request)

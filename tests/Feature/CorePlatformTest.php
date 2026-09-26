@@ -77,6 +77,39 @@ class CorePlatformTest extends TestCase
             ->assertJsonPath('data.0.title', 'Unterweisung planen');
     }
 
+    public function test_tasks_and_masterdata_filters(): void
+    {
+        $tenant = Tenant::create(['name' => 'Filter GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/tasks', [
+            'title' => 'Überfällig', 'assignee_id' => $user->id, 'due_at' => now()->subDay()->toISOString(),
+        ], ['X-Tenant' => $tenant->id]);
+        $this->postJson('/api/v1/tasks', [
+            'title' => 'Offen ohne zugewiesenen', 'due_at' => now()->addWeek()->toISOString(),
+        ], ['X-Tenant' => $tenant->id]);
+
+        $this->getJson('/api/v1/tasks?overdue=1', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/tasks?unassigned=1', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/tasks?assignee_id='.$user->id, ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1, 'data');
+
+        $company = $this->postJson('/api/v1/companies', ['name' => 'Musterfirma'], ['X-Tenant' => $tenant->id]);
+        $this->postJson('/api/v1/companies', ['name' => 'Andere GmbH'], ['X-Tenant' => $tenant->id]);
+        $this->postJson('/api/v1/persons', [
+            'first_name' => 'Max', 'last_name' => 'Mustermann', 'company_id' => $company->json('id'),
+        ], ['X-Tenant' => $tenant->id]);
+
+        $this->getJson('/api/v1/companies?q=Muster', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/persons?q=mustermann', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/persons?company_id='.$company->json('id'), ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1, 'data');
+    }
+
     public function test_tasks_remind_notifies_assignee_and_stamps_reminded_at(): void
     {
         Notification::fake();
