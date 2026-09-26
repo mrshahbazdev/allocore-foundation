@@ -147,6 +147,24 @@ class DataPlatformTest extends TestCase
         }
     }
 
+    public function test_events_export_streams_ndjson(): void
+    {
+        $tenant = Tenant::create(['name' => 'Exp GmbH']);
+        $this->acting($tenant);
+
+        $this->postJson('/api/v1/companies', ['name' => 'ExpCo'], ['X-Tenant' => $tenant->id]);
+
+        $res = $this->get('/api/v1/events/export?action=created', ['X-Tenant' => $tenant->id]);
+        $res->assertHeader('content-type', 'application/x-ndjson; charset=utf-8');
+
+        $lines = array_values(array_filter(explode("\n", $res->streamedContent())));
+        $this->assertNotEmpty($lines);
+        foreach ($lines as $line) {
+            $row = json_decode($line, true);
+            $this->assertStringEndsWith('.created', $row['event_properties']['type']);
+        }
+    }
+
     public function test_events_endpoint_is_tenant_scoped(): void
     {
         $tenantA = Tenant::create(['name' => 'EA GmbH']);
