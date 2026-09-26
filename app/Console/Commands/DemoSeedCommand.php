@@ -17,9 +17,11 @@ use Modules\Core\Models\Person;
 use Modules\CorporateDev\Models\Measure;
 use Modules\CorporateDev\Models\Project;
 use Modules\CorporateDev\Models\Strategy;
+use Modules\ExpertNetwork\Models\Answer;
 use Modules\ExpertNetwork\Models\ExpertProfile;
 use Modules\ExpertNetwork\Models\Question;
 use Modules\ExpertNetwork\Models\Tender;
+use Modules\ExpertNetwork\Models\TenderApplication;
 use Modules\Finance\Models\FinancialReport;
 use Modules\Hr\Models\LeaveRequest;
 use Modules\Investments\Models\Investment;
@@ -100,17 +102,26 @@ class DemoSeedCommand extends Command
             ['person_id' => $person->id],
             ['headline' => 'CAD/CAM-Spezialist', 'bio' => '10 Jahre Zahntechnik.', 'skills' => ['cad_cam', 'ceramics', 'implantology'], 'hourly_rate' => 120, 'status' => 'active']
         );
-        Question::firstOrCreate(
+        $question = Question::firstOrCreate(
             ['title' => 'Empfehlung Sinterofen?'],
             ['body' => 'Welcher Sinterofen für Zirkon bei kleiner Serie?', 'category' => 'Technik', 'asked_by' => $user?->id, 'expert_profile_id' => $expert->id, 'status' => 'open']
         );
-        Tender::firstOrCreate(
+        $tenderQ4 = Tender::firstOrCreate(
             ['title' => 'Ausschreibung Implantatversorgung Q4'],
             ['description' => '200 Einheiten, Krone/Abutment.', 'required_skills' => ['cad_cam', 'implantology'], 'budget' => 45000, 'company_id' => $company->id, 'status' => 'open', 'deadline_at' => now()->addDays(30)]
         );
         Tender::firstOrCreate(
             ['title' => 'Ausschreibung KFO-Arbeiten (dringend)'],
             ['description' => 'KFO-Geräte, kurzfristige Fertigung.', 'required_skills' => ['orthodontics'], 'budget' => 12000, 'company_id' => $company->id, 'status' => 'open', 'created_by' => $user?->id, 'deadline_at' => now()->addDays(4)]
+        );
+
+        Answer::firstOrCreate(
+            ['question_id' => $question->id, 'answered_by' => $user?->id],
+            ['body' => 'Bei kleiner Serie lohnt sich ein Kammerofen mit 600-1000 ml — z. B. Nabertherm HT oder Zirkonofen 600.', 'is_accepted' => true]
+        );
+        TenderApplication::firstOrCreate(
+            ['tender_id' => $tenderQ4->id, 'expert_profile_id' => $expert->id],
+            ['proposal' => 'Fertigung in 3 Schichten à 70 Einheiten, Lieferung gestaffelt.', 'price' => 39500, 'status' => 'submitted']
         );
 
         $strategy = Strategy::firstOrCreate(
