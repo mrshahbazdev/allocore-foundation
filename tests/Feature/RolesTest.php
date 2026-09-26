@@ -456,6 +456,32 @@ class RolesTest extends TestCase
             ->assertUnprocessable();
     }
 
+    public function test_scoped_token_enforces_abilities(): void
+    {
+        $tenant = Tenant::create(['name' => 'Scope GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('administrator');
+
+        $plain = $user->fresh()->createToken('ro', ['tasks.view'])->plainTextToken;
+        $h = ['Authorization' => 'Bearer '.$plain, 'X-Tenant' => $tenant->id];
+
+        $this->getJson('/api/v1/tasks', $h)->assertOk();
+        $this->postJson('/api/v1/tasks', ['title' => 'x'], $h)->assertForbidden();
+    }
+
+    public function test_token_abilities_validation(): void
+    {
+        $tenant = Tenant::create(['name' => 'Scope2 GmbH']);
+        $this->actingAsUser($tenant);
+
+        $this->postJson('/api/v1/tokens', ['name' => 'x', 'abilities' => ['nope.wrong']], ['X-Tenant' => $tenant->id])
+            ->assertUnprocessable();
+        $this->postJson('/api/v1/tokens', ['name' => 'x', 'abilities' => ['tasks.view']], ['X-Tenant' => $tenant->id])
+            ->assertCreated()
+            ->assertJsonPath('abilities.0', 'tasks.view');
+    }
+
     protected function actingAsUser(Tenant|string|null $tenant = null): User
     {
         $user = User::factory()->create();
