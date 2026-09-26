@@ -122,6 +122,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('info', 'leave_requests_pending', "{$leave} Urlaubs-/Fehlzeitenantrag/-anträge zur Genehmigung offen.", ['count' => $leave]);
         }
 
+        $leaveStale = $count('leave_requests', fn ($q) => $q->where('status', 'pending')->where('created_at', '<', now()->subDays(7)));
+        if ($leaveStale) {
+            $insights[] = $this->hit('warning', 'leave_pending_stale', "{$leaveStale} Urlaubs-/Fehlzeitenantrag/-anträge seit über 7 Tagen unbeantwortet.", ['count' => $leaveStale]);
+        }
+
         $leaveActive = $count('leave_requests', fn ($q) => $q->where('status', 'approved')->whereDate('starts_on', '<=', now())->whereDate('ends_on', '>=', now()));
         if ($leaveActive) {
             $insights[] = $this->hit('info', 'leave_active_today', "{$leaveActive} genehmigte(r) Urlaubs-/Fehlzeitenantrag/-anträge läuft/laufen heute.", ['count' => $leaveActive]);
