@@ -66,6 +66,13 @@ class DemoSeedTest extends TestCase
 
         $this->postJson('/api/v1/demo-seed', [], ['X-Tenant' => $tenant->id])->assertOk();
         $this->assertGreaterThanOrEqual(2, Company::count());
+        $this->assertSame(
+            1,
+            $user->fresh()->notifications()->where('data->code', 'demo_seed')->count(),
+            'seed notifies tenant members once'
+        );
+        $this->postJson('/api/v1/demo-seed', [], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->assertSame(1, $user->fresh()->notifications()->where('data->code', 'demo_seed')->count());
     }
 
     public function test_demo_seed_endpoint_rejects_without_permission(): void

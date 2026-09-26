@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Modules\Ai\Models\AiAnalysis;
 use Modules\Audits\Models\Audit;
 use Modules\Audits\Models\AuditFinding;
@@ -18,6 +19,7 @@ use Modules\Core\Models\Person;
 use Modules\CorporateDev\Models\Measure;
 use Modules\CorporateDev\Models\Project;
 use Modules\CorporateDev\Models\Strategy;
+use Modules\DataPlatform\Notifications\CriticalInsight;
 use Modules\ExpertNetwork\Models\Answer;
 use Modules\ExpertNetwork\Models\ExpertProfile;
 use Modules\ExpertNetwork\Models\Question;
@@ -215,6 +217,20 @@ class DemoSeedCommand extends Command
             ['kind' => 'insights', 'provider' => 'heuristic'],
             ['status' => 'completed', 'summary' => 'Compliance-Rate stabil, 2 überfällige Einträge.', 'findings' => [['code' => 'tasks_overdue', 'severity' => 'warning'], ['code' => 'high_risks_open', 'severity' => 'info']]]
         );
+
+        $memberIds = DB::table('model_has_roles')
+            ->where('team_id', $tenant->id)
+            ->where('model_type', User::class)
+            ->pluck('model_id');
+        User::whereIn('id', $memberIds)->get()->each(function (User $member) use ($tenant) {
+            if ($member->notifications()->where('data->code', 'demo_seed')->doesntExist()) {
+                $member->notify(new CriticalInsight(
+                    $tenant->id,
+                    'demo_seed',
+                    "Demo-Daten für Mandant {$tenant->name} angelegt."
+                ));
+            }
+        });
 
         $this->call('analytics:aggregate');
         $this->info("Demo-Daten für Mandant {$tenant->name} angelegt.");
