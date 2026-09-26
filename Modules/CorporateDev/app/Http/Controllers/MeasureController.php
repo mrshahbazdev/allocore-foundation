@@ -21,7 +21,7 @@ class MeasureController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'project_id' => ['required', 'exists:projects,id'],
+            'project_id' => ['nullable', 'exists:projects,id'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', Rule::in(Measure::STATUSES)],
