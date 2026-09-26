@@ -47,10 +47,11 @@ class NotificationController extends Controller
     {
         $muted = $request->user()->notification_muted ?? [];
 
-        $request->user()->unreadNotifications()
+        $count = $request->user()->unreadNotifications()
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
             ->when($request->filled('entity_id'), fn ($q) => $q->where('data->id', $request->string('entity_id')->toString()))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
+            ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
             ->when($request->boolean('muted') && $muted !== [], fn ($q) => $q->whereIn('data->kind', $muted))
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('due_before'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', $request->date('due_before')))
@@ -58,7 +59,7 @@ class NotificationController extends Controller
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
             ->update(['read_at' => now()]);
 
-        return response()->json(['status' => 'ok']);
+        return response()->json(['updated' => $count]);
     }
 
     public function unreadCount(Request $request)
@@ -154,6 +155,7 @@ class NotificationController extends Controller
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->input('kind')))
             ->when($request->filled('entity_id'), fn ($q) => $q->where('data->id', $request->string('entity_id')->toString()))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
+            ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
             ->when($request->boolean('muted') && $muted !== [], fn ($q) => $q->whereIn('data->kind', $muted))
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('due_before'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', $request->date('due_before')))
@@ -173,6 +175,7 @@ class NotificationController extends Controller
             ->when($request->boolean('read'), fn ($q) => $q->whereNotNull('read_at'))
             ->when($request->boolean('unread'), fn ($q) => $q->whereNull('read_at'))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
+            ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
             ->when($request->boolean('muted') && $muted !== [], fn ($q) => $q->whereIn('data->kind', $muted))
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('due_before'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', $request->date('due_before')))
