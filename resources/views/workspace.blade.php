@@ -545,9 +545,9 @@
                                 x-text="'≤ 7 Tage · ' + rows.filter(r => dueSoon(r)).length"></button>
                         <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)" @click="myOnly = !myOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="myOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Mir zugewiesen</button>
-                        <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r) && rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id))" @click="unassignedOnly = !unassignedOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                        <button x-show="rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r || 'assigned_to' in r) && rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to))" @click="unassignedOnly = !unassignedOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="unassignedOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
-                                x-text="'Ohne Verantwortlichen · ' + rows.filter(r => !(r.assignee_id || r.responsible_id || r.owner_id)).length"></button>
+                                x-text="'Ohne Verantwortlichen · ' + rows.filter(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to)).length"></button>
                         <template x-for="g in [...new Set(rows.map(r => eventGroup(r.event_type)))]" :key="'eg'+g">
                             <button x-show="section === 'events'" @click="evGroup = evGroup === g ? '' : g" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="evGroup === g ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
@@ -1313,7 +1313,9 @@ function workspace(initial) {
                     {key: null, action: 'filter', filter: 'dueTodayOnly', label: 'Filter: Heute ' + (this.dueTodayOnly ? '(an)' : '(aus)'), group: 'Aktion'});
                 if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)) {
                     acts.push({key: null, action: 'filter', filter: 'myOnly', label: 'Filter: Mir zugewiesen ' + (this.myOnly ? '(an)' : '(aus)'), group: 'Aktion'});
-                    if (this.rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id))) acts.push({key: null, action: 'filter', filter: 'unassignedOnly', label: 'Filter: Ohne Verantwortlichen ' + (this.unassignedOnly ? '(an)' : '(aus)'), group: 'Aktion'});
+                }
+                if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r || 'assigned_to' in r) && this.rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to))) {
+                    acts.push({key: null, action: 'filter', filter: 'unassignedOnly', label: 'Filter: Ohne Verantwortlichen ' + (this.unassignedOnly ? '(an)' : '(aus)'), group: 'Aktion'});
                 }
                 if (this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.unassignedOnly || this.statusFilter || this.query) acts.push({key: null, action: 'filter', filter: '_reset', label: 'Filter zurücksetzen', group: 'Aktion'});
             }
@@ -1804,7 +1806,7 @@ function workspace(initial) {
             if (this.dueSoonOnly) rs = rs.filter(r => this.dueSoon(r));
             if (this.dueTodayOnly) rs = rs.filter(r => this.dueToday(r));
             if (this.myOnly) rs = rs.filter(r => String(r.assignee_id || r.responsible_id || r.owner_id || '') === String(this.meId));
-            if (this.unassignedOnly) rs = rs.filter(r => !(r.assignee_id || r.responsible_id || r.owner_id));
+            if (this.unassignedOnly) rs = rs.filter(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to));
             if (this.statusFilter) rs = rs.filter(r => String(r.status || '') === this.statusFilter);
             if (this.severityFilter) rs = rs.filter(r => String(r.severity || '') === this.severityFilter);
             if (this.evGroup) rs = rs.filter(r => this.eventGroup(r.event_type) === this.evGroup);
@@ -2267,8 +2269,8 @@ function workspace(initial) {
             else if (e.key === 'g') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.length) { const opts = ['status', '__period', ...this.visCols().filter(c => /_id$/.test(c)), '']; const cyc = opts.filter(o => o === '' || (o === '__period' ? this.rows.some(r => r.updated_at) : this.rows.some(r => o in r))); const i = cyc.indexOf(this.groupBy); this.groupBy = cyc[(i + 1) % cyc.length]; this.toast(this.groupBy ? 'Gruppiert nach: ' + this.label(this.groupBy) : 'Gruppierung aus'); } }
             else if (e.key === 'b') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.dueToday(r))) this.dueTodayOnly = !this.dueTodayOnly; }
             else if (e.key === 'B') { if (!this.detail && !this.showCreate && !this.palette) this.notif = !this.notif; }
-            else if (e.key === 'm') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)) this.myOnly = !this.myOnly; }
-            else if (e.key === 'q') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id))) this.unassignedOnly = !this.unassignedOnly; }
+            else if (e.key === 'm') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r || 'assigned_to' in r)) this.myOnly = !this.myOnly; }
+            else if (e.key === 'q') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to))) this.unassignedOnly = !this.unassignedOnly; }
             else if (e.key === 'u') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.overdue(r))) this.overdueOnly = !this.overdueOnly; }
             else if (e.key === '.') { if (!this.detail && !this.showCreate && !this.palette && this.section !== 'dashboard') window.location.href = '/app/dashboard' + (this.tenant ? '?tenant=' + this.tenant : ''); }
             else if (/^[1-9]$/.test(e.key)) { if (!this.detail && !this.showCreate && !this.palette && this.sorted(this.filtered()).length >= +e.key) this.detail = this.sorted(this.filtered())[e.key - 1]; }
