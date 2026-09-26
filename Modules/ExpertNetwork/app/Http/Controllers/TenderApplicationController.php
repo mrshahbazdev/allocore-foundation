@@ -2,9 +2,11 @@
 
 namespace Modules\ExpertNetwork\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Notifications\Assigned;
 use Modules\ExpertNetwork\Models\Tender;
 use Modules\ExpertNetwork\Models\TenderApplication;
 
@@ -20,7 +22,20 @@ class TenderApplicationController extends Controller
             'price' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        return response()->json($tender->applications()->create($validated), 201);
+        $application = $tender->applications()->create($validated);
+
+        if ($tender->created_by && (int) $tender->created_by !== (int) $request->user()->id) {
+            $expert = $application->expertProfile?->person;
+            $expertName = $expert ? trim($expert->first_name.' '.$expert->last_name) : '';
+            User::find($tender->created_by)?->notify(new Assigned(
+                'ausschreibung',
+                $tender->id,
+                'Neue Bewerbung von '.($expertName !== '' ? $expertName : 'einem Experten').' für "'.$tender->title.'"',
+                $tender->deadline_at,
+            ));
+        }
+
+        return response()->json($application, 201);
     }
 
     public function update(Request $request, TenderApplication $tenderApplication)
