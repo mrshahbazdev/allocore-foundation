@@ -4,11 +4,21 @@ namespace Modules\Compliance\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Core\Concerns\NotifiesAssigneeOnChange;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Deadline extends Model
 {
     use BelongsToTenant;
+    use NotifiesAssigneeOnChange;
+
+    protected const ASSIGNEE_FIELD = 'responsible_id';
+
+    protected const ASSIGNEE_KIND = 'frist';
+
+    protected const ASSIGNEE_LABEL = 'Frist';
+
+    protected const ASSIGNEE_DUE_FIELD = 'due_at';
 
     public const STATUS_OPEN = 'open';
 

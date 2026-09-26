@@ -5,11 +5,21 @@ namespace Modules\CorporateDev\Models;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Core\Concerns\NotifiesAssigneeOnChange;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 class Measure extends Model
 {
     use BelongsToTenant;
+    use NotifiesAssigneeOnChange;
+
+    protected const ASSIGNEE_FIELD = 'responsible_id';
+
+    protected const ASSIGNEE_KIND = 'massnahme';
+
+    protected const ASSIGNEE_LABEL = 'Maßnahme';
+
+    protected const ASSIGNEE_DUE_FIELD = 'due_at';
 
     public const STATUSES = ['open', 'in_progress', 'done', 'cancelled'];
 

@@ -13,6 +13,7 @@ use Laravel\Sanctum\Sanctum;
 use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\RiskAssessment;
 use Modules\Compliance\Notifications\ComplianceDueSoon;
+use Modules\Core\Notifications\Assigned;
 use Modules\CorporateDev\Models\Project;
 use Tests\TestCase;
 
@@ -169,6 +170,22 @@ class ComplianceTest extends TestCase
         Notification::assertSentTo($user, function (ComplianceDueSoon $n) {
             return $n->kind === 'pruefung';
         });
+    }
+
+    public function test_deadline_assignment_notifies_responsible(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'FristAssign GmbH']);
+        $this->actingWithTenant($tenant);
+        $responsible = User::factory()->create();
+
+        $this->postJson('/api/v1/deadlines', [
+            'title' => 'Frist B',
+            'responsible_id' => $responsible->id,
+            'due_at' => now()->addDay()->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        Notification::assertSentTo($responsible, Assigned::class);
     }
 
     public function test_deadline_reminder_notifies_responsible(): void
