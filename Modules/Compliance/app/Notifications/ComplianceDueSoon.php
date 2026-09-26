@@ -32,10 +32,10 @@ class ComplianceDueSoon extends Notification
     private function kindLabel(): string
     {
         return [
-            'instruction' => 'Unterweisung',
-            'inspection' => 'Pruefung',
-            'deadline' => 'Frist',
-            'audit_finding' => 'Audit-Feststellung',
+            'unterweisung' => 'Unterweisung',
+            'pruefung' => 'Pruefung',
+            'frist' => 'Frist',
+            'feststellung' => 'Audit-Feststellung',
             'audit' => 'Audit',
         ][$this->kind] ?? ucfirst($this->kind);
     }
