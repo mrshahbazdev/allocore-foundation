@@ -41,6 +41,7 @@ Neue Modelle: nur in `WATCHED` eintragen — keine Änderung am Listener nötig.
 | `audit.*` / `audit_finding.*` | Audits | Audits und Feststellungen |
 | `user.added` / `user.roles_updated` / `user.removed` | Core | Mitglied angelegt, Rollen geändert, Mitglied entfernt (manuell emittiert, kein Eloquent-Event) |
 | `role.created` / `role.permissions_updated` / `role.deleted` | Core | Eigene Rolle angelegt, Rechte geändert, Rolle gelöscht (manuell emittiert) |
+| `tenant.created` | Core | Mandant angelegt (manuell emittiert, Zentral-API) |
 
 ## Lesen
 

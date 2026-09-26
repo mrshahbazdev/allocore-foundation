@@ -6,6 +6,7 @@ use App\Models\Tenant;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Modules\DataPlatform\Events\DomainEvent;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,14 @@ Route::prefix('v1')->group(function () {
         $tenant = Tenant::create($validated);
 
         RoleSeeder::forTenant($tenant);
+
+        $event = new DomainEvent(
+            type: 'tenant.created',
+            tenantId: (string) $tenant->getTenantKey(),
+            subject: ['type' => 'tenant', 'id' => $tenant->getTenantKey(), 'title' => $tenant->name],
+        );
+        $event->setMetaData(['tenant_id' => (string) $tenant->getTenantKey()]);
+        event($event);
 
         return response()->json($tenant, 201);
     });
