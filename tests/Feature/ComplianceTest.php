@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 use Modules\Compliance\Models\Deadline;
+use Modules\Compliance\Models\RiskAssessment;
 use Modules\Compliance\Notifications\ComplianceDueSoon;
 use Tests\TestCase;
 
@@ -85,6 +86,34 @@ class ComplianceTest extends TestCase
 
         Notification::assertSentTo($user, ComplianceDueSoon::class);
         $this->assertNotNull(Deadline::first()->reminded_at);
+    }
+
+    public function test_risk_review_reminder_notifies_assessor_user(): void
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'GB GmbH']);
+        $user = $this->actingWithTenant($tenant);
+
+        $this->postJson('/api/v1/persons', [
+            'first_name' => 'Max',
+            'last_name' => 'Muster',
+            'email' => $user->email,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+        $personId = $this->getJson('/api/v1/persons', ['X-Tenant' => $tenant->id])->json('data.0.id');
+
+        $this->postJson('/api/v1/risk-assessments', [
+            'title' => 'GB Schreinerei',
+            'person_id' => $personId,
+            'review_at' => now()->addHours(12)->toISOString(),
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        tenancy()->initialize($tenant);
+        Artisan::call('compliance:remind');
+
+        Notification::assertSentTo($user, function (ComplianceDueSoon $n) {
+            return $n->kind === 'gefaehrdungsbeurteilung';
+        });
+        $this->assertNotNull(RiskAssessment::first()->reminded_at);
     }
 
     public function test_compliance_routes_require_auth(): void
