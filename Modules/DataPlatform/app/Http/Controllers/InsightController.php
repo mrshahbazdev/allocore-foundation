@@ -277,6 +277,11 @@ class InsightController extends Controller
             $insights[] = $this->hit('warning', 'audits_unassigned', "{$auditsUnassigned} offene(s) Audit(s) ohne Verantwortlichen.", ['count' => $auditsUnassigned]);
         }
 
+        $opDrafts = $count('operating_instructions', fn ($q) => $q->where('status', 'draft'));
+        if ($opDrafts) {
+            $insights[] = $this->hit('info', 'op_instructions_draft', "{$opDrafts} Betriebsanweisung(en) im Entwurfsstatus — prüfen und aktivieren.", ['count' => $opDrafts]);
+        }
+
         if (! $insights) {
             $insights[] = $this->hit('info', 'all_clear', 'Keine Auffälligkeiten — alle Kennzahlen im grünen Bereich.');
         }
