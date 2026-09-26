@@ -186,6 +186,28 @@ class DataPlatformTest extends TestCase
         $this->assertContains('leave_pending_stale', $codes);
     }
 
+    public function test_insights_reports_negative_liquidity(): void
+    {
+        $tenant = Tenant::create(['name' => 'Fin GmbH']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+        Sanctum::actingAs($user->fresh());
+        tenancy()->end();
+
+        $company = $this->postJson('/api/v1/companies', ['name' => 'FinCo'], ['X-Tenant' => $tenant->id])->assertCreated()->json();
+        $this->postJson('/api/v1/financial-reports', [
+            'company_id' => $company['id'],
+            'period' => now()->format('Y-m'),
+            'liquidity' => -1500,
+        ], ['X-Tenant' => $tenant->id])->assertCreated();
+
+        $codes = collect($this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('code')->all();
+
+        $this->assertContains('fin_negative_liquidity', $codes);
+    }
+
     public function test_every_insight_code_is_wired_in_workspace_and_docs(): void
     {
         $controller = file_get_contents(base_path('Modules/DataPlatform/app/Http/Controllers/InsightController.php'));
