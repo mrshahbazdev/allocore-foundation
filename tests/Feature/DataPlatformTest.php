@@ -17,6 +17,7 @@ use Modules\Ai\Models\AiAnalysis;
 use Modules\Compliance\Models\Deadline;
 use Modules\Compliance\Models\Instruction;
 use Modules\Core\Models\Company;
+use Modules\Core\Notifications\PasswordChangedAlert;
 use Modules\CorporateDev\Models\Project;
 use Modules\DataLake\Models\DataObject;
 use Modules\DataPlatform\Notifications\CriticalInsight;
@@ -1398,5 +1399,17 @@ class DataPlatformTest extends TestCase
 
         NotificationFacade::assertSentToTimes($adminA, CriticalInsight::class, 1);
         NotificationFacade::assertNotSentTo($adminB, CriticalInsight::class);
+    }
+
+    public function test_delete_all_notifications(): void
+    {
+        $tenant = Tenant::create(['name' => 'N']);
+        $user = $this->acting($tenant);
+        $user->notify(new PasswordChangedAlert('T'));
+        $user->notify(new PasswordChangedAlert('T2'));
+
+        $r = $this->deleteJson('/api/v1/notifications', [], ['X-Tenant' => $tenant->id]);
+        $r->assertOk()->assertJsonPath('deleted', 2);
+        $this->assertSame(0, $user->notifications()->count());
     }
 }
