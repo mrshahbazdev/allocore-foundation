@@ -667,7 +667,7 @@
                         <tbody>
                             <template x-for="it in renderRows()" :key="it.t === 'h' ? 'h-'+it.label : it.r.id">
                                 <tr @click="it.t === 'r' ? (detail = it.r) : toggleGroupHeader(it.label)" @dblclick="it.t === 'r' && canEdit() && (detail = it.r, openEdit())"
-                                    :class="it.t === 'h' ? 'bg-[#F0F3F7] hover:bg-[#E4E9F0] cursor-pointer' : ([overdue(it.r) ? 'bg-[#A6362E]/5' : '', selected[it.r.id] ? 'bg-[#FFFBEB]' : '', detail && detail.id === it.r.id ? 'bg-[#FACC15]/10' : '', it.i % 2 ? 'bg-[#FAFBFC]/50' : '', section === 'notifications' && it.r.read ? 'opacity-50' : ''].join(' ') + ' hover:bg-[#F3F6FA] cursor-pointer')"
+                                    :class="it.t === 'h' ? 'bg-[#F0F3F7] hover:bg-[#E4E9F0] cursor-pointer' : ([overdue(it.r) ? 'bg-[#A6362E]/5' : '', selected[it.r.id] ? 'bg-[#FFFBEB]' : '', detail && detail.id === it.r.id ? 'bg-[#FACC15]/10' : '', it.i % 2 ? 'bg-[#FAFBFC]/50' : '', section === 'notifications' && (it.r.read || it.r.muted) ? 'opacity-50' : ''].join(' ') + ' hover:bg-[#F3F6FA] cursor-pointer')"
                                     class="border-b border-[#F0F3F7] last:border-b-0" :title="it.t === 'r' ? 'Doppelklick: Bearbeiten' : 'Klick: einklappen/ausklappen'">
                                     <template x-if="it.t === 'h'">
                                         <td :colspan="visCols().length + 1 + (writable() ? 1 : 0) + (sectionActions().length || canEdit() ? 1 : 0)" class="px-5 py-2 text-[11px] font-semibold text-[#5B6B7E]">
@@ -979,6 +979,7 @@
                     <button @click="copyText()" title="Alle Felder als lesbarer Text" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="textCopied ? 'Kopiert' : 'Text'"></button>
                     <a x-show="section === 'events' && eventLink(detail)" :href="eventLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Datensatz öffnen</a>
                     <a x-show="section === 'notifications' && notifLink(detail)" :href="notifLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Zum Datensatz</a>
+                    <button x-show="section === 'notifications' && detail && detail.kind" @click="toggleMute(detail.kind)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="(me && me.muted_kinds || []).includes(detail.kind) ? 'Stummschaltung aufheben' : 'Art stummschalten'"></button>
                     <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
                     <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" title="Duplizieren (d)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Duplizieren</button>
                     <button x-show="canEdit()" @click="openEdit()" title="Bearbeiten (e)" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
@@ -1702,6 +1703,18 @@ function workspace(initial) {
         },
         dismissNotif(n) {
             this.api('/api/v1/notifications/' + n.id, {method: 'DELETE'}).then(r => { if (r.ok) { this.dbNotifs = this.dbNotifs.filter(x => x.id !== n.id); this.navBadges['notifications'] = this.unreadNotifs(); this.rows = (this.rows || []).filter(x => x.id !== n.id); if (this.detail && this.detail.id === n.id) this.detail = null; this.toast('Benachrichtigung entfernt'); } }).catch(() => {});
+        },
+        toggleMute(kind) {
+            const cur = (this.me && this.me.muted_kinds) || [];
+            const next = cur.includes(kind) ? cur.filter(k => k !== kind) : [...cur, kind];
+            this.api('/api/v1/me/notification-prefs', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({muted_kinds: next})}).then(r => r.ok ? r.json() : null).then(d => {
+                if (!d) return;
+                this.me = {...this.me, muted_kinds: d.muted_kinds};
+                const muted = cur.includes(kind);
+                (this.rows || []).forEach(n => { if (n.kind === kind) n.muted = muted; });
+                if (this.detail && this.detail.kind === kind) this.detail = {...this.detail, muted};
+                this.toast(muted ? 'Art "' + kind + '" stummgeschaltet' : 'Stummschaltung aufgehoben');
+            }).catch(() => {});
         },
         deleteReadNotifs() {
             this.api('/api/v1/notifications/delete-read', {method: 'POST'}).then(r => r.ok ? r.json() : null).then(d => {

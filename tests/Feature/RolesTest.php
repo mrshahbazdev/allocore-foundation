@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 use Modules\Core\Notifications\FailedLoginAlert;
 use Modules\Core\Notifications\NewLoginAlert;
+use Modules\Core\Notifications\PasswordChangedAlert;
 use Modules\DataPlatform\Events\DomainEvent;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -228,6 +229,24 @@ class RolesTest extends TestCase
             'notifiable_id' => $user->id,
             'notifiable_type' => User::class,
         ]);
+    }
+
+    public function test_notification_prefs_mute_kinds(): void
+    {
+        $tenant = Tenant::create(['name' => 'NPM GmbH']);
+        $user = $this->actingAsUser($tenant);
+
+        $this->putJson('/api/v1/me/notification-prefs', ['muted_kinds' => ['passwort_geaendert']], ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonPath('muted_kinds.0', 'passwort_geaendert');
+
+        $this->assertSame(['passwort_geaendert'], $user->fresh()->notification_muted);
+
+        $this->getJson('/api/v1/me', ['X-Tenant' => $tenant->id])
+            ->assertJsonPath('muted_kinds.0', 'passwort_geaendert');
+
+        $user->notify(new PasswordChangedAlert('T'));
+        $rows = $this->getJson('/api/v1/notifications', ['X-Tenant' => $tenant->id])->json();
+        $this->assertTrue($rows[0]['muted']);
     }
 
     public function test_delete_all_tokens_endpoint(): void
