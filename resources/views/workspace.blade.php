@@ -1881,7 +1881,7 @@ function workspace(initial) {
         },
         eventGroup(t) {
             const g = String(t || '').split('.')[0];
-            return {task: 'Aufgabe', company: 'Unternehmen', person: 'Person', document: 'Dokument', instruction: 'Unterweisung', inspection: 'Prüfung', deadline: 'Frist', tender: 'Ausschreibung', question: 'Frage', user: 'Benutzer'}[g] || g;
+            return {task: 'Aufgabe', company: 'Unternehmen', person: 'Person', document: 'Dokument', document_version: 'Dokumentversion', instruction: 'Unterweisung', inspection: 'Prüfung', deadline: 'Frist', risk_assessment: 'Gefährdungsbeurteilung', operating_instruction: 'Betriebsanweisung', expert_profile: 'Experte', question: 'Frage', answer: 'Antwort', tender: 'Ausschreibung', tender_application: 'Bewerbung', financial_report: 'Finanzbericht', leave_request: 'Urlaubsantrag', machine: 'Maschine', production_order: 'Produktionsauftrag', participation: 'Beteiligung', data_object: 'Data-Objekt', portfolio: 'Portfolio', investment: 'Investition', graph_entity: 'Entität', graph_edge: 'Kante', strategy: 'Strategie', project: 'Projekt', measure: 'Maßnahme', ai_analysis: 'KI-Analyse', exec_report: 'Executive-Report', audit: 'Audit', audit_finding: 'Feststellung', user: 'Benutzer'}[g] || g;
         },
         eventLabel(t) {
             const a = String(t || '').split('.').pop();
