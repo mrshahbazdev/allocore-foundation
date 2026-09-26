@@ -128,6 +128,11 @@
             <div class="min-w-0">
                 <div class="text-sm font-medium truncate">{{ $user->name }}</div>
                 <div class="text-[11px] text-[#6B7280] truncate">{{ $user->email }}</div>
+                <div x-show="me && me.roles && me.roles.length" class="mt-1 flex flex-wrap gap-1">
+                    <template x-for="r in (me ? (me.roles || []) : [])" :key="r">
+                        <span class="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-[#FACC15] text-black" x-text="r"></span>
+                    </template>
+                </div>
             </div>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
@@ -1128,7 +1133,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI, icons: ICONS,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], spark: {}, exec: null, execReports: [], reportOpen: {}, reportData: {}, lookups: {}, navOpen: false, collapsed: {}, upcoming: [], openTasks: [],
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], spark: {}, exec: null, execReports: [], reportOpen: {}, reportData: {}, lookups: {}, navOpen: false, collapsed: {}, me: null, upcoming: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', toasts: [],
@@ -1141,6 +1146,7 @@ function workspace(initial) {
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
             window.addEventListener('offline', () => { this.offline = true; });
             this.loadNotifications();
+            if (this.tenant) this.loadMe();
             const p = new URLSearchParams(location.search);
             const t = p.get('tenant');
             try { this.recent = JSON.parse(localStorage.getItem('af_recent') || '[]').filter(k => k !== this.section).slice(0, 5); } catch (e) { this.recent = []; }
@@ -1194,7 +1200,7 @@ function workspace(initial) {
             });
             this.$watch('groupBy', v => { try { localStorage.setItem('af_group_' + this.section, v); localStorage.removeItem('af_gc_' + this.section); } catch (e) {} this.collapsedGroups = {}; this.syncUrl(); });
             this.$watch('tenant', v => {
-                if (v) localStorage.setItem('allocore.tenant', v); else localStorage.removeItem('allocore.tenant');
+                if (v) { localStorage.setItem('allocore.tenant', v); this.loadMe(); } else { localStorage.removeItem('allocore.tenant'); this.me = null; }
                 this.setDocTitle();
             });
             this.$watch('rows', () => this.setDocTitle());
@@ -1451,6 +1457,10 @@ function workspace(initial) {
                     }).catch(() => [i.key, [0, 0]])
                 )).then(apply);
             });
+        },
+        loadMe() {
+            if (!this.tenant) { this.me = null; return; }
+            this.api('/api/v1/me').then(r => r.ok ? r.json() : null).then(d => { this.me = d; }).catch(() => {});
         },
         loadNotifications() {
             this.api('/api/v1/notifications?limit=10').then(r => r.ok ? r.json() : []).then(d => {
