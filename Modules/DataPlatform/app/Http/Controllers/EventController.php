@@ -159,6 +159,10 @@ class EventController extends Controller
             ->selectRaw('DATE(created_at) as day, COUNT(*) as n')
             ->groupBy('day')->pluck('n', 'day');
 
+        $byWeekday = (clone $base)
+            ->selectRaw('DAYOFWEEK(created_at) as dow, COUNT(*) as n')
+            ->groupBy('dow')->pluck('n', 'dow');
+
         return response()->json([
             'total' => (clone $base)->count(),
             'first_event_at' => (clone $base)->min('created_at'),
@@ -170,6 +174,7 @@ class EventController extends Controller
             'top_actors' => $topActors,
             'top_subjects' => $topSubjects,
             'per_day' => $perDay,
+            'by_weekday' => $byWeekday,
             'avg_per_day' => round($perDay->avg(), 1),
             'busiest_day' => ($top = $perDay->sortDesc()->keys()->first()) ? ['date' => $top, 'events' => $perDay[$top]] : null,
         ]);
