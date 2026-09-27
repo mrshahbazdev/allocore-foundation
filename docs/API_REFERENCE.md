@@ -2,6 +2,7 @@
 
 Alle Endpunkte unter `/api/v1`. Auth: `Authorization: Bearer <sanctum-token>`.
 Tenant-Scope: Header `X-Tenant: <tenant-uuid>` (Pflicht auf allen Domänen-Endpunkten). Mitgliedschaft Pflicht: Nutzer dürfen nur Mandanten betreten, in denen sie Mitglied sind — sonst `403 Kein Mitglied dieses Mandanten.` (Einstiegspunkt: der Ersteller eines neuen Mandanten wird automatisch `administrator`; weitere Nutzer werden per `POST /users` eines Mitglieds angebunden).
+Validierung: User-Referenzen (`responsible_id`, `owner_id`, `assignee_id`, `created_by`) müssen Mitglieder des aktuellen Mandanten sein (`tenantMemberRule`), und alle `exists`-Regeln auf tenant-scoped Tabellen (persons, companies, expert_profiles, strategies, projects, portfolios, audits, machines, documents) sind mandanten-scoped (`tenantScopedRule`) — Fremdmandanten-IDs → `422`.
 RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 
 **Security-Defaults:** Alle Antworten tragen Security-Header (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`). Passwort-Policy: min. 12 Zeichen + Groß-/Kleinbuchstabe + Zahl. Passwort-Änderung und -Reset widerrufen alle persönlichen API-Tokens. Auth-Routen (Registrierung, Login, Passwort vergessen/zurücksetzen/bestätigen) sind auf 6 Versuche/Minute pro IP gedrosselt.
@@ -29,7 +30,7 @@ RBAC: `{domain}.view` für GET, `{domain}.manage` für POST/PUT/PATCH/DELETE.
 | GET | `/permissions` | (auth+tenant) alle bekannten Permissions (für Rollen-Editor) |
 | GET | `/tenant` | (auth+tenant) aktueller Mandant — `{id, name, members_count, created_at}` |
 | PUT | `/tenant` | (auth+tenant, `roles.manage`) aktuellen Mandanten umbenennen — `name` |
-| GET | `/users` | (auth+tenant) Mitglieder des Tenants (User mit zugewiesener Rolle) — Felder: `id`, `name`, `email`, `role_names[]`, `last_login_at`, `last_login_ip` |
+| GET | `/users` | (auth+tenant) Mitglieder des Tenants (User mit zugewiesener Rolle) — Felder: `id`, `name`, `email`, `role_names[]`, `last_login_at`, `last_login_ip`; `?q=` LIKE auf name/email |
 | POST | `/users` | (auth+tenant, `roles.manage`) Benutzer anlegen bzw. vorhandenen per `email` anhängen — `name`, `email`, optional `password` + `roles`; ohne `password` wird `initial_password` einmalig zurückgegeben; Abstufung des letzten `roles.manage`-Mitglieds → 422 |
 | GET/PUT | `/users/{user}/roles` | (auth+tenant, `roles.manage`) Rollen eines Users lesen/setzen; Lockout-Guard: letztes `roles.manage`-Mitglied kann nicht abgestuft werden → 422 |
 | DELETE | `/users/{user}` | (auth+tenant, `roles.manage`) Mitglied aus dem Mandanten entfernen (eigener Account ausgeschlossen, 422; letztes `roles.manage`-Mitglied → 422) |
