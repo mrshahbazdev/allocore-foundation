@@ -137,6 +137,10 @@ class DataPlatformTest extends TestCase
         $this->assertStringContainsString('Company', $srow['type']);
         $this->assertGreaterThan(0, $srow['events']);
 
+        $typed = $this->getJson('/api/v1/events/subjects?type='.urlencode($srow['type']).'&q=ActCo', ['X-Tenant' => $tenant->id])->json('data');
+        $this->assertNotEmpty($typed);
+        $this->assertEmpty($this->getJson('/api/v1/events/subjects?q=nomatch-xyz', ['X-Tenant' => $tenant->id])->json('data'));
+
         $actors = $this->getJson('/api/v1/events/actors', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
         $row = collect($actors)->firstWhere('id', $user->id);
         $this->assertNotNull($row);
