@@ -420,6 +420,8 @@ class DataPlatformTest extends TestCase
         $this->assertArrayHasKey('company', $res['by_group']);
         $this->assertArrayHasKey('task', $res['by_group']);
         $this->assertArrayHasKey(now()->toDateString(), $res['per_day']);
+        $this->assertNotNull($res['first_event_at']);
+        $this->assertNotNull($res['last_event_at']);
 
         $onlyCompany = $this->getJson('/api/v1/events/summary?group=company', ['X-Tenant' => $tenant->id])->assertOk()->json();
         $this->assertSame(1, $onlyCompany['total']);

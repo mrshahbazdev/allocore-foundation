@@ -121,6 +121,8 @@ class EventController extends Controller
 
         return response()->json([
             'total' => (clone $base)->count(),
+            'first_event_at' => (clone $base)->min('created_at'),
+            'last_event_at' => (clone $base)->max('created_at'),
             'by_group' => $byGroup,
             'by_action' => $byAction,
             'by_actor' => $byActor,
