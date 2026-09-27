@@ -1983,6 +1983,11 @@ class DataPlatformTest extends TestCase
         $this->assertCount(1, $res);
         $this->assertSame('A', $res[0]['title']);
 
+        $aId = $user->notifications()->where('data->title', 'A')->value('id');
+        $res = $this->getJson('/api/v1/notifications?id='.$aId, ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $res);
+        $this->assertSame('A', $res[0]['title']);
+
         $this->postJson('/api/v1/notifications/read-all?due_before='.now()->addDays(7)->toDateString(), [], ['X-Tenant' => $tenant->id])->assertOk();
         $this->getJson('/api/v1/notifications/unread-count', ['X-Tenant' => $tenant->id])->assertJson(['count' => 2]);
 
