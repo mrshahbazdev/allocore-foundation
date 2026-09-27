@@ -283,9 +283,9 @@ class RolesTest extends TestCase
         $user->notify(new PasswordChangedAlert('Passwort geändert'));
         $user->notify(new NewLoginAlert('1.2.3.4', null));
         $this->getJson('/api/v1/notifications/unread-count', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 1]);
+            ->assertOk()->assertJsonPath('count', 1);
         $this->getJson('/api/v1/notifications/unread-count?include_muted=1', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 2]);
+            ->assertOk()->assertJsonPath('count', 2);
     }
 
     public function test_get_notification_prefs_endpoint(): void

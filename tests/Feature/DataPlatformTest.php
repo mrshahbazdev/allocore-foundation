@@ -1706,8 +1706,9 @@ class DataPlatformTest extends TestCase
         $other = User::factory()->create();
         $other->notify($notif);
 
-        $this->getJson('/api/v1/notifications/unread-count', ['X-Tenant' => $tenant->id])
+        $uc = $this->getJson('/api/v1/notifications/unread-count', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJson(['count' => 2]);
+        $this->assertNotNull($uc->json('oldest_unread_at'));
 
         $this->postJson('/api/v1/notifications/read-all', [], ['X-Tenant' => $tenant->id])->assertOk();
 
@@ -1725,7 +1726,7 @@ class DataPlatformTest extends TestCase
         $user->notify(new NewLoginAlert('1.2.3.4', null));
 
         $this->getJson('/api/v1/notifications/unread-count?kind=anmeldung', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 1]);
+            ->assertOk()->assertJsonPath('count', 1);
 
         $this->getJson('/api/v1/notifications?kinds=anmeldung,passwort_geaendert', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonCount(2);
@@ -1749,7 +1750,7 @@ class DataPlatformTest extends TestCase
         $user->notify(new CriticalInsight($tenant->id, 'demo_seed', 'y'));
 
         $this->getJson('/api/v1/notifications/unread-count?code=orders_overdue', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 1]);
+            ->assertOk()->assertJsonPath('count', 1);
     }
 
     public function test_notifications_unread_count_filters_by_window_and_muted(): void
@@ -1762,25 +1763,25 @@ class DataPlatformTest extends TestCase
         $user->notify(new NewLoginAlert('1.2.3.4', null));
 
         $this->getJson('/api/v1/notifications/unread-count?before='.now()->addDay()->toDateString(), ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 1]);
+            ->assertOk()->assertJsonPath('count', 1);
         $this->getJson('/api/v1/notifications/unread-count?before='.now()->subDay()->toDateString(), ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 0]);
+            ->assertOk()->assertJsonPath('count', 0);
         $this->getJson('/api/v1/notifications/unread-count?after='.now()->addDay()->toDateString(), ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 0]);
+            ->assertOk()->assertJsonPath('count', 0);
         $this->getJson('/api/v1/notifications/unread-count?muted=1', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 1]);
+            ->assertOk()->assertJsonPath('count', 1);
 
         $user->notify(new Assigned('aufgabe', (string) Str::uuid(), 'x', now()->addDay()->toIso8601String()));
         $user->notify(new Assigned('aufgabe', (string) Str::uuid(), 'y', now()->addDays(10)->toIso8601String()));
 
         $this->getJson('/api/v1/notifications/unread-count?due_before='.now()->addDays(7)->toDateString(), ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 1]);
+            ->assertOk()->assertJsonPath('count', 1);
         $this->getJson('/api/v1/notifications/unread-count?due_after='.now()->addDays(7)->toDateString(), ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 1]);
+            ->assertOk()->assertJsonPath('count', 1);
         $this->getJson('/api/v1/notifications/unread-count?q=x', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 1]);
+            ->assertOk()->assertJsonPath('count', 1);
         $this->getJson('/api/v1/notifications/unread-count?q=z', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 0]);
+            ->assertOk()->assertJsonPath('count', 0);
     }
 
     public function test_notifications_destroy_all_filters_by_code(): void
@@ -1871,7 +1872,7 @@ class DataPlatformTest extends TestCase
         $this->postJson('/api/v1/notifications/read-all?code=orders_overdue', [], ['X-Tenant' => $tenant->id])->assertOk();
 
         $this->getJson('/api/v1/notifications/unread-count', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 1]);
+            ->assertOk()->assertJsonPath('count', 1);
         $this->assertSame('demo_seed', $user->unreadNotifications()->first()->data['code']);
     }
 
@@ -1944,7 +1945,7 @@ class DataPlatformTest extends TestCase
         $this->assertSame('A', $res[0]['title']);
 
         $this->getJson('/api/v1/notifications/unread-count?entity_id=ent-2', ['X-Tenant' => $tenant->id])
-            ->assertOk()->assertExactJson(['count' => 1]);
+            ->assertOk()->assertJsonPath('count', 1);
         $this->getJson('/api/v1/notifications/stats?entity_id=ent-2', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson(['total' => 1, 'unread' => 1, 'read' => 0, 'muted' => 0, 'by_kind' => ['aufgabe' => 1], 'by_code' => ['' => 1]]);
 

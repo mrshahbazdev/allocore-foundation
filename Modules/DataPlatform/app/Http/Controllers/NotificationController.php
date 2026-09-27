@@ -129,7 +129,10 @@ class NotificationController extends Controller
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')));
 
-        return response()->json(['count' => $q->count()]);
+        return response()->json([
+            'count' => $q->count(),
+            'oldest_unread_at' => (clone $q)->min('created_at'),
+        ]);
     }
 
     public function kinds(Request $request)
