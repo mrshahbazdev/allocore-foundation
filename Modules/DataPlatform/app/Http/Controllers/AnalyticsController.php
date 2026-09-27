@@ -2,6 +2,7 @@
 
 namespace Modules\DataPlatform\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\DataPlatform\Models\MetricSnapshot;
 
@@ -11,9 +12,13 @@ use Modules\DataPlatform\Models\MetricSnapshot;
  */
 class AnalyticsController extends Controller
 {
-    public function trends()
+    public function trends(Request $request)
     {
-        $metrics = MetricSnapshot::query()->where('tenant_id', tenant()->getTenantKey())->distinct()->pluck('metric');
+        $metrics = MetricSnapshot::query()
+            ->where('tenant_id', tenant()->getTenantKey())
+            ->when($request->keys, fn ($q) => $q->whereIn('metric', array_filter(array_map('trim', explode(',', $request->keys)))))
+            ->when($request->q, fn ($q) => $q->where('metric', 'like', '%'.$request->q.'%'))
+            ->distinct()->pluck('metric');
 
         return $metrics->map(function (string $metric) {
             [$curr, $prev] = MetricSnapshot::query()
@@ -35,6 +40,8 @@ class AnalyticsController extends Controller
                 'delta' => $delta,
                 'direction' => $delta === null ? 'unknown' : ($delta > 0 ? 'up' : ($delta < 0 ? 'down' : 'flat')),
             ];
+        })->when($request->direction, function ($c) use ($request) {
+            return $c->where('direction', $request->direction);
         })->sortBy('metric')->values();
     }
 }
