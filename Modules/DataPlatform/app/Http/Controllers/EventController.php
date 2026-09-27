@@ -174,10 +174,12 @@ class EventController extends Controller
     }
 
     /** Distinct Betreffende (subject) des Mandanten — type, id, title, Anzahl Events (max 100). */
-    public function subjects()
+    public function subjects(Request $request)
     {
         $rows = DB::table('stored_events')
             ->where('meta_data->tenant_id', tenant()->getTenantKey())
+            ->when($request->type, fn ($q) => $q->where('event_properties->subject->type', $request->type))
+            ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
             ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id'))"))
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.type')) as subject_type, JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id')) as subject_id, MAX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.title'))) as subject_title, COUNT(*) as events")
             ->groupBy('subject_type', 'subject_id')
