@@ -21,6 +21,7 @@ class EventController extends Controller
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
             ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->integer('actor')))
+            ->when($request->actor_name, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->actor_name.'%'))
             ->when($request->before_id, fn ($q) => $q->where('id', '<', $request->integer('before_id')))
             ->when($request->after_id, fn ($q) => $q->where('id', '>', $request->integer('after_id')))
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
@@ -86,7 +87,8 @@ class EventController extends Controller
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->type, fn ($q) => $q->where('event_properties->type', $request->type))
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
-            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->integer('actor')));
+            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->integer('actor')))
+            ->when($request->actor_name, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->actor_name.'%'));
 
         $byGroup = (clone $base)
             ->selectRaw("SUBSTRING_INDEX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')), '.', 1) as grp, COUNT(*) as n")
@@ -119,6 +121,7 @@ class EventController extends Controller
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
             ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->integer('actor')))
+            ->when($request->actor_name, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->actor_name.'%'))
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
             ->orderBy('id')

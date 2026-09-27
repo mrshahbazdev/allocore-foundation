@@ -536,6 +536,11 @@ paths:
           required: false
           schema: {type: integer}
           description: User-ID des auslösenden Nutzers (meta_data.actor.id)
+        - name: actor_name
+          in: query
+          required: false
+          schema: {type: string}
+          description: Name-Suche LIKE auf meta_data.actor.name
         - name: action
           in: query
           required: false
@@ -605,6 +610,11 @@ paths:
           required: false
           schema: {type: integer}
           description: Nur Events dieses Auslösers (meta_data.actor.id)
+        - name: actor_name
+          in: query
+          required: false
+          schema: {type: string}
+          description: Name-Suche LIKE auf meta_data.actor.name
         - name: days
           in: query
           required: false
@@ -637,6 +647,11 @@ paths:
           required: false
           schema: {type: integer}
           description: Nur Events dieses Auslösers (meta_data.actor.id)
+        - name: actor_name
+          in: query
+          required: false
+          schema: {type: string}
+          description: Name-Suche LIKE auf meta_data.actor.name
         - name: X-Tenant
           in: header
           required: true
