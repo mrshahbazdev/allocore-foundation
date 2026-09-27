@@ -411,6 +411,9 @@
                                 <template x-for="[g, n] in evGroups()" :key="g">
                                     <a :href="'/app/events?tenant=' + tenant + '&eg=' + g" class="text-[10px] px-2 py-0.5 rounded-full border border-[#E4E9F0] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="eventGroup(g) + ' · ' + n"></a>
                                 </template>
+                                <template x-for="[w, n] in evActorsTop()" :key="'w'+w">
+                                    <a :href="'/app/events?tenant=' + tenant + '&an=' + encodeURIComponent(w)" class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#E4E9F0] text-[#9CA3AF] hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="'Auslöser: ' + w" x-text="w + ' · ' + n"></a>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -605,6 +608,7 @@
                                 x-text="'Ohne Verantwortlichen · ' + rows.filter(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to)).length"></button>
                         <button x-show="section === 'events'" @click="evDay = new Date().toISOString().slice(0,10)" :class="evDay === new Date().toISOString().slice(0,10) ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'" class="text-[11px] px-2.5 py-1 rounded-full border transition">Heute</button>
                         <button x-show="section === 'events'" @click="evActor = evActor === 'me' ? '' : 'me'" :class="evActor === 'me' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'" class="text-[11px] px-2.5 py-1 rounded-full border transition">Von mir</button>
+                        <button x-show="section === 'events' && evActorName" @click="evActorName = ''" class="text-[11px] px-2.5 py-1 rounded-full border border-[#0B0B0F] bg-[#0B0B0F] text-white transition">von: <span x-text="evActorName"></span> ×</button>
                             <button x-show="evDay" @click="evDay = ''" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04] text-[#CA8A04] transition" x-text="'Tag: ' + new Date(evDay + 'T12:00').toLocaleDateString('de-DE') + ' ×'"></button>
                             <template x-for="t in evTypeGroups()" :key="'eg'+t.g">
                             <button x-show="section === 'events'" @click="evGroup = evGroup === t.g ? '' : t.g" class="text-[11px] px-2.5 py-1 rounded-full border transition"
@@ -669,8 +673,8 @@
                         </template>
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
-                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
-                        <button x-show="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly" @click="query = ''; statusFilter = ''; severityFilter = ''; roleFilter = ''; kindFilter = ''; codeFilter = ''; unreadOnly = false; mutedOnly = false; evGroup = ''; evDay = ''; evActor = ''; overdueOnly = false; dueSoonOnly = false; dueTodayOnly = false; myOnly = false; unassignedOnly = false"
+                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || evActorName || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
+                        <button x-show="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly" @click="query = ''; statusFilter = ''; severityFilter = ''; roleFilter = ''; kindFilter = ''; codeFilter = ''; unreadOnly = false; mutedOnly = false; evGroup = ''; evDay = ''; evActor = ''; evActorName = ''; overdueOnly = false; dueSoonOnly = false; dueTodayOnly = false; myOnly = false; unassignedOnly = false"
                                 title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
                         <button x-show="canCreate() && !query && !statusFilter && !severityFilter && !roleFilter && !kindFilter && !codeFilter && !unreadOnly && !mutedOnly && !evGroup && !overdueOnly && !dueSoonOnly && !dueTodayOnly && !myOnly && !unassignedOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
@@ -1379,7 +1383,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActors: [], evActorsKey: '', evTypeList: [], linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActorName: '', evActors: [], evActorsKey: '', evTypeList: [], linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, rowNotifs: [], allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
@@ -1419,6 +1423,7 @@ function workspace(initial) {
             if (p.get('eg')) this.evGroup = p.get('eg');
             if (p.get('day')) this.evDay = p.get('day');
             if (p.get('ea')) this.evActor = p.get('ea');
+            if (p.get('an')) this.evActorName = p.get('an');
             this._urlSort = p.get('sort') || null;
             this.$watch('query', () => this.syncUrl());
             this.$watch('statusFilter', () => this.syncUrl());
@@ -1435,6 +1440,7 @@ function workspace(initial) {
             this.$watch('codeFilter', () => this.syncUrl());
             this.$watch('evGroup', () => { this.syncUrl(); if (this.section === 'events') this.loadSection(true); });
             this.$watch('evActor', () => { this.syncUrl(); if (this.section === 'events') this.loadSection(true); });
+            this.$watch('evActorName', () => { this.syncUrl(); if (this.section === 'events') this.loadSection(true); });
             this.$watch('evDay', () => { this.syncUrl(); if (this.section === 'events') this.loadSection(true); });
             this.$watch('paletteQ', q => {
                 clearTimeout(this.globTimer); this.globHits = [];
@@ -1515,6 +1521,7 @@ function workspace(initial) {
             if (this.evGroup) url.searchParams.set('eg', this.evGroup); else url.searchParams.delete('eg');
             if (this.evDay) url.searchParams.set('day', this.evDay); else url.searchParams.delete('day');
             if (this.evActor) url.searchParams.set('ea', this.evActor); else url.searchParams.delete('ea');
+            if (this.evActorName) url.searchParams.set('an', this.evActorName); else url.searchParams.delete('an');
             history.replaceState(null, '', url);
         },
         item() {
@@ -1623,7 +1630,7 @@ function workspace(initial) {
             if (it.action === 'gsearch') { location.href = '/app/' + it.section + '?tenant=' + this.tenant + '&open=' + encodeURIComponent(it.id); return; }
             if (it.action === 'openrowcur') { const r = (this.rows || []).find(x => String(x.id) === String(it.id)); if (r) this.detail = r; return; }
             if (it.action === 'filter') {
-                if (it.filter === '_reset') { this.query = ''; this.statusFilter = ''; this.severityFilter = ''; this.roleFilter = ''; this.kindFilter = ''; this.codeFilter = ''; this.unreadOnly = false; this.mutedOnly = false; this.evGroup = ''; this.evDay = ''; evActor = ''; evDay = ''; this.overdueOnly = this.dueSoonOnly = this.dueTodayOnly = this.myOnly = this.unassignedOnly = false; }
+                if (it.filter === '_reset') { this.query = ''; this.statusFilter = ''; this.severityFilter = ''; this.roleFilter = ''; this.kindFilter = ''; this.codeFilter = ''; this.unreadOnly = false; this.mutedOnly = false; this.evGroup = ''; this.evDay = ''; evActor = ''; evActorName = ''; evDay = ''; this.overdueOnly = this.dueSoonOnly = this.dueTodayOnly = this.myOnly = this.unassignedOnly = false; }
                 else this[it.filter] = !this[it.filter];
                 return;
             }
@@ -1876,7 +1883,7 @@ function workspace(initial) {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
             this.loading = true; this.error = '';
-            if (!soft) { this.limit = 100; this.statusFilter = ''; this.severityFilter = ''; this.roleFilter = ''; this.kindFilter = ''; this.codeFilter = ''; this.unreadOnly = false; this.mutedOnly = false; this.evGroup = ''; this.evDay = ''; evActor = ''; evDay = ''; this.unassignedOnly = false; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; try { this.collapsedGroups = JSON.parse(localStorage.getItem('af_gc_' + this.section) || '{}') || {}; } catch (e) { this.collapsedGroups = {}; } }
+            if (!soft) { this.limit = 100; this.statusFilter = ''; this.severityFilter = ''; this.roleFilter = ''; this.kindFilter = ''; this.codeFilter = ''; this.unreadOnly = false; this.mutedOnly = false; this.evGroup = ''; this.evDay = ''; evActor = ''; evActorName = ''; evDay = ''; this.unassignedOnly = false; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; try { this.collapsedGroups = JSON.parse(localStorage.getItem('af_gc_' + this.section) || '{}') || {}; } catch (e) { this.collapsedGroups = {}; } }
             try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             if (this._urlSort) { const m = this._urlSort.match(/^(.+?)(?::(asc|desc))?$/); this.sortKey = m[1]; this.sortAsc = m[2] !== 'desc'; this._urlSort = null; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
@@ -1926,7 +1933,7 @@ function workspace(initial) {
                 return;
             }
             this.loadLookups();
-            this.api(this.item().ep + '?per_page=200' + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '')).then(r => {
+            this.api(this.item().ep + '?per_page=200' + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : ''))).then(r => {
                 if (!r.ok) { const dom = this.permDom(this.section); this.error = r.status === 403 ? 'Keine Berechtigung ('+(dom ? dom+'.view' : 'Zugriff')+')' : 'HTTP '+r.status+' — Fehler beim Laden'; this.rows=[]; this.loading=false; return null; }
                 return r.json();
             }).then(d => {
@@ -1947,7 +1954,7 @@ function workspace(initial) {
                     const sec = this.section;
                     const loadRest = (page) => {
                         if (this.section !== sec) return;
-                        this.api(this.item().ep + '?per_page=200&page=' + page + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '')).then(r => r.ok ? r.json() : null).then(d2 => {
+                        this.api(this.item().ep + '?per_page=200&page=' + page + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : ''))).then(r => r.ok ? r.json() : null).then(d2 => {
                             if (!d2 || this.section !== sec) return;
                             const more = Array.isArray(d2) ? d2 : (d2.data || []);
                             if (!more.length) return;
@@ -2487,6 +2494,7 @@ function workspace(initial) {
             return days.map(d => ({...d, pct: Math.round(d.n / max * 100)}));
         },
         evGroups() { return this.evSummary ? Object.entries(this.evSummary.by_group || {}).slice(0, 10) : []; },
+        evActorsTop() { return this.evSummary ? Object.entries(this.evSummary.by_actor || {}).filter(([w]) => w && w !== 'null').slice(0, 3) : []; },
         writable() { return !['events','ai-analyses','metrics','users','notifications'].includes(this.section) && this.canManage(); },
         canEdit() { return this.writable() && !['data-objects','tokens'].includes(this.section); },
         canCreate() { return this.section === 'ai-analyses' ? this.hasPerm('ai.manage') : (this.section === 'users' ? this.hasPerm('roles.manage') : (this.section === 'tokens' ? true : this.writable())); },
