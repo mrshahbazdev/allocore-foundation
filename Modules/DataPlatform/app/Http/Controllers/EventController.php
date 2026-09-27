@@ -217,6 +217,8 @@ class EventController extends Controller
                     }
                 });
             })
+            ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
+            ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
             ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.id'))"))
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.id')) as actor_id, JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.name')) as actor_name, COUNT(*) as events")
             ->groupBy('actor_id', 'actor_name')
@@ -272,6 +274,13 @@ class EventController extends Controller
                         $w->orWhere('event_properties->type', 'like', $g.'.%');
                     }
                 });
+            })
+            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->actor))
+            ->when($request->actors, function ($q) use ($request) {
+                $ids = array_map(fn ($a) => $a === 'me' ? $request->user()->id : $a, array_filter(array_map('trim', explode(',', $request->actors))));
+                if ($ids) {
+                    $q->whereIn('meta_data->actor->id', $ids);
+                }
             })
             ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id'))"))
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.type')) as subject_type, JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id')) as subject_id, MAX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.title'))) as subject_title, COUNT(*) as events")
