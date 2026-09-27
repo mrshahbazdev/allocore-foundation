@@ -427,6 +427,7 @@ class DataPlatformTest extends TestCase
 
         $top1 = $this->getJson('/api/v1/events/summary?top=1', ['X-Tenant' => $tenant->id])->assertOk()->json();
         $this->assertCount(1, $top1['top_subjects']);
+        $this->assertNotEmpty($top1['top_subjects'][0]['type']);
     }
 
     public function test_events_endpoint_filters_by_id_cursors(): void
