@@ -201,6 +201,7 @@
                         <div x-show="!overdueSections().length && !todaySections().length && !dbNotifs.length" class="px-3 py-2 text-xs text-[#5B6B7E]">Alles im grünen Bereich.</div>
                         <template x-for="o in overdueSections()"><a :href="'/app/' + o.key + '?tenant=' + tenant + '&overdue=1'" class="px-3 py-1.5 flex items-center justify-between gap-3 text-xs hover:bg-[#FAFBFC]"><span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#A6362E]"></span><span class="w-4 text-center text-[11px] text-[#9CA3AF]" x-text="icons[o.key] || '·'"></span><span x-text="o.label"></span></span><span class="font-mono text-[#A6362E]" x-text="o.count"></span></a></template>
                         <template x-for="o in todaySections()"><a :href="'/app/' + o.key + '?tenant=' + tenant + '&today=1'" class="px-3 py-1.5 flex items-center justify-between gap-3 text-xs hover:bg-[#FAFBFC]"><span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#CA8A04]"></span><span class="w-4 text-center text-[11px] text-[#9CA3AF]" x-text="icons[o.key] || '·'"></span><span x-text="o.label"></span></span><span class="font-mono text-[#CA8A04]" x-text="o.count"></span></a></template>
+                        <template x-for="o in weekSections()"><a :href="'/app/' + o.key + '?tenant=' + tenant + '&dueSoon=1'" class="px-3 py-1.5 flex items-center justify-between gap-3 text-xs hover:bg-[#FAFBFC]"><span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#B45309]"></span><span class="w-4 text-center text-[11px] text-[#9CA3AF]" x-text="icons[o.key] || '·'"></span><span x-text="o.label + ' ≤7T'"></span></span><span class="font-mono text-[#B45309]" x-text="o.count"></span></a></template>
                     </div>
                 </div>
                 <button @click="toggleDark()" aria-label="Darstellung umschalten" :title="dark ? 'Helle Darstellung (t)' : 'Dunkle Darstellung (t)'" class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
@@ -1387,7 +1388,7 @@ function workspace(initial) {
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActorName: '', evActors: [], evActorsKey: '', evTypeList: [], linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
-        pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {}, navTotal: null,
+        pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {}, navBadgesWeek: {}, navTotal: null,
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, rowNotifs: [], allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
@@ -1576,6 +1577,11 @@ function workspace(initial) {
         },
         todaySections() {
             return Object.entries(this.navBadgesToday || {}).filter(([k, n]) => n > 0)
+                .map(([k, n]) => ({key: k, label: this.sectionLabel(k), count: n}))
+                .sort((a, b) => b.count - a.count);
+        },
+        weekSections() {
+            return Object.entries(this.navBadgesWeek || {}).filter(([k, n]) => n > 0)
                 .map(([k, n]) => ({key: k, label: this.sectionLabel(k), count: n}))
                 .sort((a, b) => b.count - a.count);
         },
@@ -1776,9 +1782,10 @@ function workspace(initial) {
             this.loadNotifications();
             const apply = pairs => {
                 const total = pairs.find(([k]) => k === '_total');
-                if (total) this.navTotal = {overdue: total[1][0], today: total[1][1]};
+                if (total) this.navTotal = {overdue: total[1][0], today: total[1][1], week: total[1][2] || 0};
                 this.navBadges = Object.fromEntries(pairs.filter(([k]) => k !== '_total').map(([k, v]) => [k, v[0]]));
                 this.navBadgesToday = Object.fromEntries(pairs.filter(([k]) => k !== '_total').map(([k, v]) => [k, v[1]]));
+                this.navBadgesWeek = Object.fromEntries(pairs.filter(([k]) => k !== '_total').map(([k, v]) => [k, v[2] || 0]));
             };
             this.api('/api/v1/nav-counts').then(r => {
                 if (!r.ok) throw new Error('no agg');
@@ -1788,7 +1795,7 @@ function workspace(initial) {
                 Promise.all(items.map(i =>
                     this.api(i.ep + '?per_page=200').then(r => r.ok ? r.json() : []).then(d => {
                         const rows = Array.isArray(d) ? d : (d.data || []);
-                        return [i.key, [rows.filter(r => this.overdue(r)).length, rows.filter(r => this.dueToday(r)).length]];
+                        return [i.key, [rows.filter(r => this.overdue(r)).length, rows.filter(r => this.dueToday(r)).length, rows.filter(r => this.dueSoon(r) && !this.dueToday(r)).length]];
                     }).catch(() => [i.key, [0, 0]])
                 )).then(apply);
             });
@@ -1948,9 +1955,11 @@ function workspace(initial) {
                 this.rowsTotal = (d && typeof d.total === 'number') ? d.total : rows.length;
                 this.navBadges = {...this.navBadges, [this.section]: rows.filter(r => this.overdue(r)).length};
                 this.navBadgesToday = {...this.navBadgesToday, [this.section]: rows.filter(r => this.dueToday(r)).length};
+                this.navBadgesWeek = {...this.navBadgesWeek, [this.section]: rows.filter(r => this.dueSoon(r) && !this.dueToday(r)).length};
                 this.navTotal = {
                     overdue: Object.entries(this.navBadges).filter(([k]) => k !== 'notifications').reduce((s, [, n]) => s + n, 0),
                     today: Object.values(this.navBadgesToday).reduce((s, n) => s + n, 0),
+                    week: Object.values(this.navBadgesWeek).reduce((s, n) => s + n, 0),
                 };
                 if (rows.length) {
                     const keys = Object.keys(rows[0]).filter(k => !HIDE.has(k) && typeof rows[0][k] !== 'object');
