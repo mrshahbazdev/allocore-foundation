@@ -253,6 +253,15 @@ class EventController extends Controller
             ->when($request->filled('hour'), fn ($q) => $q->whereRaw('HOUR(created_at) = ?', [(int) $request->input('hour')]))
             ->when($request->filled('weekday'), fn ($q) => $q->whereRaw('DAYOFWEEK(created_at) = ?', [(int) $request->input('weekday')]))
             ->when($request->q, fn ($q) => $q->where('event_properties->type', 'like', '%'.$request->q.'%'))
+            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->actor))
+            ->when($request->actors, function ($q) use ($request) {
+                $ids = array_map(fn ($a) => $a === 'me' ? $request->user()->id : $a, array_filter(array_map('trim', explode(',', $request->actors))));
+                if ($ids) {
+                    $q->whereIn('meta_data->actor->id', $ids);
+                }
+            })
+            ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
+            ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->groups, function ($q) use ($request) {
                 $q->where(function ($w) use ($request) {
