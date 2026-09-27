@@ -415,7 +415,7 @@
                                     <a :href="'/app/events?tenant=' + tenant + '&an=' + encodeURIComponent(w)" class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#E4E9F0] text-[#9CA3AF] hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="'Auslöser: ' + w" x-text="w + ' · ' + n"></a>
                                 </template>
                                 <template x-for="s in evSubjectsTop()" :key="'s'+s.id">
-                                    <a :href="'/app/events?tenant=' + tenant + '&q=' + encodeURIComponent(s.title)" class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFFDF2] border border-[#EAD98B] text-[#8A6A00] hover:border-[#CA8A04]" :title="'Betreffend: ' + s.title" x-text="s.title + ' · ' + s.events"></a>
+                                    <a :href="topSubjectLink(s)" class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFFDF2] border border-[#EAD98B] text-[#8A6A00] hover:border-[#CA8A04]" :title="'Betreffend: ' + s.title" x-text="s.title + ' · ' + s.events"></a>
                                 </template>
                             </div>
                         </div>
@@ -2505,6 +2505,11 @@ function workspace(initial) {
         evGroups() { return this.evSummary ? Object.entries(this.evSummary.by_group || {}).slice(0, 10) : []; },
         evActorsTop() { return this.evSummary ? Object.entries(this.evSummary.by_actor || {}).filter(([w]) => w && w !== 'null').slice(0, 3) : []; },
         evSubjectsTop() { return this.evSummary && this.evSummary.top_subjects ? this.evSummary.top_subjects.slice(0, 3) : []; },
+        topSubjectLink(s) {
+            const g = String(s && s.type || '').split('\\').pop().replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+            const M = {task:'tasks',company:'companies',person:'persons',document:'documents',instruction:'instructions',inspection:'inspections',deadline:'deadlines',tender:'tenders',question:'questions',machine:'machines',production_order:'production-orders',financial_report:'financial-reports',leave_request:'leave-requests',participation:'participations',data_object:'data-objects',portfolio:'portfolios',investment:'investments',graph_entity:'graph-entities',graph_edge:'graph-edges',strategy:'strategies',project:'projects',measure:'measures',ai_analysis:'ai-analyses',risk_assessment:'risk-assessments',operating_instruction:'operating-instructions',audit:'audits',audit_finding:'audit-findings',expert_profile:'expert-profiles',tender_application:'tenders',answer:'questions',exec_report:'executive',user:'users'};
+            return M[g] && s.id ? '/app/' + M[g] + '?tenant=' + this.tenant + '&open=' + s.id : '/app/events?tenant=' + this.tenant + '&q=' + encodeURIComponent(s.title || '');
+        },
         writable() { return !['events','ai-analyses','metrics','users','notifications'].includes(this.section) && this.canManage(); },
         canEdit() { return this.writable() && !['data-objects','tokens'].includes(this.section); },
         canCreate() { return this.section === 'ai-analyses' ? this.hasPerm('ai.manage') : (this.section === 'users' ? this.hasPerm('roles.manage') : (this.section === 'tokens' ? true : this.writable())); },
