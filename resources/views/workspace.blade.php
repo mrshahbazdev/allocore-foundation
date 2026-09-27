@@ -400,7 +400,10 @@
                         </div>
                     </div>
                     <div x-show="evSummary" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
-                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center">Aktivität (7 Tage) <span class="text-[10px] font-mono text-[#9CA3AF]" x-text="evSummary ? evSummary.total + ' gesamt' + (evSummary.avg_per_day ? ' · Ø ' + evSummary.avg_per_day + '/Tag' : '') + (evSummary.last_event_at ? ' · Stand ' + new Date(evSummary.last_event_at).toLocaleString('de-DE', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '') : ''"></span></div>
+                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center">Aktivität (<span x-text="evWindow"></span> Tage)
+                            <select x-model.number="evWindow" @change="api('/api/v1/events/summary?days=' + evWindow).then(r => r.ok ? r.json() : null).then(d => evSummary = d)" class="text-[10px] font-mono border border-[#E4E9F0] rounded px-1 py-0.5 bg-white dark:bg-zinc-900">
+                                <option :value="7">7T</option><option :value="14">14T</option><option :value="30">30T</option>
+                            </select> <span class="text-[10px] font-mono text-[#9CA3AF]" x-text="evSummary ? evSummary.total + ' gesamt' + (evSummary.avg_per_day ? ' · Ø ' + evSummary.avg_per_day + '/Tag' : '') + (evSummary.last_event_at ? ' · Stand ' + new Date(evSummary.last_event_at).toLocaleString('de-DE', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '') : ''"></span></div>
                         <div class="px-5 py-4">
                             <div class="flex items-end gap-1.5 h-16">
                                 <template x-for="d in evDays()" :key="d.key">
@@ -1387,7 +1390,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI, icons: ICONS,
-        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], evSummary: null, spark: {}, exec: null, execReports: [], reportOpen: {}, reportData: {}, lookups: {}, navOpen: false, collapsed: {}, me: null, upcoming: [], openTasks: [],
+        tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], evSummary: null, evWindow: 7, spark: {}, exec: null, execReports: [], reportOpen: {}, reportData: {}, lookups: {}, navOpen: false, collapsed: {}, me: null, upcoming: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
@@ -1918,7 +1921,7 @@ function workspace(initial) {
                         .sort((a, b) => ({critical: 0, warning: 1, info: 2}[a.severity] ?? 3) - ({critical: 0, warning: 1, info: 2}[b.severity] ?? 3)));
                 this.api('/api/v1/events').then(r => r.ok ? r.json() : [])
                     .then(d => this.events = (Array.isArray(d) ? d : (d.data || [])).slice(0, 15));
-                this.api('/api/v1/events/summary').then(r => r.ok ? r.json() : null)
+                this.api('/api/v1/events/summary?days=' + this.evWindow).then(r => r.ok ? r.json() : null)
                     .then(d => this.evSummary = d);
                 this.api('/api/v1/analytics/trends').then(r => r.ok ? r.json() : [])
                     .then(d => this.trends = Array.isArray(d) ? d : (d.data || []));
@@ -2507,7 +2510,7 @@ function workspace(initial) {
         evDays() {
             if (!this.evSummary) return [];
             const days = [];
-            for (let i = 6; i >= 0; i--) {
+            for (let i = this.evWindow - 1; i >= 0; i--) {
                 const d = new Date(); d.setDate(d.getDate() - i);
                 const key = d.toISOString().slice(0, 10);
                 days.push({key, label: d.toLocaleDateString('de-DE', {weekday: 'short', day: '2-digit'}), n: this.evSummary.per_day[key] || 0});
