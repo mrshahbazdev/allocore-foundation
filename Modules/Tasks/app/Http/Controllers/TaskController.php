@@ -6,11 +6,14 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\Core\Notifications\Assigned;
 use Modules\Tasks\Models\Task;
 
 class TaskController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Task::query()
@@ -33,7 +36,7 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'assignee_id' => ['nullable', 'exists:users,id'],
+            'assignee_id' => ['nullable', self::tenantMemberRule()],
             'due_at' => ['nullable', 'date'],
             'status' => ['sometimes', Rule::in([Task::STATUS_OPEN, Task::STATUS_IN_PROGRESS, Task::STATUS_DONE, Task::STATUS_CANCELLED])],
         ]);
@@ -53,7 +56,7 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'assignee_id' => ['nullable', 'exists:users,id'],
+            'assignee_id' => ['nullable', self::tenantMemberRule()],
             'due_at' => ['nullable', 'date'],
             'status' => ['sometimes', Rule::in([Task::STATUS_OPEN, Task::STATUS_IN_PROGRESS, Task::STATUS_DONE, Task::STATUS_CANCELLED])],
         ]);

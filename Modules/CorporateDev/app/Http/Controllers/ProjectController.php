@@ -5,10 +5,13 @@ namespace Modules\CorporateDev\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\CorporateDev\Models\Project;
 
 class ProjectController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Project::query()
@@ -33,7 +36,7 @@ class ProjectController extends Controller
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', Rule::in(Project::STATUSES)],
             'progress' => ['sometimes', 'integer', 'min:0', 'max:100'],
-            'owner_id' => ['nullable', 'exists:users,id'],
+            'owner_id' => ['nullable', self::tenantMemberRule()],
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
         ]);
@@ -54,7 +57,7 @@ class ProjectController extends Controller
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', Rule::in(Project::STATUSES)],
             'progress' => ['sometimes', 'integer', 'min:0', 'max:100'],
-            'owner_id' => ['nullable', 'exists:users,id'],
+            'owner_id' => ['nullable', self::tenantMemberRule()],
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
         ]);

@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
 use Modules\Compliance\Models\Instruction;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 
 class InstructionController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Instruction::query()
@@ -33,7 +36,7 @@ class InstructionController extends Controller
             'content' => ['nullable', 'string'],
             'document_id' => ['nullable', 'exists:documents,id'],
             'person_id' => ['nullable', 'exists:persons,id'],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
             'status' => ['sometimes', Rule::in([Instruction::STATUS_PENDING, Instruction::STATUS_COMPLETED])],
             'interval_months' => ['nullable', 'integer', 'min:0', 'max:120'],
             'due_at' => ['nullable', 'date'],
@@ -54,7 +57,7 @@ class InstructionController extends Controller
             'content' => ['nullable', 'string'],
             'document_id' => ['nullable', 'exists:documents,id'],
             'person_id' => ['nullable', 'exists:persons,id'],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
             'status' => ['sometimes', Rule::in([Instruction::STATUS_PENDING, Instruction::STATUS_COMPLETED])],
             'interval_months' => ['nullable', 'integer', 'min:0', 'max:120'],
             'due_at' => ['nullable', 'date'],

@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
 use Modules\Compliance\Models\Deadline;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 
 class DeadlineController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Deadline::query()
@@ -32,7 +35,7 @@ class DeadlineController extends Controller
             'description' => ['nullable', 'string'],
             'subject_type' => ['nullable', 'string', 'max:255'],
             'subject_id' => ['nullable', 'integer'],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
             'status' => ['sometimes', Rule::in([Deadline::STATUS_OPEN, Deadline::STATUS_COMPLETED])],
             'due_at' => ['required', 'date'],
         ]);
@@ -52,7 +55,7 @@ class DeadlineController extends Controller
             'description' => ['nullable', 'string'],
             'subject_type' => ['nullable', 'string', 'max:255'],
             'subject_id' => ['nullable', 'integer'],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
             'status' => ['sometimes', Rule::in([Deadline::STATUS_OPEN, Deadline::STATUS_COMPLETED])],
             'due_at' => ['sometimes', 'date'],
         ]);

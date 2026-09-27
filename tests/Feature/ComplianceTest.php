@@ -178,6 +178,7 @@ class ComplianceTest extends TestCase
         $tenant = Tenant::create(['name' => 'FristAssign GmbH']);
         $this->actingWithTenant($tenant);
         $responsible = User::factory()->create();
+        $responsible->assignRole('holding');
 
         $this->postJson('/api/v1/deadlines', [
             'title' => 'Frist B',
