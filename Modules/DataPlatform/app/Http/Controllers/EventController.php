@@ -110,9 +110,9 @@ class EventController extends Controller
 
         $topSubjects = (clone $base)
             ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id'))"))
-            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id')) as sid, JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.title')) as stitle, COUNT(*) as n")
-            ->groupBy('sid', 'stitle')->orderByDesc('n')->limit(min($request->integer('top', 5), 25))->get()
-            ->map(fn ($r) => ['id' => $r->sid, 'title' => $r->stitle, 'events' => (int) $r->n]);
+            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id')) as sid, JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.type')) as stype, JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.title')) as stitle, COUNT(*) as n")
+            ->groupBy('sid', 'stype', 'stitle')->orderByDesc('n')->limit(min($request->integer('top', 5), 25))->get()
+            ->map(fn ($r) => ['id' => $r->sid, 'type' => $r->stype, 'title' => $r->stitle, 'events' => (int) $r->n]);
 
         $days = min($request->integer('days', 7), 90);
         $perDay = (clone $base)->where('created_at', '>=', now()->subDays($days)->startOfDay())
