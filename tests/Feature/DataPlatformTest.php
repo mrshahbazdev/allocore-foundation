@@ -95,6 +95,7 @@ class DataPlatformTest extends TestCase
         $this->assertNotEmpty($multi);
         $this->assertNotEmpty($this->getJson('/api/v1/events?actors=me', ['X-Tenant' => $tenant->id])->json('data'));
 
+        $this->assertCount(1, array_filter(explode("\n", $this->get('/api/v1/events/export?limit=1', ['X-Tenant' => $tenant->id])->streamedContent())));
         $ascLines = array_values(array_filter(explode("\n", $this->get('/api/v1/events/export?dir=asc', ['X-Tenant' => $tenant->id])->streamedContent())));
         $descLines = array_values(array_filter(explode("\n", $this->get('/api/v1/events/export', ['X-Tenant' => $tenant->id])->streamedContent())));
         $this->assertSame($ascLines, array_reverse($descLines));
