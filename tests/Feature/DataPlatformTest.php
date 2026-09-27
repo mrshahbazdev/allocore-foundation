@@ -2018,6 +2018,12 @@ class DataPlatformTest extends TestCase
         $this->getJson('/api/v1/notifications/stats?entity_id=ent-2', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonPath('total', 1)->assertJsonPath('unread', 1)->assertJsonPath('read', 0)->assertJsonPath('muted', 0)->assertJsonPath('by_kind.aufgabe', 1);
 
+        $res = $this->getJson('/api/v1/notifications?entity_ids=ent-1,ent-2', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(2, $res);
+        $res = $this->getJson('/api/v1/notifications?entity_ids=ent-1', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $res);
+        $this->assertSame('A', $res[0]['title']);
+
         $this->deleteJson('/api/v1/notifications?entity_id=ent-1', [], ['X-Tenant' => $tenant->id])->assertJson(['deleted' => 1]);
         $this->assertSame(1, $user->notifications()->count());
     }
