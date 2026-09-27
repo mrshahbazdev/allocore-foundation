@@ -32,8 +32,11 @@ class MetricController extends Controller
             ->where('metric', $metric)
             ->when($request->from, fn ($q) => $q->where('captured_on', '>=', $request->from))
             ->when($request->to, fn ($q) => $q->where('captured_on', '<=', $request->to))
-            ->orderBy('captured_on', $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc')
-            ->limit(min($request->integer('limit', 1000), 5000))
-            ->get(['metric', 'value', 'captured_on']);
+            ->when($request->integer('recent'),
+                fn ($q) => $q->orderByDesc('captured_on')->limit(min($request->integer('recent'), 200)),
+                fn ($q) => $q->orderBy('captured_on', $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc')
+                    ->limit(min($request->integer('limit', 1000), 5000)))
+            ->get(['metric', 'value', 'captured_on'])
+            ->when($request->integer('recent'), fn ($c) => $c->sortBy('captured_on')->values());
     }
 }
