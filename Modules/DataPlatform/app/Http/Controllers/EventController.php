@@ -104,6 +104,10 @@ class EventController extends Controller
         $byAction = (clone $base)
             ->selectRaw("SUBSTRING_INDEX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')), '.', -1) as act, COUNT(*) as n")
             ->groupBy('act')->orderByDesc('n')->pluck('n', 'act');
+        $byType = (clone $base)
+            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')) as etype, COUNT(*) as n")
+            ->groupBy('etype')->orderByDesc('n')->limit(50)->pluck('n', 'etype');
+
         $byActor = (clone $base)
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.name')) as who, COUNT(*) as n")
             ->groupBy('who')->orderByDesc('n')->pluck('n', 'who');
@@ -131,6 +135,7 @@ class EventController extends Controller
             'last_event_at' => (clone $base)->max('created_at'),
             'by_group' => $byGroup,
             'by_action' => $byAction,
+            'by_type' => $byType,
             'by_actor' => $byActor,
             'top_actors' => $topActors,
             'top_subjects' => $topSubjects,
