@@ -173,6 +173,7 @@ class DataPlatformTest extends TestCase
         $this->assertEmpty($this->getJson('/api/v1/events/actions?weekday='.(now()->dayOfWeekIso % 7 + 1 > 6 ? 1 : now()->dayOfWeekIso % 7 + 2), ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $this->assertEmpty($this->getJson('/api/v1/events/actions?actor=99999', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $this->assertEmpty($this->getJson('/api/v1/events/actions?subject_type=task', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
+        $this->assertEmpty($this->getJson('/api/v1/events/subject-types?actor=99999', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $subjects = $this->getJson('/api/v1/events/subjects', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
         $this->assertNotEmpty($subjects);
         $srow = collect($subjects)->firstWhere('title', 'ActCo');
