@@ -434,6 +434,10 @@ class DataPlatformTest extends TestCase
         $this->assertNotEmpty($lines);
         $row = json_decode($lines[0], true);
         $this->assertSame('aufgabe', $row['data']['kind']);
+
+        $asc = $this->get('/api/v1/notifications/export?dir=asc', ['X-Tenant' => $tenant->id]);
+        $ascLines = array_values(array_filter(explode("\n", $asc->streamedContent())));
+        $this->assertSame($lines, array_reverse($ascLines));
         $this->assertSame('ExportMe', $row['data']['title']);
 
         $this->assertEmpty(array_filter(explode("\n", $this->get('/api/v1/notifications/export?kind=audit', ['X-Tenant' => $tenant->id])->streamedContent())));
