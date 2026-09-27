@@ -538,6 +538,14 @@ class DataPlatformTest extends TestCase
 
         $this->getJson('/api/v1/metrics/companies', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonCount(1);
+
+        $res = $this->getJson('/api/v1/metrics?keys=companies,tasks', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(2, $res);
+        $this->assertArrayHasKey('companies', $res);
+        $this->assertArrayNotHasKey('fin_revenue', $res);
+
+        $this->getJson('/api/v1/metrics/companies?dir=desc&limit=5', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1);
     }
 
     public function test_metrics_are_tenant_scoped(): void
