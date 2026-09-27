@@ -362,6 +362,13 @@ class EventController extends Controller
                 });
             })
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->type', 'like', '%'.$request->q.'%'))
+            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->actor))
+            ->when($request->actors, function ($q) use ($request) {
+                $ids = array_map(fn ($a) => $a === 'me' ? $request->user()->id : $a, array_filter(array_map('trim', explode(',', $request->actors))));
+                if ($ids) {
+                    $q->whereIn('meta_data->actor->id', $ids);
+                }
+            })
             ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.type'))"))
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.type')) as stype, COUNT(*) as events")
             ->groupBy('stype')
