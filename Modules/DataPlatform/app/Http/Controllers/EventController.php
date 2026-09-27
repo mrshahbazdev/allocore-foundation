@@ -196,6 +196,14 @@ class EventController extends Controller
         $rows = DB::table('stored_events')
             ->where('meta_data->tenant_id', tenant()->getTenantKey())
             ->when($request->q, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->q.'%'))
+            ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
+            ->when($request->groups, function ($q) use ($request) {
+                $q->where(function ($w) use ($request) {
+                    foreach (array_filter(array_map('trim', explode(',', $request->groups))) as $g) {
+                        $w->orWhere('event_properties->type', 'like', $g.'.%');
+                    }
+                });
+            })
             ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.id'))"))
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.id')) as actor_id, JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.name')) as actor_name, COUNT(*) as events")
             ->groupBy('actor_id', 'actor_name')
