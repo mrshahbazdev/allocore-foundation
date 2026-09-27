@@ -26,6 +26,7 @@ class NotificationController extends Controller
             ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
             ->when($request->filled('due_before'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', $request->date('due_before')))
             ->when($request->filled('due_after'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '>=', $request->date('due_after')))
+            ->when($request->boolean('overdue'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', now()))
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
             ->reorder('created_at', strtolower((string) $request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc')
@@ -61,6 +62,7 @@ class NotificationController extends Controller
             ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
             ->when($request->filled('due_before'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', $request->date('due_before')))
             ->when($request->filled('due_after'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '>=', $request->date('due_after')))
+            ->when($request->boolean('overdue'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', now()))
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
             ->reorder('created_at')
@@ -95,6 +97,7 @@ class NotificationController extends Controller
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('due_before'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', $request->date('due_before')))
             ->when($request->filled('due_after'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '>=', $request->date('due_after')))
+            ->when($request->boolean('overdue'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', now()))
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
             ->update(['read_at' => now()]);
 
@@ -113,6 +116,7 @@ class NotificationController extends Controller
             ->when($request->boolean('muted') && $muted !== [], fn ($q) => $q->whereIn('data->kind', $muted))
             ->when($request->filled('due_before'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', $request->date('due_before')))
             ->when($request->filled('due_after'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '>=', $request->date('due_after')))
+            ->when($request->boolean('overdue'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', now()))
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')));
 
@@ -144,6 +148,7 @@ class NotificationController extends Controller
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('due_before'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', $request->date('due_before')))
             ->when($request->filled('due_after'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '>=', $request->date('due_after')))
+            ->when($request->boolean('overdue'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', now()))
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
             ->when($request->filled('muted') && $muted !== [], fn ($q) => $request->boolean('muted')
                 ? $q->whereIn('data->kind', $muted)
@@ -224,6 +229,7 @@ class NotificationController extends Controller
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('due_before'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', $request->date('due_before')))
             ->when($request->filled('due_after'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '>=', $request->date('due_after')))
+            ->when($request->boolean('overdue'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', now()))
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
             ->delete();
 
@@ -261,6 +267,7 @@ class NotificationController extends Controller
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('due_before'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', $request->date('due_before')))
             ->when($request->filled('due_after'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '>=', $request->date('due_after')))
+            ->when($request->boolean('overdue'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', now()))
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
             ->delete();
 
