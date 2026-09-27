@@ -24,7 +24,7 @@ class EventController extends Controller
             ->when($request->after_id, fn ($q) => $q->where('id', '>', $request->integer('after_id')))
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
-            ->orderByDesc('id')
+            ->orderBy('id', $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc')
             ->paginate(min($request->integer('per_page', 50), 200));
 
         $page->through(function ($row) {

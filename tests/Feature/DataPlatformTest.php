@@ -206,6 +206,23 @@ class DataPlatformTest extends TestCase
         $this->getJson('/api/v1/events/'.($id + 999), ['X-Tenant' => $tenant->id])->assertNotFound();
     }
 
+    public function test_events_endpoint_honors_dir_sort(): void
+    {
+        $tenant = Tenant::create(['name' => 'DirEv GmbH']);
+        $this->acting($tenant);
+        Company::create(['tenant_id' => $tenant->id, 'name' => 'DirA']);
+        Company::create(['tenant_id' => $tenant->id, 'name' => 'DirB']);
+
+        $idsDesc = array_map(fn ($e) => $e['id'], $this->getJson('/api/v1/events', ['X-Tenant' => $tenant->id])->json('data'));
+        $sortedDesc = $idsDesc;
+        rsort($sortedDesc);
+        $this->assertSame($sortedDesc, $idsDesc);
+        $idsAsc = array_map(fn ($e) => $e['id'], $this->getJson('/api/v1/events?dir=asc', ['X-Tenant' => $tenant->id])->json('data'));
+        $sortedAsc = $idsAsc;
+        sort($sortedAsc);
+        $this->assertSame($sortedAsc, $idsAsc);
+    }
+
     public function test_notifications_test_endpoint_creates_self_notification(): void
     {
         $tenant = Tenant::create(['name' => 'Test GmbH']);

@@ -78,7 +78,7 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 
 | Pfad | Recht | Zweck |
 |---|---|---|
-| `/events` | `metrics.view` | Event-Stream aus `stored_events` (R5) — Query: `type`, `subject_id`, `subject_type`, `action` (Suffix, z. B. `created`), `group` (Prefix, z. B. `company`), `id` (einzelnes Ereignis), `q` (Titel-Suche in `subject.title`), `before_id`/`after_id` (ID-Cursor), `per_page` (max. 200), neueste zuerst, `since`/`until` (Zeitraum auf `created_at`) |
+| `/events` | `metrics.view` | Event-Stream aus `stored_events` (R5) — Query: `type`, `subject_id`, `subject_type`, `action` (Suffix, z. B. `created`), `group` (Prefix, z. B. `company`), `id` (einzelnes Ereignis), `q` (Titel-Suche in `subject.title`), `before_id`/`after_id` (ID-Cursor), `per_page` (max. 200), neueste zuerst, `since`/`until` (Zeitraum auf `created_at`), `?dir=asc` älteste zuerst |
 | `GET /events/{id}` | `metrics.view` | Einzelnes Ereignis des Mandanten — 404 bei fremder/unbekannter ID |
 | `POST /events` | `metrics.view` | Manuelles Event schreiben — `{type: '<gruppe>.<aktion>', subject: {type, id?, title?}, payload?}` → 201 `{status:'recorded', id}` |
 | `/events/summary` | `metrics.view` | Aggregat — `{total, by_group, per_day}` (letzte 7 Tage), `?since=`/`?until=`/`?group=`/`?days=` (per_day-Fenster, Default 7, max 90) |
