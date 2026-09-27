@@ -100,6 +100,8 @@ class DataPlatformTest extends TestCase
 
         $sum = $this->getJson('/api/v1/events/summary?actor='.$user->id, ['X-Tenant' => $tenant->id])->assertOk();
         $this->assertGreaterThan(0, $sum->json('total'));
+        $this->assertNotEmpty($sum->json('by_action'));
+        $this->assertArrayHasKey('created', $sum->json('by_action'));
         $this->assertSame(0, $this->getJson('/api/v1/events/summary?actor='.($user->id + 999), ['X-Tenant' => $tenant->id])->json('total'));
 
         $byName = $this->getJson('/api/v1/events?actor_name='.urlencode($user->name), ['X-Tenant' => $tenant->id])->json('data');
