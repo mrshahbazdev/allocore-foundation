@@ -2,6 +2,7 @@
 
 namespace Modules\DataPlatform\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -39,13 +40,18 @@ class NavCountsController extends Controller
 
     private const OPEN = ['open', 'pending', 'in_progress', 'running', 'queued', 'scheduled', 'planned', 'active', 'submitted', 'shortlisted', 'draft', 'on_hold'];
 
-    public function index()
+    public function index(Request $request)
     {
         $today = now()->toDateString();
         $tid = tenancy()->initialized ? tenant()->getTenantKey() : null;
         $out = [];
 
+        $only = $request->keys ? array_filter(array_map('trim', explode(',', $request->keys))) : null;
+
         foreach (self::TABLES as $key => $table) {
+            if ($only && ! in_array($key, $only, true)) {
+                continue;
+            }
             if (! Schema::hasTable($table)) {
                 continue;
             }
