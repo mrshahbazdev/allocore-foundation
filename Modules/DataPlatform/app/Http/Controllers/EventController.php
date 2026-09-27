@@ -121,6 +121,20 @@ class EventController extends Controller
         return response()->json(['data' => $rows]);
     }
 
+    /** Distinct Event-Typen des Mandanten — type + Anzahl Events (z. B. Filter-Chips). */
+    public function types()
+    {
+        $rows = DB::table('stored_events')
+            ->where('meta_data->tenant_id', tenant()->getTenantKey())
+            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')) as type, COUNT(*) as events")
+            ->groupBy('type')
+            ->orderByDesc('events')
+            ->get()
+            ->map(fn ($r) => ['type' => $r->type, 'events' => (int) $r->events]);
+
+        return response()->json(['data' => $rows]);
+    }
+
     /** Audit-export: alle Events des Mandanten als NDJSON-Stream (gleiche Filter wie index). */
     public function export(Request $request)
     {

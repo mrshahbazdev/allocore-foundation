@@ -102,6 +102,10 @@ class DataPlatformTest extends TestCase
         $this->assertNotEmpty($byName);
         $this->assertEmpty($this->getJson('/api/v1/events?actor_name=nichtda', ['X-Tenant' => $tenant->id])->json('data'));
 
+        $types = $this->getJson('/api/v1/events/types', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
+        $this->assertNotEmpty($types);
+        $this->assertNotNull(collect($types)->firstWhere('type', $types[0]['type'])['events'] ?? null);
+
         $actors = $this->getJson('/api/v1/events/actors', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
         $row = collect($actors)->firstWhere('id', $user->id);
         $this->assertNotNull($row);
