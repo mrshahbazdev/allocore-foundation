@@ -204,6 +204,15 @@ class DataPlatformTest extends TestCase
             $this->assertStringStartsWith('company.', $row['event_properties']['type']);
         }
         $this->assertEmpty($this->getJson('/api/v1/events?group=task', ['X-Tenant' => $tenant->id])->json('data'));
+
+        $multi = $this->getJson('/api/v1/events?groups=company,tenant', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
+        $this->assertNotEmpty($multi);
+        foreach ($multi as $row) {
+            $this->assertMatchesRegularExpression('/^(company|tenant)\./', $row['event_properties']['type']);
+        }
+        $this->assertGreaterThan(0, $this->getJson('/api/v1/events/summary?groups=company,nichtda', ['X-Tenant' => $tenant->id])->json('total'));
+        $exp = $this->get('/api/v1/events/export?groups=company', ['X-Tenant' => $tenant->id])->streamedContent();
+        $this->assertNotEmpty(array_filter(explode("\n", $exp)));
     }
 
     public function test_events_endpoint_filters_by_subject_title_q(): void
