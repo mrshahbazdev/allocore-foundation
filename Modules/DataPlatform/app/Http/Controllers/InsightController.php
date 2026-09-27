@@ -38,6 +38,7 @@ class InsightController extends Controller
             'total' => $insights->count(),
             'by_severity' => $insights->countBy('severity'),
             'by_code' => $insights->countBy('code'),
+            'by_code_group' => $insights->countBy(fn ($i) => explode('_', $i['code'])[0]),
         ]);
     }
 }
