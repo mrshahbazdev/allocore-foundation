@@ -344,6 +344,9 @@ class DataPlatformTest extends TestCase
         $this->assertSame(2, $res['total']);
         $res = $this->getJson('/api/v1/events/summary?action=updated', ['X-Tenant' => $tenant->id])->assertOk()->json();
         $this->assertSame(0, $res['total']);
+
+        $res = $this->getJson('/api/v1/events/summary', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertArrayHasKey('by_actor', $res);
     }
 
     public function test_events_endpoint_honors_dir_sort(): void
