@@ -20,7 +20,7 @@ class EventController extends Controller
             ->when($request->action, fn ($q) => $q->where('event_properties->type', 'like', '%.'.$request->action))
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
-            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->integer('actor')))
+            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->integer('actor')))
             ->when($request->actor_name, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->actor_name.'%'))
             ->when($request->types, fn ($q) => $q->whereIn('event_properties->type', array_filter(array_map('trim', explode(',', $request->types)))))
             ->when($request->before_id, fn ($q) => $q->where('id', '<', $request->integer('before_id')))
@@ -90,7 +90,7 @@ class EventController extends Controller
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->type, fn ($q) => $q->where('event_properties->type', $request->type))
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
-            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->integer('actor')))
+            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->integer('actor')))
             ->when($request->actor_name, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->actor_name.'%'))
             ->when($request->types, fn ($q) => $q->whereIn('event_properties->type', array_filter(array_map('trim', explode(',', $request->types)))));
 
@@ -169,7 +169,7 @@ class EventController extends Controller
             ->when($request->action, fn ($q) => $q->where('event_properties->type', 'like', '%.'.$request->action))
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
-            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->integer('actor')))
+            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->integer('actor')))
             ->when($request->actor_name, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->actor_name.'%'))
             ->when($request->types, fn ($q) => $q->whereIn('event_properties->type', array_filter(array_map('trim', explode(',', $request->types)))))
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
