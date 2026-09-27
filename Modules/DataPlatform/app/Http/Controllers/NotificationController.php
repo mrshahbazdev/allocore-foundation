@@ -70,6 +70,7 @@ class NotificationController extends Controller
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
             ->reorder('created_at', strtolower((string) $request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc')
+            ->when($request->filled('limit'), fn ($q) => $q->limit(min($request->integer('limit'), 10000)))
             ->select('id', 'type', 'data', 'read_at', 'created_at', 'updated_at');
 
         return response()->stream(function () use ($query) {
