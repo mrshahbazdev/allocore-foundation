@@ -111,7 +111,7 @@ class EventController extends Controller
         $topSubjects = (clone $base)
             ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id'))"))
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id')) as sid, JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.title')) as stitle, COUNT(*) as n")
-            ->groupBy('sid', 'stitle')->orderByDesc('n')->limit(5)->get()
+            ->groupBy('sid', 'stitle')->orderByDesc('n')->limit(min($request->integer('top', 5), 25))->get()
             ->map(fn ($r) => ['id' => $r->sid, 'title' => $r->stitle, 'events' => (int) $r->n]);
 
         $days = min($request->integer('days', 7), 90);

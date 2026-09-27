@@ -424,6 +424,9 @@ class DataPlatformTest extends TestCase
         $onlyCompany = $this->getJson('/api/v1/events/summary?group=company', ['X-Tenant' => $tenant->id])->assertOk()->json();
         $this->assertSame(1, $onlyCompany['total']);
         $this->assertSame(['company' => 1], $onlyCompany['by_group']);
+
+        $top1 = $this->getJson('/api/v1/events/summary?top=1', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $top1['top_subjects']);
     }
 
     public function test_events_endpoint_filters_by_id_cursors(): void
