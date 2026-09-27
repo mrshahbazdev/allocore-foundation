@@ -43,6 +43,7 @@ class EventController extends Controller
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
             ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
+            ->when($request->filled('hour'), fn ($q) => $q->whereRaw('HOUR(created_at) = ?', [(int) $request->input('hour')]))
             ->orderBy('id', $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc')
             ->paginate(min($request->integer('per_page', 50), 200));
 
@@ -102,6 +103,7 @@ class EventController extends Controller
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
             ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
+            ->when($request->filled('hour'), fn ($q) => $q->whereRaw('HOUR(created_at) = ?', [(int) $request->input('hour')]))
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->groups, function ($q) use ($request) {
                 $q->where(function ($w) use ($request) {
@@ -300,6 +302,7 @@ class EventController extends Controller
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
             ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
+            ->when($request->filled('hour'), fn ($q) => $q->whereRaw('HOUR(created_at) = ?', [(int) $request->input('hour')]))
             ->orderBy('id', $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc')
             ->when($request->filled('limit'), fn ($q) => $q->limit(min($request->integer('limit'), 10000)))
             ->select('id', 'event_class', 'event_properties', 'meta_data', 'created_at');
