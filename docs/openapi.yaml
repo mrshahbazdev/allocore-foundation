@@ -610,6 +610,21 @@ paths:
           required: false
           schema: {type: string}
           description: Filter auf event_properties.type
+        - name: subject_id
+          in: query
+          required: false
+          schema: {type: string}
+          description: Filter auf event_properties.subject.id
+        - name: subject_type
+          in: query
+          required: false
+          schema: {type: string}
+          description: Filter auf event_properties.subject.type (Morph-Klasse)
+        - name: action
+          in: query
+          required: false
+          schema: {type: string}
+          description: Suffix des Event-Typs (z. B. created)
         - name: q
           in: query
           required: false
