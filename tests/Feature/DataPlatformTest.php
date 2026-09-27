@@ -91,6 +91,10 @@ class DataPlatformTest extends TestCase
         $this->assertGreaterThan(0, $this->getJson('/api/v1/events/summary?actor=me', ['X-Tenant' => $tenant->id])->json('total'));
         $this->assertNotEmpty($this->get('/api/v1/events/export?actor=me', ['X-Tenant' => $tenant->id])->streamedContent());
 
+        $multi = $this->getJson('/api/v1/events?actors='.$user->id.','.($user->id + 999), ['X-Tenant' => $tenant->id])->assertOk()->json('data');
+        $this->assertNotEmpty($multi);
+        $this->assertNotEmpty($this->getJson('/api/v1/events?actors=me', ['X-Tenant' => $tenant->id])->json('data'));
+
         $export = $this->get('/api/v1/events/export?actor='.$user->id, ['X-Tenant' => $tenant->id])->assertOk()->streamedContent();
         $this->assertNotEmpty($export);
         foreach (array_filter(explode("\n", trim($export))) as $line) {
