@@ -69,7 +69,7 @@ class NotificationController extends Controller
             ->when($request->boolean('overdue'), fn ($q) => $q->whereNotNull('data->due_at')->where('data->due_at', '<', now()))
             ->when($request->filled('before'), fn ($q) => $q->where('created_at', '<', $request->date('before')))
             ->when($request->filled('after'), fn ($q) => $q->where('created_at', '>=', $request->date('after')))
-            ->reorder('created_at')
+            ->reorder('created_at', strtolower((string) $request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc')
             ->select('id', 'type', 'data', 'read_at', 'created_at', 'updated_at');
 
         return response()->stream(function () use ($query) {
