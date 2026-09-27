@@ -93,6 +93,10 @@ class DataPlatformTest extends TestCase
             $this->assertSame($user->id, json_decode($line, true)['meta_data']['actor']['id']);
         }
         $this->assertSame('', $this->get('/api/v1/events/export?actor='.($user->id + 999), ['X-Tenant' => $tenant->id])->streamedContent());
+
+        $sum = $this->getJson('/api/v1/events/summary?actor='.$user->id, ['X-Tenant' => $tenant->id])->assertOk();
+        $this->assertGreaterThan(0, $sum->json('total'));
+        $this->assertSame(0, $this->getJson('/api/v1/events/summary?actor='.($user->id + 999), ['X-Tenant' => $tenant->id])->json('total'));
     }
 
     public function test_events_endpoint_filters_by_subject_id(): void

@@ -600,6 +600,11 @@ paths:
           required: false
           schema: {type: string}
           description: Titel-Suche in event_properties.subject.title
+        - name: actor
+          in: query
+          required: false
+          schema: {type: integer}
+          description: Nur Events dieses Auslösers (meta_data.actor.id)
         - name: days
           in: query
           required: false
