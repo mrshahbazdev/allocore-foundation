@@ -585,6 +585,16 @@ paths:
       tags: [events]
       summary: "GET /api/v1/events/summary — {total, by_group, per_day (7d)} — ?since=/?until="
       parameters:
+        - name: type
+          in: query
+          required: false
+          schema: {type: string}
+          description: Filter auf event_properties.type
+        - name: q
+          in: query
+          required: false
+          schema: {type: string}
+          description: Titel-Suche in event_properties.subject.title
         - name: days
           in: query
           required: false
