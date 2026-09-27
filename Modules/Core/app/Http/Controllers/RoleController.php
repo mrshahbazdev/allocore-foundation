@@ -27,14 +27,19 @@ class RoleController extends Controller
             ->with('permissions:id,name')->get(['id', 'name']);
     }
 
-    public function users()
+    public function users(Request $request)
     {
         $userIds = DB::table('model_has_roles')
             ->where('team_id', tenant()->getTenantKey())
             ->where('model_type', User::class)
             ->pluck('model_id');
 
-        return User::whereIn('id', $userIds)->orderBy('name')->get(['id', 'name', 'email', 'last_login_at', 'last_login_ip'])
+        return User::whereIn('id', $userIds)
+            ->when($request->q, fn ($q) => $q->where(
+                fn ($w) => $w->where('name', 'like', '%'.$request->q.'%')
+                    ->orWhere('email', 'like', '%'.$request->q.'%')
+            ))
+            ->orderBy('name')->get(['id', 'name', 'email', 'last_login_at', 'last_login_ip'])
             ->map(fn (User $u) => $u->setAttribute('role_names', $u->getRoleNames()));
     }
 

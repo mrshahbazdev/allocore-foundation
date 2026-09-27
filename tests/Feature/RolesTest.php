@@ -84,6 +84,23 @@ class RolesTest extends TestCase
         $this->assertSame(['mitarbeiter'], $memberRow['role_names']);
     }
 
+    public function test_users_endpoint_supports_q_filter(): void
+    {
+        $tenant = $this->createTenantApi(['name' => 'QSuche GmbH'])->json('id');
+        $admin = $this->actingAsUser();
+        $member = User::factory()->create(['name' => 'Zora Beispiel']);
+
+        tenancy()->initialize(Tenant::find($tenant));
+        $admin->assignRole('administrator');
+        $member->assignRole('mitarbeiter');
+
+        $hits = $this->getJson('/api/v1/users?q=zora', ['X-Tenant' => $tenant])->assertOk()->json();
+        $this->assertSame([$member->id], collect($hits)->pluck('id')->all());
+
+        $hits = $this->getJson('/api/v1/users?q='.urlencode($admin->email), ['X-Tenant' => $tenant])->assertOk()->json();
+        $this->assertSame([$admin->id], collect($hits)->pluck('id')->all());
+    }
+
     public function test_admin_can_create_user_and_attach_existing(): void
     {
         $tenant = $this->createTenantApi(['name' => 'UserCreate GmbH'])->json('id');
