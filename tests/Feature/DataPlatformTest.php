@@ -680,6 +680,12 @@ class DataPlatformTest extends TestCase
         foreach ($subset as $i) {
             $this->assertContains($i['code'], $two);
         }
+
+        $byModule = $this->getJson('/api/v1/insights?module=tasks', ['X-Tenant' => $tenant->id])->json();
+        $this->assertNotEmpty($byModule);
+        foreach ($byModule as $i) {
+            $this->assertStringStartsWith('tasks_', $i['code']);
+        }
     }
 
     public function test_insights_reports_negative_liquidity(): void
