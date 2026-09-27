@@ -566,6 +566,10 @@ class DataPlatformTest extends TestCase
         $this->assertArrayHasKey('companies', $res);
         $this->assertArrayNotHasKey('fin_revenue', $res);
 
+        $res = $this->getJson('/api/v1/metrics?q=compan', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertArrayHasKey('companies', $res);
+        $this->assertArrayNotHasKey('tasks', $res);
+
         $this->getJson('/api/v1/metrics/companies?dir=desc&limit=5', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonCount(1);
     }

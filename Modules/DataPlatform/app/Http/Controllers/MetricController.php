@@ -15,6 +15,7 @@ class MetricController extends Controller
             ->select('metric', 'value', 'captured_on')
             ->where('tenant_id', tenant()->getTenantKey())
             ->when($request->keys, fn ($q) => $q->whereIn('metric', array_filter(array_map('trim', explode(',', $request->keys)))))
+            ->when($request->q, fn ($q) => $q->where('metric', 'like', '%'.$request->q.'%'))
             ->whereIn('id', function ($q) {
                 $q->selectRaw('MAX(id)')->from('metric_snapshots')->groupBy('metric', 'tenant_id');
             })
