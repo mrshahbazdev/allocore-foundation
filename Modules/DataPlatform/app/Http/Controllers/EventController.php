@@ -117,6 +117,7 @@ class EventController extends Controller
             ->when($request->action, fn ($q) => $q->where('event_properties->type', 'like', '%.'.$request->action))
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
+            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->integer('actor')))
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
             ->orderBy('id')

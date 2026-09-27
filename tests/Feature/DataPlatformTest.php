@@ -86,6 +86,13 @@ class DataPlatformTest extends TestCase
         $this->assertNotEmpty($hits);
 
         $this->assertEmpty($this->getJson('/api/v1/events?actor='.($user->id + 999), ['X-Tenant' => $tenant->id])->json('data'));
+
+        $export = $this->get('/api/v1/events/export?actor='.$user->id, ['X-Tenant' => $tenant->id])->assertOk()->streamedContent();
+        $this->assertNotEmpty($export);
+        foreach (array_filter(explode("\n", trim($export))) as $line) {
+            $this->assertSame($user->id, json_decode($line, true)['meta_data']['actor']['id']);
+        }
+        $this->assertSame('', $this->get('/api/v1/events/export?actor='.($user->id + 999), ['X-Tenant' => $tenant->id])->streamedContent());
     }
 
     public function test_events_endpoint_filters_by_subject_id(): void
