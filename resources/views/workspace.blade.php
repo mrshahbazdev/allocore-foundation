@@ -1477,6 +1477,7 @@ function workspace(initial) {
             this._urlSort = p.get('sort') || null;
             this.$watch('query', () => this.syncUrl());
             this.$watch('query', q => { if (this.section !== 'events') return; clearTimeout(this.evQTimer); this.evQTimer = setTimeout(() => this.loadSection(true), 300); });
+            this.$watch('query', q => { if (this.section !== 'notifications') return; clearTimeout(this.ntQTimer); this.ntQTimer = setTimeout(() => this.loadSection(true), 300); });
             this.$watch('statusFilter', () => this.syncUrl());
             this.$watch('severityFilter', () => this.syncUrl());
             this.$watch('roleFilter', () => this.syncUrl());
@@ -1995,7 +1996,7 @@ function workspace(initial) {
                 return;
             }
             this.loadLookups();
-            this.api(this.item().ep + '?per_page=200' + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : '')) + (this.section === 'events' && this.evWeekday ? '&weekday=' + this.evWeekday : '') + (this.section === 'events' && this.evHour !== '' ? '&hour=' + this.evHour : '') + (this.section === 'events' && this.query ? '&q=' + encodeURIComponent(this.query) : '')).then(r => {
+            this.api(this.item().ep + '?per_page=200' + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : '')) + (this.section === 'events' && this.evWeekday ? '&weekday=' + this.evWeekday : '') + (this.section === 'events' && this.evHour !== '' ? '&hour=' + this.evHour : '') + (this.section === 'events' && this.query ? '&q=' + encodeURIComponent(this.query) : '') + (this.section === 'notifications' && this.query ? '&q=' + encodeURIComponent(this.query) : '')).then(r => {
                 if (!r.ok) { const dom = this.permDom(this.section); this.error = r.status === 403 ? 'Keine Berechtigung ('+(dom ? dom+'.view' : 'Zugriff')+')' : 'HTTP '+r.status+' — Fehler beim Laden'; this.rows=[]; this.loading=false; return null; }
                 return r.json();
             }).then(d => {
@@ -2022,7 +2023,7 @@ function workspace(initial) {
                     const sec = this.section;
                     const loadRest = (page) => {
                         if (this.section !== sec) return;
-                        this.api(this.item().ep + '?per_page=200&page=' + page + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : '')) + (this.section === 'events' && this.evWeekday ? '&weekday=' + this.evWeekday : '') + (this.section === 'events' && this.evHour !== '' ? '&hour=' + this.evHour : '') + (this.section === 'events' && this.query ? '&q=' + encodeURIComponent(this.query) : '')).then(r => r.ok ? r.json() : null).then(d2 => {
+                        this.api(this.item().ep + '?per_page=200&page=' + page + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : '')) + (this.section === 'events' && this.evWeekday ? '&weekday=' + this.evWeekday : '') + (this.section === 'events' && this.evHour !== '' ? '&hour=' + this.evHour : '') + (this.section === 'events' && this.query ? '&q=' + encodeURIComponent(this.query) : '') + (this.section === 'notifications' && this.query ? '&q=' + encodeURIComponent(this.query) : '')).then(r => r.ok ? r.json() : null).then(d2 => {
                             if (!d2 || this.section !== sec) return;
                             const more = Array.isArray(d2) ? d2 : (d2.data || []);
                             if (!more.length) return;
