@@ -4143,6 +4143,16 @@ paths:
           required: false
           schema: {type: string}
           description: Nur Mitglieder mit dieser Rolle (Rollenname)
+        - name: sort
+          in: query
+          required: false
+          schema: {type: string}
+          description: Sortier-Spalte (Whitelist — name, email, last_login_at, created_at)
+        - name: dir
+          in: query
+          required: false
+          schema: {type: string, enum: [asc, desc]}
+          description: Sortierrichtung (Default desc)
       security: [{bearerAuth: []}]
       responses:
         '200': {description: OK}
