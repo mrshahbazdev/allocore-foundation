@@ -414,6 +414,9 @@
                                 <template x-for="[w, n] in evActorsTop()" :key="'w'+w">
                                     <a :href="'/app/events?tenant=' + tenant + '&an=' + encodeURIComponent(w)" class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#E4E9F0] text-[#9CA3AF] hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="'Auslöser: ' + w" x-text="w + ' · ' + n"></a>
                                 </template>
+                                <template x-for="s in evSubjectsTop()" :key="'s'+s.id">
+                                    <a :href="'/app/events?tenant=' + tenant + '&q=' + encodeURIComponent(s.title)" class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFFDF2] border border-[#EAD98B] text-[#8A6A00] hover:border-[#CA8A04]" :title="'Betreffend: ' + s.title" x-text="s.title + ' · ' + s.events"></a>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -2495,6 +2498,7 @@ function workspace(initial) {
         },
         evGroups() { return this.evSummary ? Object.entries(this.evSummary.by_group || {}).slice(0, 10) : []; },
         evActorsTop() { return this.evSummary ? Object.entries(this.evSummary.by_actor || {}).filter(([w]) => w && w !== 'null').slice(0, 3) : []; },
+        evSubjectsTop() { return this.evSummary && this.evSummary.top_subjects ? this.evSummary.top_subjects.slice(0, 3) : []; },
         writable() { return !['events','ai-analyses','metrics','users','notifications'].includes(this.section) && this.canManage(); },
         canEdit() { return this.writable() && !['data-objects','tokens'].includes(this.section); },
         canCreate() { return this.section === 'ai-analyses' ? this.hasPerm('ai.manage') : (this.section === 'users' ? this.hasPerm('roles.manage') : (this.section === 'tokens' ? true : this.writable())); },
