@@ -9,11 +9,12 @@ use Modules\DataPlatform\Models\MetricSnapshot;
 class MetricController extends Controller
 {
     /** Latest value of every metric for the current tenant. */
-    public function index()
+    public function index(Request $request)
     {
         return MetricSnapshot::query()
             ->select('metric', 'value', 'captured_on')
             ->where('tenant_id', tenant()->getTenantKey())
+            ->when($request->keys, fn ($q) => $q->whereIn('metric', array_filter(array_map('trim', explode(',', $request->keys)))))
             ->whereIn('id', function ($q) {
                 $q->selectRaw('MAX(id)')->from('metric_snapshots')->groupBy('metric', 'tenant_id');
             })
@@ -30,7 +31,8 @@ class MetricController extends Controller
             ->where('metric', $metric)
             ->when($request->from, fn ($q) => $q->where('captured_on', '>=', $request->from))
             ->when($request->to, fn ($q) => $q->where('captured_on', '<=', $request->to))
-            ->orderBy('captured_on')
+            ->orderBy('captured_on', $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc')
+            ->limit(min($request->integer('limit', 1000), 5000))
             ->get(['metric', 'value', 'captured_on']);
     }
 }
