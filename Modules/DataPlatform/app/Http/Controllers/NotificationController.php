@@ -210,6 +210,12 @@ class NotificationController extends Controller
             'muted' => $muted === [] ? 0 : (clone $base)->whereIn('data->kind', $muted)->count(),
             'by_kind' => $byKind,
             'by_code' => $byCode,
+            'by_weekday' => (clone $base)->reorder()
+                ->selectRaw('DAYOFWEEK(created_at) as wd, COUNT(*) as n')
+                ->groupBy('wd')->pluck('n', 'wd'),
+            'by_hour' => (clone $base)->reorder()
+                ->selectRaw('HOUR(created_at) as hr, COUNT(*) as n')
+                ->groupBy('hr')->pluck('n', 'hr'),
         ]);
     }
 
