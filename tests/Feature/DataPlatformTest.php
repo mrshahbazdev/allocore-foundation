@@ -1819,6 +1819,10 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertJsonPath('count', 0);
         $this->getJson('/api/v1/notifications/unread-count?muted=1', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonPath('count', 1);
+        $this->getJson('/api/v1/notifications/unread-count?day='.now()->toDateString(), ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonPath('count', 1);
+        $this->getJson('/api/v1/notifications/unread-count?day='.now()->subDay()->toDateString(), ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonPath('count', 0);
 
         $user->notify(new Assigned('aufgabe', (string) Str::uuid(), 'x', now()->addDay()->toIso8601String()));
         $user->notify(new Assigned('aufgabe', (string) Str::uuid(), 'y', now()->addDays(10)->toIso8601String()));
