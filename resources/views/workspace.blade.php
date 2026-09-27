@@ -2968,22 +2968,27 @@ function workspace(initial) {
             const OPEN = ['open','pending','in_progress','running','queued','scheduled','planned','active','submitted','shortlisted','draft','on_hold'];
             return !row.status || OPEN.includes(String(row.status));
         },
+        parseDate(v) {
+            const m = /^([0-9]{2})\.([0-9]{2})\.([0-9]{4})(?:[ ,]([0-9]{2}):([0-9]{2}))?/.exec(String(v));
+            if (m) return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0));
+            return new Date(v);
+        },
         overdue(row) {
             const key = this.dueKey(row);
             if (!key || !this.isOpenStatus(row)) return false;
-            const d = new Date(row[key]);
+            const d = this.parseDate(row[key]);
             return !isNaN(d) && d < new Date();
         },
         dueSoon(row) {
             const key = this.dueKey(row);
             if (!key || !this.isOpenStatus(row)) return false;
-            const d = new Date(row[key]), now = new Date();
+            const d = this.parseDate(row[key]), now = new Date();
             return !isNaN(d) && d >= now && d <= new Date(now.getTime() + 7*864e5);
         },
         dueToday(row) {
             const key = this.dueKey(row);
             if (!key || !this.isOpenStatus(row)) return false;
-            const d = new Date(row[key]), now = new Date();
+            const d = this.parseDate(row[key]), now = new Date();
             return !isNaN(d) && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
         },
         eintrag(n) { return n === 1 ? 'Eintrag' : 'Einträge'; },
