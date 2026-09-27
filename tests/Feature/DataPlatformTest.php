@@ -206,6 +206,18 @@ class DataPlatformTest extends TestCase
         $this->getJson('/api/v1/events/'.($id + 999), ['X-Tenant' => $tenant->id])->assertNotFound();
     }
 
+    public function test_insights_stats_returns_totals(): void
+    {
+        $tenant = Tenant::create(['name' => 'IS GmbH']);
+        $this->acting($tenant);
+
+        $res = $this->getJson('/api/v1/insights/stats', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertArrayHasKey('total', $res);
+        $this->assertArrayHasKey('by_severity', $res);
+        $this->assertArrayHasKey('by_code', $res);
+        $this->assertSame(array_sum($res['by_code']), $res['total']);
+    }
+
     public function test_events_summary_filters_by_type_and_q(): void
     {
         $tenant = Tenant::create(['name' => 'SumF GmbH']);

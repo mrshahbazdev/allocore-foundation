@@ -22,4 +22,15 @@ class InsightController extends Controller
             ->sortBy(fn ($i) => array_search($i['severity'], ['critical', 'warning', 'info']))
             ->values();
     }
+
+    public function stats(Request $request)
+    {
+        $insights = collect(app(InsightService::class)->collect(tenant()->getTenantKey()))->filter();
+
+        return response()->json([
+            'total' => $insights->count(),
+            'by_severity' => $insights->countBy('severity'),
+            'by_code' => $insights->countBy('code'),
+        ]);
+    }
 }
