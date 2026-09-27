@@ -4128,6 +4128,11 @@ paths:
           in: header
           required: true
           schema: {type: string}
+        - name: q
+          in: query
+          required: false
+          schema: {type: string}
+          description: Freitext — name/email LIKE
       security: [{bearerAuth: []}]
       responses:
         '200': {description: OK}
