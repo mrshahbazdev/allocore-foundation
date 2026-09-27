@@ -665,6 +665,14 @@ class DataPlatformTest extends TestCase
         $hits = $this->getJson('/api/v1/insights?code=tasks_overdue', ['X-Tenant' => $tenant->id])->json();
         $this->assertCount(1, $hits);
         $this->assertSame('tasks_overdue', $hits[0]['code']);
+
+        $all = $this->getJson('/api/v1/insights', ['X-Tenant' => $tenant->id])->json();
+        $two = collect($all)->pluck('code')->unique()->take(2)->all();
+        $subset = $this->getJson('/api/v1/insights?codes='.implode(',', $two), ['X-Tenant' => $tenant->id])->json();
+        $this->assertNotEmpty($subset);
+        foreach ($subset as $i) {
+            $this->assertContains($i['code'], $two);
+        }
     }
 
     public function test_insights_reports_negative_liquidity(): void
