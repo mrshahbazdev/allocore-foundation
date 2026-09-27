@@ -18,6 +18,13 @@ class EventController extends Controller
             ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
             ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
             ->when($request->action, fn ($q) => $q->where('event_properties->type', 'like', '%.'.$request->action))
+            ->when($request->actions, function ($q) use ($request) {
+                $q->where(function ($w) use ($request) {
+                    foreach (array_filter(array_map('trim', explode(',', $request->actions))) as $a) {
+                        $w->orWhere('event_properties->type', 'like', '%.'.$a);
+                    }
+                });
+            })
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->groups, function ($q) use ($request) {
                 $q->where(function ($w) use ($request) {
@@ -107,6 +114,13 @@ class EventController extends Controller
             ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
             ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
             ->when($request->action, fn ($q) => $q->where('event_properties->type', 'like', '%.'.$request->action))
+            ->when($request->actions, function ($q) use ($request) {
+                $q->where(function ($w) use ($request) {
+                    foreach (array_filter(array_map('trim', explode(',', $request->actions))) as $a) {
+                        $w->orWhere('event_properties->type', 'like', '%.'.$a);
+                    }
+                });
+            })
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
             ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->integer('actor')))
             ->when($request->actors, fn ($q) => $q->whereIn('meta_data->actor->id', array_map(fn ($a) => $a === 'me' ? $request->user()->id : (int) $a, array_filter(array_map('trim', explode(',', $request->actors))))))
@@ -230,6 +244,13 @@ class EventController extends Controller
             ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
             ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
             ->when($request->action, fn ($q) => $q->where('event_properties->type', 'like', '%.'.$request->action))
+            ->when($request->actions, function ($q) use ($request) {
+                $q->where(function ($w) use ($request) {
+                    foreach (array_filter(array_map('trim', explode(',', $request->actions))) as $a) {
+                        $w->orWhere('event_properties->type', 'like', '%.'.$a);
+                    }
+                });
+            })
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->groups, function ($q) use ($request) {
                 $q->where(function ($w) use ($request) {

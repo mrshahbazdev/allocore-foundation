@@ -125,6 +125,12 @@ class DataPlatformTest extends TestCase
             $this->assertContains($ev['event_properties']['type'], ['company.created', 'tenant.created']);
         }
         $this->assertEmpty($this->getJson('/api/v1/events?types=nichtda.x', ['X-Tenant' => $tenant->id])->json('data'));
+        $acts = $this->getJson('/api/v1/events?actions=created,deleted', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
+        $this->assertNotEmpty($acts);
+        foreach ($acts as $row) {
+            $this->assertMatchesRegularExpression('/\.(created|deleted)$/', $row['event_properties']['type']);
+        }
+        $this->assertEmpty($this->getJson('/api/v1/events?actions=nichtda', ['X-Tenant' => $tenant->id])->json('data'));
         $this->assertGreaterThan(0, $this->getJson('/api/v1/events/summary?types=company.created,nichtda.x', ['X-Tenant' => $tenant->id])->json('total'));
         $exp = $this->get('/api/v1/events/export?types=tenant.created', ['X-Tenant' => $tenant->id])->streamedContent();
         foreach (array_filter(explode("\n", trim($exp))) as $line) {
