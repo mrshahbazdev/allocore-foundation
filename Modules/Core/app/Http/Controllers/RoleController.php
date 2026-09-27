@@ -46,7 +46,12 @@ class RoleController extends Controller
                     ->whereIn('role_id', Role::where('team_id', tenant()->getTenantKey())->where('name', $request->role)->pluck('id'))
                     ->select('model_id')
             ))
-            ->orderBy('name')->get(['id', 'name', 'email', 'last_login_at', 'last_login_ip'])
+            ->when(
+                in_array($request->sort, ['name', 'email', 'last_login_at', 'created_at'], true),
+                fn ($q) => $q->orderBy($request->sort, $request->dir === 'desc' ? 'desc' : 'asc'),
+                fn ($q) => $q->orderBy('name')
+            )
+            ->get(['id', 'name', 'email', 'last_login_at', 'last_login_ip', 'created_at'])
             ->map(fn (User $u) => $u->setAttribute('role_names', $u->getRoleNames()));
     }
 
