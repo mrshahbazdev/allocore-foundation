@@ -603,7 +603,7 @@ paths:
   /api/v1/events/summary:
     get:
       tags: [events]
-      summary: "GET /api/v1/events/summary — {total, by_group, per_day (7d)} — ?since=/?until="
+      summary: "GET /api/v1/events/summary — {total, by_group, by_action, per_day (7d)} — ?since=/?until="
       parameters:
         - name: type
           in: query
