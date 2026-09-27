@@ -21,6 +21,7 @@ class NotificationController extends Controller
                 ? $q->whereIn('data->kind', $muted)
                 : $q->whereNotIn('data->kind', $muted))
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
+            ->when($request->filled('kinds'), fn ($q) => $q->whereIn('data->kind', array_filter(array_map('trim', explode(',', $request->string('kinds')->toString())))))
             ->when($request->filled('entity_id'), fn ($q) => $q->where('data->id', $request->string('entity_id')->toString()))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
             ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
@@ -57,6 +58,7 @@ class NotificationController extends Controller
                 ? $q->whereIn('data->kind', $muted)
                 : $q->whereNotIn('data->kind', $muted))
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
+            ->when($request->filled('kinds'), fn ($q) => $q->whereIn('data->kind', array_filter(array_map('trim', explode(',', $request->string('kinds')->toString())))))
             ->when($request->filled('entity_id'), fn ($q) => $q->where('data->id', $request->string('entity_id')->toString()))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
             ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
@@ -90,6 +92,7 @@ class NotificationController extends Controller
 
         $count = $request->user()->unreadNotifications()
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
+            ->when($request->filled('kinds'), fn ($q) => $q->whereIn('data->kind', array_filter(array_map('trim', explode(',', $request->string('kinds')->toString())))))
             ->when($request->filled('entity_id'), fn ($q) => $q->where('data->id', $request->string('entity_id')->toString()))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
             ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
@@ -110,6 +113,7 @@ class NotificationController extends Controller
         $q = $request->user()->unreadNotifications()
             ->when(! $request->boolean('include_muted') && ! $request->boolean('muted') && $muted !== [], fn ($q) => $q->whereNotIn('data->kind', $muted))
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
+            ->when($request->filled('kinds'), fn ($q) => $q->whereIn('data->kind', array_filter(array_map('trim', explode(',', $request->string('kinds')->toString())))))
             ->when($request->filled('entity_id'), fn ($q) => $q->where('data->id', $request->string('entity_id')->toString()))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
             ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
@@ -142,6 +146,7 @@ class NotificationController extends Controller
         $muted = $request->user()->notification_muted ?? [];
         $base = $request->user()->notifications()
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->string('kind')->toString()))
+            ->when($request->filled('kinds'), fn ($q) => $q->whereIn('data->kind', array_filter(array_map('trim', explode(',', $request->string('kinds')->toString())))))
             ->when($request->filled('entity_id'), fn ($q) => $q->where('data->id', $request->string('entity_id')->toString()))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
             ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
@@ -222,6 +227,7 @@ class NotificationController extends Controller
         $muted = $request->user()->notification_muted ?? [];
         $count = $request->user()->notifications()->whereNotNull('read_at')
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->input('kind')))
+            ->when($request->filled('kinds'), fn ($q) => $q->whereIn('data->kind', array_filter(array_map('trim', explode(',', $request->string('kinds')->toString())))))
             ->when($request->filled('entity_id'), fn ($q) => $q->where('data->id', $request->string('entity_id')->toString()))
             ->when($request->filled('code'), fn ($q) => $q->where('data->code', $request->string('code')->toString()))
             ->when($request->filled('q'), fn ($q) => $q->where('data->title', 'like', '%'.$request->string('q')->toString().'%'))
@@ -258,6 +264,7 @@ class NotificationController extends Controller
         $muted = $request->user()->notification_muted ?? [];
         $count = $request->user()->notifications()
             ->when($request->filled('kind'), fn ($q) => $q->where('data->kind', $request->input('kind')))
+            ->when($request->filled('kinds'), fn ($q) => $q->whereIn('data->kind', array_filter(array_map('trim', explode(',', $request->string('kinds')->toString())))))
             ->when($request->filled('entity_id'), fn ($q) => $q->where('data->id', $request->string('entity_id')->toString()))
             ->when($request->boolean('read'), fn ($q) => $q->whereNotNull('read_at'))
             ->when($request->boolean('unread'), fn ($q) => $q->whereNull('read_at'))
