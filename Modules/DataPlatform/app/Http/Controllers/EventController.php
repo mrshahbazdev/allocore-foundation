@@ -351,6 +351,40 @@ class EventController extends Controller
         return response()->json(['data' => $rows]);
     }
 
+    /** Distinct Event-Gruppen des Mandanten (Praefix vor dem Punkt) + Anzahl. */
+    public function groups(Request $request)
+    {
+        $rows = DB::table('stored_events')
+            ->where('meta_data->tenant_id', tenant()->getTenantKey())
+            ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
+            ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
+            ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
+            ->when($request->filled('hour'), fn ($q) => $q->whereRaw('HOUR(created_at) = ?', [(int) $request->input('hour')]))
+            ->when($request->filled('weekday'), fn ($q) => $q->whereRaw('DAYOFWEEK(created_at) = ?', [(int) $request->input('weekday')]))
+            ->when($request->type, fn ($q) => $q->where('event_properties->type', $request->type))
+            ->when($request->types, function ($q) use ($request) {
+                $q->whereIn('event_properties->type', array_filter(array_map('trim', explode(',', $request->types))));
+            })
+            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->actor))
+            ->when($request->actors, function ($q) use ($request) {
+                $ids = array_map(fn ($a) => $a === 'me' ? $request->user()->id : $a, array_filter(array_map('trim', explode(',', $request->actors))));
+                if ($ids) {
+                    $q->whereIn('meta_data->actor->id', $ids);
+                }
+            })
+            ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
+            ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
+            ->when($request->q, fn ($q) => $q->where('event_properties->type', 'like', '%'.$request->q.'%'))
+            ->selectRaw("SUBSTRING_INDEX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')), '.', 1) as grp, COUNT(*) as events")
+            ->groupBy('grp')
+            ->orderByDesc('events')
+            ->limit(min($request->integer('limit', 500), 500))
+            ->get()
+            ->map(fn ($r) => ['group' => $r->grp, 'events' => (int) $r->events]);
+
+        return response()->json(['data' => $rows]);
+    }
+
     /** Distinct Betreffende-Typen (subject.type) des Mandanten — type + Anzahl Events. */
     public function subjectTypes(Request $request)
     {
