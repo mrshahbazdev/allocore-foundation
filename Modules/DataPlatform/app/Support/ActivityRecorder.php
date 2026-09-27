@@ -94,7 +94,7 @@ class ActivityRecorder
                         payload: $action === 'updated' ? $model->getChanges() : $model->getAttributes(),
                     );
 
-                    $event->setMetaData(['tenant_id' => (string) ($model->tenant_id ?? '')]);
+                    $event->setMetaData(['tenant_id' => (string) ($model->tenant_id ?? '')] + DomainEvent::actorMeta());
 
                     event($event);
                 });
