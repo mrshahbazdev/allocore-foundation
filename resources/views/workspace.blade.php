@@ -434,6 +434,7 @@
                                 <template x-for="a in evActorsTop()" :key="'w'+a.id">
                                     <a :href="'/app/events?tenant=' + tenant + '&ea=' + a.id" class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#E4E9F0] text-[#9CA3AF] hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="'Auslöser: ' + a.name" x-text="a.name + ' · ' + a.events"></a>
                                 </template>
+                                <a x-show="evSummary && evSummary.busiest_day" :href="'/app/events?tenant=' + tenant + '&day=' + evSummary.busiest_day.date" class="text-[10px] px-2 py-0.5 rounded-full bg-[#CA8A04]/10 border border-[#CA8A04]/40 text-[#8A6A00] hover:border-[#CA8A04]" :title="'Meiste Ereignisse an einem Tag — Tag filtern'" x-text="'Top-Tag ' + new Date(evSummary.busiest_day.date + 'T00:00:00').toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'}) + ' · ' + evSummary.busiest_day.events"></a>
                                 <template x-for="s in evSubjectsTop()" :key="'s'+s.id">
                                     <a :href="topSubjectLink(s)" class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFFDF2] border border-[#EAD98B] text-[#8A6A00] hover:border-[#CA8A04]" :title="'Betreffend: ' + s.title" x-text="s.title + ' · ' + s.events"></a>
                                 </template>
