@@ -81,7 +81,7 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 |---|---|---|
 | `/events` | `metrics.view` | Event-Stream aus `stored_events` (R5) — Query: `type`, `subject_id`, `subject_type`, `action` (Suffix, z. B. `created`), `group` (Prefix, z. B. `company`), `id` (einzelnes Ereignis), `q` (Titel-Suche in `subject.title`), `actor` (User-ID aus `meta_data.actor` oder `me` für den aktuellen Nutzer), `actor_name` (Name-Suche LIKE auf `meta_data.actor.name`), `types` (CSV-Liste exakter Event-Typen), `before_id`/`after_id` (ID-Cursor), `per_page` (max. 200), neueste zuerst, `since`/`until` (Zeitraum auf `created_at`), `day` (einzelner Tag `YYYY-MM-DD`), `?dir=asc` älteste zuerst |
 | `GET /events/{id}` | `metrics.view` | Einzelnes Ereignis des Mandanten — 404 bei fremder/unbekannter ID |
-| `GET /events/actors` | `metrics.view` | Distinct Auslöser des Mandanten — `[{id, name, events}]` aus `meta_data.actor`, sortiert nach Event-Anzahl |
+| `GET /events/actors` | `metrics.view` | Distinct Auslöser des Mandanten — `[{id, name, events}]` aus `meta_data.actor`, sortiert nach Event-Anzahl, ?q= Name-Filter |
 | `GET /events/subjects` | `metrics.view` | Distinct Betreffende des Mandanten — `[{type, id, title, events}]` aus `event_properties.subject`, sortiert nach Event-Anzahl (max 100), ?type=/?q= Filter |
 | `GET /events/types` | `metrics.view` | Distinct Event-Typen des Mandanten — `[{type, events}]` aus `event_properties.type`, sortiert nach Anzahl |
 | `POST /events` | `metrics.view` | Manuelles Event schreiben — `{type: '<gruppe>.<aktion>', subject: {type, id?, title?}, payload?}` → 201 `{status:'recorded', id}` |

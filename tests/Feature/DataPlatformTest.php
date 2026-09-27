@@ -146,6 +146,10 @@ class DataPlatformTest extends TestCase
         $this->assertNotNull($row);
         $this->assertSame($user->name, $row['name']);
         $this->assertGreaterThan(0, $row['events']);
+
+        $filtered = $this->getJson('/api/v1/events/actors?q='.urlencode($user->name), ['X-Tenant' => $tenant->id])->json('data');
+        $this->assertNotEmpty($filtered);
+        $this->assertEmpty($this->getJson('/api/v1/events/actors?q=nomatch-xyz', ['X-Tenant' => $tenant->id])->json('data'));
     }
 
     public function test_events_endpoint_filters_by_subject_id(): void

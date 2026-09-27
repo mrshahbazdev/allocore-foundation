@@ -145,10 +145,11 @@ class EventController extends Controller
     }
 
     /** Distinct Auslöser (meta_data.actor) des Mandanten — id, name, Anzahl Events. */
-    public function actors()
+    public function actors(Request $request)
     {
         $rows = DB::table('stored_events')
             ->where('meta_data->tenant_id', tenant()->getTenantKey())
+            ->when($request->q, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->q.'%'))
             ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.id'))"))
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.id')) as actor_id, JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.name')) as actor_name, COUNT(*) as events")
             ->groupBy('actor_id', 'actor_name')
