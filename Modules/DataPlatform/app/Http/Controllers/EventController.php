@@ -278,6 +278,7 @@ class EventController extends Controller
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
             ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
             ->orderBy('id', $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc')
+            ->when($request->filled('limit'), fn ($q) => $q->limit(min($request->integer('limit'), 10000)))
             ->select('id', 'event_class', 'event_properties', 'meta_data', 'created_at');
 
         return response()->stream(function () use ($query) {
