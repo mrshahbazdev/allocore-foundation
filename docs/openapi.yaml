@@ -541,6 +541,11 @@ paths:
           required: false
           schema: {type: string}
           description: Name-Suche LIKE auf meta_data.actor.name
+        - name: types
+          in: query
+          required: false
+          schema: {type: string}
+          description: CSV-Liste exakter Event-Typen (z. B. company.created,tenant.created)
         - name: action
           in: query
           required: false
@@ -615,6 +620,11 @@ paths:
           required: false
           schema: {type: string}
           description: Name-Suche LIKE auf meta_data.actor.name
+        - name: types
+          in: query
+          required: false
+          schema: {type: string}
+          description: CSV-Liste exakter Event-Typen (z. B. company.created,tenant.created)
         - name: days
           in: query
           required: false
@@ -705,6 +715,11 @@ paths:
           required: false
           schema: {type: string}
           description: Name-Suche LIKE auf meta_data.actor.name
+        - name: types
+          in: query
+          required: false
+          schema: {type: string}
+          description: CSV-Liste exakter Event-Typen (z. B. company.created,tenant.created)
         - name: X-Tenant
           in: header
           required: true

@@ -106,6 +106,18 @@ class DataPlatformTest extends TestCase
         $this->assertNotEmpty($types);
         $this->assertNotNull(collect($types)->firstWhere('type', $types[0]['type'])['events'] ?? null);
 
+        $multi = $this->getJson('/api/v1/events?types=company.created,tenant.created', ['X-Tenant' => $tenant->id])->json('data');
+        $this->assertNotEmpty($multi);
+        foreach ($multi as $ev) {
+            $this->assertContains($ev['event_properties']['type'], ['company.created', 'tenant.created']);
+        }
+        $this->assertEmpty($this->getJson('/api/v1/events?types=nichtda.x', ['X-Tenant' => $tenant->id])->json('data'));
+        $this->assertGreaterThan(0, $this->getJson('/api/v1/events/summary?types=company.created,nichtda.x', ['X-Tenant' => $tenant->id])->json('total'));
+        $exp = $this->get('/api/v1/events/export?types=tenant.created', ['X-Tenant' => $tenant->id])->streamedContent();
+        foreach (array_filter(explode("\n", trim($exp))) as $line) {
+            $this->assertSame('tenant.created', json_decode($line, true)['event_properties']['type']);
+        }
+
         $actors = $this->getJson('/api/v1/events/actors', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
         $row = collect($actors)->firstWhere('id', $user->id);
         $this->assertNotNull($row);
