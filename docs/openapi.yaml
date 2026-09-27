@@ -2560,6 +2560,19 @@ paths:
           in: header
           required: true
           schema: {type: string}
+        - name: severity
+          in: query
+          required: false
+          schema: {type: string, enum: [critical, warning, info]}
+        - name: code
+          in: query
+          required: false
+          schema: {type: string}
+        - name: q
+          in: query
+          required: false
+          schema: {type: string}
+          description: Teiltext-Suche in message
       security: [{bearerAuth: []}]
       responses:
         '200': {description: OK}

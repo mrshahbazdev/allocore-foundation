@@ -26,7 +26,11 @@ class InsightController extends Controller
 
     public function stats(Request $request)
     {
-        $insights = collect(app(InsightService::class)->collect(tenant()->getTenantKey()))->filter();
+        $insights = collect(app(InsightService::class)->collect(tenant()->getTenantKey()))
+            ->filter()
+            ->when($request->filled('severity'), fn ($c) => $c->filter(fn ($i) => $i['severity'] === $request->string('severity')->toString()))
+            ->when($request->filled('code'), fn ($c) => $c->filter(fn ($i) => $i['code'] === $request->string('code')->toString()))
+            ->when($request->filled('q'), fn ($c) => $c->filter(fn ($i) => str_contains(mb_strtolower($i['message']), mb_strtolower($request->string('q')->toString()))));
 
         return response()->json([
             'total' => $insights->count(),

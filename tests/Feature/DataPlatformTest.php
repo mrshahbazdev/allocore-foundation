@@ -232,6 +232,19 @@ class DataPlatformTest extends TestCase
         $this->assertSame(array_sum($res['by_code']), $res['total']);
     }
 
+    public function test_insights_stats_honors_filters(): void
+    {
+        $tenant = Tenant::create(['name' => 'ISF GmbH']);
+        $this->acting($tenant);
+        Task::create(['tenant_id' => $tenant->id, 'title' => 'Alt', 'status' => 'open', 'due_at' => now()->subDay()]);
+
+        $res = $this->getJson('/api/v1/insights/stats?code=tasks_overdue', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame(['tasks_overdue'], array_keys($res['by_code']));
+
+        $res = $this->getJson('/api/v1/insights/stats?severity=critical', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame(0, $res['total']);
+    }
+
     public function test_events_summary_filters_by_type_and_q(): void
     {
         $tenant = Tenant::create(['name' => 'SumF GmbH']);
