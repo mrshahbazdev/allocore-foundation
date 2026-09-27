@@ -304,11 +304,25 @@ class EventController extends Controller
     {
         $rows = DB::table('stored_events')
             ->where('meta_data->tenant_id', tenant()->getTenantKey())
+            ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
+            ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
+            ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
+            ->when($request->filled('hour'), fn ($q) => $q->whereRaw('HOUR(created_at) = ?', [(int) $request->input('hour')]))
+            ->when($request->filled('weekday'), fn ($q) => $q->whereRaw('DAYOFWEEK(created_at) = ?', [(int) $request->input('weekday')]))
+            ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
+            ->when($request->groups, function ($q) use ($request) {
+                $q->where(function ($w) use ($request) {
+                    foreach (array_filter(array_map('trim', explode(',', $request->groups))) as $g) {
+                        $w->orWhere('event_properties->type', 'like', $g.'.%');
+                    }
+                });
+            })
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->type', 'like', '%'.$request->q.'%'))
             ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.type'))"))
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.type')) as stype, COUNT(*) as events")
             ->groupBy('stype')
             ->orderByDesc('events')
+            ->limit(min($request->integer('limit', 500), 500))
             ->get()
             ->map(fn ($r) => ['type' => $r->stype, 'events' => (int) $r->events]);
 
