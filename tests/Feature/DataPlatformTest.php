@@ -179,6 +179,8 @@ class DataPlatformTest extends TestCase
         $this->assertNotEmpty($this->getJson('/api/v1/events/groups', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $this->assertEmpty($this->getJson('/api/v1/events/groups?actor=99999', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $this->assertEmpty($this->getJson('/api/v1/events/types?actor=99999', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
+        $this->assertEmpty($this->getJson('/api/v1/events/actions?actor_name=nirgends_xyz', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
+        $this->assertEmpty($this->getJson('/api/v1/events/subject-types?actor_name=nirgends_xyz', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $this->assertEmpty($this->getJson('/api/v1/events/types?subject_type=task', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $subjects = $this->getJson('/api/v1/events/subjects', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
         $this->assertNotEmpty($subjects);
