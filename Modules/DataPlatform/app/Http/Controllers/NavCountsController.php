@@ -43,6 +43,7 @@ class NavCountsController extends Controller
     public function index(Request $request)
     {
         $today = now()->toDateString();
+        $days = min((int) $request->query('days', 7), 90);
         $tid = tenancy()->initialized ? tenant()->getTenantKey() : null;
         $out = [];
 
@@ -69,7 +70,7 @@ class NavCountsController extends Controller
             $out[$key] = [
                 $base()->whereDate($due, '<', $today)->count(),
                 $base()->whereDate($due, $today)->count(),
-                $base()->whereDate($due, '>', $today)->whereDate($due, '<=', now()->addDays(7)->toDateString())->count(),
+                $base()->whereDate($due, '>', $today)->whereDate($due, '<=', now()->addDays($days)->toDateString())->count(),
             ];
         }
 
