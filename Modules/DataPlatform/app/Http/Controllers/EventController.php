@@ -208,6 +208,8 @@ class EventController extends Controller
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
             ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
+            ->when($request->filled('hour'), fn ($q) => $q->whereRaw('HOUR(created_at) = ?', [(int) $request->input('hour')]))
+            ->when($request->filled('weekday'), fn ($q) => $q->whereRaw('DAYOFWEEK(created_at) = ?', [(int) $request->input('weekday')]))
             ->when($request->q, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->q.'%'))
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->groups, function ($q) use ($request) {
@@ -238,6 +240,8 @@ class EventController extends Controller
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
             ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
+            ->when($request->filled('hour'), fn ($q) => $q->whereRaw('HOUR(created_at) = ?', [(int) $request->input('hour')]))
+            ->when($request->filled('weekday'), fn ($q) => $q->whereRaw('DAYOFWEEK(created_at) = ?', [(int) $request->input('weekday')]))
             ->when($request->q, fn ($q) => $q->where('event_properties->type', 'like', '%'.$request->q.'%'))
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->groups, function ($q) use ($request) {
@@ -265,6 +269,8 @@ class EventController extends Controller
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
             ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
+            ->when($request->filled('hour'), fn ($q) => $q->whereRaw('HOUR(created_at) = ?', [(int) $request->input('hour')]))
+            ->when($request->filled('weekday'), fn ($q) => $q->whereRaw('DAYOFWEEK(created_at) = ?', [(int) $request->input('weekday')]))
             ->when($request->type, fn ($q) => $q->where('event_properties->subject->type', $request->type))
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
