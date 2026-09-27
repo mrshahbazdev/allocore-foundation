@@ -684,6 +684,27 @@ paths:
                     type: array
                     items:
                       type: object
+  /api/v1/events/subjects:
+    get:
+      operationId: listEventSubjects
+      summary: Distinct Betreffende des Mandanten
+      description: 'Liefert [{type, id, title, events}] aus event_properties.subject — gruppiert nach type+id, sortiert nach Anzahl (max 100).'
+      tags: [Events]
+      security:
+        - bearerAuth: []
+        - tenantHeader: []
+      responses:
+        '200':
+          description: Liste der Betreffenden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
                       properties:
                         type: {type: string}
                         events: {type: integer}

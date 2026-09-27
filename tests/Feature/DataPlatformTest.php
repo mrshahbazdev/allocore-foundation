@@ -118,6 +118,13 @@ class DataPlatformTest extends TestCase
             $this->assertSame('tenant.created', json_decode($line, true)['event_properties']['type']);
         }
 
+        $subjects = $this->getJson('/api/v1/events/subjects', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
+        $this->assertNotEmpty($subjects);
+        $srow = collect($subjects)->firstWhere('title', 'ActCo');
+        $this->assertNotNull($srow);
+        $this->assertStringContainsString('Company', $srow['type']);
+        $this->assertGreaterThan(0, $srow['events']);
+
         $actors = $this->getJson('/api/v1/events/actors', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
         $row = collect($actors)->firstWhere('id', $user->id);
         $this->assertNotNull($row);
