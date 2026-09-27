@@ -153,6 +153,8 @@ class DataPlatformTest extends TestCase
         $this->assertCount(1, $this->getJson('/api/v1/events/types?limit=1', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $this->assertEmpty($this->getJson('/api/v1/events/subjects?group=task', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $this->assertEmpty($this->getJson('/api/v1/events/actors?group=task', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
+        $this->assertEmpty($this->getJson('/api/v1/events?hour='.(((int) now()->format('H') + 12) % 24), ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
+        $this->assertNotEmpty($this->getJson('/api/v1/events?hour='.now()->format('H'), ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $subjects = $this->getJson('/api/v1/events/subjects', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
         $this->assertNotEmpty($subjects);
         $srow = collect($subjects)->firstWhere('title', 'ActCo');
