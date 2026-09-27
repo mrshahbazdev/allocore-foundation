@@ -722,6 +722,13 @@ class DataPlatformTest extends TestCase
         foreach ($byModule as $i) {
             $this->assertStringStartsWith('tasks_', $i['code']);
         }
+
+        $byModules = $this->getJson('/api/v1/insights?modules=tasks,deadlines', ['X-Tenant' => $tenant->id])->json();
+        foreach ($byModules as $i) {
+            $this->assertMatchesRegularExpression('/^(tasks|deadlines)_/', $i['code']);
+        }
+        $statsMod = $this->getJson('/api/v1/insights/stats?modules=tasks,deadlines', ['X-Tenant' => $tenant->id])->json();
+        $this->assertSame(count($byModules), $statsMod['total']);
     }
 
     public function test_insights_reports_negative_liquidity(): void
