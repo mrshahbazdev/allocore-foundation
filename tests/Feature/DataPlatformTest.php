@@ -1694,6 +1694,13 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertJsonCount(2);
         $this->getJson('/api/v1/notifications/stats?kinds=anmeldung,passwort_geaendert', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonPath('total', 2)->assertJsonPath('unread', 2);
+
+        $this->getJson('/api/v1/notifications?codes=demo_seed,hinweis_code_x', ['X-Tenant' => $tenant->id])->assertOk();
+        $user->notify(new CriticalInsight($tenant->id, 'demo_seed', 'z'));
+        $this->getJson('/api/v1/notifications?codes=demo_seed', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(1);
+        $this->getJson('/api/v1/notifications/stats?codes=demo_seed,orders_overdue', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonPath('total', 1);
     }
 
     public function test_notifications_unread_count_filters_by_code(): void
