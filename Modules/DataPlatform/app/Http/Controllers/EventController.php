@@ -200,6 +200,7 @@ class EventController extends Controller
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.id')) as actor_id, JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.name')) as actor_name, COUNT(*) as events")
             ->groupBy('actor_id', 'actor_name')
             ->orderByDesc('events')
+            ->limit(min($request->integer('limit', 500), 500))
             ->get()
             ->map(fn ($r) => ['id' => (int) $r->actor_id, 'name' => $r->actor_name, 'events' => (int) $r->events]);
 
@@ -223,6 +224,7 @@ class EventController extends Controller
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')) as type, COUNT(*) as events")
             ->groupBy('type')
             ->orderByDesc('events')
+            ->limit(min($request->integer('limit', 500), 500))
             ->get()
             ->map(fn ($r) => ['type' => $r->type, 'events' => (int) $r->events]);
 
