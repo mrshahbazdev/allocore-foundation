@@ -4133,6 +4133,11 @@ paths:
           required: false
           schema: {type: string}
           description: Freitext — name/email LIKE
+        - name: role
+          in: query
+          required: false
+          schema: {type: string}
+          description: Nur Mitglieder mit dieser Rolle (Rollenname)
       security: [{bearerAuth: []}]
       responses:
         '200': {description: OK}

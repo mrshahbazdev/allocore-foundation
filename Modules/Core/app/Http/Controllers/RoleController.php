@@ -39,6 +39,13 @@ class RoleController extends Controller
                 fn ($w) => $w->where('name', 'like', '%'.$request->q.'%')
                     ->orWhere('email', 'like', '%'.$request->q.'%')
             ))
+            ->when($request->role, fn ($q) => $q->whereIn('id',
+                DB::table('model_has_roles')
+                    ->where('team_id', tenant()->getTenantKey())
+                    ->where('model_type', User::class)
+                    ->whereIn('role_id', Role::where('team_id', tenant()->getTenantKey())->where('name', $request->role)->pluck('id'))
+                    ->select('model_id')
+            ))
             ->orderBy('name')->get(['id', 'name', 'email', 'last_login_at', 'last_login_ip'])
             ->map(fn (User $u) => $u->setAttribute('role_names', $u->getRoleNames()));
     }
