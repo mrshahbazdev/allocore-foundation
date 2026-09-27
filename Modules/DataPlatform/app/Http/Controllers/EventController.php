@@ -254,6 +254,7 @@ class EventController extends Controller
             ->when($request->filled('weekday'), fn ($q) => $q->whereRaw('DAYOFWEEK(created_at) = ?', [(int) $request->input('weekday')]))
             ->when($request->q, fn ($q) => $q->where('event_properties->type', 'like', '%'.$request->q.'%'))
             ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->actor))
+            ->when($request->actor_name, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->actor_name.'%'))
             ->when($request->actors, function ($q) use ($request) {
                 $ids = array_map(fn ($a) => $a === 'me' ? $request->user()->id : $a, array_filter(array_map('trim', explode(',', $request->actors))));
                 if ($ids) {
@@ -301,6 +302,7 @@ class EventController extends Controller
                 });
             })
             ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->actor))
+            ->when($request->actor_name, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->actor_name.'%'))
             ->when($request->actors, function ($q) use ($request) {
                 $ids = array_map(fn ($a) => $a === 'me' ? $request->user()->id : $a, array_filter(array_map('trim', explode(',', $request->actors))));
                 if ($ids) {
@@ -342,6 +344,7 @@ class EventController extends Controller
             })
             ->when($request->q, fn ($q) => $q->where('event_properties->type', 'like', '%'.$request->q.'%'))
             ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->actor))
+            ->when($request->actor_name, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->actor_name.'%'))
             ->when($request->actors, function ($q) use ($request) {
                 $ids = array_map(fn ($a) => $a === 'me' ? $request->user()->id : $a, array_filter(array_map('trim', explode(',', $request->actors))));
                 if ($ids) {
@@ -375,6 +378,7 @@ class EventController extends Controller
                 $q->whereIn('event_properties->type', array_filter(array_map('trim', explode(',', $request->types))));
             })
             ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->actor))
+            ->when($request->actor_name, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->actor_name.'%'))
             ->when($request->actors, function ($q) use ($request) {
                 $ids = array_map(fn ($a) => $a === 'me' ? $request->user()->id : $a, array_filter(array_map('trim', explode(',', $request->actors))));
                 if ($ids) {
@@ -414,6 +418,7 @@ class EventController extends Controller
             })
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->type', 'like', '%'.$request->q.'%'))
             ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->actor === 'me' ? $request->user()->id : $request->actor))
+            ->when($request->actor_name, fn ($q) => $q->where('meta_data->actor->name', 'like', '%'.$request->actor_name.'%'))
             ->when($request->actors, function ($q) use ($request) {
                 $ids = array_map(fn ($a) => $a === 'me' ? $request->user()->id : $a, array_filter(array_map('trim', explode(',', $request->actors))));
                 if ($ids) {
