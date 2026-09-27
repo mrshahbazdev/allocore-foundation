@@ -13,6 +13,7 @@ class MetricController extends Controller
     {
         return MetricSnapshot::query()
             ->select('metric', 'value', 'captured_on')
+            ->where('tenant_id', tenant()->getTenantKey())
             ->whereIn('id', function ($q) {
                 $q->selectRaw('MAX(id)')->from('metric_snapshots')->groupBy('metric', 'tenant_id');
             })
@@ -25,6 +26,7 @@ class MetricController extends Controller
     public function show(Request $request, string $metric)
     {
         return MetricSnapshot::query()
+            ->where('tenant_id', tenant()->getTenantKey())
             ->where('metric', $metric)
             ->when($request->from, fn ($q) => $q->where('captured_on', '>=', $request->from))
             ->when($request->to, fn ($q) => $q->where('captured_on', '<=', $request->to))

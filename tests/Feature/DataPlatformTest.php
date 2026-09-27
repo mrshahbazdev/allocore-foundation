@@ -23,6 +23,7 @@ use Modules\Core\Notifications\NewLoginAlert;
 use Modules\Core\Notifications\PasswordChangedAlert;
 use Modules\CorporateDev\Models\Project;
 use Modules\DataLake\Models\DataObject;
+use Modules\DataPlatform\Models\MetricSnapshot;
 use Modules\DataPlatform\Notifications\CriticalInsight;
 use Modules\Documents\Models\Document;
 use Modules\ExpertNetwork\Models\Answer;
@@ -448,6 +449,27 @@ class DataPlatformTest extends TestCase
 
         $this->getJson('/api/v1/metrics/companies', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertJsonCount(1);
+    }
+
+    public function test_metrics_are_tenant_scoped(): void
+    {
+        $other = Tenant::create(['name' => 'Fremd GmbH']);
+        MetricSnapshot::create([
+            'tenant_id' => $other->id, 'metric' => 'fremd_metric', 'value' => 99, 'captured_on' => now()->toDateString(),
+        ]);
+
+        $tenant = Tenant::create(['name' => 'Eigen GmbH']);
+        $this->acting($tenant);
+        MetricSnapshot::create([
+            'tenant_id' => $tenant->id, 'metric' => 'eigen_metric', 'value' => 1, 'captured_on' => now()->toDateString(),
+        ]);
+
+        $res = $this->getJson('/api/v1/metrics', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertArrayHasKey('eigen_metric', $res);
+        $this->assertArrayNotHasKey('fremd_metric', $res);
+
+        $res = $this->getJson('/api/v1/metrics/fremd_metric', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertEmpty($res);
     }
 
     public function test_insights_endpoint_reports_findings(): void
