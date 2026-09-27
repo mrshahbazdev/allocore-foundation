@@ -123,6 +123,10 @@
                                :href="'/app/' + item.key + '?today=1' + (tenant ? '&tenant='+tenant : '')"
                                title="Heute fällige Einträge anzeigen"
                                class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#CA8A04] text-black min-w-[1.1rem] text-center hover:bg-[#A16207]"></a>
+                            <a x-show="navBadgesWeek[item.key] > 0" x-text="navBadgesWeek[item.key]"
+                               :href="'/app/' + item.key + '?dueSoon=1' + (tenant ? '&tenant='+tenant : '')"
+                               title="≤7 Tage fällige Einträge anzeigen"
+                               class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#B45309] text-white min-w-[1.1rem] text-center hover:bg-[#92400E]"></a>
                         </div>
                     </template>
                 </div>
