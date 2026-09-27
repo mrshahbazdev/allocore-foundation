@@ -189,6 +189,13 @@ class NotificationController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
+    public function show(Request $request, string $id)
+    {
+        $n = $request->user()->notifications()->where('id', $id)->firstOrFail();
+
+        return response()->json($n);
+    }
+
     public function markRead(Request $request, string $id)
     {
         $n = $request->user()->notifications()->where('id', $id)->firstOrFail();
