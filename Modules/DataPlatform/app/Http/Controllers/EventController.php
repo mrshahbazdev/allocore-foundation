@@ -108,6 +108,12 @@ class EventController extends Controller
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.name')) as who, COUNT(*) as n")
             ->groupBy('who')->orderByDesc('n')->pluck('n', 'who');
 
+        $topSubjects = (clone $base)
+            ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id'))"))
+            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id')) as sid, JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.title')) as stitle, COUNT(*) as n")
+            ->groupBy('sid', 'stitle')->orderByDesc('n')->limit(5)->get()
+            ->map(fn ($r) => ['id' => $r->sid, 'title' => $r->stitle, 'events' => (int) $r->n]);
+
         $days = min($request->integer('days', 7), 90);
         $perDay = (clone $base)->where('created_at', '>=', now()->subDays($days)->startOfDay())
             ->selectRaw('DATE(created_at) as day, COUNT(*) as n')
@@ -118,6 +124,7 @@ class EventController extends Controller
             'by_group' => $byGroup,
             'by_action' => $byAction,
             'by_actor' => $byActor,
+            'top_subjects' => $topSubjects,
             'per_day' => $perDay,
         ]);
     }
