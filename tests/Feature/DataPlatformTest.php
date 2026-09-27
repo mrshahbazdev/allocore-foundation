@@ -110,6 +110,9 @@ class DataPlatformTest extends TestCase
 
         $types = $this->getJson('/api/v1/events/types', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
         $this->assertNotEmpty($types);
+        $tq = $this->getJson('/api/v1/events/types?q='.urlencode(explode('.', $types[0]['type'])[0]), ['X-Tenant' => $tenant->id])->json('data');
+        $this->assertNotEmpty($tq);
+        $this->assertEmpty($this->getJson('/api/v1/events/types?q=nomatch-xyz', ['X-Tenant' => $tenant->id])->json('data'));
         $this->assertNotNull(collect($types)->firstWhere('type', $types[0]['type'])['events'] ?? null);
 
         $multi = $this->getJson('/api/v1/events?types=company.created,tenant.created', ['X-Tenant' => $tenant->id])->json('data');

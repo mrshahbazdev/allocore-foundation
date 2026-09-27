@@ -161,10 +161,12 @@ class EventController extends Controller
     }
 
     /** Distinct Event-Typen des Mandanten — type + Anzahl Events (z. B. Filter-Chips). */
-    public function types()
+    public function types(Request $request)
     {
         $rows = DB::table('stored_events')
             ->where('meta_data->tenant_id', tenant()->getTenantKey())
+            ->when($request->q, fn ($q) => $q->where('event_properties->type', 'like', '%'.$request->q.'%'))
+            ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')) as type, COUNT(*) as events")
             ->groupBy('type')
             ->orderByDesc('events')
