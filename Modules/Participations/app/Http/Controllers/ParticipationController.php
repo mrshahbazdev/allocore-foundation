@@ -5,10 +5,13 @@ namespace Modules\Participations\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\Participations\Models\Participation;
 
 class ParticipationController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Participation::query()
@@ -56,7 +59,7 @@ class ParticipationController extends Controller
         $req = $sometimes ? 'sometimes' : 'required';
 
         return [
-            'company_id' => ['nullable', 'exists:companies,id'],
+            'company_id' => ['nullable', self::tenantScopedRule('companies')],
             'name' => [$req, 'string', 'max:255'],
             'legal_form' => ['nullable', 'string', 'max:50'],
             'stake_pct' => [$sometimes ? 'sometimes' : 'required', 'numeric', 'min:0', 'max:100'],

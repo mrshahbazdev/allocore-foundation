@@ -31,7 +31,7 @@ class ProjectController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'strategy_id' => ['nullable', 'exists:strategies,id'],
+            'strategy_id' => ['nullable', self::tenantScopedRule('strategies')],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', Rule::in(Project::STATUSES)],
@@ -52,7 +52,7 @@ class ProjectController extends Controller
     public function update(Request $request, Project $project)
     {
         $validated = $request->validate([
-            'strategy_id' => ['nullable', 'exists:strategies,id'],
+            'strategy_id' => ['nullable', self::tenantScopedRule('strategies')],
             'name' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', Rule::in(Project::STATUSES)],

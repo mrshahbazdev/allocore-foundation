@@ -5,10 +5,13 @@ namespace Modules\ExpertNetwork\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\ExpertNetwork\Models\Question;
 
 class QuestionController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Question::query()
@@ -30,7 +33,7 @@ class QuestionController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'body' => ['nullable', 'string'],
             'category' => ['nullable', 'string', 'max:100'],
-            'expert_profile_id' => ['nullable', 'exists:expert_profiles,id'],
+            'expert_profile_id' => ['nullable', self::tenantScopedRule('expert_profiles')],
         ]);
 
         $validated['asked_by'] = $request->user()?->id;
@@ -49,7 +52,7 @@ class QuestionController extends Controller
             'title' => ['sometimes', 'string', 'max:255'],
             'body' => ['nullable', 'string'],
             'category' => ['nullable', 'string', 'max:100'],
-            'expert_profile_id' => ['nullable', 'exists:expert_profiles,id'],
+            'expert_profile_id' => ['nullable', self::tenantScopedRule('expert_profiles')],
             'status' => ['sometimes', Rule::in([Question::STATUS_OPEN, Question::STATUS_ANSWERED, Question::STATUS_CLOSED])],
         ]);
 

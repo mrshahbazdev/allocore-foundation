@@ -14,6 +14,12 @@ use Illuminate\Validation\Rules\Exists;
  */
 trait ValidatesTenantMembers
 {
+    /** exists-rule additionally scoped to the current tenant. */
+    protected static function tenantScopedRule(string $table): Exists
+    {
+        return Rule::exists($table, 'id')->where('tenant_id', tenant()->getTenantKey());
+    }
+
     protected static function tenantMemberRule(): Exists
     {
         return Rule::exists('users', 'id')->where(function ($q) {

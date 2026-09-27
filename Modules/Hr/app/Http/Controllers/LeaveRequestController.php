@@ -7,11 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\Core\Notifications\Assigned;
 use Modules\Hr\Models\LeaveRequest;
 
 class LeaveRequestController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return LeaveRequest::query()
@@ -32,7 +35,7 @@ class LeaveRequestController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'person_id' => ['required', 'exists:persons,id'],
+            'person_id' => ['required', self::tenantScopedRule('persons')],
             'type' => ['required', Rule::in(LeaveRequest::TYPES)],
             'starts_on' => ['required', 'date'],
             'ends_on' => ['required', 'date', 'after_or_equal:starts_on'],
@@ -67,7 +70,7 @@ class LeaveRequestController extends Controller
     public function update(Request $request, LeaveRequest $leaveRequest)
     {
         $validated = $request->validate([
-            'person_id' => ['sometimes', 'exists:persons,id'],
+            'person_id' => ['sometimes', self::tenantScopedRule('persons')],
             'type' => ['sometimes', Rule::in(LeaveRequest::TYPES)],
             'starts_on' => ['sometimes', 'date'],
             'ends_on' => ['sometimes', 'date', 'after_or_equal:starts_on'],

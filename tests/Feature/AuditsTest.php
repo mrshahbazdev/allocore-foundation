@@ -55,7 +55,7 @@ class AuditsTest extends TestCase
         $auditB = $this->postJson('/api/v1/audits', ['title' => 'B Audit'], ['X-Tenant' => $tenantB->id])->assertCreated()->json();
         Sanctum::actingAs(User::find($user->id));
         $this->postJson('/api/v1/audit-findings', ['audit_id' => $auditB['id'], 'title' => 'x'], ['X-Tenant' => $tenantA->id])
-            ->assertStatus(404);
+            ->assertUnprocessable();
     }
 
     public function test_audits_require_permission(): void

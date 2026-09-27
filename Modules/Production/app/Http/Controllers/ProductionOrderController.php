@@ -5,10 +5,13 @@ namespace Modules\Production\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\Production\Models\ProductionOrder;
 
 class ProductionOrderController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return ProductionOrder::query()
@@ -69,8 +72,8 @@ class ProductionOrderController extends Controller
             'order_no' => [$req, 'string', 'max:100'],
             'product' => [$req, 'string', 'max:255'],
             'quantity' => ['sometimes', 'integer', 'min:1'],
-            'machine_id' => ['nullable', 'exists:machines,id'],
-            'assigned_to' => ['nullable', 'exists:persons,id'],
+            'machine_id' => ['nullable', self::tenantScopedRule('machines')],
+            'assigned_to' => ['nullable', self::tenantScopedRule('persons')],
             'status' => ['sometimes', Rule::in(ProductionOrder::STATUSES)],
             'scrap_qty' => ['sometimes', 'integer', 'min:0'],
             'due_at' => ['nullable', 'date'],
