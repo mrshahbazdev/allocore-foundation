@@ -104,6 +104,9 @@ class EventController extends Controller
         $byAction = (clone $base)
             ->selectRaw("SUBSTRING_INDEX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')), '.', -1) as act, COUNT(*) as n")
             ->groupBy('act')->orderByDesc('n')->pluck('n', 'act');
+        $byActor = (clone $base)
+            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.name')) as who, COUNT(*) as n")
+            ->groupBy('who')->orderByDesc('n')->pluck('n', 'who');
 
         $days = min($request->integer('days', 7), 90);
         $perDay = (clone $base)->where('created_at', '>=', now()->subDays($days)->startOfDay())
@@ -114,6 +117,7 @@ class EventController extends Controller
             'total' => (clone $base)->count(),
             'by_group' => $byGroup,
             'by_action' => $byAction,
+            'by_actor' => $byActor,
             'per_day' => $perDay,
         ]);
     }
