@@ -21,6 +21,11 @@ class InsightController extends Controller
             ->when($request->filled('code'), fn ($c) => $c->filter(fn ($i) => $i['code'] === $request->string('code')->toString()))
             ->when($request->filled('codes'), fn ($c) => $c->filter(fn ($i) => in_array($i['code'], array_filter(array_map('trim', explode(',', $request->string('codes')->toString()))), true)))
             ->when($request->filled('module'), fn ($c) => $c->filter(fn ($i) => str_starts_with($i['code'], $request->string('module')->toString().'_')))
+            ->when($request->filled('modules'), function ($c) use ($request) {
+                $prefixes = array_filter(array_map('trim', explode(',', $request->string('modules')->toString())));
+
+                return $c->filter(fn ($i) => collect($prefixes)->contains(fn ($m) => str_starts_with($i['code'], $m.'_')));
+            })
             ->when($request->filled('q'), fn ($c) => $c->filter(fn ($i) => str_contains(mb_strtolower($i['message']), mb_strtolower($request->string('q')->toString()))))
             ->sortBy(fn ($i) => array_search($i['severity'], ['critical', 'warning', 'info']))
             ->values();
@@ -34,6 +39,11 @@ class InsightController extends Controller
             ->when($request->filled('code'), fn ($c) => $c->filter(fn ($i) => $i['code'] === $request->string('code')->toString()))
             ->when($request->filled('codes'), fn ($c) => $c->filter(fn ($i) => in_array($i['code'], array_filter(array_map('trim', explode(',', $request->string('codes')->toString()))), true)))
             ->when($request->filled('module'), fn ($c) => $c->filter(fn ($i) => str_starts_with($i['code'], $request->string('module')->toString().'_')))
+            ->when($request->filled('modules'), function ($c) use ($request) {
+                $prefixes = array_filter(array_map('trim', explode(',', $request->string('modules')->toString())));
+
+                return $c->filter(fn ($i) => collect($prefixes)->contains(fn ($m) => str_starts_with($i['code'], $m.'_')));
+            })
             ->when($request->filled('q'), fn ($c) => $c->filter(fn ($i) => str_contains(mb_strtolower($i['message']), mb_strtolower($request->string('q')->toString()))));
 
         return response()->json([
