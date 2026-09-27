@@ -169,6 +169,7 @@ class DataPlatformTest extends TestCase
         $actions = $this->getJson('/api/v1/events/actions', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
         $this->assertNotEmpty($actions);
         $this->assertEmpty($this->getJson('/api/v1/events/actions?group=task', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
+        $this->assertEmpty($this->getJson('/api/v1/events?subject_ids=nope1,nope2', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $subjects = $this->getJson('/api/v1/events/subjects', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
         $this->assertNotEmpty($subjects);
         $srow = collect($subjects)->firstWhere('title', 'ActCo');

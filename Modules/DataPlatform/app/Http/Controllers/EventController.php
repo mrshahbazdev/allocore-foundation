@@ -16,6 +16,9 @@ class EventController extends Controller
             ->when($request->id, fn ($q) => $q->where('id', $request->integer('id')))
             ->when($request->type, fn ($q) => $q->where('event_properties->type', $request->type))
             ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
+            ->when($request->subject_ids, function ($q) use ($request) {
+                $q->whereIn('event_properties->subject->id', array_filter(array_map('trim', explode(',', $request->subject_ids))));
+            })
             ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
             ->when($request->subject_types, function ($q) use ($request) {
                 $q->whereIn('event_properties->subject->type', array_filter(array_map('trim', explode(',', $request->subject_types))));
@@ -119,6 +122,9 @@ class EventController extends Controller
             })
             ->when($request->type, fn ($q) => $q->where('event_properties->type', $request->type))
             ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
+            ->when($request->subject_ids, function ($q) use ($request) {
+                $q->whereIn('event_properties->subject->id', array_filter(array_map('trim', explode(',', $request->subject_ids))));
+            })
             ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
             ->when($request->subject_types, function ($q) use ($request) {
                 $q->whereIn('event_properties->subject->type', array_filter(array_map('trim', explode(',', $request->subject_types))));
@@ -366,6 +372,9 @@ class EventController extends Controller
             ->when($request->id, fn ($q) => $q->where('id', $request->integer('id')))
             ->when($request->type, fn ($q) => $q->where('event_properties->type', $request->type))
             ->when($request->subject_id, fn ($q) => $q->where('event_properties->subject->id', $request->subject_id))
+            ->when($request->subject_ids, function ($q) use ($request) {
+                $q->whereIn('event_properties->subject->id', array_filter(array_map('trim', explode(',', $request->subject_ids))));
+            })
             ->when($request->subject_type, fn ($q) => $q->where('event_properties->subject->type', $request->subject_type))
             ->when($request->subject_types, function ($q) use ($request) {
                 $q->whereIn('event_properties->subject->type', array_filter(array_map('trim', explode(',', $request->subject_types))));
