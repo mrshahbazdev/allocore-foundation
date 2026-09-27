@@ -1925,7 +1925,7 @@ function workspace(initial) {
                 return;
             }
             this.loadLookups();
-            this.api(this.item().ep + '?per_page=200' + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&since=' + this.evDay + 'T00:00&until=' + this.evDay + 'T23:59' : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '')).then(r => {
+            this.api(this.item().ep + '?per_page=200' + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '')).then(r => {
                 if (!r.ok) { const dom = this.permDom(this.section); this.error = r.status === 403 ? 'Keine Berechtigung ('+(dom ? dom+'.view' : 'Zugriff')+')' : 'HTTP '+r.status+' — Fehler beim Laden'; this.rows=[]; this.loading=false; return null; }
                 return r.json();
             }).then(d => {
@@ -1946,7 +1946,7 @@ function workspace(initial) {
                     const sec = this.section;
                     const loadRest = (page) => {
                         if (this.section !== sec) return;
-                        this.api(this.item().ep + '?per_page=200&page=' + page + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&since=' + this.evDay + 'T00:00&until=' + this.evDay + 'T23:59' : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '')).then(r => r.ok ? r.json() : null).then(d2 => {
+                        this.api(this.item().ep + '?per_page=200&page=' + page + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '')).then(r => r.ok ? r.json() : null).then(d2 => {
                             if (!d2 || this.section !== sec) return;
                             const more = Array.isArray(d2) ? d2 : (d2.data || []);
                             if (!more.length) return;
