@@ -492,7 +492,7 @@ class RoleController extends Controller
             subject: ['type' => 'user', 'id' => $user->id, 'title' => $user->name],
             payload: $payload + ['email' => $user->email],
         );
-        $event->setMetaData(['tenant_id' => (string) tenant()->getTenantKey()]);
+        $event->setMetaData(['tenant_id' => (string) tenant()->getTenantKey()] + DomainEvent::actorMeta());
 
         event($event);
     }
@@ -505,7 +505,7 @@ class RoleController extends Controller
             subject: ['type' => 'role', 'id' => $role->id, 'title' => $role->name],
             payload: $payload,
         );
-        $event->setMetaData(['tenant_id' => (string) tenant()->getTenantKey()]);
+        $event->setMetaData(['tenant_id' => (string) tenant()->getTenantKey()] + DomainEvent::actorMeta());
 
         event($event);
     }

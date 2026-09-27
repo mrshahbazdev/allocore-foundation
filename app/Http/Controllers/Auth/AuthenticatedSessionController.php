@@ -50,7 +50,7 @@ class AuthenticatedSessionController extends Controller
                 subject: ['type' => 'user', 'id' => $user->id, 'title' => $user->name],
                 payload: ['ip' => $ip],
             );
-            $event->setMetaData(['tenant_id' => (string) $teamId]);
+            $event->setMetaData(['tenant_id' => (string) $teamId] + DomainEvent::actorMeta());
             event($event);
         }
 
@@ -75,7 +75,7 @@ class AuthenticatedSessionController extends Controller
                     subject: ['type' => 'user', 'id' => $user->id, 'title' => $user->name],
                     payload: ['ip' => (string) $request->ip()],
                 );
-                $event->setMetaData(['tenant_id' => (string) $teamId]);
+                $event->setMetaData(['tenant_id' => (string) $teamId] + DomainEvent::actorMeta());
                 event($event);
             }
         }

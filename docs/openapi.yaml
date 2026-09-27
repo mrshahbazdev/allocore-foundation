@@ -531,6 +531,11 @@ paths:
           required: false
           schema: {type: string}
           description: Filter auf event_properties.subject.type
+        - name: actor
+          in: query
+          required: false
+          schema: {type: integer}
+          description: User-ID des auslösenden Nutzers (meta_data.actor.id)
         - name: action
           in: query
           required: false

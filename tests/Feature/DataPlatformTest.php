@@ -70,6 +70,24 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertJsonPath('data.0.event_properties.type', 'company.created');
     }
 
+    public function test_events_record_actor_and_filter_by_actor(): void
+    {
+        $tenant = Tenant::create(['name' => 'Act GmbH']);
+        $user = $this->acting($tenant);
+
+        $this->postJson('/api/v1/companies', ['name' => 'ActCo'], ['X-Tenant' => $tenant->id])
+            ->assertCreated();
+
+        $meta = json_decode(DB::table('stored_events')->latest('id')->value('meta_data'), true);
+        $this->assertSame($user->id, $meta['actor']['id']);
+        $this->assertSame($user->email, $meta['actor']['email']);
+
+        $hits = $this->getJson('/api/v1/events?actor='.$user->id, ['X-Tenant' => $tenant->id])->assertOk()->json('data');
+        $this->assertNotEmpty($hits);
+
+        $this->assertEmpty($this->getJson('/api/v1/events?actor='.($user->id + 999), ['X-Tenant' => $tenant->id])->json('data'));
+    }
+
     public function test_events_endpoint_filters_by_subject_id(): void
     {
         $tenant = Tenant::create(['name' => 'Sub GmbH']);

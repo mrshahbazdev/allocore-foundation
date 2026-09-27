@@ -81,7 +81,7 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api'])->prefix('v
             tenantId: (string) $tenant->getTenantKey(),
             subject: ['type' => 'tenant', 'id' => $tenant->getTenantKey(), 'title' => $tenant->name],
         );
-        $event->setMetaData(['tenant_id' => (string) $tenant->getTenantKey()]);
+        $event->setMetaData(['tenant_id' => (string) $tenant->getTenantKey()] + DomainEvent::actorMeta());
         event($event);
 
         return response()->json($tenant);

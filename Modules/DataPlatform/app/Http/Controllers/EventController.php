@@ -20,6 +20,7 @@ class EventController extends Controller
             ->when($request->action, fn ($q) => $q->where('event_properties->type', 'like', '%.'.$request->action))
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
+            ->when($request->actor, fn ($q) => $q->where('meta_data->actor->id', $request->integer('actor')))
             ->when($request->before_id, fn ($q) => $q->where('id', '<', $request->integer('before_id')))
             ->when($request->after_id, fn ($q) => $q->where('id', '>', $request->integer('after_id')))
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
@@ -69,7 +70,7 @@ class EventController extends Controller
             subject: $data['subject'],
             payload: $data['payload'] ?? [],
         );
-        $event->setMetaData(['tenant_id' => $tenantKey]);
+        $event->setMetaData(['tenant_id' => $tenantKey] + DomainEvent::actorMeta());
         event($event);
 
         return response()->json(['status' => 'recorded', 'id' => $event->storedEventId() ?? null], 201);

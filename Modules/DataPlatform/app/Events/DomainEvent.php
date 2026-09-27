@@ -12,4 +12,12 @@ class DomainEvent extends ShouldBeStored
         public array $subject,
         public array $payload = [],
     ) {}
+
+    /** meta_data fragment attributing the event to the authenticated user, if any. */
+    public static function actorMeta(): array
+    {
+        $u = auth()->user();
+
+        return $u ? ['actor' => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email]] : [];
+    }
 }
