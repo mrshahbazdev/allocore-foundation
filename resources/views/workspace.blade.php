@@ -433,6 +433,14 @@
                                     </a>
                                 </template>
                             </div>
+                            <div class="flex items-end gap-1.5 h-10 mt-2" x-show="evSummary && evSummary.by_weekday">
+                                <template x-for="w in evWeekdays()" :key="'wd'+w.d">
+                                    <a :href="'/app/events?tenant=' + tenant + '&wd=' + w.d" class="flex-1 flex flex-col items-center gap-0.5 hover:bg-[#FAFBFC] rounded" :title="w.label + ': ' + w.n + ' Ereignisse — Wochentag filtern'">
+                                        <div class="w-full bg-[#F0F3F7] rounded-sm flex items-end" style="height: 100%;"><div class="w-full bg-[#8A6A00] rounded-sm transition-all" :style="'height:' + Math.max(4, w.pct) + '%'"></div></div>
+                                        <span class="text-[9px] font-mono text-[#9CA3AF]" x-text="w.label"></span>
+                                    </a>
+                                </template>
+                            </div>
                             <div class="flex flex-wrap gap-1.5 mt-3">
                                 <template x-for="[g, n] in evGroups()" :key="g">
                                     <a :href="'/app/events?tenant=' + tenant + '&eg=' + g" class="text-[10px] px-2 py-0.5 rounded-full border border-[#E4E9F0] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="eventGroup(g) + ' · ' + n"></a>
@@ -640,6 +648,7 @@
                         <button x-show="section === 'events'" @click="evActor = evActor === 'me' ? '' : 'me'" :class="evActor === 'me' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'" class="text-[11px] px-2.5 py-1 rounded-full border transition">Von mir</button>
                         <button x-show="section === 'events' && evActorName" @click="evActorName = ''" class="text-[11px] px-2.5 py-1 rounded-full border border-[#0B0B0F] bg-[#0B0B0F] text-white transition">von: <span x-text="evActorName"></span> ×</button>
                             <button x-show="evDay" @click="evDay = ''" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04] text-[#CA8A04] transition" x-text="'Tag: ' + new Date(evDay + 'T12:00').toLocaleDateString('de-DE') + ' ×'"></button>
+                            <button x-show="evWeekday" @click="evWeekday = ''" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04] text-[#CA8A04] transition" x-text="'Wochentag: ' + ['','So','Mo','Di','Mi','Do','Fr','Sa'][evWeekday] + ' ×'"></button>
                             <template x-for="t in evTypeGroups()" :key="'eg'+t.g">
                             <button x-show="section === 'events'" @click="evGroup = evGroup === t.g ? '' : t.g" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="evGroup === t.g ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
@@ -703,8 +712,8 @@
                         </template>
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
-                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || evActorName || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
-                        <button x-show="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly" @click="query = ''; statusFilter = ''; severityFilter = ''; roleFilter = ''; kindFilter = ''; codeFilter = ''; unreadOnly = false; mutedOnly = false; evGroup = ''; evDay = ''; evActor = ''; evActorName = ''; overdueOnly = false; dueSoonOnly = false; dueTodayOnly = false; myOnly = false; unassignedOnly = false"
+                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || evActorName || evWeekday || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
+                        <button x-show="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly" @click="query = ''; statusFilter = ''; severityFilter = ''; roleFilter = ''; kindFilter = ''; codeFilter = ''; unreadOnly = false; mutedOnly = false; evGroup = ''; evDay = ''; evActor = ''; evActorName = ''; evWeekday = ''; overdueOnly = false; dueSoonOnly = false; dueTodayOnly = false; myOnly = false; unassignedOnly = false"
                                 title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
                         <button x-show="canCreate() && !query && !statusFilter && !severityFilter && !roleFilter && !kindFilter && !codeFilter && !unreadOnly && !mutedOnly && !evGroup && !overdueOnly && !dueSoonOnly && !dueTodayOnly && !myOnly && !unassignedOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
@@ -1413,7 +1422,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActorName: '', evActors: [], evActorsKey: '', evTypeList: [], linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActorName: '', evWeekday: '', evActors: [], evActorsKey: '', evTypeList: [], linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {}, navBadgesWeek: {}, navTotal: null, navWindow: parseInt(localStorage.getItem('af_navwindow') || '7'),
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, rowNotifs: [], allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
@@ -1454,6 +1463,7 @@ function workspace(initial) {
             if (p.get('day')) this.evDay = p.get('day');
             if (p.get('ea')) this.evActor = p.get('ea');
             if (p.get('an')) this.evActorName = p.get('an');
+            if (p.get('wd')) this.evWeekday = p.get('wd');
             this._urlSort = p.get('sort') || null;
             this.$watch('query', () => this.syncUrl());
             this.$watch('statusFilter', () => this.syncUrl());
@@ -1470,6 +1480,7 @@ function workspace(initial) {
             this.$watch('codeFilter', () => this.syncUrl());
             this.$watch('evGroup', () => { this.syncUrl(); if (this.section === 'events') this.loadSection(true); });
             this.$watch('evActor', () => { this.syncUrl(); if (this.section === 'events') this.loadSection(true); });
+            this.$watch('evWeekday', () => { this.syncUrl(); if (this.section === 'events') this.loadSection(true); });
             this.$watch('evActorName', () => { this.syncUrl(); if (this.section === 'events') this.loadSection(true); });
             this.$watch('evDay', () => { this.syncUrl(); if (this.section === 'events') this.loadSection(true); });
             this.$watch('paletteQ', q => {
@@ -1552,6 +1563,7 @@ function workspace(initial) {
             if (this.evDay) url.searchParams.set('day', this.evDay); else url.searchParams.delete('day');
             if (this.evActor) url.searchParams.set('ea', this.evActor); else url.searchParams.delete('ea');
             if (this.evActorName) url.searchParams.set('an', this.evActorName); else url.searchParams.delete('an');
+            if (this.evWeekday) url.searchParams.set('wd', this.evWeekday); else url.searchParams.delete('wd');
             history.replaceState(null, '', url);
         },
         item() {
@@ -1970,7 +1982,7 @@ function workspace(initial) {
                 return;
             }
             this.loadLookups();
-            this.api(this.item().ep + '?per_page=200' + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : ''))).then(r => {
+            this.api(this.item().ep + '?per_page=200' + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : '')) + (this.section === 'events' && this.evWeekday ? '&weekday=' + this.evWeekday : '')).then(r => {
                 if (!r.ok) { const dom = this.permDom(this.section); this.error = r.status === 403 ? 'Keine Berechtigung ('+(dom ? dom+'.view' : 'Zugriff')+')' : 'HTTP '+r.status+' — Fehler beim Laden'; this.rows=[]; this.loading=false; return null; }
                 return r.json();
             }).then(d => {
@@ -1997,7 +2009,7 @@ function workspace(initial) {
                     const sec = this.section;
                     const loadRest = (page) => {
                         if (this.section !== sec) return;
-                        this.api(this.item().ep + '?per_page=200&page=' + page + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : ''))).then(r => r.ok ? r.json() : null).then(d2 => {
+                        this.api(this.item().ep + '?per_page=200&page=' + page + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : '')) + (this.section === 'events' && this.evWeekday ? '&weekday=' + this.evWeekday : '')).then(r => r.ok ? r.json() : null).then(d2 => {
                             if (!d2 || this.section !== sec) return;
                             const more = Array.isArray(d2) ? d2 : (d2.data || []);
                             if (!more.length) return;
@@ -2537,6 +2549,15 @@ function workspace(initial) {
             return days.map(d => ({...d, pct: Math.round(d.n / max * 100)}));
         },
         evGroups() { return this.evSummary ? Object.entries(this.evSummary.by_group || {}).slice(0, 10) : []; },
+        evWeekdays() {
+            if (!this.evSummary || !this.evSummary.by_weekday) return [];
+            const L = ['','So','Mo','Di','Mi','Do','Fr','Sa'];
+            const ws = [];
+            for (let d = 2; d <= 7; d++) ws.push({d, n: this.evSummary.by_weekday[d] || 0});
+            ws.push({d: 1, n: this.evSummary.by_weekday[1] || 0});
+            const max = Math.max(1, ...ws.map(w => w.n));
+            return ws.map(w => ({...w, label: L[w.d], pct: Math.round(w.n / max * 100)}));
+        },
         evActorsTop() { return this.evSummary && this.evSummary.top_actors ? this.evSummary.top_actors.filter(a => a && a.id).slice(0, 3) : []; },
         evSubjectsTop() { return this.evSummary && this.evSummary.top_subjects ? this.evSummary.top_subjects.slice(0, 3) : []; },
         topSubjectLink(s) {
