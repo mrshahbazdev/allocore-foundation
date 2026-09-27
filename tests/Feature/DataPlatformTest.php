@@ -206,6 +206,20 @@ class DataPlatformTest extends TestCase
         $this->getJson('/api/v1/events/'.($id + 999), ['X-Tenant' => $tenant->id])->assertNotFound();
     }
 
+    public function test_insights_index_q_filter_matches_message(): void
+    {
+        $tenant = Tenant::create(['name' => 'IQ GmbH']);
+        $this->acting($tenant);
+        Task::create(['tenant_id' => $tenant->id, 'title' => 'Alt', 'status' => 'open', 'due_at' => now()->subDay()]);
+
+        $res = $this->getJson('/api/v1/insights?q=überfällig', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertNotEmpty($res);
+        $this->assertStringContainsStringIgnoringCase('überfällig', $res[0]['message']);
+
+        $res = $this->getJson('/api/v1/insights?q=xyzzy_no_match', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertEmpty($res);
+    }
+
     public function test_insights_stats_returns_totals(): void
     {
         $tenant = Tenant::create(['name' => 'IS GmbH']);
