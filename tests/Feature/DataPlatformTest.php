@@ -577,6 +577,23 @@ class DataPlatformTest extends TestCase
             ->assertOk()->assertJsonCount(1);
     }
 
+    public function test_metrics_show_recent_window(): void
+    {
+        $tenant = Tenant::create(['name' => 'Met GmbH']);
+        $this->acting($tenant);
+        foreach (range(1, 5) as $i) {
+            MetricSnapshot::create([
+                'tenant_id' => $tenant->id, 'metric' => 'm1', 'value' => $i,
+                'captured_on' => now()->subDays(5 - $i)->toDateString(),
+            ]);
+        }
+
+        $res = $this->getJson('/api/v1/metrics/m1?recent=2', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(2, $res);
+        $this->assertSame(['4.0000', '5.0000'], array_map(fn ($r) => $r['value'], $res));
+        $this->assertLessThanOrEqual($res[1]['captured_on'], $res[0]['captured_on']);
+    }
+
     public function test_metrics_are_tenant_scoped(): void
     {
         $other = Tenant::create(['name' => 'Fremd GmbH']);
