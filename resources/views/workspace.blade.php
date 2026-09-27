@@ -1387,7 +1387,7 @@ function workspace(initial) {
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActorName: '', evActors: [], evActorsKey: '', evTypeList: [], linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
-        pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
+        pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {}, navTotal: null,
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, rowNotifs: [], allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
@@ -1579,8 +1579,8 @@ function workspace(initial) {
                 .map(([k, n]) => ({key: k, label: this.sectionLabel(k), count: n}))
                 .sort((a, b) => b.count - a.count);
         },
-        overdueTotal() { return Object.values(this.navBadges || {}).reduce((s, n) => s + n, 0); },
-        todayTotal() { return Object.values(this.navBadgesToday || {}).reduce((s, n) => s + n, 0); },
+        overdueTotal() { return this.navTotal?.overdue ?? Object.values(this.navBadges || {}).reduce((s, n) => s + n, 0); },
+        todayTotal() { return this.navTotal?.today ?? Object.values(this.navBadgesToday || {}).reduce((s, n) => s + n, 0); },
         unreadNotifs() { return this.dbNotifs.filter(n => !n.read).length; },
         paletteItems() {
             const q = this.paletteQ.trim().toLowerCase();
@@ -1775,8 +1775,10 @@ function workspace(initial) {
         loadNavBadges() {
             this.loadNotifications();
             const apply = pairs => {
-                this.navBadges = Object.fromEntries(pairs.map(([k, v]) => [k, v[0]]));
-                this.navBadgesToday = Object.fromEntries(pairs.map(([k, v]) => [k, v[1]]));
+                const total = pairs.find(([k]) => k === '_total');
+                if (total) this.navTotal = {overdue: total[1][0], today: total[1][1]};
+                this.navBadges = Object.fromEntries(pairs.filter(([k]) => k !== '_total').map(([k, v]) => [k, v[0]]));
+                this.navBadgesToday = Object.fromEntries(pairs.filter(([k]) => k !== '_total').map(([k, v]) => [k, v[1]]));
             };
             this.api('/api/v1/nav-counts').then(r => {
                 if (!r.ok) throw new Error('no agg');
@@ -1946,6 +1948,10 @@ function workspace(initial) {
                 this.rowsTotal = (d && typeof d.total === 'number') ? d.total : rows.length;
                 this.navBadges = {...this.navBadges, [this.section]: rows.filter(r => this.overdue(r)).length};
                 this.navBadgesToday = {...this.navBadgesToday, [this.section]: rows.filter(r => this.dueToday(r)).length};
+                this.navTotal = {
+                    overdue: Object.entries(this.navBadges).filter(([k]) => k !== 'notifications').reduce((s, [, n]) => s + n, 0),
+                    today: Object.values(this.navBadgesToday).reduce((s, n) => s + n, 0),
+                };
                 if (rows.length) {
                     const keys = Object.keys(rows[0]).filter(k => !HIDE.has(k) && typeof rows[0][k] !== 'object');
                     this.columns = keys.slice(0, 7);
