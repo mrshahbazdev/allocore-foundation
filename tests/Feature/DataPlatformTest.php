@@ -435,6 +435,8 @@ class DataPlatformTest extends TestCase
         $this->assertNotNull($res['last_event_at']);
         $this->assertGreaterThan(0, $res['avg_per_day']);
         $this->assertArrayHasKey('company.created', $res['by_type']);
+        $this->assertSame(now()->toDateString(), $res['busiest_day']['date']);
+        $this->assertGreaterThan(0, $res['busiest_day']['events']);
 
         $onlyCompany = $this->getJson('/api/v1/events/summary?group=company', ['X-Tenant' => $tenant->id])->assertOk()->json();
         $this->assertSame(1, $onlyCompany['total']);

@@ -141,6 +141,7 @@ class EventController extends Controller
             'top_subjects' => $topSubjects,
             'per_day' => $perDay,
             'avg_per_day' => round($perDay->avg(), 1),
+            'busiest_day' => ($top = $perDay->sortDesc()->keys()->first()) ? ['date' => $top, 'events' => $perDay[$top]] : null,
         ]);
     }
 
