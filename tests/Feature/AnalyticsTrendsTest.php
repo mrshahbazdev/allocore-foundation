@@ -44,6 +44,28 @@ class AnalyticsTrendsTest extends TestCase
         $this->assertSame('unknown', $rows['tasks']['direction']);
     }
 
+    public function test_trends_filters(): void
+    {
+        [$tenant] = $this->auth();
+
+        tenancy()->initialize($tenant);
+        MetricSnapshot::create(['metric' => 'companies', 'value' => 5, 'captured_on' => '2026-09-20']);
+        MetricSnapshot::create(['metric' => 'companies', 'value' => 8, 'captured_on' => '2026-09-21']);
+        MetricSnapshot::create(['metric' => 'tasks', 'value' => 7, 'captured_on' => '2026-09-20']);
+        MetricSnapshot::create(['metric' => 'tasks', 'value' => 4, 'captured_on' => '2026-09-21']);
+        MetricSnapshot::create(['metric' => 'documents', 'value' => 2, 'captured_on' => '2026-09-21']);
+        tenancy()->end();
+
+        $rows = collect($this->getJson('/api/v1/analytics/trends?keys=companies,tasks', ['X-Tenant' => $tenant->id])->json());
+        $this->assertCount(2, $rows);
+
+        $rows = collect($this->getJson('/api/v1/analytics/trends?direction=down', ['X-Tenant' => $tenant->id])->json())->pluck('metric');
+        $this->assertSame(['tasks'], $rows->all());
+
+        $rows = collect($this->getJson('/api/v1/analytics/trends?q=comp', ['X-Tenant' => $tenant->id])->json())->pluck('metric');
+        $this->assertSame(['companies'], $rows->all());
+    }
+
     public function test_trends_is_tenant_scoped(): void
     {
         [$tenant] = $this->auth();
