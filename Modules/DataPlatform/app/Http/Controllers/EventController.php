@@ -27,6 +27,7 @@ class EventController extends Controller
             ->when($request->after_id, fn ($q) => $q->where('id', '>', $request->integer('after_id')))
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
+            ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
             ->orderBy('id', $request->string('dir')->toString() === 'asc' ? 'asc' : 'desc')
             ->paginate(min($request->integer('per_page', 50), 200));
 
@@ -85,6 +86,7 @@ class EventController extends Controller
             ->where('meta_data->tenant_id', tenant()->getTenantKey())
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
+            ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
             ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
             ->when($request->type, fn ($q) => $q->where('event_properties->type', $request->type))
             ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'))
@@ -172,6 +174,7 @@ class EventController extends Controller
             ->when($request->types, fn ($q) => $q->whereIn('event_properties->type', array_filter(array_map('trim', explode(',', $request->types)))))
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
+            ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
             ->orderBy('id')
             ->select('id', 'event_class', 'event_properties', 'meta_data', 'created_at');
 
