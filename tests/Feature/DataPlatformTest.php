@@ -1399,6 +1399,11 @@ class DataPlatformTest extends TestCase
         $this->assertSame(1, $res['_total'][0]);
         $this->assertSame(1, $res['_total'][1]);
         $this->assertSame(1, $res['_total'][2]);
+
+        $only = $this->getJson('/api/v1/nav-counts?keys=tasks', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame([1, 1, 1], $only['tasks']);
+        $this->assertArrayNotHasKey('deadlines', $only);
+        $this->assertSame([1, 1, 1], $only['_total']);
     }
 
     public function test_global_search_finds_across_sections(): void
