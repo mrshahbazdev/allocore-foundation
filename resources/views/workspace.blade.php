@@ -998,6 +998,14 @@
                     <div x-show="auditFindings.length === 0" class="text-xs text-[#9CA3AF]">Keine Feststellungen.</div>
                     <a :href="'/app/audit-findings?tenant=' + tenant + '&new=1&audit=' + detail.id" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Feststellung anlegen</a>
                 </div>
+                <div x-show="section === 'events' && detail && detail.meta_data && detail.meta_data.actor" class="px-6 py-4 border-t border-[#E4E9F0]">
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5">AUSLÖSER</div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#0B0B0F] text-[10px] font-bold text-[#FACC15]" x-text="(detail.meta_data.actor.name || '?').charAt(0).toUpperCase()"></span>
+                        <span class="font-medium text-[#1A2433]" x-text="detail.meta_data.actor.name"></span>
+                        <a class="text-[#CA8A04] hover:underline" :href="'mailto:' + detail.meta_data.actor.email" x-text="detail.meta_data.actor.email"></a>
+                    </div>
+                </div>
                 <div x-show="rowEvents.length" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="flex items-center justify-between mb-2">
                         <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERLAUF <span class="text-[#9CA3AF] font-normal" x-text="'(' + rowEvents.length + ')'"></span></div>
@@ -1344,7 +1352,7 @@ function workspace(initial) {
     const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',audit_id:'audits',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',generated_by:'users',current_version_id:'documents',assigned_to:'persons',from_entity_id:'graph_entities',to_entity_id:'graph_entities',subject_id:'graph_entities'};
     const NOTIF_KIND = {unterweisung:'Unterweisung',pruefung:'Prüfung',frist:'Frist',feststellung:'Feststellung',audit:'Audit',massnahme:'Maßnahme',aufgabe:'Aufgabe',gefaehrdungsbeurteilung:'Gefährdungsbeurteilung',projekt:'Projekt',auftrag:'Produktionsauftrag',ausschreibung:'Ausschreibung',antwort:'Antwort',frage:'Frage',urlaub:'Urlaubsantrag',rollen:'Rollen',unterweisung_wiederholung:'Unterweisung (Wiederholung)',hinweis:'Kritischer Hinweis',passwort_geaendert:'Passwort geändert',anmeldung:'Anmeldung',anmeldeversuche:'Fehlgeschlagene Anmeldung'};
     const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv',todo:'Offen',overdue:'Überfällig',sent:'Gesendet',paid:'Bezahlt',unpaid:'Unbezahlt',expired:'Abgelaufen',suspended:'Gesperrt',review:'In Prüfung',assigned:'Zugewiesen',requested:'Angefragt',confirmed:'Bestätigt',declined:'Abgelehnt',exited:'Ausgestiegen',candidate:'Kandidat',resolved:'Gelöst',internal:'Intern',external:'Extern',vacation:'Urlaub',sick:'Krank',other:'Sonstiges'};
-    const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at']);
+    const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at','meta_data']);
     const KPI = [
         {key:'companies',label:'Unternehmen',to:'companies'},{key:'persons',label:'Personen',to:'persons'},
         {key:'documents',label:'Dokumente',to:'documents'},{key:'tasks_open',label:'Offene Aufgaben',to:'tasks'},
