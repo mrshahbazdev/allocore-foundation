@@ -395,7 +395,7 @@
                         </div>
                     </div>
                     <div x-show="evSummary" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
-                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center">Aktivität (7 Tage) <span class="text-[10px] font-mono text-[#9CA3AF]" x-text="evSummary ? evSummary.total + ' gesamt' + (evSummary.last_event_at ? ' · Stand ' + new Date(evSummary.last_event_at).toLocaleString('de-DE', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '') : ''"></span></div>
+                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center">Aktivität (7 Tage) <span class="text-[10px] font-mono text-[#9CA3AF]" x-text="evSummary ? evSummary.total + ' gesamt' + (evSummary.avg_per_day ? ' · Ø ' + evSummary.avg_per_day + '/Tag' : '') + (evSummary.last_event_at ? ' · Stand ' + new Date(evSummary.last_event_at).toLocaleString('de-DE', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '') : ''"></span></div>
                         <div class="px-5 py-4">
                             <div class="flex items-end gap-1.5 h-16">
                                 <template x-for="d in evDays()" :key="d.key">
