@@ -82,7 +82,9 @@ class EventController extends Controller
             ->where('meta_data->tenant_id', tenant()->getTenantKey())
             ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
             ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
-            ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'));
+            ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
+            ->when($request->type, fn ($q) => $q->where('event_properties->type', $request->type))
+            ->when($request->q, fn ($q) => $q->where('event_properties->subject->title', 'like', '%'.$request->q.'%'));
 
         $byGroup = (clone $base)
             ->selectRaw("SUBSTRING_INDEX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')), '.', 1) as grp, COUNT(*) as n")
