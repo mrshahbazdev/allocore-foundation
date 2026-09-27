@@ -605,10 +605,10 @@
                                 x-text="'Ohne Verantwortlichen · ' + rows.filter(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to)).length"></button>
                         <button x-show="section === 'events'" @click="evDay = new Date().toISOString().slice(0,10)" :class="evDay === new Date().toISOString().slice(0,10) ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'" class="text-[11px] px-2.5 py-1 rounded-full border transition">Heute</button>
                             <button x-show="evDay" @click="evDay = ''" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04] text-[#CA8A04] transition" x-text="'Tag: ' + new Date(evDay + 'T12:00').toLocaleDateString('de-DE') + ' ×'"></button>
-                            <template x-for="g in [...new Set(rows.map(r => eventGroup(r.event_type)))]" :key="'eg'+g">
-                            <button x-show="section === 'events'" @click="evGroup = evGroup === g ? '' : g" class="text-[11px] px-2.5 py-1 rounded-full border transition"
-                                    :class="evGroup === g ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
-                                    x-text="g + ' · ' + rows.filter(r => eventGroup(r.event_type) === g).length"></button>
+                            <template x-for="t in evTypeGroups()" :key="'eg'+t.g">
+                            <button x-show="section === 'events'" @click="evGroup = evGroup === t.g ? '' : t.g" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                                    :class="evGroup === t.g ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
+                                    x-text="t.g + ' · ' + t.events"></button>
                         </template>
                         <template x-for="a in (evActors || [])" :key="'ea'+a.id">
                             <button x-show="section === 'events'" @click="evActor = String(evActor) === String(a.id) ? '' : String(a.id)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
@@ -1378,7 +1378,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActors: [], evActorsKey: '', linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActors: [], evActorsKey: '', evTypeList: [], linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, rowNotifs: [], allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
@@ -1870,6 +1870,7 @@ function workspace(initial) {
             if (this.section === 'events' && this.evActorsKey !== this.tenant) {
                 this.evActorsKey = this.tenant;
                 this.api('/api/v1/events/actors').then(r => r.ok ? r.json() : {data: []}).then(d => this.evActors = d.data || []);
+                this.api('/api/v1/events/types').then(r => r.ok ? r.json() : {data: []}).then(d => this.evTypeList = d.data || []);
             }
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
@@ -2427,6 +2428,7 @@ function workspace(initial) {
             const g = String(t || '').split('.')[0];
             return {task: 'Aufgabe', company: 'Unternehmen', person: 'Person', document: 'Dokument', document_version: 'Dokumentversion', instruction: 'Unterweisung', inspection: 'Prüfung', deadline: 'Frist', risk_assessment: 'Gefährdungsbeurteilung', operating_instruction: 'Betriebsanweisung', expert_profile: 'Experte', question: 'Frage', answer: 'Antwort', tender: 'Ausschreibung', tender_application: 'Bewerbung', financial_report: 'Finanzbericht', leave_request: 'Urlaubsantrag', machine: 'Maschine', production_order: 'Produktionsauftrag', participation: 'Beteiligung', data_object: 'Data-Objekt', portfolio: 'Portfolio', investment: 'Investition', graph_entity: 'Entität', graph_edge: 'Kante', strategy: 'Strategie', project: 'Projekt', measure: 'Maßnahme', ai_analysis: 'KI-Analyse', exec_report: 'Executive-Report', audit: 'Audit', audit_finding: 'Feststellung', user: 'Benutzer', role: 'Rolle', tenant: 'Mandant'}[g] || g;
         },
+        evTypeGroups() { const m = {}; (this.evTypeList || []).forEach(t => { const g = this.eventGroup(t.type); m[g] = (m[g] || 0) + t.events; }); return Object.entries(m).map(([g, events]) => ({g, events})).sort((a, b) => b.events - a.events); },
         eventLabel(t) {
             const a = String(t || '').split('.').pop();
             return {created: 'erstellt', updated: 'aktualisiert', deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: 'hochgeladen', answered: 'beantwortet', created_event: 'erstellt', added: 'hinzugefügt', roles_updated: 'Rollen geändert', removed: 'entfernt', left: 'verlassen', permissions_updated: 'Rechte geändert', password_changed: 'Passwort geändert', logged_in: 'angemeldet', logged_out: 'abgemeldet'}[a] || a;

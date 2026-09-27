@@ -653,6 +653,32 @@ paths:
                         events: {type: integer}
         '400': {description: X-Tenant fehlt oder unbekannt}
         '403': {description: Berechtigung metrics.view erforderlich}
+  /api/v1/events/types:
+    get:
+      operationId: listEventTypes
+      summary: Distinct Event-Typen des Mandanten
+      description: 'Liefert [{type, events}] aus event_properties.type — gruppiert, sortiert nach Anzahl.'
+      tags: [Events]
+      security:
+        - bearerAuth: []
+        - tenantHeader: []
+      responses:
+        '200':
+          description: Liste der Event-Typen
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type: {type: string}
+                        events: {type: integer}
+        '400': {description: X-Tenant fehlt oder unbekannt}
+        '403': {description: Berechtigung metrics.view erforderlich}
   /api/v1/events/export:
     get:
       tags: [events]
