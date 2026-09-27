@@ -30,6 +30,8 @@ class MetricController extends Controller
         return MetricSnapshot::query()
             ->where('tenant_id', tenant()->getTenantKey())
             ->where('metric', $metric)
+            ->when($request->integer('days'), fn ($q) => $q->where('captured_on', '>=', now()->subDays(min($request->integer('days'), 365))->toDateString()))
+            ->when($request->day, fn ($q) => $q->where('captured_on', $request->day))
             ->when($request->from, fn ($q) => $q->where('captured_on', '>=', $request->from))
             ->when($request->to, fn ($q) => $q->where('captured_on', '<=', $request->to))
             ->when($request->integer('recent'),
