@@ -754,6 +754,10 @@ class DataPlatformTest extends TestCase
             ->pluck('severity')->unique()->all();
         $this->assertSame(['critical'], $severities);
 
+        $severitiesCsv = collect($this->getJson('/api/v1/insights?severities=critical,warning', ['X-Tenant' => $tenant->id])->json())
+            ->pluck('severity')->unique()->all();
+        $this->assertEmpty(array_diff($severitiesCsv, ['critical', 'warning']));
+
         $hits = $this->getJson('/api/v1/insights?code=tasks_overdue', ['X-Tenant' => $tenant->id])->json();
         $this->assertCount(1, $hits);
         $this->assertSame('tasks_overdue', $hits[0]['code']);
