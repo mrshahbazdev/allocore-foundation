@@ -108,6 +108,12 @@ class EventController extends Controller
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.name')) as who, COUNT(*) as n")
             ->groupBy('who')->orderByDesc('n')->pluck('n', 'who');
 
+        $topActors = (clone $base)
+            ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.id'))"))
+            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.id')) as aid, JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.name')) as aname, COUNT(*) as n")
+            ->groupBy('aid', 'aname')->orderByDesc('n')->limit(min($request->integer('top', 5), 25))->get()
+            ->map(fn ($r) => ['id' => $r->aid, 'name' => $r->aname, 'events' => (int) $r->n]);
+
         $topSubjects = (clone $base)
             ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id'))"))
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id')) as sid, JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.type')) as stype, JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.title')) as stitle, COUNT(*) as n")
@@ -126,6 +132,7 @@ class EventController extends Controller
             'by_group' => $byGroup,
             'by_action' => $byAction,
             'by_actor' => $byActor,
+            'top_actors' => $topActors,
             'top_subjects' => $topSubjects,
             'per_day' => $perDay,
             'avg_per_day' => round($perDay->avg(), 1),
