@@ -316,6 +316,7 @@ class DataPlatformTest extends TestCase
         $this->assertArrayHasKey('by_severity', $res);
         $this->assertArrayHasKey('by_code', $res);
         $this->assertSame(array_sum($res['by_code']), $res['total']);
+        $this->assertArrayHasKey('by_code_group', $res);
     }
 
     public function test_insights_stats_honors_filters(): void
