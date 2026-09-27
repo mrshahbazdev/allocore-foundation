@@ -660,6 +660,14 @@ class DataPlatformTest extends TestCase
         $this->assertCount(2, $res);
         $this->assertSame(['4.0000', '5.0000'], array_map(fn ($r) => $r['value'], $res));
         $this->assertLessThanOrEqual($res[1]['captured_on'], $res[0]['captured_on']);
+
+        $win = $this->getJson('/api/v1/metrics/m1?days=2', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(3, $win);
+        $this->assertSame(['3.0000', '4.0000', '5.0000'], array_map(fn ($r) => $r['value'], $win));
+
+        $day = $this->getJson('/api/v1/metrics/m1?day='.now()->toDateString(), ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $day);
+        $this->assertSame('5.0000', $day[0]['value']);
     }
 
     public function test_metrics_are_tenant_scoped(): void
