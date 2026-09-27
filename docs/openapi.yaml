@@ -626,6 +626,33 @@ paths:
           schema: {type: string}
       responses:
         '200': {description: Event-Aggregat}
+  /api/v1/events/actors:
+    get:
+      operationId: listEventActors
+      summary: Distinct Auslöser des Mandanten
+      description: 'Liefert [{id, name, events}] aus meta_data.actor — gruppiert nach User-ID, sortiert nach Event-Anzahl.'
+      tags: [Events]
+      security:
+        - bearerAuth: []
+        - tenantHeader: []
+      responses:
+        '200':
+          description: Liste der Auslöser
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: {type: integer}
+                        name: {type: string}
+                        events: {type: integer}
+        '400': {description: X-Tenant fehlt oder unbekannt}
+        '403': {description: Berechtigung metrics.view erforderlich}
   /api/v1/events/export:
     get:
       tags: [events]

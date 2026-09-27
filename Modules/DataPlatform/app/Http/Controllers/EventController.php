@@ -106,6 +106,21 @@ class EventController extends Controller
         ]);
     }
 
+    /** Distinct Auslöser (meta_data.actor) des Mandanten — id, name, Anzahl Events. */
+    public function actors()
+    {
+        $rows = DB::table('stored_events')
+            ->where('meta_data->tenant_id', tenant()->getTenantKey())
+            ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.id'))"))
+            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.id')) as actor_id, JSON_UNQUOTE(JSON_EXTRACT(`meta_data`, '$.actor.name')) as actor_name, COUNT(*) as events")
+            ->groupBy('actor_id', 'actor_name')
+            ->orderByDesc('events')
+            ->get()
+            ->map(fn ($r) => ['id' => (int) $r->actor_id, 'name' => $r->actor_name, 'events' => (int) $r->events]);
+
+        return response()->json(['data' => $rows]);
+    }
+
     /** Audit-export: alle Events des Mandanten als NDJSON-Stream (gleiche Filter wie index). */
     public function export(Request $request)
     {

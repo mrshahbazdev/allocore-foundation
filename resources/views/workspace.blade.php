@@ -610,10 +610,10 @@
                                     :class="evGroup === g ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
                                     x-text="g + ' · ' + rows.filter(r => eventGroup(r.event_type) === g).length"></button>
                         </template>
-                        <template x-for="(nm, uid) in (lookups.users || {})" :key="'ea'+uid">
-                            <button x-show="section === 'events' && rows && rows.some(r => r.meta_data && r.meta_data.actor && String(r.meta_data.actor.id) === String(uid))" @click="evActor = String(evActor) === String(uid) ? '' : String(uid)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
-                                    :class="String(evActor) === String(uid) ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
-                                    x-text="'von ' + nm"></button>
+                        <template x-for="a in (evActors || [])" :key="'ea'+a.id">
+                            <button x-show="section === 'events'" @click="evActor = String(evActor) === String(a.id) ? '' : String(a.id)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                                    :class="String(evActor) === String(a.id) ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
+                                    x-text="'von ' + a.name + ' · ' + a.events"></button>
                         </template>
                         <button @click="statusFilter = ''" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="statusFilter === '' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
@@ -1378,7 +1378,7 @@ function workspace(initial) {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActors: [], evActorsKey: '', linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {},
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, rowNotifs: [], allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
@@ -1867,6 +1867,10 @@ function workspace(initial) {
         }
 
         loadSection(soft) {
+            if (this.section === 'events' && this.evActorsKey !== this.tenant) {
+                this.evActorsKey = this.tenant;
+                this.api('/api/v1/events/actors').then(r => r.ok ? r.json() : {data: []}).then(d => this.evActors = d.data || []);
+            }
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
             this.loading = true; this.error = '';
