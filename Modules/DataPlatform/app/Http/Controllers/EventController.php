@@ -128,6 +128,7 @@ class EventController extends Controller
             'by_actor' => $byActor,
             'top_subjects' => $topSubjects,
             'per_day' => $perDay,
+            'avg_per_day' => round($perDay->avg(), 1),
         ]);
     }
 
