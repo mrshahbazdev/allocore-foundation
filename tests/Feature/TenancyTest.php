@@ -154,6 +154,27 @@ class TenancyTest extends TestCase
         $this->assertTrue(Schema::hasTable('personal_access_tokens'));
     }
 
+    /**
+     * Guard: 'exists:<tabelle>,id' validations on tenant-scoped tables must go
+     * through tenantScopedRule() — a bare exists: accepts foreign-tenant ids
+     * and stores dangling cross-tenant FKs.
+     */
+    public function test_exists_rules_on_tenant_tables_are_scoped(): void
+    {
+        $tenantTables = ['persons', 'companies', 'expert_profiles', 'strategies', 'projects', 'portfolios', 'audits', 'machines', 'documents'];
+
+        foreach (glob(base_path('Modules/*/app/Http/Controllers/*.php')) as $file) {
+            $src = file_get_contents($file);
+            foreach ($tenantTables as $table) {
+                $this->assertStringNotContainsString(
+                    "'exists:{$table},id'",
+                    $src,
+                    "Unscoped exists:{$table},id in {$file} — use self::tenantScopedRule('{$table}')"
+                );
+            }
+        }
+    }
+
     protected function createTenantApi(array $data)
     {
         Sanctum::actingAs(User::factory()->create());
