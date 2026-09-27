@@ -278,6 +278,22 @@ class EventController extends Controller
         return response()->json(['data' => $rows]);
     }
 
+    /** Distinct Betreffende-Typen (subject.type) des Mandanten — type + Anzahl Events. */
+    public function subjectTypes(Request $request)
+    {
+        $rows = DB::table('stored_events')
+            ->where('meta_data->tenant_id', tenant()->getTenantKey())
+            ->when($request->q, fn ($q) => $q->where('event_properties->subject->type', 'like', '%'.$request->q.'%'))
+            ->whereNotNull(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.type'))"))
+            ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.type')) as stype, COUNT(*) as events")
+            ->groupBy('stype')
+            ->orderByDesc('events')
+            ->get()
+            ->map(fn ($r) => ['type' => $r->stype, 'events' => (int) $r->events]);
+
+        return response()->json(['data' => $rows]);
+    }
+
     /** Audit-export: alle Events des Mandanten als NDJSON-Stream (gleiche Filter wie index). */
     public function export(Request $request)
     {

@@ -17,6 +17,7 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api', 'permission
     Route::get('events/actors', [EventController::class, 'actors'])->name('data-platform.events.actors');
     Route::get('events/types', [EventController::class, 'types'])->name('data-platform.events.types');
     Route::get('events/subjects', [EventController::class, 'subjects'])->name('data-platform.events.subjects');
+    Route::get('events/subject-types', [EventController::class, 'subjectTypes'])->name('data-platform.events.subject-types');
     Route::get('events/{event}', [EventController::class, 'show'])->name('data-platform.events.show');
     Route::get('metrics', [MetricController::class, 'index'])->name('data-platform.metrics');
     Route::get('insights', [InsightController::class, 'index'])->name('data-platform.insights');
