@@ -102,6 +102,12 @@ class RolesTest extends TestCase
 
         $hits = $this->getJson('/api/v1/users?role=mitarbeiter', ['X-Tenant' => $tenant])->assertOk()->json();
         $this->assertSame([$member->id], collect($hits)->pluck('id')->all());
+
+        $sorted = $this->getJson('/api/v1/users?sort=email&dir=desc', ['X-Tenant' => $tenant])->assertOk()->json();
+        $emails = collect($sorted)->pluck('email')->all();
+        $expected = $emails;
+        rsort($expected);
+        $this->assertSame($expected, $emails);
     }
 
     public function test_admin_can_create_user_and_attach_existing(): void
