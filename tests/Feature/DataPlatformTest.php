@@ -1390,9 +1390,11 @@ class DataPlatformTest extends TestCase
 
         $this->assertSame(1, $res['tasks'][0]);
         $this->assertSame(1, $res['tasks'][1]);
+        $this->assertSame(1, $res['tasks'][2]);
         $this->assertArrayNotHasKey('events', $res);
         $this->assertSame(1, $res['_total'][0]);
         $this->assertSame(1, $res['_total'][1]);
+        $this->assertSame(1, $res['_total'][2]);
     }
 
     public function test_global_search_finds_across_sections(): void

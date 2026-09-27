@@ -2325,7 +2325,7 @@ paths:
   /api/v1/nav-counts:
     get:
       tags: [metrics]
-      summary: "GET /api/v1/nav-counts — {sektion: [überfällig, heute]} Aggregation für Nav-Badges"
+      summary: "GET /api/v1/nav-counts — {sektion: [überfällig, heute, ≤7 Tage]} Aggregation für Nav-Badges"
       parameters:
         - name: X-Tenant
           in: header

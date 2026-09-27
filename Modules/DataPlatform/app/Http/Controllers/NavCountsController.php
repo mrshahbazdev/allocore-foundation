@@ -63,12 +63,14 @@ class NavCountsController extends Controller
             $out[$key] = [
                 $base()->whereDate($due, '<', $today)->count(),
                 $base()->whereDate($due, $today)->count(),
+                $base()->whereDate($due, '>', $today)->whereDate($due, '<=', now()->addDays(7)->toDateString())->count(),
             ];
         }
 
         $out['_total'] = [
             array_sum(array_column($out, 0)),
             array_sum(array_column($out, 1)),
+            array_sum(array_column($out, 2)),
         ];
 
         return $out;
