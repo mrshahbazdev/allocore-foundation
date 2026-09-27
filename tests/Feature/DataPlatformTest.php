@@ -332,6 +332,18 @@ class DataPlatformTest extends TestCase
 
         $res = $this->getJson('/api/v1/events/summary?q=Alpha', ['X-Tenant' => $tenant->id])->assertOk()->json();
         $this->assertSame(1, $res['total']);
+
+        $alpha = Company::where('name', 'Alpha GmbH')->first();
+        $res = $this->getJson('/api/v1/events/summary?subject_id='.$alpha->id, ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame(1, $res['total']);
+
+        $res = $this->getJson('/api/v1/events/summary?subject_type='.urlencode(Company::class), ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame(2, $res['total']);
+
+        $res = $this->getJson('/api/v1/events/summary?action=created', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame(2, $res['total']);
+        $res = $this->getJson('/api/v1/events/summary?action=updated', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertSame(0, $res['total']);
     }
 
     public function test_events_endpoint_honors_dir_sort(): void
