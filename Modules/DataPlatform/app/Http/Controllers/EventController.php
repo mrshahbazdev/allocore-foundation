@@ -240,7 +240,7 @@ class EventController extends Controller
             ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.type')) as subject_type, JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.id')) as subject_id, MAX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.subject.title'))) as subject_title, COUNT(*) as events")
             ->groupBy('subject_type', 'subject_id')
             ->orderByDesc('events')
-            ->limit(100)
+            ->limit(min($request->integer('limit', 100), 500))
             ->get()
             ->map(fn ($r) => ['type' => $r->subject_type, 'id' => $r->subject_id, 'title' => $r->subject_title, 'events' => (int) $r->events]);
 

@@ -148,6 +148,7 @@ class DataPlatformTest extends TestCase
         $this->assertSame(0, $this->getJson('/api/v1/events/summary?day=2000-01-01', ['X-Tenant' => $tenant->id])->json('total'));
         $this->assertSame('', trim($this->get('/api/v1/events/export?day=2000-01-01', ['X-Tenant' => $tenant->id])->streamedContent()));
 
+        $this->assertCount(1, $this->getJson('/api/v1/events/subjects?limit=1', ['X-Tenant' => $tenant->id])->assertOk()->json('data'));
         $subjects = $this->getJson('/api/v1/events/subjects', ['X-Tenant' => $tenant->id])->assertOk()->json('data');
         $this->assertNotEmpty($subjects);
         $srow = collect($subjects)->firstWhere('title', 'ActCo');
