@@ -416,8 +416,8 @@
                                 <template x-for="[g, n] in evGroups()" :key="g">
                                     <a :href="'/app/events?tenant=' + tenant + '&eg=' + g" class="text-[10px] px-2 py-0.5 rounded-full border border-[#E4E9F0] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="eventGroup(g) + ' · ' + n"></a>
                                 </template>
-                                <template x-for="[w, n] in evActorsTop()" :key="'w'+w">
-                                    <a :href="'/app/events?tenant=' + tenant + '&an=' + encodeURIComponent(w)" class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#E4E9F0] text-[#9CA3AF] hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="'Auslöser: ' + w" x-text="w + ' · ' + n"></a>
+                                <template x-for="a in evActorsTop()" :key="'w'+a.id">
+                                    <a :href="'/app/events?tenant=' + tenant + '&ea=' + a.id" class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#E4E9F0] text-[#9CA3AF] hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="'Auslöser: ' + a.name" x-text="a.name + ' · ' + a.events"></a>
                                 </template>
                                 <template x-for="s in evSubjectsTop()" :key="'s'+s.id">
                                     <a :href="topSubjectLink(s)" class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFFDF2] border border-[#EAD98B] text-[#8A6A00] hover:border-[#CA8A04]" :title="'Betreffend: ' + s.title" x-text="s.title + ' · ' + s.events"></a>
@@ -2516,7 +2516,7 @@ function workspace(initial) {
             return days.map(d => ({...d, pct: Math.round(d.n / max * 100)}));
         },
         evGroups() { return this.evSummary ? Object.entries(this.evSummary.by_group || {}).slice(0, 10) : []; },
-        evActorsTop() { return this.evSummary ? Object.entries(this.evSummary.by_actor || {}).filter(([w]) => w && w !== 'null').slice(0, 3) : []; },
+        evActorsTop() { return this.evSummary && this.evSummary.top_actors ? this.evSummary.top_actors.filter(a => a && a.id).slice(0, 3) : []; },
         evSubjectsTop() { return this.evSummary && this.evSummary.top_subjects ? this.evSummary.top_subjects.slice(0, 3) : []; },
         topSubjectLink(s) {
             const g = String(s && s.type || '').split('\\').pop().replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
