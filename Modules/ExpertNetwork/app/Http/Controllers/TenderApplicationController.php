@@ -6,18 +6,21 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\Core\Notifications\Assigned;
 use Modules\ExpertNetwork\Models\Tender;
 use Modules\ExpertNetwork\Models\TenderApplication;
 
 class TenderApplicationController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function store(Request $request, Tender $tender)
     {
         abort_if($tender->status !== Tender::STATUS_OPEN, 422, 'Tender ist nicht offen.');
 
         $validated = $request->validate([
-            'expert_profile_id' => ['required', 'exists:expert_profiles,id'],
+            'expert_profile_id' => ['required', self::tenantScopedRule('expert_profiles')],
             'proposal' => ['nullable', 'string'],
             'price' => ['nullable', 'numeric', 'min:0'],
         ]);

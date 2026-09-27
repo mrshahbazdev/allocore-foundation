@@ -32,7 +32,7 @@ class MeasureController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'project_id' => ['nullable', 'exists:projects,id'],
+            'project_id' => ['nullable', self::tenantScopedRule('projects')],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', Rule::in(Measure::STATUSES)],
@@ -51,7 +51,7 @@ class MeasureController extends Controller
     public function update(Request $request, Measure $measure)
     {
         $validated = $request->validate([
-            'project_id' => ['sometimes', 'exists:projects,id'],
+            'project_id' => ['sometimes', self::tenantScopedRule('projects')],
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', Rule::in(Measure::STATUSES)],

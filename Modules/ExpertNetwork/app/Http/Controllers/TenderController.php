@@ -5,10 +5,13 @@ namespace Modules\ExpertNetwork\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\ExpertNetwork\Models\Tender;
 
 class TenderController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Tender::query()
@@ -33,7 +36,7 @@ class TenderController extends Controller
             'required_skills' => ['nullable', 'array'],
             'required_skills.*' => ['string', 'max:100'],
             'budget' => ['nullable', 'numeric', 'min:0'],
-            'company_id' => ['nullable', 'exists:companies,id'],
+            'company_id' => ['nullable', self::tenantScopedRule('companies')],
             'status' => ['sometimes', Rule::in([Tender::STATUS_OPEN, Tender::STATUS_AWARDED, Tender::STATUS_CLOSED])],
             'deadline_at' => ['nullable', 'date'],
         ]);
@@ -56,7 +59,7 @@ class TenderController extends Controller
             'required_skills' => ['nullable', 'array'],
             'required_skills.*' => ['string', 'max:100'],
             'budget' => ['nullable', 'numeric', 'min:0'],
-            'company_id' => ['nullable', 'exists:companies,id'],
+            'company_id' => ['nullable', self::tenantScopedRule('companies')],
             'status' => ['sometimes', Rule::in([Tender::STATUS_OPEN, Tender::STATUS_AWARDED, Tender::STATUS_CLOSED])],
             'deadline_at' => ['nullable', 'date'],
         ]);

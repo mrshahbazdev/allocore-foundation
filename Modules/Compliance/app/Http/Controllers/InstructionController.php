@@ -34,8 +34,8 @@ class InstructionController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
-            'document_id' => ['nullable', 'exists:documents,id'],
-            'person_id' => ['nullable', 'exists:persons,id'],
+            'document_id' => ['nullable', self::tenantScopedRule('documents')],
+            'person_id' => ['nullable', self::tenantScopedRule('persons')],
             'responsible_id' => ['nullable', self::tenantMemberRule()],
             'status' => ['sometimes', Rule::in([Instruction::STATUS_PENDING, Instruction::STATUS_COMPLETED])],
             'interval_months' => ['nullable', 'integer', 'min:0', 'max:120'],
@@ -55,8 +55,8 @@ class InstructionController extends Controller
         $validated = $request->validate([
             'title' => ['sometimes', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
-            'document_id' => ['nullable', 'exists:documents,id'],
-            'person_id' => ['nullable', 'exists:persons,id'],
+            'document_id' => ['nullable', self::tenantScopedRule('documents')],
+            'person_id' => ['nullable', self::tenantScopedRule('persons')],
             'responsible_id' => ['nullable', self::tenantMemberRule()],
             'status' => ['sometimes', Rule::in([Instruction::STATUS_PENDING, Instruction::STATUS_COMPLETED])],
             'interval_months' => ['nullable', 'integer', 'min:0', 'max:120'],

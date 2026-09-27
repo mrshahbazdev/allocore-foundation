@@ -5,10 +5,13 @@ namespace Modules\ExpertNetwork\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\ExpertNetwork\Models\ExpertProfile;
 
 class ExpertProfileController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return ExpertProfile::query()
@@ -46,7 +49,7 @@ class ExpertProfileController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'person_id' => ['required', 'exists:persons,id'],
+            'person_id' => ['required', self::tenantScopedRule('persons')],
             'headline' => ['nullable', 'string', 'max:255'],
             'bio' => ['nullable', 'string'],
             'skills' => ['nullable', 'array'],

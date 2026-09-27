@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
 use Modules\Compliance\Models\OperatingInstruction;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 
 class OperatingInstructionController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return OperatingInstruction::query()
@@ -24,7 +27,7 @@ class OperatingInstructionController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
             'version' => ['sometimes', 'integer', 'min:1'],
-            'document_id' => ['nullable', 'exists:documents,id'],
+            'document_id' => ['nullable', self::tenantScopedRule('documents')],
             'valid_from' => ['nullable', 'date'],
             'status' => ['sometimes', Rule::in([OperatingInstruction::STATUS_DRAFT, OperatingInstruction::STATUS_ACTIVE, OperatingInstruction::STATUS_ARCHIVED])],
         ]);
@@ -43,7 +46,7 @@ class OperatingInstructionController extends Controller
             'title' => ['sometimes', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
             'version' => ['sometimes', 'integer', 'min:1'],
-            'document_id' => ['nullable', 'exists:documents,id'],
+            'document_id' => ['nullable', self::tenantScopedRule('documents')],
             'valid_from' => ['nullable', 'date'],
             'status' => ['sometimes', Rule::in([OperatingInstruction::STATUS_DRAFT, OperatingInstruction::STATUS_ACTIVE, OperatingInstruction::STATUS_ARCHIVED])],
         ]);

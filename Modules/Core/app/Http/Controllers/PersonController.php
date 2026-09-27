@@ -5,10 +5,13 @@ namespace Modules\Core\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\Core\Models\Person;
 
 class PersonController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Person::with('company')
@@ -28,7 +31,7 @@ class PersonController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'company_id' => ['nullable', 'exists:companies,id'],
+            'company_id' => ['nullable', self::tenantScopedRule('companies')],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
@@ -47,7 +50,7 @@ class PersonController extends Controller
     public function update(Request $request, Person $person)
     {
         $validated = $request->validate([
-            'company_id' => ['nullable', 'exists:companies,id'],
+            'company_id' => ['nullable', self::tenantScopedRule('companies')],
             'first_name' => ['sometimes', 'string', 'max:255'],
             'last_name' => ['sometimes', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],

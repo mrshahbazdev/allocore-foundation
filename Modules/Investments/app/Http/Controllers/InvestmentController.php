@@ -5,10 +5,13 @@ namespace Modules\Investments\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\Investments\Models\Investment;
 
 class InvestmentController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Investment::query()
@@ -57,7 +60,7 @@ class InvestmentController extends Controller
         $req = $sometimes ? 'sometimes' : 'required';
 
         return [
-            'portfolio_id' => [$req, 'exists:portfolios,id'],
+            'portfolio_id' => [$req, self::tenantScopedRule('portfolios')],
             'name' => [$req, 'string', 'max:255'],
             'asset_class' => ['sometimes', Rule::in(Investment::ASSET_CLASSES)],
             'quantity' => ['sometimes', 'numeric', 'min:0'],

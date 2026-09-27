@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
 use Modules\Compliance\Models\RiskAssessment;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 
 class RiskAssessmentController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return RiskAssessment::query()
@@ -34,7 +37,7 @@ class RiskAssessmentController extends Controller
             'hazard' => ['nullable', 'string'],
             'risk_level' => ['sometimes', Rule::in([RiskAssessment::RISK_LOW, RiskAssessment::RISK_MEDIUM, RiskAssessment::RISK_HIGH])],
             'measures' => ['nullable', 'string'],
-            'person_id' => ['nullable', 'exists:persons,id'],
+            'person_id' => ['nullable', self::tenantScopedRule('persons')],
             'status' => ['sometimes', Rule::in([RiskAssessment::STATUS_OPEN, RiskAssessment::STATUS_MITIGATED, RiskAssessment::STATUS_ACCEPTED])],
             'review_at' => ['nullable', 'date'],
         ]);
@@ -55,7 +58,7 @@ class RiskAssessmentController extends Controller
             'hazard' => ['nullable', 'string'],
             'risk_level' => ['sometimes', Rule::in([RiskAssessment::RISK_LOW, RiskAssessment::RISK_MEDIUM, RiskAssessment::RISK_HIGH])],
             'measures' => ['nullable', 'string'],
-            'person_id' => ['nullable', 'exists:persons,id'],
+            'person_id' => ['nullable', self::tenantScopedRule('persons')],
             'status' => ['sometimes', Rule::in([RiskAssessment::STATUS_OPEN, RiskAssessment::STATUS_MITIGATED, RiskAssessment::STATUS_ACCEPTED])],
             'review_at' => ['nullable', 'date'],
         ]);

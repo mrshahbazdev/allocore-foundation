@@ -37,7 +37,7 @@ class AuditFindingController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'audit_id' => ['required', 'exists:audits,id'],
+            'audit_id' => ['required', self::tenantScopedRule('audits')],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'severity' => ['sometimes', Rule::in(AuditFinding::SEVERITIES)],
@@ -73,7 +73,7 @@ class AuditFindingController extends Controller
     public function update(Request $request, AuditFinding $auditFinding)
     {
         $validated = $request->validate([
-            'audit_id' => ['sometimes', 'exists:audits,id'],
+            'audit_id' => ['sometimes', self::tenantScopedRule('audits')],
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'severity' => ['sometimes', Rule::in(AuditFinding::SEVERITIES)],

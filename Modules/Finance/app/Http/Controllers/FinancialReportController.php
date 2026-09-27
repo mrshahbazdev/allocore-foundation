@@ -4,10 +4,13 @@ namespace Modules\Finance\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\Finance\Models\FinancialReport;
 
 class FinancialReportController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return FinancialReport::query()
@@ -59,7 +62,7 @@ class FinancialReportController extends Controller
         $req = $sometimes ? 'sometimes' : 'required';
 
         return [
-            'company_id' => [$req, 'exists:companies,id'],
+            'company_id' => [$req, self::tenantScopedRule('companies')],
             'period' => [$req, 'regex:/^\d{4}-\d{2}$/'],
             'revenue' => ['sometimes', 'numeric'],
             'cashflow' => ['sometimes', 'numeric'],
