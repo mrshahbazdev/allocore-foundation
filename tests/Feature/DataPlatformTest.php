@@ -460,6 +460,8 @@ class DataPlatformTest extends TestCase
         $this->assertSame($res['total'], array_sum($res['by_weekday']));
         $dow = now()->dayOfWeekIso % 7 + 1;
         $this->assertArrayHasKey($dow, $res['by_weekday']);
+        $this->assertSame($res['total'], array_sum($res['by_hour']));
+        $this->assertArrayHasKey((int) now()->format('G'), $res['by_hour']);
 
         $onlyCompany = $this->getJson('/api/v1/events/summary?group=company', ['X-Tenant' => $tenant->id])->assertOk()->json();
         $this->assertSame(1, $onlyCompany['total']);
