@@ -178,6 +178,7 @@ class NotificationController extends Controller
         return response()->json([
             'total' => (clone $base)->count(),
             'unread' => (clone $base)->whereNull('read_at')->count(),
+            'oldest_unread_at' => (clone $base)->whereNull('read_at')->min('created_at'),
             'read' => (clone $base)->whereNotNull('read_at')->count(),
             'muted' => $muted === [] ? 0 : (clone $base)->whereIn('data->kind', $muted)->count(),
             'by_kind' => $byKind,

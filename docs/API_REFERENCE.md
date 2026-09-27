@@ -99,7 +99,7 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 | GET `/notifications/{id}` | `metrics.view` | Einzelne Benachrichtigung (nur eigene, 404 sonst) |
 | POST `/notifications/{id}/read` | `metrics.view` | Benachrichtigung als gelesen markieren |
 | POST `/notifications/{id}/unread` | `metrics.view` | Benachrichtigung als ungelesen markieren (404 bei fremder) |
-| GET `/notifications/stats` | `metrics.view` | Zählwerte `{total, unread, read, muted, by_kind, by_code}` der eigenen Benachrichtigungen — `?kind=`/`?kinds=<csv>`/`?code=`/`?codes=<csv>`/`?before=`/`?after=`/`?muted=1|0`/`?due_before=`/`?due_after=``?overdue=1`/`?q=`/`?entity_id=` grenzen die Grundmenge ein |
+| GET `/notifications/stats` | `metrics.view` | Zählwerte `{total, unread, read, muted, by_kind, by_code, oldest_unread_at}` der eigenen Benachrichtigungen — `?kind=`/`?kinds=<csv>`/`?code=`/`?codes=<csv>`/`?before=`/`?after=`/`?muted=1|0`/`?due_before=`/`?due_after=``?overdue=1`/`?q=`/`?entity_id=` grenzen die Grundmenge ein |
 | GET `/notifications/codes` | `metrics.view` | Vorhandene Insight-/Seed-Codes des Users (distinct, sortiert) |
 | GET `/notifications/kinds` | `metrics.view` | Vorhandene Benachrichtigungs-Arten des Users (distinct, sortiert) — für Filter-Chips |
 | POST `/notifications/read-all` | `metrics.view` | Alle ungelesenen Benachrichtigungen als gelesen markieren; `?kind=`/`?kinds=<csv>`/`?code=`/`?codes=<csv>`/`?muted=1`/`?before=`/`?after=YYYY-MM-DD` nur eine Art/Code/stumme/Zeitraum; `?due_before=`/`?due_after=``?overdue=1` auf `due_at`; `?entity_id=` auf Datensatz; `?q=` Titel-Teiltextsuche — `{updated: n}` |
