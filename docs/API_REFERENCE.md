@@ -99,15 +99,15 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 | GET `/notifications/{id}` | `metrics.view` | Einzelne Benachrichtigung (nur eigene, 404 sonst) |
 | POST `/notifications/{id}/read` | `metrics.view` | Benachrichtigung als gelesen markieren |
 | POST `/notifications/{id}/unread` | `metrics.view` | Benachrichtigung als ungelesen markieren (404 bei fremder) |
-| GET `/notifications/stats` | `metrics.view` | Zählwerte `{total, unread, read, muted, by_kind, by_code}` der eigenen Benachrichtigungen — `?kind=`/`?code=`/`?before=`/`?after=`/`?muted=1|0`/`?due_before=`/`?due_after=`/`?q=`/`?entity_id=` grenzen die Grundmenge ein |
+| GET `/notifications/stats` | `metrics.view` | Zählwerte `{total, unread, read, muted, by_kind, by_code}` der eigenen Benachrichtigungen — `?kind=`/`?code=`/`?before=`/`?after=`/`?muted=1|0`/`?due_before=`/`?due_after=``?overdue=1`/`?q=`/`?entity_id=` grenzen die Grundmenge ein |
 | GET `/notifications/codes` | `metrics.view` | Vorhandene Insight-/Seed-Codes des Users (distinct, sortiert) |
 | GET `/notifications/kinds` | `metrics.view` | Vorhandene Benachrichtigungs-Arten des Users (distinct, sortiert) — für Filter-Chips |
-| POST `/notifications/read-all` | `metrics.view` | Alle ungelesenen Benachrichtigungen als gelesen markieren; `?kind=`/`?code=`/`?muted=1`/`?before=`/`?after=YYYY-MM-DD` nur eine Art/Code/stumme/Zeitraum; `?due_before=`/`?due_after=` auf `due_at`; `?entity_id=` auf Datensatz; `?q=` Titel-Teiltextsuche — `{updated: n}` |
+| POST `/notifications/read-all` | `metrics.view` | Alle ungelesenen Benachrichtigungen als gelesen markieren; `?kind=`/`?code=`/`?muted=1`/`?before=`/`?after=YYYY-MM-DD` nur eine Art/Code/stumme/Zeitraum; `?due_before=`/`?due_after=``?overdue=1` auf `due_at`; `?entity_id=` auf Datensatz; `?q=` Titel-Teiltextsuche — `{updated: n}` |
 | POST `/notifications/batch` | `metrics.view` | Bulk-Aktionen — `{ids: [...], action: read|unread|delete}` (max 200, nur eigene) — `{updated: n}` |
-| POST `/notifications/delete-read` | `metrics.view` | Alle gelesenen Benachrichtigungen löschen — `{deleted: n}`; `?kind=`/`?code=`/`?muted=1`/`?before=`/`?after=YYYY-MM-DD` grenzt ein; `?due_before=`/`?due_after=` auf `due_at`; `?entity_id=` auf Datensatz; `?q=` Titel-Teiltextsuche |
+| POST `/notifications/delete-read` | `metrics.view` | Alle gelesenen Benachrichtigungen löschen — `{deleted: n}`; `?kind=`/`?code=`/`?muted=1`/`?before=`/`?after=YYYY-MM-DD` grenzt ein; `?due_before=`/`?due_after=``?overdue=1` auf `due_at`; `?entity_id=` auf Datensatz; `?q=` Titel-Teiltextsuche |
 | `/notifications/unread-count` | `metrics.view` | Anzahl ungelesener Benachrichtigungen: `{count}` — stummgeschaltete Arten (`PUT /me/notification-prefs`) werden nicht mitgezählt; `include_muted=1` liefert die Gesamtzahl; `kind=`/`?code=` nur eine Art/Code zählen; `muted=1` nur stumme; `before=`/`after=YYYY-MM-DD` Zeitraum auf `created_at`; `due_before=`/`due_after=` auf `due_at`; `?q=` Titel-Teiltextsuche; `?entity_id=` auf Datensatz |
 | DELETE `/notifications/{id}` | `metrics.view` | Einzelne Benachrichtigung löschen (404 bei fremder) |
-| DELETE `/notifications` | `metrics.view` | Benachrichtigungen des Users löschen — `{deleted: n}`; ohne Filter alle, mit `?kind=`/ `?read=1` / `?unread=1` / `?code=` / `?muted=1` / `?before=`/`?after=YYYY-MM-DD` nur passende; `?due_before=`/`?due_after=` auf `due_at`; `?entity_id=` auf Datensatz; `?q=` Titel-Teiltextsuche |
+| DELETE `/notifications` | `metrics.view` | Benachrichtigungen des Users löschen — `{deleted: n}`; ohne Filter alle, mit `?kind=`/ `?read=1` / `?unread=1` / `?code=` / `?muted=1` / `?before=`/`?after=YYYY-MM-DD` nur passende; `?due_before=`/`?due_after=``?overdue=1` auf `due_at`; `?entity_id=` auf Datensatz; `?q=` Titel-Teiltextsuche |
 | POST `/demo-seed` | `roles.manage` | Demodaten für den aktuellen Tenant laden (idempotent; wie `php artisan demo:seed {tenant}`) |
 
 ## DataLake (`datalake`) — Layer 4

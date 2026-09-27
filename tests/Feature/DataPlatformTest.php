@@ -2069,6 +2069,20 @@ class DataPlatformTest extends TestCase
         $this->assertCount(1, $items);
     }
 
+    public function test_notifications_overdue_filter(): void
+    {
+        $tenant = Tenant::create(['name' => 'OV GmbH']);
+        $user = $this->acting($tenant);
+
+        $user->notify(new Assigned('aufgabe', 'x1', 'Alt', now()->subDay()->toDateTimeString()));
+        $user->notify(new Assigned('aufgabe', 'x2', 'Neu', now()->addDay()->toDateTimeString()));
+
+        $items = $this->getJson('/api/v1/notifications?overdue=1', ['X-Tenant' => $tenant->id])->assertOk()->json();
+        $this->assertCount(1, $items);
+        $this->assertSame('x1', $items[0]['entity_id']);
+        $this->assertSame(1, $this->getJson('/api/v1/notifications/unread-count?overdue=1', ['X-Tenant' => $tenant->id])->assertOk()->json('count'));
+    }
+
     public function test_notifications_read_all_and_delete_read_honor_after(): void
     {
         $tenant = Tenant::create(['name' => 'AW GmbH']);
