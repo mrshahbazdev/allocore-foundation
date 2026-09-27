@@ -299,6 +299,33 @@ class EventController extends Controller
         return response()->json(['data' => $rows]);
     }
 
+    /** Distinct Aktionen des Mandanten — Suffix nach dem Gruppen-Punkt (z. B. 'created', 'updated') + Anzahl. */
+    public function actions(Request $request)
+    {
+        $rows = DB::table('stored_events')
+            ->where('meta_data->tenant_id', tenant()->getTenantKey())
+            ->when($request->since, fn ($q) => $q->where('created_at', '>=', $request->date('since')))
+            ->when($request->until, fn ($q) => $q->where('created_at', '<=', $request->date('until')))
+            ->when($request->day, fn ($q) => $q->whereDate('created_at', $request->date('day')))
+            ->when($request->group, fn ($q) => $q->where('event_properties->type', 'like', $request->group.'.%'))
+            ->when($request->groups, function ($q) use ($request) {
+                $q->where(function ($w) use ($request) {
+                    foreach (array_filter(array_map('trim', explode(',', $request->groups))) as $g) {
+                        $w->orWhere('event_properties->type', 'like', $g.'.%');
+                    }
+                });
+            })
+            ->when($request->q, fn ($q) => $q->where('event_properties->type', 'like', '%'.$request->q))
+            ->selectRaw("SUBSTRING_INDEX(JSON_UNQUOTE(JSON_EXTRACT(`event_properties`, '$.type')), '.', -1) as action, COUNT(*) as events")
+            ->groupBy('action')
+            ->orderByDesc('events')
+            ->limit(min($request->integer('limit', 500), 500))
+            ->get()
+            ->map(fn ($r) => ['action' => $r->action, 'events' => (int) $r->events]);
+
+        return response()->json(['data' => $rows]);
+    }
+
     /** Distinct Betreffende-Typen (subject.type) des Mandanten — type + Anzahl Events. */
     public function subjectTypes(Request $request)
     {
