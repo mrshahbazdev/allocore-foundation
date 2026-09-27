@@ -44,6 +44,20 @@ class AnalyticsTrendsTest extends TestCase
         $this->assertSame('unknown', $rows['tasks']['direction']);
     }
 
+    public function test_trends_is_tenant_scoped(): void
+    {
+        [$tenant] = $this->auth();
+
+        $other = Tenant::create(['name' => 'Fremd GmbH']);
+        MetricSnapshot::create(['tenant_id' => $other->id, 'metric' => 'fremd_metric', 'value' => 9, 'captured_on' => '2026-09-21']);
+        MetricSnapshot::create(['tenant_id' => $tenant->id, 'metric' => 'eigen_metric', 'value' => 1, 'captured_on' => '2026-09-21']);
+
+        $res = $this->getJson('/api/v1/analytics/trends', ['X-Tenant' => $tenant->id])->assertOk();
+        $rows = collect($res->json())->keyBy('metric');
+        $this->assertArrayHasKey('eigen_metric', $rows);
+        $this->assertArrayNotHasKey('fremd_metric', $rows);
+    }
+
     public function test_trends_requires_metrics_view(): void
     {
         [$tenant] = $this->auth('kunde');

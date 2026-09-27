@@ -13,10 +13,11 @@ class AnalyticsController extends Controller
 {
     public function trends()
     {
-        $metrics = MetricSnapshot::query()->distinct()->pluck('metric');
+        $metrics = MetricSnapshot::query()->where('tenant_id', tenant()->getTenantKey())->distinct()->pluck('metric');
 
         return $metrics->map(function (string $metric) {
             [$curr, $prev] = MetricSnapshot::query()
+                ->where('tenant_id', tenant()->getTenantKey())
                 ->where('metric', $metric)
                 ->orderByDesc('id')
                 ->limit(2)
