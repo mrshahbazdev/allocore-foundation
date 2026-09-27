@@ -66,6 +66,11 @@ class NavCountsController extends Controller
             ];
         }
 
+        $out['_total'] = [
+            array_sum(array_column($out, 0)),
+            array_sum(array_column($out, 1)),
+        ];
+
         return $out;
     }
 }
