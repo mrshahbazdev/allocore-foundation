@@ -2365,6 +2365,16 @@ paths:
         '404': {description: Not Found}
         '422': {description: Validation failed}
 
+  /api/v1/notifications/{id}:
+    get:
+      summary: GET /api/v1/notifications/{id} — einzelne Benachrichtigung des Nutzers (404 fremd/unbekannt)
+      tags: [DataPlatform]
+      parameters:
+        - {name: X-Tenant, in: header, required: true, schema: {type: string}}
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Benachrichtigung}
+        '404': {description: Nicht gefunden}
   /api/v1/notifications/stats:
     get:
       tags: [metrics]

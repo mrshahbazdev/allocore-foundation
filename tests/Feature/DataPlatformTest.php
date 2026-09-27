@@ -217,6 +217,19 @@ class DataPlatformTest extends TestCase
         $this->assertSame('hinweis', $notif->data['kind']);
     }
 
+    public function test_notifications_show_returns_single_notification(): void
+    {
+        $tenant = Tenant::create(['name' => 'ShowN GmbH']);
+        $user = $this->acting($tenant);
+        $user->notify(new Assigned('aufgabe', 'x-9', 'ShowMe'));
+
+        $id = $user->fresh()->notifications()->value('id');
+        $res = $this->getJson('/api/v1/notifications/'.$id, ['X-Tenant' => $tenant->id]);
+        $res->assertOk()->assertJsonPath('id', $id)->assertJsonPath('data.title', 'ShowMe');
+
+        $this->getJson('/api/v1/notifications/00000000-0000-0000-0000-000000000000', ['X-Tenant' => $tenant->id])->assertNotFound();
+    }
+
     public function test_notifications_export_streams_ndjson(): void
     {
         $tenant = Tenant::create(['name' => 'Ex GmbH']);
