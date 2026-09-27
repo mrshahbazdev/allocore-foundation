@@ -399,6 +399,18 @@
                             </template>
                         </div>
                     </div>
+                    <div x-show="trends.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
+                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex items-center justify-between">Metrik-Trends <span class="text-[10px] font-mono text-[#9CA3AF]" x-text="trends.length + ' Metriken'"></span></div>
+                        <div class="divide-y divide-[#F0F3F7] max-h-64 overflow-y-auto">
+                            <template x-for="t in trends" :key="t.metric">
+                                <div class="px-5 py-2.5 flex items-center justify-between gap-4">
+                                    <span class="text-sm text-[#1A2433] font-mono truncate" x-text="t.metric"></span>
+                                    <span class="text-[11px] font-mono shrink-0" :class="t.direction === 'up' ? 'text-[#047857]' : (t.direction === 'down' ? 'text-[#A6362E]' : 'text-[#9CA3AF]')"
+                                        x-text="(t.direction === 'up' ? '▲ ' : t.direction === 'down' ? '▼ ' : '→ ') + (t.delta === null ? '—' : (t.delta > 0 ? '+' : '') + t.delta) + ' → ' + t.value"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                     <div x-show="evSummary" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
                         <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center">Aktivität (<span x-text="evWindow"></span> Tage)
                             <select x-model.number="evWindow" @change="api('/api/v1/events/summary?days=' + evWindow).then(r => r.ok ? r.json() : null).then(d => evSummary = d)" class="text-[10px] font-mono border border-[#E4E9F0] rounded px-1 py-0.5 bg-white dark:bg-zinc-900">
