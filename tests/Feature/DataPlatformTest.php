@@ -1689,6 +1689,11 @@ class DataPlatformTest extends TestCase
 
         $this->getJson('/api/v1/notifications/unread-count?kind=anmeldung', ['X-Tenant' => $tenant->id])
             ->assertOk()->assertExactJson(['count' => 1]);
+
+        $this->getJson('/api/v1/notifications?kinds=anmeldung,passwort_geaendert', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonCount(2);
+        $this->getJson('/api/v1/notifications/stats?kinds=anmeldung,passwort_geaendert', ['X-Tenant' => $tenant->id])
+            ->assertOk()->assertJsonPath('total', 2)->assertJsonPath('unread', 2);
     }
 
     public function test_notifications_unread_count_filters_by_code(): void
