@@ -1929,10 +1929,9 @@ function workspace(initial) {
             if (this.section === 'dashboard') {
                 this.api('/api/v1/metrics').then(r => r.ok ? r.json() : (this.error='HTTP '+r.status, null))
                     .then(d => { this.metrics = d; this.loading = false; this.lastLoad = new Date(); });
-                const sparkFrom = new Date(Date.now() - 60 * 864e5).toISOString().slice(0, 10);
                 this.spark = {};
                 KPI.forEach(m => {
-                    this.api('/api/v1/metrics/' + m.key + '?from=' + sparkFrom).then(r => r.ok ? r.json() : [])
+                    this.api('/api/v1/metrics/' + m.key + '?recent=14').then(r => r.ok ? r.json() : [])
                         .then(d => { const v = (Array.isArray(d) ? d : (d.data || [])).map(x => x.value); if (v.length > 1) this.spark[m.key] = v; });
                 });
                 this.api('/api/v1/insights').then(r => r.ok ? r.json() : [])
