@@ -8,10 +8,13 @@ use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
 use Modules\Audits\Models\Audit;
 use Modules\Audits\Models\AuditFinding;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\Core\Notifications\Assigned;
 
 class AuditFindingController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return AuditFinding::query()
@@ -40,7 +43,7 @@ class AuditFindingController extends Controller
             'severity' => ['sometimes', Rule::in(AuditFinding::SEVERITIES)],
             'status' => ['sometimes', Rule::in(AuditFinding::STATUSES)],
             'due_at' => ['nullable', 'date'],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
         ]);
 
         $audit = Audit::find($validated['audit_id']);
@@ -76,7 +79,7 @@ class AuditFindingController extends Controller
             'severity' => ['sometimes', Rule::in(AuditFinding::SEVERITIES)],
             'status' => ['sometimes', Rule::in(AuditFinding::STATUSES)],
             'due_at' => ['nullable', 'date'],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
         ]);
 
         $wasResolved = $auditFinding->status !== 'resolved';

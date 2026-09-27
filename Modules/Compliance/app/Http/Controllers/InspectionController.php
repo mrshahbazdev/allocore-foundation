@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
 use Modules\Compliance\Models\Inspection;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 
 class InspectionController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Inspection::query()
@@ -33,7 +36,7 @@ class InspectionController extends Controller
             'type' => ['nullable', 'string', 'max:255'],
             'subject' => ['nullable', 'string', 'max:255'],
             'person_id' => ['nullable', 'exists:persons,id'],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
             'status' => ['sometimes', Rule::in([Inspection::STATUS_SCHEDULED, Inspection::STATUS_COMPLETED, Inspection::STATUS_CANCELLED])],
             'result' => ['nullable', Rule::in([Inspection::RESULT_PASS, Inspection::RESULT_CONDITIONAL, Inspection::RESULT_FAIL])],
             'notes' => ['nullable', 'string'],
@@ -55,7 +58,7 @@ class InspectionController extends Controller
             'type' => ['nullable', 'string', 'max:255'],
             'subject' => ['nullable', 'string', 'max:255'],
             'person_id' => ['nullable', 'exists:persons,id'],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
             'status' => ['sometimes', Rule::in([Inspection::STATUS_SCHEDULED, Inspection::STATUS_COMPLETED, Inspection::STATUS_CANCELLED])],
             'result' => ['nullable', Rule::in([Inspection::RESULT_PASS, Inspection::RESULT_CONDITIONAL, Inspection::RESULT_FAIL])],
             'notes' => ['nullable', 'string'],

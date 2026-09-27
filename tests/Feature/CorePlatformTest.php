@@ -136,6 +136,7 @@ class CorePlatformTest extends TestCase
         $tenant = Tenant::create(['name' => 'Assign GmbH']);
         $this->actingWithTenant($tenant);
         $assignee = User::factory()->create();
+        $assignee->assignRole('holding');
 
         $this->postJson('/api/v1/tasks', [
             'title' => 'Bericht prüfen',
@@ -145,11 +146,23 @@ class CorePlatformTest extends TestCase
         Notification::assertSentTo($assignee, Assigned::class);
 
         $other = User::factory()->create();
+        $other->assignRole('holding');
         $this->putJson('/api/v1/tasks/'.Task::first()->id, [
             'assignee_id' => $other->id,
         ], ['X-Tenant' => $tenant->id])->assertOk();
 
         Notification::assertSentTo($other, Assigned::class);
+    }
+
+    public function test_task_assignee_must_be_tenant_member(): void
+    {
+        $tenant = Tenant::create(['name' => 'MemberOnly GmbH']);
+        $this->actingWithTenant($tenant);
+        $outsider = User::factory()->create();
+
+        $this->postJson('/api/v1/tasks', [
+            'title' => 'X', 'assignee_id' => $outsider->id,
+        ], ['X-Tenant' => $tenant->id])->assertUnprocessable();
     }
 
     public function test_task_done_notifies_creator(): void
@@ -158,6 +171,7 @@ class CorePlatformTest extends TestCase
         $tenant = Tenant::create(['name' => 'Done GmbH']);
         $creator = $this->actingWithTenant($tenant);
         $assignee = User::factory()->create();
+        $assignee->assignRole('holding');
 
         $this->postJson('/api/v1/tasks', [
             'title' => 'Bericht prüfen',

@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
 use Modules\Audits\Models\Audit;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 
 class AuditController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Audit::query()
@@ -35,7 +38,7 @@ class AuditController extends Controller
             'standard' => ['nullable', 'string', 'max:255'],
             'auditor' => ['nullable', 'string', 'max:255'],
             'company_id' => ['nullable', 'exists:companies,id'],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'status' => ['sometimes', Rule::in(Audit::STATUSES)],
@@ -58,7 +61,7 @@ class AuditController extends Controller
             'standard' => ['nullable', 'string', 'max:255'],
             'auditor' => ['nullable', 'string', 'max:255'],
             'company_id' => ['nullable', 'exists:companies,id'],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'status' => ['sometimes', Rule::in(Audit::STATUSES)],

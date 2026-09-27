@@ -125,6 +125,9 @@ class CorporateDevTest extends TestCase
         $tenant = Tenant::create(['name' => 'M GmbH']);
         $actor = $this->acting($tenant);
         $owner = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $owner->assignRole('holding');
+        tenancy()->end();
 
         $strategy = $this->postJson('/api/v1/strategies', [
             'name' => 'Wachstum', 'status' => 'active',

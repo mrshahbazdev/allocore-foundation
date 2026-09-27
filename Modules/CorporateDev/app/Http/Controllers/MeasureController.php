@@ -5,10 +5,13 @@ namespace Modules\CorporateDev\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Modules\Core\Concerns\ValidatesTenantMembers;
 use Modules\CorporateDev\Models\Measure;
 
 class MeasureController extends Controller
 {
+    use ValidatesTenantMembers;
+
     public function index(Request $request)
     {
         return Measure::query()
@@ -33,7 +36,7 @@ class MeasureController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', Rule::in(Measure::STATUSES)],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
             'due_at' => ['nullable', 'date'],
         ]);
 
@@ -52,7 +55,7 @@ class MeasureController extends Controller
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', Rule::in(Measure::STATUSES)],
-            'responsible_id' => ['nullable', 'exists:users,id'],
+            'responsible_id' => ['nullable', self::tenantMemberRule()],
             'due_at' => ['nullable', 'date'],
         ]);
 
