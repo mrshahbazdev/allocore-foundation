@@ -1858,6 +1858,7 @@ function workspace(initial) {
             this.api('/api/v1/me').then(r => r.ok ? r.json() : null).then(d => { this.me = d; }).catch(() => {});
         },
         loadNotifications() {
+            if (!this.tenant) { this.dbNotifs = []; return; }
             this.api('/api/v1/notifications?limit=10').then(r => r.ok ? r.json() : []).then(d => {
                 const now = Date.now();
                 this.dbNotifs = (d || []).map(n => ({
