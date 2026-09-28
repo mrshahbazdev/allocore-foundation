@@ -467,6 +467,7 @@
                         <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center">Letzte Ereignisse <a :href="'/app/events?tenant=' + tenant" class="text-[10px] text-[#CA8A04] hover:underline font-normal">Alle →</a></div>
                         <div class="divide-y divide-[#F0F3F7] max-h-64 overflow-y-auto">
                             <template x-for="(e, i) in events" :key="i">
+                                <div>
                                 <a x-show="eventLink(e)" :href="eventLink(e)" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC] transition">
                                     <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] font-semibold tracking-wide text-[#CA8A04] uppercase" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span><span x-show="e.event_properties && e.event_properties.subject && e.event_properties.subject.title" class="text-[#5B6B7E]" x-text="' · ' + e.event_properties.subject.title"></span><span x-show="e.meta_data && e.meta_data.actor" class="text-[#9CA3AF]" x-text="' · ' + e.meta_data.actor.name"></span></span>
                                     <span class="text-[11px] text-[#9CA3AF] font-mono shrink-0" x-text="ago(e.created_at)"></span>
@@ -474,6 +475,7 @@
                                 <div x-show="!eventLink(e)" class="px-5 py-2.5 flex items-center justify-between gap-4">
                                     <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] font-semibold tracking-wide text-[#CA8A04] uppercase" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span><span x-show="e.meta_data && e.meta_data.actor" class="text-[#9CA3AF]" x-text="' · ' + e.meta_data.actor.name"></span></span>
                                     <span class="text-[11px] text-[#9CA3AF] font-mono shrink-0" x-text="ago(e.created_at)"></span>
+                                </div>
                                 </div>
                             </template>
                         </div>
@@ -637,7 +639,7 @@
                         </template>
                         <button x-show="recentRows().filter(r => r.key === section).length > 1" @click="clearRecentSection()" title="Zuletzt-Liste für diese Sektion leeren" class="ml-auto shrink-0 text-[10px] text-[#9CA3AF] hover:text-[#A6362E]">leeren ×</button>
                     </div>
-                    <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
+                    <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)) || section === 'notifications')" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
                         <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" title="Überfällig (u)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
                                 x-text="'Überfällig · ' + rows.filter(r => overdue(r)).length"></button>
@@ -694,6 +696,7 @@
                             <button x-show="section === 'notifications'" @click="codeFilter = codeFilter === c ? '' : c" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="codeFilter === c ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
                                     x-text="'Code ' + c + ' · ' + rows.filter(r => r.code === c).length"></button>
+                        </template>
                         <span x-show="section === 'notifications' && notifStats" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E]"
                               x-text="'Gesamt ' + notifStats.total + ' · Ungelesen ' + notifStats.unread + ' · Gelesen ' + notifStats.read + ' · Stumm ' + notifStats.muted"></span>
                         <button x-show="section === 'notifications' && rows && rows.some(r => !r.read)" @click="unreadOnly = !unreadOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
@@ -705,7 +708,6 @@
                         <button x-show="section === 'notifications' && rows && rows.some(r => !r.read)" @click="markAllNotifsRead(); toast('Alle als gelesen markiert')" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 transition">Alle gelesen</button>
                         <button x-show="section === 'notifications' && rows && rows.some(r => r.read)" @click="deleteReadNotifs()" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition">Gelesene entfernen</button>
                         <button x-show="section === 'notifications' && rows && rows.length > 1" @click="if (confirm('Alle Benachrichtigungen entfernen?')) this.api('/api/v1/notifications', {method: 'DELETE'}).then(r => r.ok ? r.json() : null).then(d => { if (d) { this.toast((d.deleted ?? 0) + ' entfernt'); this.loadSection(); } })" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition">Alle entfernen</button>
-                        </template>
                         <template x-for="rn in roleOpts()" :key="'role-' + rn">
                             <button @click="roleFilter = roleFilter === rn ? '' : rn" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="roleFilter === rn ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">
@@ -776,23 +778,21 @@
                                     </template>
                                     <template x-if="it.t === 'r'">
                                         <template x-for="e in it.cells" :key="e.t + ':' + (e.c || '')">
-                                            <template x-if="e.t === 'cb'">
-                                                <td x-show="writable()" @click.stop class="px-4 py-3 w-10">
-                                                    <input type="checkbox" :aria-label="'Zeile auswählen: ' + (it.r.name || it.r.title || it.r.headline || it.r.id)" @change="toggleSel(it.r.id)" :checked="!!selected[it.r.id]"
+                                            <td x-show="e.t === 'cb' ? writable() : (e.t === 'act' ? (sectionActions().length || canEdit()) : true)"
+                                                :class="e.t === 'cb' ? 'px-4 py-3 w-10' : (e.t === 'n' ? 'px-3 py-3 text-[#9CA3AF] text-xs tabular-nums' : (e.t === 'act' ? 'px-5 py-3 w-28' : 'px-5 text-[#1A2433] ' + (compact ? 'py-1.5 text-xs' : 'py-3')))"
+                                                class="px-5 py-3">
+                                                <template x-if="e.t === 'cb'">
+                                                    <input type="checkbox" :aria-label="'Zeile auswählen: ' + (it.r.name || it.r.title || it.r.headline || it.r.id)" @click.stop @change="toggleSel(it.r.id)" :checked="!!selected[it.r.id]"
                                                            class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
-                                                </td>
-                                            </template>
-                                            <template x-if="e.t === 'n'">
-                                                <td class="px-3 py-3 text-[#9CA3AF] text-xs tabular-nums" x-text="it.i + 1"></td>
-                                            </template>
-                                            <template x-if="e.t === 'c'">
-                                                <td class="px-5 text-[#1A2433]" :class="compact ? 'py-1.5 text-xs' : 'py-3'">
-                                                    <span x-html="cell(it.r, e.c)"></span><span x-show="e.c === visCols()[0] && isNew(it.r)" class="ml-1.5 text-[9px] font-bold px-1 py-0.5 rounded bg-[#FACC15] text-[#0B0B0F] align-middle">NEU</span>
-                                                </td>
-                                            </template>
-                                            <template x-if="e.t === 'act'">
-                                                <td x-show="sectionActions().length || canEdit()" @click.stop class="px-5 py-3 w-28">
-                                                    <div class="flex gap-1 items-center">
+                                                </template>
+                                                <template x-if="e.t === 'n'">
+                                                    <span x-text="it.i + 1"></span>
+                                                </template>
+                                                <template x-if="e.t === 'c'">
+                                                    <span><span x-html="cell(it.r, e.c)"></span><span x-show="e.c === visCols()[0] && isNew(it.r)" class="ml-1.5 text-[9px] font-bold px-1 py-0.5 rounded bg-[#FACC15] text-[#0B0B0F] align-middle">NEU</span></span>
+                                                </template>
+                                                <template x-if="e.t === 'act'">
+                                                    <div class="flex gap-1 items-center" @click.stop>
                                                         <template x-for="a in rowActions(it.r).slice(0, 2)" :key="a[1]">
                                                             <button @click="applyRowStatus(it.r, a[1])" class="text-[10px] px-2 py-1 rounded-md border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 whitespace-nowrap" x-text="a[0]"></button>
                                                         </template>
@@ -801,8 +801,8 @@
                                                         <button x-show="canEdit()" @click="detail = it.r; openEdit()" title="Bearbeiten" class="text-[11px] px-1.5 py-1 rounded-md border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]">&#9998;</button>
                                                         <button x-show="canEdit()" @click="deleteRow(it.r)" title="Löschen" class="text-[11px] px-1.5 py-1 rounded-md border border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5">&#128465;</button>
                                                     </div>
-                                                </td>
-                                            </template>
+                                                </template>
+                                            </td>
                                         </template>
                                     </template>
                                 </tr>
@@ -1936,7 +1936,7 @@ function workspace(initial) {
             const d = await r.json().catch(() => ({}));
             if (r.ok) { this.toast((d.deleted ?? 0) + ' Token widerrufen'); this.loadSection(); }
             else this.toast(d.message || 'Fehler beim Widerrufen', 'error');
-        }
+        },
 
         loadSection(soft) {
             if (this.section === 'events' && this.evActorsKey !== this.tenant) {
@@ -2544,7 +2544,7 @@ function workspace(initial) {
         },
         hasPerm(p) { return !this.me || !Array.isArray(this.me.permissions) || this.me.permissions.includes(p); },
         permDom(key) {
-            const M = {companies:'companies',persons:'persons',documents:'documents',tasks:'tasks',instructions:'compliance',inspections:'compliance',deadlines:'compliance','risk-assessments':'compliance','operating-instructions':'compliance',expert-profiles:'experts',questions:'experts',tenders:'experts',strategies:'projects',projects:'projects',measures:'projects',portfolios:'investments',investments:'investments',participations:'participations',machines:'production','production-orders':'production','leave-requests':'hr','financial-reports':'finance',audits:'audits','audit-findings':'audits','data-objects':'datalake','ai-analyses':'ai','graph-entities':'graph','graph-edges':'graph',users:'roles',events:'metrics',executive:'executive','exec-reports':'executive'};
+            const M = {companies:'companies',persons:'persons',documents:'documents',tasks:'tasks',instructions:'compliance',inspections:'compliance',deadlines:'compliance','risk-assessments':'compliance','operating-instructions':'compliance','expert-profiles':'experts',questions:'experts',tenders:'experts',strategies:'projects',projects:'projects',measures:'projects',portfolios:'investments',investments:'investments',participations:'participations',machines:'production','production-orders':'production','leave-requests':'hr','financial-reports':'finance',audits:'audits','audit-findings':'audits','data-objects':'datalake','ai-analyses':'ai','graph-entities':'graph','graph-edges':'graph',users:'roles',events:'metrics',executive:'executive','exec-reports':'executive'};
             return M[key] || null;
         },
         managePerm() { return this.permDom(this.section); },
