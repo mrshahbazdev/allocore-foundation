@@ -36,20 +36,20 @@ class IntegrationController extends Controller
         return response()->json($source, 201);
     }
 
-    public function update(Request $request, IntegrationSource $integration_source)
+    public function update(Request $request, IntegrationSource $integration)
     {
         $data = $request->validate([
             'name' => 'sometimes|string|max:255',
             'active' => 'sometimes|boolean',
         ]);
-        $integration_source->update($data);
+        $integration->update($data);
 
-        return $integration_source;
+        return $integration;
     }
 
-    public function destroy(IntegrationSource $integration_source)
+    public function destroy(IntegrationSource $integration)
     {
-        $integration_source->delete();
+        $integration->delete();
 
         return response()->noContent();
     }
