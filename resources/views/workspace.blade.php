@@ -639,7 +639,7 @@
                         </template>
                         <button x-show="recentRows().filter(r => r.key === section).length > 1" @click="clearRecentSection()" title="Zuletzt-Liste für diese Sektion leeren" class="ml-auto shrink-0 text-[10px] text-[#9CA3AF] hover:text-[#A6362E]">leeren ×</button>
                     </div>
-                    <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)))" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
+                    <div x-show="rows && (statusOpts().length > 1 || rows.some(r => overdue(r)) || section === 'notifications')" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
                         <button x-show="rows.some(r => overdue(r))" @click="overdueOnly = !overdueOnly" title="Überfällig (u)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
                                 x-text="'Überfällig · ' + rows.filter(r => overdue(r)).length"></button>
