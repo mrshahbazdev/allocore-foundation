@@ -26,9 +26,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // API-Rate-Limit: 120 Requests/Min je Nutzer (oder IP)
+        // API-Rate-Limit: 600 Requests/Min je eingeloggten Nutzer —
+        // die Workspace-UI feuert pro Sektions-Wechsel ~15 parallele Calls.
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
+            return $request->user()
+                ? Limit::perMinute(600)->by($request->user()->id)
+                : Limit::perMinute(120)->by($request->ip());
         });
 
         // Passwort-Policy (Registrierung, Reset, Aenderung): mind. 12 Zeichen,
