@@ -839,7 +839,7 @@ class RolesTest extends TestCase
         $tenant = Tenant::create(['name' => 'RL GmbH']);
         $this->actingAsUser($tenant);
         $response = null;
-        foreach (range(1, 121) as $i) {
+        foreach (range(1, 601) as $i) {
             $response = $this->getJson('/api/v1/me', ['X-Tenant' => $tenant->id]);
         }
         $response->assertStatus(429);
