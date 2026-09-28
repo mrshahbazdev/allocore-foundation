@@ -4,6 +4,7 @@ namespace Modules\DataPlatform\Providers;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Modules\DataPlatform\Console\AggregateMetrics;
+use Modules\DataPlatform\Console\AnonymizeSyncCommand;
 use Modules\DataPlatform\Console\NotifyCriticalInsights;
 use Modules\DataPlatform\Console\PruneNotifications;
 use Modules\DataPlatform\Console\PullConnectorsCommand;
@@ -21,6 +22,7 @@ class DataPlatformServiceProvider extends ModuleServiceProvider
         PruneNotifications::class,
         NotifyCriticalInsights::class,
         PullConnectorsCommand::class,
+        AnonymizeSyncCommand::class,
     ];
 
     protected array $providers = [
@@ -42,5 +44,6 @@ class DataPlatformServiceProvider extends ModuleServiceProvider
         $schedule->command('insights:notify')->daily();
         $schedule->command('insights:notify --warnings')->weeklyOn(1);
         $schedule->command('integrations:pull')->hourly();
+        $schedule->command('anonymize:sync')->hourly();
     }
 }
