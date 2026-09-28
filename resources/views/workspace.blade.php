@@ -317,21 +317,21 @@
                                 <div class="mt-0.5 text-[11px] font-mono" :class="trend(m.key).direction === 'up' ? 'text-[#2E7D5B]' : (trend(m.key).direction === 'down' ? 'text-[#A6362E]' : 'text-[#9CA3AF]')" x-text="trend(m.key).delta === null ? '' : (trend(m.key).direction === 'up' ? '▲ +' : (trend(m.key).direction === 'down' ? '▼ ' : '')) + (trend(m.key).delta ?? '')"></div>
                                 <div class="mt-2 flex items-end justify-between gap-2">
                                     <div class="h-0.5 w-8 rounded-full bg-[#FACC15] mb-1"></div>
-                                    <svg x-show="(spark[m.key] || []).length > 1" :title="'60-Tage-Verlauf: ' + spark[m.key][0] + ' → ' + spark[m.key][spark[m.key].length - 1]" viewBox="0 0 96 24" preserveAspectRatio="none" class="h-6 w-24"
+                                    <svg x-show="(spark[m.key] || []).length > 1" :title="(spark[m.key] || []).length > 1 ? '60-Tage-Verlauf: ' + spark[m.key][0] + ' → ' + spark[m.key][spark[m.key].length - 1] : ''" viewBox="0 0 96 24" preserveAspectRatio="none" class="h-6 w-24"
                                          :class="trend(m.key).direction === 'up' ? 'text-[#2E7D5B]' : (trend(m.key).direction === 'down' ? 'text-[#A6362E]' : 'text-[#CA8A04]')">
                                         <path :d="sparkPath(m.key)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
                                     </svg>
                                 </div>
                             </a>
                         </template>
-                        <a x-show="overdueSections().length" :href="'/app/' + overdueSections()[0].key + '?tenant=' + tenant + '&overdue=1'"
+                        <a x-show="overdueSections().length" :href="'/app/' + (overdueSections()[0] || {key: 'dashboard'}).key + '?tenant=' + tenant + '&overdue=1'"
                            class="bg-[#A6362E]/5 border border-[#A6362E]/40 rounded-xl px-5 py-4 block transition hover:border-[#A6362E] hover:shadow-sm">
                             <div class="text-[11px] font-medium text-[#A6362E]">Überfällig gesamt</div>
                             <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#A6362E]" x-text="overdueSections().reduce((s, x) => s + x.count, 0)"></div>
                             <div class="mt-0.5 text-[11px] font-mono text-[#A6362E]/70" x-text="overdueSections().length + (overdueSections().length === 1 ? ' Sektion' : ' Sektionen')"></div>
                             <div class="mt-2 flex items-end"><div class="h-0.5 w-8 rounded-full bg-[#A6362E] mb-1"></div></div>
                         </a>
-                        <a x-show="todaySections().length" :href="'/app/' + todaySections()[0].key + '?tenant=' + tenant + '&today=1'"
+                        <a x-show="todaySections().length" :href="'/app/' + (todaySections()[0] || {key: 'dashboard'}).key + '?tenant=' + tenant + '&today=1'"
                            class="bg-[#FACC15]/10 border border-[#CA8A04]/40 rounded-xl px-5 py-4 block transition hover:border-[#CA8A04] hover:shadow-sm">
                             <div class="text-[11px] font-medium text-[#B45309]">Heute fällig</div>
                             <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="todaySections().reduce((s, x) => s + x.count, 0)"></div>
@@ -456,7 +456,7 @@
                                 <template x-for="a in evActorsTop()" :key="'w'+a.id">
                                     <a :href="'/app/events?tenant=' + tenant + '&ea=' + a.id" class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#E4E9F0] text-[#9CA3AF] hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="'Auslöser: ' + a.name" x-text="a.name + ' · ' + a.events"></a>
                                 </template>
-                                <a x-show="evSummary && evSummary.busiest_day" :href="'/app/events?tenant=' + tenant + '&day=' + evSummary.busiest_day.date" class="text-[10px] px-2 py-0.5 rounded-full bg-[#CA8A04]/10 border border-[#CA8A04]/40 text-[#8A6A00] hover:border-[#CA8A04]" :title="'Meiste Ereignisse an einem Tag — Tag filtern'" x-text="'Top-Tag ' + new Date(evSummary.busiest_day.date + 'T00:00:00').toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'}) + ' · ' + evSummary.busiest_day.events"></a>
+                                <a x-show="evSummary && evSummary.busiest_day" :href="'/app/events?tenant=' + tenant + '&day=' + (evSummary && evSummary.busiest_day ? evSummary.busiest_day.date : '')" class="text-[10px] px-2 py-0.5 rounded-full bg-[#CA8A04]/10 border border-[#CA8A04]/40 text-[#8A6A00] hover:border-[#CA8A04]" :title="'Meiste Ereignisse an einem Tag — Tag filtern'" x-text="evSummary && evSummary.busiest_day ? 'Top-Tag ' + new Date(evSummary.busiest_day.date + 'T00:00:00').toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'}) + ' · ' + evSummary.busiest_day.events : ''"></a>
                                 <template x-for="s in evSubjectsTop()" :key="'s'+s.id">
                                     <a :href="topSubjectLink(s)" class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFFDF2] border border-[#EAD98B] text-[#8A6A00] hover:border-[#CA8A04]" :title="'Betreffend: ' + s.title" x-text="s.title + ' · ' + s.events"></a>
                                 </template>
@@ -469,11 +469,11 @@
                             <template x-for="(e, i) in events" :key="i">
                                 <div>
                                 <a x-show="eventLink(e)" :href="eventLink(e)" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC] transition">
-                                    <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] font-semibold tracking-wide text-[#CA8A04] uppercase" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span><span x-show="e.event_properties && e.event_properties.subject && e.event_properties.subject.title" class="text-[#5B6B7E]" x-text="' · ' + e.event_properties.subject.title"></span><span x-show="e.meta_data && e.meta_data.actor" class="text-[#9CA3AF]" x-text="' · ' + e.meta_data.actor.name"></span></span>
+                                    <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] font-semibold tracking-wide text-[#CA8A04] uppercase" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span><span x-show="e.event_properties && e.event_properties.subject && e.event_properties.subject.title" class="text-[#5B6B7E]" x-text="' · ' + e.event_properties.subject.title"></span><span x-show="e.meta_data && e.meta_data.actor" class="text-[#9CA3AF]" x-text="' · ' + (e.meta_data && e.meta_data.actor ? e.meta_data.actor.name : '')"></span></span>
                                     <span class="text-[11px] text-[#9CA3AF] font-mono shrink-0" x-text="ago(e.created_at)"></span>
                                 </a>
                                 <div x-show="!eventLink(e)" class="px-5 py-2.5 flex items-center justify-between gap-4">
-                                    <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] font-semibold tracking-wide text-[#CA8A04] uppercase" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span><span x-show="e.meta_data && e.meta_data.actor" class="text-[#9CA3AF]" x-text="' · ' + e.meta_data.actor.name"></span></span>
+                                    <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] font-semibold tracking-wide text-[#CA8A04] uppercase" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span><span x-show="e.meta_data && e.meta_data.actor" class="text-[#9CA3AF]" x-text="' · ' + (e.meta_data && e.meta_data.actor ? e.meta_data.actor.name : '')"></span></span>
                                     <span class="text-[11px] text-[#9CA3AF] font-mono shrink-0" x-text="ago(e.created_at)"></span>
                                 </div>
                                 </div>
@@ -909,7 +909,7 @@
                             </div>
                         </div>
                     </template>
-                    <form x-show="detail.status === 'open'" @submit.prevent="submitApp()" class="space-y-2 rounded-lg border border-dashed border-[#D6DEE9] p-3">
+                    <form x-show="detail && detail.status === 'open'" @submit.prevent="submitApp()" class="space-y-2 rounded-lg border border-dashed border-[#D6DEE9] p-3">
                         <select x-model="appForm.expert_profile_id" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                             <option value="">— Experte wählen —</option>
                             <template x-for="o in fkOptions('expert_profiles')" :key="o[0]">
@@ -1002,7 +1002,7 @@
                                 <span class="text-xs font-semibold text-[#0B0B0F]">v<span x-text="v.version"></span></span>
                                 <span class="ml-2 text-xs text-[#42536A] truncate" x-text="v.original_name"></span>
                             </div>
-                            <a :href="'/api/v1/documents/' + detail.id + '/download/' + v.id" class="text-[11px] font-medium text-[#CA8A04] hover:underline shrink-0">Download</a>
+                            <a :href="'/api/v1/documents/' + (detail ? detail.id : '') + '/download/' + v.id" class="text-[11px] font-medium text-[#CA8A04] hover:underline shrink-0">Download</a>
                         </div>
                     </template>
                     <form x-show="writable()" @submit.prevent="uploadVersion()" class="flex items-center gap-2">
@@ -1039,7 +1039,7 @@
                         </div>
                     </template>
                     <div x-show="entityEdges.length === 0" class="text-xs text-[#9CA3AF]">Keine Kanten zu dieser Entität.</div>
-                    <a :href="'/app/graph-edges?tenant=' + tenant + '&new=1&from=' + detail.id" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Kante anlegen</a>
+                    <a :href="'/app/graph-edges?tenant=' + tenant + '&new=1&from=' + (detail ? detail.id : '')" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Kante anlegen</a>
                 </div>
                 <div x-show="section === 'audits'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-2">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">FESTSTELLUNGEN <span class="text-[#9CA3AF] font-normal" x-text="'(' + auditFindings.length + ')'"></span></div>
@@ -1054,24 +1054,24 @@
                         </a>
                     </template>
                     <div x-show="auditFindings.length === 0" class="text-xs text-[#9CA3AF]">Keine Feststellungen.</div>
-                    <a :href="'/app/audit-findings?tenant=' + tenant + '&new=1&audit=' + detail.id" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Feststellung anlegen</a>
+                    <a :href="'/app/audit-findings?tenant=' + tenant + '&new=1&audit=' + (detail ? detail.id : '')" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Feststellung anlegen</a>
                 </div>
                 <div x-show="section === 'events' && detail && detail.meta_data && detail.meta_data.actor" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5">AUSLÖSER</div>
                     <div class="flex items-center gap-2 text-xs">
-                        <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#0B0B0F] text-[10px] font-bold text-[#FACC15]" x-text="(detail.meta_data.actor.name || '?').charAt(0).toUpperCase()"></span>
-                        <span class="font-medium text-[#1A2433]" x-text="detail.meta_data.actor.name"></span>
-                        <a class="text-[#CA8A04] hover:underline" :href="'mailto:' + detail.meta_data.actor.email" x-text="detail.meta_data.actor.email"></a>
+                        <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#0B0B0F] text-[10px] font-bold text-[#FACC15]" x-text="(detail && detail.meta_data && detail.meta_data.actor && detail.meta_data.actor.name || '?').charAt(0).toUpperCase()"></span>
+                        <span class="font-medium text-[#1A2433]" x-text="detail && detail.meta_data && detail.meta_data.actor ? detail.meta_data.actor.name : ''"></span>
+                        <a class="text-[#CA8A04] hover:underline" :href="'mailto:' + (detail && detail.meta_data && detail.meta_data.actor && detail.meta_data.actor.email || '')" x-text="detail && detail.meta_data && detail.meta_data.actor ? detail.meta_data.actor.email : ''"></a>
                     </div>
                 </div>
                 <div x-show="rowEvents.length" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="flex items-center justify-between mb-2">
                         <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERLAUF <span class="text-[#9CA3AF] font-normal" x-text="'(' + rowEvents.length + ')'"></span></div>
-                        <a :href="'/app/events?tenant=' + tenant + '&q=' + encodeURIComponent(detail.id || '')" class="text-[10px] text-[#CA8A04] hover:underline" title="Alle Ereignisse zu diesem Datensatz">Alle →</a>
+                        <a :href="'/app/events?tenant=' + tenant + '&q=' + encodeURIComponent((detail && detail.id) || '')" class="text-[10px] text-[#CA8A04] hover:underline" title="Alle Ereignisse zu diesem Datensatz">Alle →</a>
                     </div>
                     <template x-for="(e, i) in rowEvents.slice(0, evShown)" :key="i">
                         <a :href="'/app/events?tenant=' + tenant + '&open=' + e.id" class="flex items-center justify-between text-xs py-1 rounded hover:bg-[#FAFBFC] -mx-1 px-1">
-                            <span class="text-[#1A2433]"><span class="text-[#CA8A04] font-semibold uppercase text-[10px] tracking-wide" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span><span x-show="e.meta_data && e.meta_data.actor" class="text-[#9CA3AF]" x-text="' · ' + e.meta_data.actor.name"></span></span>
+                            <span class="text-[#1A2433]"><span class="text-[#CA8A04] font-semibold uppercase text-[10px] tracking-wide" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span><span x-show="e.meta_data && e.meta_data.actor" class="text-[#9CA3AF]" x-text="' · ' + (e.meta_data && e.meta_data.actor ? e.meta_data.actor.name : '')"></span></span>
                             <span class="text-[10px] text-[#9CA3AF] font-mono" :title="e.created_at ? new Date(e.created_at).toLocaleString('de-DE') : ''" x-text="ago(e.created_at)"></span>
                         </a>
                     </template>
@@ -1080,7 +1080,7 @@
                 <div x-show="rowNotifs.length" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="flex items-center justify-between mb-2">
                         <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">BENACHRICHTIGUNGEN <span class="text-[#9CA3AF] font-normal" x-text="'(' + rowNotifs.length + ')'"></span></div>
-                        <a :href="'/app/notifications?tenant=' + tenant + '&q=' + encodeURIComponent(detail.id || '')" class="text-[10px] text-[#CA8A04] hover:underline" title="Alle Benachrichtigungen zu diesem Datensatz">Alle →</a>
+                        <a :href="'/app/notifications?tenant=' + tenant + '&q=' + encodeURIComponent((detail && detail.id) || '')" class="text-[10px] text-[#CA8A04] hover:underline" title="Alle Benachrichtigungen zu diesem Datensatz">Alle →</a>
                     </div>
                     <template x-for="(n, i) in rowNotifs.slice(0, 6)" :key="i">
                         <a :href="'/app/notifications?tenant=' + tenant + '&open=' + n.id" class="flex items-center justify-between text-xs py-1 rounded hover:bg-[#FAFBFC] -mx-1 px-1" :class="n.read ? 'opacity-60' : ''">
@@ -1099,7 +1099,7 @@
                     <button @click="copyText()" title="Alle Felder als lesbarer Text" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="textCopied ? 'Kopiert' : 'Text'"></button>
                     <a x-show="section === 'events' && eventLink(detail)" :href="eventLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Datensatz öffnen</a>
                     <a x-show="section === 'notifications' && notifLink(detail)" :href="notifLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Zum Datensatz</a>
-                    <button x-show="section === 'notifications' && detail && detail.kind" @click="toggleMute(detail.kind)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="(me && me.muted_kinds || []).includes(detail.kind) ? 'Stummschaltung aufheben' : 'Art stummschalten'"></button>
+                    <button x-show="section === 'notifications' && detail && detail.kind" @click="toggleMute(detail.kind)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="(me && me.muted_kinds || []).includes(detail && detail.kind) ? 'Stummschaltung aufheben' : 'Art stummschalten'"></button>
                     <button x-show="section === 'notifications' && detail && detail.kind && rows && rows.some(r => r.kind === detail.kind && !r.read)" @click="api('/api/v1/notifications/read-all?kind=' + encodeURIComponent(detail.kind), {method: 'POST'}).then(r => { if (r.ok) { (rows || []).forEach(n => { if (n.kind === detail.kind) n.read = true; }); (dbNotifs || []).forEach(n => { if (n.kind === detail.kind) n.read = true; }); navBadges['notifications'] = unreadNotifs(); toast('Art als gelesen markiert'); } })" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Art gelesen</button>
                     <button x-show="section === 'notifications' && detail && detail.kind && rows && rows.filter(r => r.kind === detail.kind).length > 1" @click="confirmKindDel ? deleteKind(detail.kind) : (confirmKindDel = true, setTimeout(() => confirmKindDel = false, 3000))"
                             class="text-xs px-3 py-1.5 border rounded-lg transition"
@@ -1427,6 +1427,7 @@ function workspace(initial) {
     ];
     return {
         section: initial, groups: GROUPS, kpiCards: KPI, icons: ICONS,
+        NOTIF_KIND,
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], evSummary: null, evWindow: 7, spark: {}, exec: null, execReports: [], reportOpen: {}, reportData: {}, lookups: {}, navOpen: false, collapsed: {}, me: null, upcoming: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
@@ -3004,7 +3005,7 @@ function workspace(initial) {
             const i = rs.findIndex(r => String(r.id) === String(this.detail.id));
             return i < 0 ? '' : (i + 1) + ' / ' + rs.length;
         },
-        dueKey(row) { return ['due_at','deadline','deadline_at','ends_on','ends_at','due_date','end_date','next_due_at','review_at','scheduled_at'].find(k => row[k]); },
+        dueKey(row) { return ['due_at','deadline','deadline_at','ends_on','ends_at','due_date','end_date','next_due_at','review_at','scheduled_at'].find(k => row && row[k]); },
         isOpenStatus(row) {
             const OPEN = ['open','pending','in_progress','running','queued','scheduled','planned','active','submitted','shortlisted','draft','on_hold'];
             return !row.status || OPEN.includes(String(row.status));
