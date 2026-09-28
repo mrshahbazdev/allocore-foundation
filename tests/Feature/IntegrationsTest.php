@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
 use Modules\DataPlatform\Models\IntegrationSource;
 use Tests\TestCase;
@@ -66,5 +67,46 @@ class IntegrationsTest extends TestCase
     public function test_integrations_require_auth_and_tenant(): void
     {
         $this->getJson('/api/v1/integrations')->assertStatus(400); // ohne X-Tenant keine Identifikation
+    }
+
+    public function test_connector_crud_and_pull(): void
+    {
+        Http::fake(['https://api.example.com/feed' => Http::response('{"orders":3}', 200)]);
+
+        $tenant = Tenant::create(['name' => 'Conn GmbH']);
+        $this->acting($tenant);
+
+        $created = $this->postJson('/api/v1/connectors', [
+            'name' => 'Shop-Feed',
+            'url' => 'https://api.example.com/feed',
+            'interval_minutes' => 60,
+        ], ['X-Tenant' => $tenant->id]);
+        $created->assertCreated();
+        $id = $created->json('id');
+
+        $this->postJson("/api/v1/connectors/{$id}/run", [], ['X-Tenant' => $tenant->id])->assertOk();
+
+        $connector = DB::table('integration_connectors')->find($id);
+        $this->assertSame('http_200', $connector->last_status);
+        $this->assertNotNull($connector->last_run_at);
+
+        // Pull-Ergebnis landet im Data Lake + Event Store
+        $this->assertSame(1, DB::table('data_objects')->where('tenant_id', $tenant->id)->count());
+        $event = DB::table('stored_events')->where('event_properties->type', 'connector.pulled')->latest('id')->first();
+        $this->assertNotNull($event);
+        $this->assertSame('Shop-Feed', json_decode($event->event_properties, true)['subject']['title']);
+
+        // Fehlerfall: Status error, kein Objekt
+        Http::fake(['https://api.example.com/bad' => Http::response('', 500)]);
+        $bad = $this->postJson('/api/v1/connectors', ['name' => 'Bad', 'url' => 'https://api.example.com/bad'], ['X-Tenant' => $tenant->id]);
+        $this->postJson('/api/v1/connectors/'.$bad->json('id').'/run', [], ['X-Tenant' => $tenant->id])->assertOk();
+        $this->assertSame('http_500', DB::table('integration_connectors')->find($bad->json('id'))->last_status);
+
+        $this->deleteJson("/api/v1/connectors/{$id}", [], ['X-Tenant' => $tenant->id])->assertNoContent();
+    }
+
+    public function test_connector_requires_tenant(): void
+    {
+        $this->getJson('/api/v1/connectors')->assertStatus(400);
     }
 }
