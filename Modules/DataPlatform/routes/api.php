@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\DataPlatform\Http\Controllers\AnalyticsController;
 use Modules\DataPlatform\Http\Controllers\EventController;
 use Modules\DataPlatform\Http\Controllers\InsightController;
+use Modules\DataPlatform\Http\Controllers\IntegrationController;
 use Modules\DataPlatform\Http\Controllers\MetricController;
 use Modules\DataPlatform\Http\Controllers\NavCountsController;
 use Modules\DataPlatform\Http\Controllers\NotificationController;
@@ -43,4 +44,9 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api', 'permission
     Route::delete('notifications/{id}', [NotificationController::class, 'destroy'])->name('data-platform.notifications.destroy');
     Route::get('analytics/trends', [AnalyticsController::class, 'trends'])->name('data-platform.analytics.trends');
     Route::get('metrics/{metric}', [MetricController::class, 'show'])->name('data-platform.metrics.show');
+    Route::apiResource('integrations', IntegrationController::class)->only(['index', 'store', 'update', 'destroy']);
 });
+
+// Öffentlicher Webhook-Eingang — Token in der URL identifiziert Quelle + Mandant.
+Route::post('v1/webhooks/{token}', [IntegrationController::class, 'webhook'])
+    ->middleware('throttle:60,1')->name('data-platform.webhook');
