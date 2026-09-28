@@ -11,7 +11,13 @@ class AiService
 
     public function __construct()
     {
-        $this->provider = new HeuristicAnalysisProvider;
+        $provider = config('services.ai.provider', 'heuristic');
+
+        if ($provider === 'llm' && config('services.ai.api_key')) {
+            $this->provider = new LlmAnalysisProvider;
+        } else {
+            $this->provider = new HeuristicAnalysisProvider;
+        }
     }
 
     public function provider(): AnalysisProvider
