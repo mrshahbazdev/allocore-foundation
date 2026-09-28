@@ -116,6 +116,7 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 | `POST /webhooks/{token}` | öffentlich (Token = Quelle+Mandant, throttle 60/min, kein X-Tenant) | Push-Eingang externer Systeme — Body `{type?, subject?, …}` → 201 `{status:'recorded', id}`; schreibt Event `webhook.<type|received>` in den Event Store |
 | `/connectors` | `metrics.view` | Pull-Konnektoren (CRUD) — `{name, url, headers?, interval_minutes (5–10080, Default 60), active}`; `integrations:pull` (stündlich, Optionen `--connector=`/`--tenant=`) ruft fällige URLs ab → Antwort als Data-Lake-Objekt (`connectors/{id}/…`) + Event `connector.pulled`; `last_status`/`last_run_at` je Lauf |
 | POST `/connectors/{id}/run` | `metrics.view` | Sofortlauf eines Konnektors (unabhängig vom Intervall) — `{last_status, last_run_at}` |
+| `/anonymized-records` | `metrics.view` — Liste: `?source_type=`, `?per_page=` | Pseudonymisierte „digitale Zwillinge" (users, persons) — `pseudonym` = HMAC-SHA256(type:id, app.key), Payload ohne Namen/E-Mail/Telefon. `php artisan anonymize:sync [--tenant=id]` aktualisiert stündlich; Basis für Analytics und KI-Coach |
 
 ## DataLake (`datalake`) — Layer 4
 

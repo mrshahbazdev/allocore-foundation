@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\DataPlatform\Http\Controllers\AnalyticsController;
+use Modules\DataPlatform\Http\Controllers\AnonymizedRecordController;
 use Modules\DataPlatform\Http\Controllers\ConnectorController;
 use Modules\DataPlatform\Http\Controllers\EventController;
 use Modules\DataPlatform\Http\Controllers\InsightController;
@@ -46,6 +47,7 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api', 'permission
     Route::get('analytics/trends', [AnalyticsController::class, 'trends'])->name('data-platform.analytics.trends');
     Route::get('metrics/{metric}', [MetricController::class, 'show'])->name('data-platform.metrics.show');
     Route::apiResource('integrations', IntegrationController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::get('anonymized-records', [AnonymizedRecordController::class, 'index'])->name('data-platform.anonymized-records.index');
     Route::post('connectors/{connector}/run', [ConnectorController::class, 'run']);
     Route::apiResource('connectors', ConnectorController::class)->only(['index', 'store', 'update', 'destroy']);
 });
