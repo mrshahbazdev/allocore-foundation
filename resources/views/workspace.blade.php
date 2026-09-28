@@ -1056,6 +1056,20 @@
                     <div x-show="auditFindings.length === 0" class="text-xs text-[#9CA3AF]">Keine Feststellungen.</div>
                     <a :href="'/app/audit-findings?tenant=' + tenant + '&new=1&audit=' + (detail ? detail.id : '')" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Feststellung anlegen</a>
                 </div>
+                <div x-show="section === 'integrations' && detail && detail.token" class="px-6 py-4 border-t border-[#E4E9F0]">
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5">WEBHOOK-URL</div>
+                    <div class="flex items-center gap-2">
+                        <code class="flex-1 text-[11px] font-mono text-[#5B6B7E] break-all" x-text="webhookUrl()"></code>
+                        <button @click="navigator.clipboard.writeText(webhookUrl()).then(() => toast('URL kopiert'))" class="text-xs px-2.5 py-1 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">Kopieren</button>
+                    </div>
+                    <p class="text-[11px] text-[#9CA3AF] mt-1">Externe Systeme senden Events per POST {type, subject?, …} an diese URL — jeder Aufruf landet im Event Store.</p>
+                </div>
+                <div x-show="section === 'connectors' && detail" class="px-6 py-4 border-t border-[#E4E9F0]">
+                    <div class="flex items-center gap-2">
+                        <button @click="runConnector()" :disabled="rowLoading" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition disabled:opacity-50">Jetzt abrufen</button>
+                        <span class="text-[11px] text-[#5B6B7E]" x-text="detail && detail.last_status ? ('Letzter Status: ' + detail.last_status) : 'Noch nie ausgeführt'"></span>
+                    </div>
+                </div>
                 <div x-show="section === 'events' && detail && detail.meta_data && detail.meta_data.actor" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5">AUSLÖSER</div>
                     <div class="flex items-center gap-2 text-xs">
@@ -1403,12 +1417,14 @@ function workspace(initial) {
             {key:'ai-analyses',label:'KI-Analysen',ep:'/api/v1/ai-analyses'},
             {key:'graph-entities',label:'Graphen · Entitäten',ep:'/api/v1/graph-entities'},
             {key:'graph-edges',label:'Graphen · Kanten',ep:'/api/v1/graph-edges'},
+            {key:'integrations',label:'Webhook-Quellen',ep:'/api/v1/integrations'},
+            {key:'connectors',label:'Konnektoren',ep:'/api/v1/connectors'},
             {key:'tokens',label:'API-Token',ep:'/api/v1/tokens'},
         ]},
     ];
-    const ICONS = {dashboard:'◈',companies:'▣',persons:'◉',documents:'▤',tasks:'☑',instructions:'ⓘ',inspections:'✓',deadlines:'◷','risk-assessments':'⚠','operating-instructions':'✎','expert-profiles':'◎',questions:'?',tenders:'☰',strategies:'⌘',projects:'◇',measures:'→',portfolios:'▲',investments:'€',participations:'◆',machines:'⚙','production-orders':'▶','leave-requests':'◔','financial-reports':'₣',events:'≋','data-objects':'▦','ai-analyses':'✦','graph-entities':'●','graph-edges':'↔',executive:'∑',users:'☺',audits:'§','audit-findings':'∴',notifications:'✉',tokens:'⚿'};
+    const ICONS = {dashboard:'◈',companies:'▣',persons:'◉',documents:'▤',tasks:'☑',instructions:'ⓘ',inspections:'✓',deadlines:'◷','risk-assessments':'⚠','operating-instructions':'✎','expert-profiles':'◎',questions:'?',tenders:'☰',strategies:'⌘',projects:'◇',measures:'→',portfolios:'▲',investments:'€',participations:'◆',machines:'⚙','production-orders':'▶','leave-requests':'◔','financial-reports':'₣',events:'≋','data-objects':'▦','ai-analyses':'✦','graph-entities':'●','graph-edges':'↔',executive:'∑',users:'☺',audits:'§','audit-findings':'∴',notifications:'✉',tokens:'⚿',integrations:'⇄',connectors:'⤓'};
     const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',audit_id:'audits',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',generated_by:'users',current_version_id:'documents',assigned_to:'persons',from_entity_id:'graph_entities',to_entity_id:'graph_entities',subject_id:'graph_entities'};
-    const NOTIF_KIND = {unterweisung:'Unterweisung',pruefung:'Prüfung',frist:'Frist',feststellung:'Feststellung',audit:'Audit',massnahme:'Maßnahme',aufgabe:'Aufgabe',gefaehrdungsbeurteilung:'Gefährdungsbeurteilung',projekt:'Projekt',auftrag:'Produktionsauftrag',ausschreibung:'Ausschreibung',antwort:'Antwort',frage:'Frage',urlaub:'Urlaubsantrag',rollen:'Rollen',unterweisung_wiederholung:'Unterweisung (Wiederholung)',hinweis:'Kritischer Hinweis',passwort_geaendert:'Passwort geändert',anmeldung:'Anmeldung',anmeldeversuche:'Fehlgeschlagene Anmeldung'};
+    const NOTIF_KIND = {unterweisung:'Unterweisung',pruefung:'Prüfung',frist:'Frist',feststellung:'Feststellung',audit:'Audit',massnahme:'Maßnahme',aufgabe:'Aufgabe',gefaehrdungsbeurteilung:'Gefährdungsbeurteilung',projekt:'Projekt',auftrag:'Produktionsauftrag',ausschreibung:'Ausschreibung',antwort:'Antwort',frage:'Frage',urlaub:'Urlaubsantrag',rollen:'Rollen',unterweisung_wiederholung:'Unterweisung (Wiederholung)',hinweis:'Kritischer Hinweis',passwort_geaendert:'Passwort geändert',anmeldung:'Anmeldung',anmeldeversuche:'Fehlgeschlagene Anmeldung',ki_coach:'KI-Coach'};
     const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv',todo:'Offen',overdue:'Überfällig',sent:'Gesendet',paid:'Bezahlt',unpaid:'Unbezahlt',expired:'Abgelaufen',suspended:'Gesperrt',review:'In Prüfung',assigned:'Zugewiesen',requested:'Angefragt',confirmed:'Bestätigt',declined:'Abgelehnt',exited:'Ausgestiegen',candidate:'Kandidat',resolved:'Gelöst',internal:'Intern',external:'Extern',vacation:'Urlaub',sick:'Krank',other:'Sonstiges'};
     const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at','meta_data']);
     const KPI = [
@@ -2505,12 +2521,12 @@ function workspace(initial) {
         },
         eventGroup(t) {
             const g = String(t || '').split('.')[0];
-            return {task: 'Aufgabe', company: 'Unternehmen', person: 'Person', document: 'Dokument', document_version: 'Dokumentversion', instruction: 'Unterweisung', inspection: 'Prüfung', deadline: 'Frist', risk_assessment: 'Gefährdungsbeurteilung', operating_instruction: 'Betriebsanweisung', expert_profile: 'Experte', question: 'Frage', answer: 'Antwort', tender: 'Ausschreibung', tender_application: 'Bewerbung', financial_report: 'Finanzbericht', leave_request: 'Urlaubsantrag', machine: 'Maschine', production_order: 'Produktionsauftrag', participation: 'Beteiligung', data_object: 'Data-Objekt', portfolio: 'Portfolio', investment: 'Investition', graph_entity: 'Entität', graph_edge: 'Kante', strategy: 'Strategie', project: 'Projekt', measure: 'Maßnahme', ai_analysis: 'KI-Analyse', exec_report: 'Executive-Report', audit: 'Audit', audit_finding: 'Feststellung', user: 'Benutzer', role: 'Rolle', tenant: 'Mandant'}[g] || g;
+            return {task: 'Aufgabe', company: 'Unternehmen', person: 'Person', document: 'Dokument', document_version: 'Dokumentversion', instruction: 'Unterweisung', inspection: 'Prüfung', deadline: 'Frist', risk_assessment: 'Gefährdungsbeurteilung', operating_instruction: 'Betriebsanweisung', expert_profile: 'Experte', question: 'Frage', answer: 'Antwort', tender: 'Ausschreibung', tender_application: 'Bewerbung', financial_report: 'Finanzbericht', leave_request: 'Urlaubsantrag', machine: 'Maschine', production_order: 'Produktionsauftrag', participation: 'Beteiligung', data_object: 'Data-Objekt', portfolio: 'Portfolio', investment: 'Investition', graph_entity: 'Entität', graph_edge: 'Kante', strategy: 'Strategie', project: 'Projekt', measure: 'Maßnahme', ai_analysis: 'KI-Analyse', exec_report: 'Executive-Report', audit: 'Audit', audit_finding: 'Feststellung', user: 'Benutzer', role: 'Rolle', tenant: 'Mandant', webhook: 'Webhook', connector: 'Konnektor', integration_source: 'Webhook-Quelle'}[g] || g;
         },
         evTypeGroups() { const m = {}; (this.evTypeList || []).forEach(t => { const g = this.eventGroup(t.type); m[g] = (m[g] || 0) + t.events; }); return Object.entries(m).map(([g, events]) => ({g, events})).sort((a, b) => b.events - a.events); },
         eventLabel(t) {
             const a = String(t || '').split('.').pop();
-            return {created: 'erstellt', updated: 'aktualisiert', deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: 'hochgeladen', answered: 'beantwortet', created_event: 'erstellt', added: 'hinzugefügt', roles_updated: 'Rollen geändert', removed: 'entfernt', left: 'verlassen', permissions_updated: 'Rechte geändert', password_changed: 'Passwort geändert', logged_in: 'angemeldet', logged_out: 'abgemeldet'}[a] || a;
+            return {created: 'erstellt', updated: 'aktualisiert', deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: 'hochgeladen', answered: 'beantwortet', created_event: 'erstellt', added: 'hinzugefügt', roles_updated: 'Rollen geändert', removed: 'entfernt', left: 'verlassen', permissions_updated: 'Rechte geändert', password_changed: 'Passwort geändert', logged_in: 'angemeldet', logged_out: 'abgemeldet', pulled: 'abgerufen', received: 'empfangen'}[a] || a;
         },
         createFields() {
             const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes', 'role_names']);
@@ -2523,6 +2539,15 @@ function workspace(initial) {
                 {key:'name', type:'text', req:true},
                 {key:'expires_in_days', type:'number', req:false, hint:'leer = unbegrenzt'},
             ];
+            if (this.section === 'integrations') return [
+                {key:'name', type:'text', req:true},
+            ];
+            if (this.section === 'connectors') return [
+                {key:'name', type:'text', req:true},
+                {key:'url', type:'text', req:true},
+                {key:'interval_minutes', type:'number', req:false, hint:'leer = 60'},
+                {key:'active', type:'checkbox', req:false},
+            ];
             const LONGTEXT = new Set(['description','content','notes','measures','bio','body','proposal','result','message','answer','question','summary','goal','scope','rationale','findings']);
             const src = (this.rows && this.rows[0]) || {};
             const ENUMS = {
@@ -2531,6 +2556,7 @@ function workspace(initial) {
                 'audits': {type: ['internal','external'], status: ['planned','in_progress','done','cancelled']},
                 'audit-findings': {severity: ['low','medium','high','critical'], status: ['open','in_progress','resolved','accepted']},
             };
+
             const enums = ENUMS[this.section] || {};
             return Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12).map(k => ({
                 key: k,
@@ -2546,7 +2572,7 @@ function workspace(initial) {
         },
         hasPerm(p) { return !this.me || !Array.isArray(this.me.permissions) || this.me.permissions.includes(p); },
         permDom(key) {
-            const M = {companies:'companies',persons:'persons',documents:'documents',tasks:'tasks',instructions:'compliance',inspections:'compliance',deadlines:'compliance','risk-assessments':'compliance','operating-instructions':'compliance','expert-profiles':'experts',questions:'experts',tenders:'experts',strategies:'projects',projects:'projects',measures:'projects',portfolios:'investments',investments:'investments',participations:'participations',machines:'production','production-orders':'production','leave-requests':'hr','financial-reports':'finance',audits:'audits','audit-findings':'audits','data-objects':'datalake','ai-analyses':'ai','graph-entities':'graph','graph-edges':'graph',users:'roles',events:'metrics',executive:'executive','exec-reports':'executive'};
+            const M = {companies:'companies',persons:'persons',documents:'documents',tasks:'tasks',instructions:'compliance',inspections:'compliance',deadlines:'compliance','risk-assessments':'compliance','operating-instructions':'compliance','expert-profiles':'experts',questions:'experts',tenders:'experts',strategies:'projects',projects:'projects',measures:'projects',portfolios:'investments',investments:'investments',participations:'participations',machines:'production','production-orders':'production','leave-requests':'hr','financial-reports':'finance',audits:'audits','audit-findings':'audits','data-objects':'datalake','ai-analyses':'ai','graph-entities':'graph','graph-edges':'graph',users:'roles',events:'metrics',executive:'executive','exec-reports':'executive',integrations:'metrics',connectors:'metrics'};
             return M[key] || null;
         },
         managePerm() { return this.permDom(this.section); },
@@ -2805,6 +2831,23 @@ function workspace(initial) {
                 this.newToken = d.token;
                 this.toast('API-Token angelegt — einmalig sichtbar.');
             }
+            if (this.section === 'integrations' && d && d.webhook_url) {
+                this.newToken = d.webhook_url;
+                this.toast('Webhook-Quelle angelegt — URL kopieren und im Quellsystem hinterlegen.');
+            }
+        },
+        webhookUrl() {
+            return this.detail && this.detail.token ? location.origin + '/api/v1/webhooks/' + this.detail.token : '';
+        },
+        async runConnector() {
+            if (!this.detail || !this.detail.id) return;
+            this.rowLoading = true;
+            try {
+                const r = await this.api('/api/v1/connectors/' + this.detail.id + '/run', {method: 'POST'});
+                const d = r && r.ok ? await r.json() : null;
+                this.toast(d && d.last_status ? 'Konnektor: ' + d.last_status : 'Abruf gestartet.');
+                this.detail = null; this.loadSection();
+            } finally { this.rowLoading = false; }
         },
         closeCreate() {
             if (this.showCreate && this.formDirty && !confirm('Ungespeicherte Änderungen verwerfen?')) return;

@@ -112,6 +112,10 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 | DELETE `/notifications/{id}` | `metrics.view` | Einzelne Benachrichtigung löschen (404 bei fremder) |
 | DELETE `/notifications` | `metrics.view` | Benachrichtigungen des Users löschen — `{deleted: n}`; ohne Filter alle, mit `?kind=`/`?kinds=<csv>`/ `?read=1` / `?unread=1` / `?code=`/`?codes=<csv>` / `?muted=1` / `?before=`/`?after=YYYY-MM-DD` nur passende; `?due_before=`/`?due_after=`/`?due_day=`/`?overdue=1` auf `due_at`; `?entity_id=`/`?entity_ids=<csv>` auf Datensatz; `?q=` Titel-Teiltextsuche |
 | POST `/demo-seed` | `roles.manage` | Demodaten für den aktuellen Tenant laden (idempotent; wie `php artisan demo:seed {tenant}`) |
+| `/integrations` | `metrics.view` | Webhook-Quellen (CRUD). `store` gibt `{…, token, webhook_url}` — die URL einmalig anzeigen. Jede Quelle trägt `tenant_id`, `token`, `last_received_at`, `active` |
+| `POST /webhooks/{token}` | öffentlich (Token = Quelle+Mandant, throttle 60/min, kein X-Tenant) | Push-Eingang externer Systeme — Body `{type?, subject?, …}` → 201 `{status:'recorded', id}`; schreibt Event `webhook.<type|received>` in den Event Store |
+| `/connectors` | `metrics.view` | Pull-Konnektoren (CRUD) — `{name, url, headers?, interval_minutes (5–10080, Default 60), active}`; `integrations:pull` (stündlich, Optionen `--connector=`/`--tenant=`) ruft fällige URLs ab → Antwort als Data-Lake-Objekt (`connectors/{id}/…`) + Event `connector.pulled`; `last_status`/`last_run_at` je Lauf |
+| POST `/connectors/{id}/run` | `metrics.view` | Sofortlauf eines Konnektors (unabhängig vom Intervall) — `{last_status, last_run_at}` |
 
 ## DataLake (`datalake`) — Layer 4
 
@@ -132,7 +136,7 @@ Erinnerungen: `compliance:remind` (stündlich) — Unterweisungen, Prüfungen, F
 
 | Pfad | Recht | Zweck |
 |---|---|---|
-| `/ai-analyses` | `ai.view` / `ai.manage` — Liste: `?status=`, `?kind=`/`?kinds=<csv>` | Analyse-Runs (provider-agnostic; Default `heuristic`, LLM-Provider steckbar) |
+| `/ai-analyses` | `ai.view` / `ai.manage` — Liste: `?status=`, `?kind=`/`?kinds=<csv>` | Analyse-Runs (provider-agnostic; `AI_PROVIDER=heuristic` (Default) oder `llm` + `AI_BASE_URL`/`AI_API_KEY`/`AI_MODEL` — OpenAI-kompatibel). `php artisan ai:coach [--tenant=id]` — wöchentlicher Lauf (Mo 06:00): Analyse → `ai_analyses` (kind `coach`) + `ki_coach`-Benachrichtigung an `roles.manage`-Mitglieder |
 
 ## Executive (`executive`) — Layer 9
 
