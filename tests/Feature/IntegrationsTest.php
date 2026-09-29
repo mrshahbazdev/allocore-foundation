@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
 use Modules\DataPlatform\Models\IntegrationSource;
+use Modules\DataPlatform\Models\MetricSnapshot;
 use Tests\TestCase;
 
 class IntegrationsTest extends TestCase
@@ -108,5 +109,41 @@ class IntegrationsTest extends TestCase
     public function test_connector_requires_tenant(): void
     {
         $this->getJson('/api/v1/connectors')->assertStatus(400);
+    }
+
+    public function test_metrics_ingest_maps_webhook_events_to_ext_metrics(): void
+    {
+        $tenant = Tenant::create(['name' => 'Ingest GmbH']);
+        $this->acting($tenant);
+
+        $token = $this->postJson('/api/v1/integrations', ['name' => 'InvoiceMaker'], ['X-Tenant' => $tenant->id])->json('token');
+        $post = fn (array $body) => $this->postJson('/api/v1/webhooks/'.$token, $body)->assertCreated();
+
+        $post(['type' => 'invoice_paid', 'amount' => 10000]);
+        $post(['type' => 'invoice_paid', 'amount' => 2500]);
+        $post(['type' => 'expense_created', 'amount' => 4000]);
+        $post(['type' => 'expense_created', 'amount' => 800, 'category' => 'marketing']);
+        $post(['type' => 'lead_created']);
+        $post(['type' => 'lead_created']);
+        $post(['type' => 'lead_qualified']);
+        $post(['type' => 'offer_created', 'value' => 20000, 'probability' => 50]);
+        $post(['type' => 'payment_received', 'amount' => 9000]);
+
+        $this->artisan('metrics:ingest')->assertSuccessful();
+
+        $snap = fn (string $metric) => (float) MetricSnapshot::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)->where('metric', $metric)->value('value');
+
+        $this->assertEquals(12500.0, $snap('ext_revenue_paid'));
+        $this->assertEquals(4800.0, $snap('ext_costs'));
+        $this->assertEquals(800.0, $snap('ext_costs_marketing'));
+        $this->assertEquals(2.0, $snap('ext_leads'));
+        $this->assertEquals(1.0, $snap('ext_mql'));
+        $this->assertEquals(10000.0, $snap('ext_pipeline_value'));
+        $this->assertEquals(9000.0, $snap('ext_cash_in'));
+
+        // idempotent: zweiter Lauf überschreibt dieselben Snapshots, kein Doppel-Count
+        $this->artisan('metrics:ingest')->assertSuccessful();
+        $this->assertEquals(12500.0, $snap('ext_revenue_paid'));
     }
 }
