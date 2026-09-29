@@ -1871,6 +1871,7 @@ const T_EN2 = {
     return {
         section: initial, groups: GROUPS, kpiCards: KPI, icons: ICONS,
         NOTIF_KIND,
+        T_EN,
         lang: localStorage.getItem('af_lang') || 'de',
         NOTIF_KIND,
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], evSummary: null, evWindow: 7, spark: {}, exec: null, execReports: [], reportOpen: {}, reportData: {}, lookups: {}, navOpen: false, collapsed: {}, me: null, upcoming: [], openTasks: [],
