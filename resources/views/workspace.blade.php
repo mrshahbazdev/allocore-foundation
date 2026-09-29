@@ -60,18 +60,19 @@
                     <option :value="t.id" x-text="t.name"></option>
                 </template>
             </select>
-            <div x-show="tenantInfo" class="mt-1.5 text-[11px] text-[#5B6B7E]" x-text="tenantInfo ? tenantInfo.members_count + ' Mitglied(er)' : ''"></div>
+            <div x-show="tenantInfo" class="mt-1.5 text-[11px] text-[#5B6B7E]" x-text="tenantInfo ? tenantInfo.members_count + ' ' + t('Mitglied(er)') : ''"></div>
             <div class="mt-2 flex gap-3">
-                <button @click="createTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]">+ Neuer Mandant</button>
-                <button x-show="tenant && hasPerm('roles.manage')" @click="renameTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]">&#9998; Umbenennen</button>
-                <button x-show="tenant" @click="leaveTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#A6362E]" title="Mitgliedschaft in diesem Mandanten beenden">&#9094; Verlassen</button>
+                <button @click="createTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]" x-text="'+ ' + t('Neuer Mandant')"></button>
+                <button x-show="tenant && hasPerm('roles.manage')" @click="renameTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]" x-text="'&#9998; ' + t('Umbenennen')"></button>
+                <button x-show="tenant" @click="leaveTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#A6362E]" title="Mitgliedschaft in diesem Mandanten beenden" x-text="'&#9094; ' + t('Verlassen')"></button>
+                <button @click="setLang(lang === 'de' ? 'en' : 'de')" class="ml-auto text-[11px] text-[#9CA3AF] hover:text-[#FACC15]" :title="lang === 'de' ? 'Switch to English' : 'Auf Deutsch wechseln'" x-text="lang === 'de' ? 'EN' : 'DE'"></button>
             </div>
         </div>
 
         <nav class="flex-1 overflow-y-auto py-3 text-[13px]" aria-label="Hauptnavigation">
             <div class="px-4 pb-2">
                 <div class="relative">
-                    <input x-model="navQ" placeholder="Module filtern…" @keydown.enter.prevent="const m = groups.flatMap(g => g.items).find(i => i.label.toLowerCase().includes(navQ.toLowerCase())); if (m) location.href = '/app/' + m.key + (tenant ? '?tenant=' + tenant : '')" class="w-full bg-[#141419] text-[#9CA3AF] text-[11px] pl-2.5 pr-6 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-[#FACC15] placeholder-[#4B5563]">
+                    <input x-model="navQ" :placeholder="t('Module filtern…')" @keydown.enter.prevent="const m = groups.flatMap(g => g.items).find(i => i.label.toLowerCase().includes(navQ.toLowerCase())); if (m) location.href = '/app/' + m.key + (tenant ? '?tenant=' + tenant : '')" class="w-full bg-[#141419] text-[#9CA3AF] text-[11px] pl-2.5 pr-6 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-[#FACC15] placeholder-[#4B5563]">
                     <button x-show="navQ" @click="navQ = ''" title="Filter löschen" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#FACC15] text-xs">&times;</button>
                 </div>
             </div>
@@ -82,12 +83,12 @@
                        class="flex items-center gap-3 px-5 py-2 transition"
                        :class="section === pk ? 'text-white bg-[#1A1A1F] border-r-2 border-[#FACC15]' : 'text-[#9CA3AF] hover:text-white hover:bg-[#141419]'">
                         <span class="text-[#CA8A04] text-xs">★</span>
-                        <span x-text="(groups.flatMap(g => g.items).find(i => i.key === pk) || {label: pk}).label"></span>
+                        <span x-text="iLabel(groups.flatMap(g => g.items).find(i => i.key === pk) || {key: pk, label: pk})"></span>
                     </a>
                 </template>
             </div>
             <div x-show="recent.length" class="px-5 pb-3">
-                <div class="text-[10px] font-semibold tracking-widest text-[#6B7280] pb-1.5">ZULETZT</div>
+                <div class="text-[10px] font-semibold tracking-widest text-[#6B7280] pb-1.5" x-text="t('Zuletzt').toUpperCase()"></div>
                 <div class="flex flex-wrap gap-1.5">
                     <template x-for="r in recent" :key="r">
                         <a :href="'/app/' + r + (tenant ? '?tenant='+tenant : '')" class="px-2 py-1 rounded-full bg-[#1A1A1F] text-[11px] text-[#9CA3AF] hover:text-[#FACC15] transition"><span class="opacity-70 mr-1" x-text="icons[r] || '·'"></span><span x-text="sectionLabel(r)"></span></a>
@@ -95,13 +96,13 @@
                 </div>
             </div>
             <div class="flex justify-end pr-4 -mb-1">
-                <button @click="toggleAllGroups()" class="text-[10px] text-[#4B5563] hover:text-[#9CA3AF] transition" :title="allCollapsed() ? 'Alle Gruppen aufklappen' : 'Alle Gruppen einklappen'" x-text="allCollapsed() ? '▸ alle auf' : '▾ alle zu'"></button>
+                <button @click="toggleAllGroups()" class="text-[10px] text-[#4B5563] hover:text-[#9CA3AF] transition" :title="allCollapsed() ? 'Alle Gruppen aufklappen' : 'Alle Gruppen einklappen'" x-text="allCollapsed() ? '▸ ' + t('alle auf') : '▾ ' + t('alle zu')"></button>
             </div>
             <template x-for="group in visGroups()" :key="group.label">
                 <div class="mb-1">
                     <button @click="toggleGroup(group.label)"
                             class="w-full flex items-center justify-between px-5 pt-4 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280] hover:text-[#9CA3AF] transition">
-                        <span><span x-text="group.label"></span><span class="ml-1.5 font-normal text-[#4B5563]" x-text="'· ' + group.items.length"></span></span>
+                        <span><span x-text="gLabel(group.label)"></span><span class="ml-1.5 font-normal text-[#4B5563]" x-text="'· ' + group.items.length"></span></span>
                         <span class="flex items-center gap-1.5">
                             <span x-show="collapsed[group.label] && group.items.some(i => navBadges[i.key] > 0)" class="w-1.5 h-1.5 rounded-full bg-[#A6362E]"></span>
                             <svg class="w-2.5 h-2.5 transition-transform" :class="collapsed[group.label] && !group.items.some(i => i.key === section) ? '-rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
@@ -114,7 +115,7 @@
                                ? 'text-white bg-[#1A1A1F] border-r-2 border-[#FACC15]'
                                : 'text-[#9CA3AF] hover:text-white hover:bg-[#141419]'">
                             <a :href="'/app/' + item.key + (tenant ? '?tenant='+tenant : '')"
-                               class="flex-1 px-5 py-2 flex items-center gap-2.5"><span class="w-4 text-center text-[11px] opacity-70" x-text="icons[item.key] || '·'"></span><span x-text="item.label"></span></a>
+                               class="flex-1 px-5 py-2 flex items-center gap-2.5"><span class="w-4 text-center text-[11px] opacity-70" x-text="icons[item.key] || '·'"></span><span x-text="iLabel(item)"></span></a>
                             <a x-show="navBadges[item.key] > 0" x-text="navBadges[item.key]"
                                :href="'/app/' + item.key + '?' + (item.key === 'notifications' ? 'unread=1' : 'overdue=1') + (tenant ? '&tenant='+tenant : '')"
                                :title="item.key === 'notifications' ? 'Ungelesene anzeigen' : 'Überfällige Einträge anzeigen'"
@@ -193,7 +194,7 @@
                         <template x-for="n in dbNotifs">
                             <a :href="notifLink(n) || ('/app/notifications?tenant=' + tenant)" @click="n.read || markNotifRead(n)" class="px-3 py-1.5 flex items-start gap-2 text-xs hover:bg-[#FAFBFC]" :class="n.read && 'opacity-50'">
                                 <span class="w-1.5 h-1.5 mt-1 rounded-full shrink-0" :class="n.read ? 'bg-[#D1D5DB]' : 'bg-[#CA8A04]'"></span>
-                                <span class="flex-1"><span x-text="n.title"></span><span class="block text-[10px] text-[#9CA3AF]" x-text="(n.kind ? (NOTIF_KIND[n.kind] || n.kind) + (n.due_at || n.code ? ' · ' : '') : '') + (n.due_at ? 'Fällig ' + n.due_at : '') + (n.due_at && n.code ? ' · ' : '') + (n.code ? n.code : '')"></span></span>
+                                <span class="flex-1"><span x-text="n.title"></span><span class="block text-[10px] text-[#9CA3AF]" x-text="(n.kind ? (nKind(n.kind)) + (n.due_at || n.code ? ' · ' : '') : '') + (n.due_at ? (lang === 'en' ? 'Due ' : 'Fällig ') + n.due_at : '') + (n.due_at && n.code ? ' · ' : '') + (n.code ? n.code : '')"></span></span>
                                 <span class="text-[9px] text-[#9CA3AF] font-mono shrink-0" x-text="n.rel"></span>
                                 <button x-show="n.kind" @click.prevent.stop="toggleMute(n.kind)" :aria-label="((me && me.muted_kinds || []).includes(n.kind) ? 'Stummschaltung für Art aufheben' : 'Art stummschalten')" :title="((me && me.muted_kinds || []).includes(n.kind) ? 'Stummschaltung aufheben' : 'Art stummschalten')" class="shrink-0 leading-none" :class="((me && me.muted_kinds || []).includes(n.kind)) ? 'text-[#CA8A04]' : 'text-[#9CA3AF] hover:text-[#CA8A04]'">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
@@ -312,7 +313,7 @@
                             <a :href="m.to ? '/app/' + m.to + (tenant ? '?tenant='+tenant : '') : '#'"
                                class="bg-white border border-[#E4E9F0] rounded-xl px-5 py-4 block transition"
                                :class="m.to ? 'hover:border-[#CA8A04]/60 hover:shadow-sm cursor-pointer' : 'cursor-default'">
-                                <div class="text-[11px] font-medium text-[#5B6B7E]" x-text="m.label"></div>
+                                <div class="text-[11px] font-medium text-[#5B6B7E]" x-text="kLabel(m)"></div>
                                 <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="kpiValue(m)"></div>
                                 <div class="mt-0.5 text-[11px] font-mono" :class="trend(m.key).direction === 'up' ? 'text-[#2E7D5B]' : (trend(m.key).direction === 'down' ? 'text-[#A6362E]' : 'text-[#9CA3AF]')" x-text="trend(m.key).delta === null ? '' : (trend(m.key).direction === 'up' ? '▲ +' : (trend(m.key).direction === 'down' ? '▼ ' : '')) + (trend(m.key).delta ?? '')"></div>
                                 <div class="mt-2 flex items-end justify-between gap-2">
@@ -386,7 +387,7 @@
                             <template x-for="o in overdueSections()" :key="o.key">
                                 <a :href="'/app/' + o.key + '?tenant=' + tenant + '&overdue=1'" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC] transition">
                                     <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] text-[#9CA3AF] mr-1.5" x-text="icons[o.key] || '·'"></span><span x-text="o.label"></span></span>
-                                    <span class="text-[11px] font-mono text-[#A6362E] shrink-0" x-text="o.count + ' überfällig'"></span>
+                                    <span class="text-[11px] font-mono text-[#A6362E] shrink-0" x-text="o.count + ' ' + t('überfällig')"></span>
                                 </a>
                             </template>
                         </div>
@@ -400,7 +401,7 @@
                             <template x-for="o in todaySections()" :key="o.key">
                                 <a :href="'/app/' + o.key + '?tenant=' + tenant + '&today=1'" class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC] transition">
                                     <span class="text-sm text-[#1A2433] truncate"><span class="text-[11px] text-[#9CA3AF] mr-1.5" x-text="icons[o.key] || '·'"></span><span x-text="o.label"></span></span>
-                                    <span class="text-[11px] font-mono text-[#B45309] shrink-0" x-text="o.count + ' heute'"></span>
+                                    <span class="text-[11px] font-mono text-[#B45309] shrink-0" x-text="o.count + ' ' + t('heute')"></span>
                                 </a>
                             </template>
                         </div>
@@ -575,7 +576,7 @@
                     <div x-show="rows !== null" class="flex items-center justify-between gap-3 px-5 py-3 border-b border-[#E4E9F0] print:hidden">
                         <span class="text-xs text-[#5B6B7E] shrink-0 flex items-center gap-2">
                             <span x-text="filtered().length + ' / ' + (rowsTotal || (rows ? (rows||[]).length : 0)) + ' ' + eintrag(rowsTotal || (rows ? (rows||[]).length : 0))"></span>
-                            <span x-show="rows && (rows||[]).some(r => overdue(r))" class="text-[#A6362E]" x-text="'· ' + (rows||[]).filter(r => overdue(r)).length + ' überfällig'"></span>
+                            <span x-show="rows && (rows||[]).some(r => overdue(r))" class="text-[#A6362E]" x-text="'· ' + (rows||[]).filter(r => overdue(r)).length + ' ' + t('überfällig')"></span>
                             <span x-show="rows && (rows||[]).some(r => dueSoon(r))" class="text-[#B45309]" x-text="'· ' + (rows||[]).filter(r => dueSoon(r)).length + ' ≤ 7 Tage'"></span>
                         </span>
                         <div class="relative">
@@ -624,10 +625,10 @@
                         <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren (i)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
                         <button @click="window.print()" title="Drucken" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">Drucken</button>
                         <button x-show="section === 'tokens' && rows && (rows||[]).length > 1" @click="revokeAllTokens()" title="Alle API-Token widerrufen" class="text-xs px-3 py-1.5 border border-[#A6362E] text-[#A6362E] rounded-lg hover:bg-[#A6362E] hover:text-white transition shrink-0">Alle widerrufen</button>
-                        <button x-show="canCreate()" @click="openCreate()" :title="'Neu anlegen: ' + title() + ' (n)'" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">+ Neu</button>
+                        <button x-show="canCreate()" @click="openCreate()" :title="'Neu anlegen: ' + title() + ' (n)'" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0"x-text="'+ ' + t('Neu')"></button>
                     </div>
                     <div x-show="rows && recentRows().some(r => r.key === section)" class="flex items-center gap-1.5 px-5 py-1.5 border-b border-[#E4E9F0] print:hidden overflow-x-auto">
-                        <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF] shrink-0">ZULETZT</span>
+                        <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF] shrink-0" x-text="t('Zuletzt').toUpperCase()"></span>
                         <template x-for="rr in recentRows().filter(r => r.key === section).slice(0, 5)" :key="rr.key + rr.id">
                             <span class="inline-flex items-center border rounded-full transition group/rr"
                                     :class="detail && String(detail.id) === String(rr.id) ? 'border-[#CA8A04] text-[#CA8A04] bg-[#CA8A04]/5' : 'border-[#E4E9F0] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'">
@@ -642,7 +643,7 @@
                     <div x-show="rows && (statusOpts().length > 1 || (rows||[]).some(r => overdue(r)) || section === 'notifications')" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
                         <button x-show="(rows||[]).some(r => overdue(r))" @click="overdueOnly = !overdueOnly" title="Überfällig (u)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
-                                x-text="'Überfällig · ' + (rows||[]).filter(r => overdue(r)).length"></button>
+                                x-text="t('Überfällig') + ' · ' + (rows||[]).filter(r => overdue(r)).length"></button>
                         <button x-show="(rows||[]).some(r => dueToday(r))" @click="dueTodayOnly = !dueTodayOnly" title="Heute fällig" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="dueTodayOnly ? 'border-[#CA8A04] bg-[#CA8A04] text-black' : 'border-[#CA8A04]/40 text-[#B45309] hover:bg-[#CA8A04]/10'"
                                 x-text="'Heute · ' + (rows||[]).filter(r => dueToday(r)).length"></button>
@@ -690,7 +691,7 @@
                         <template x-for="k in [...new Set([...notifKinds, ...(rows || []).map(r => r.kind)].filter(Boolean))]" :key="'kind-' + k">
                             <button x-show="section === 'notifications'" @click="kindFilter = kindFilter === k ? '' : k" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="kindFilter === k ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
-                                    x-text="'Art ' + (NOTIF_KIND[k] || k) + ' · ' + (rows||[]).filter(r => r.kind === k).length"></button>
+                                    x-text="t('Art ') + (nKind(k)) + ' · ' + (rows||[]).filter(r => r.kind === k).length"></button>
                         </template>
                         <template x-for="c in [...new Set([...notifCodes, ...(rows || []).map(r => r.code)].filter(Boolean))]" :key="'code-' + c">
                             <button x-show="section === 'notifications'" @click="codeFilter = codeFilter === c ? '' : c" class="text-[11px] px-2.5 py-1 rounded-full border transition"
@@ -723,7 +724,7 @@
                         </template>
                     </div>
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
-                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || evActorName || evWeekday || evHour !== '' || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly ? 'Keine Einträge für diese Filter.' : 'Keine Einträge vorhanden.'"></p>
+                        <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || evActorName || evWeekday || evHour !== '' || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly ? t('Keine Einträge für diese Filter.') : t('Keine Einträge vorhanden.')"></p>
                         <button x-show="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly" @click="query = ''; statusFilter = ''; severityFilter = ''; roleFilter = ''; kindFilter = ''; codeFilter = ''; unreadOnly = false; mutedOnly = false; evGroup = ''; evDay = ''; evActor = ''; evActorName = ''; evWeekday = ''; evHour = ''; overdueOnly = false; dueSoonOnly = false; dueTodayOnly = false; myOnly = false; unassignedOnly = false"
                                 title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
                         <button x-show="canCreate() && !query && !statusFilter && !severityFilter && !roleFilter && !kindFilter && !codeFilter && !unreadOnly && !mutedOnly && !evGroup && !overdueOnly && !dueSoonOnly && !dueTodayOnly && !myOnly && !unassignedOnly" @click="openCreate()"
@@ -773,7 +774,7 @@
                                     class="border-b border-[#F0F3F7] last:border-b-0" :title="it.t === 'r' ? 'Doppelklick: Bearbeiten' : 'Klick: einklappen/ausklappen'">
                                     <template x-if="it.t === 'h'">
                                         <td :colspan="visCols().length + 1 + (writable() ? 1 : 0) + (sectionActions().length || canEdit() ? 1 : 0)" class="px-5 py-2 text-[11px] font-semibold text-[#5B6B7E]">
-                                            <span x-text="collapsedGroups[it.label] ? '▸' : '▾'" class="mr-1.5 text-[#CA8A04]"></span><span x-text="it.disp || it.label || '—'"></span> <span class="font-normal text-[#9CA3AF]" x-text="'· ' + it.count"></span><span x-show="it.overdue" class="ml-1.5 font-normal text-[#A6362E]" x-text="it.overdue + ' überfällig'"></span>
+                                            <span x-text="collapsedGroups[it.label] ? '▸' : '▾'" class="mr-1.5 text-[#CA8A04]"></span><span x-text="it.disp || it.label || '—'"></span> <span class="font-normal text-[#9CA3AF]" x-text="'· ' + it.count"></span><span x-show="it.overdue" class="ml-1.5 font-normal text-[#A6362E]" x-text="it.overdue + ' ' + t('überfällig')"></span>
                                         </td>
                                     </template>
                                     <template x-if="it.t === 'r'">
@@ -822,10 +823,10 @@
                     </div>
                     <div x-show="filtered().length > limit" class="px-5 py-3 border-t border-[#E4E9F0] text-center flex items-center justify-center gap-4 print:hidden">
                         <button @click="limit += 100" class="text-xs text-[#CA8A04] hover:underline">
-                            Mehr laden (<span x-text="filtered().length - limit"></span> weitere)
+                            <span x-text="t('Mehr laden') + ' ('"></span><span x-text="filtered().length - limit"></span> <span x-text="t('weitere') + ')'"></span>
                         </button>
                         <button x-show="filtered().length - limit > 100" @click="limit = filtered().length" title="Alle laden (l)" class="text-xs text-[#5B6B7E] hover:text-[#CA8A04] hover:underline">
-                            Alle laden
+                            <span x-text="t('Alle laden')"></span>
                         </button>
                     </div>
                 </div>
@@ -1098,7 +1099,7 @@
                     </div>
                     <template x-for="(n, i) in rowNotifs.slice(0, 6)" :key="i">
                         <a :href="'/app/notifications?tenant=' + tenant + '&open=' + n.id" class="flex items-center justify-between text-xs py-1 rounded hover:bg-[#FAFBFC] -mx-1 px-1" :class="n.read ? 'opacity-60' : ''">
-                            <span class="text-[#1A2433] truncate"><span class="text-[#CA8A04] font-semibold uppercase text-[10px] tracking-wide" x-text="NOTIF_KIND[n.kind] || n.kind"></span> <span x-text="n.title"></span></span>
+                            <span class="text-[#1A2433] truncate"><span class="text-[#CA8A04] font-semibold uppercase text-[10px] tracking-wide" x-text="nKind(n.kind)"></span> <span x-text="n.title"></span></span>
                             <span class="text-[10px] text-[#9CA3AF] font-mono ml-2 shrink-0" x-text="ago(n.created_at)"></span>
                         </a>
                     </template>
@@ -1253,11 +1254,11 @@
                     </div>
                     <div x-show="formError" class="text-xs text-[#A6362E]" x-text="formError"></div>
                     <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" @click="closeCreate()" class="text-sm px-4 py-2 text-[#5B6B7E]">Abbrechen</button>
+                        <button type="button" @click="closeCreate()" class="text-sm px-4 py-2 text-[#5B6B7E]" x-text="t('Abbrechen')"></button>
                         <button type="button" x-show="!editing && !['documents','data-objects'].includes(section)" @click="submitCreate(true)" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
-                                class="text-sm px-4 py-2 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10 disabled:opacity-40 disabled:cursor-not-allowed" title="Speichern und nächsten Eintrag anlegen">Speichern &amp; neu</button>
+                                class="text-sm px-4 py-2 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10 disabled:opacity-40 disabled:cursor-not-allowed" title="Speichern und nächsten Eintrag anlegen" x-text="t('Speichern & neu')"></button>
                         <button type="submit" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
-                                class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 disabled:cursor-not-allowed" title="Speichern (Strg+↵)">Speichern</button>
+                                class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 disabled:cursor-not-allowed" title="Speichern (Strg+↵)" x-text="t('Speichern')"></button>
                     </div>
                 </form>
             </div>
@@ -1339,7 +1340,7 @@
                     <div class="flex flex-wrap gap-1.5">
                         <template x-for="k in me.muted_kinds" :key="k">
                             <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-[#0B0B0F]/5 text-[#5B6B7E]">
-                                <span x-text="NOTIF_KIND[k] || k"></span>
+                                <span x-text="nKind(k)"></span>
                                 <button @click="toggleMute(k)" class="text-[#8A97A6] hover:text-[#A6362E]" :title="'Stummschaltung für ' + k + ' aufheben'">×</button>
                             </span>
                         </template>
@@ -1441,8 +1442,16 @@ function workspace(initial) {
         {key:'machines_active',label:'Maschinen aktiv',to:'machines'},{key:'leave_requests_pending',label:'Urlaubsanträge offen',to:'leave-requests'},{key:'questions_open',label:'Offene Fragen',to:'questions'},{key:'ai_analyses',label:'KI-Analysen',to:'ai-analyses'},{key:'strategies_active',label:'Aktive Strategien',to:'strategies'},{key:'graph_entities',label:'Wissensgraph',to:'graph-entities'},{key:'tender_applications',label:'Bewerbungen',to:'tenders'},{key:'instructions_pending',label:'Unterweisungen offen',to:'instructions'},{key:'answers',label:'Antworten',to:'questions'},
         {key:'investments_active',label:'Investitionen aktiv',to:'investments'},{key:'participations_active',label:'Beteiligungen aktiv',to:'participations'},
     ];
+    const GROUP_EN = {STAMMDATEN:'MASTER DATA',NETZWERK:'NETWORK',ENTWICKLUNG:'DEVELOPMENT',KAPITAL:'CAPITAL',PRODUKTION:'PRODUCTION',ORGANISATION:'ORGANIZATION',PLATTFORM:'PLATFORM'};
+    const ITEM_EN = {dashboard:'Dashboard',executive:'Executive',companies:'Companies',persons:'Persons',documents:'Documents',tasks:'Tasks',instructions:'Instructions',inspections:'Inspections',deadlines:'Deadlines','risk-assessments':'Risk Assessments','operating-instructions':'Operating Instructions',audits:'Audits','audit-findings':'Findings','expert-profiles':'Experts',questions:'Questions',tenders:'Tenders',strategies:'Strategies',projects:'Projects',measures:'Measures',portfolios:'Portfolios',investments:'Investments',participations:'Participations',machines:'Machines','production-orders':'Orders','leave-requests':'Leave Requests','financial-reports':'Finance',users:'Team',notifications:'Notifications',events:'Events','data-objects':'Data Lake','ai-analyses':'AI Analyses','graph-entities':'Graph · Entities','graph-edges':'Graph · Edges',integrations:'Webhook Sources',connectors:'Connectors',tokens:'API Tokens'};
+    const STATUS_EN = {open:'Open',pending:'Pending',in_progress:'Running',active:'Active',done:'Done',completed:'Completed',approved:'Approved',archived:'Archived',draft:'Draft',maintenance:'Maintenance',retired:'Retired',awarded:'Awarded',info:'Info',warning:'Warning',critical:'Critical',high:'High',medium:'Medium',low:'Low',scheduled:'Scheduled',cancelled:'Cancelled',rejected:'Rejected',answered:'Answered',closed:'Closed',submitted:'Submitted',shortlisted:'Shortlisted',queued:'Queued',running:'Running',mitigated:'Mitigated',accepted:'Accepted',planned:'Planned',on_hold:'On hold',inactive:'Inactive',todo:'Open',overdue:'Overdue',sent:'Sent',paid:'Paid',unpaid:'Unpaid',expired:'Expired',suspended:'Suspended',review:'In review',assigned:'Assigned',requested:'Requested',confirmed:'Confirmed',declined:'Declined',exited:'Exited',candidate:'Candidate',resolved:'Resolved',internal:'Internal',external:'External',vacation:'Vacation',sick:'Sick',other:'Other'};
+    const NOTIF_EN = {unterweisung:'Instruction',pruefung:'Inspection',frist:'Deadline',feststellung:'Finding',audit:'Audit',massnahme:'Measure',aufgabe:'Task',gefaehrdungsbeurteilung:'Risk Assessment',projekt:'Project',auftrag:'Production Order',ausschreibung:'Tender',antwort:'Answer',frage:'Question',urlaub:'Leave Request',rollen:'Roles',unterweisung_wiederholung:'Instruction (Renewal)',hinweis:'Critical Notice',passwort_geaendert:'Password Changed',anmeldung:'Login',anmeldeversuche:'Failed Login',ki_coach:'AI Coach'};
+    const KPI_EN = {companies:'Companies',persons:'Persons',documents:'Documents',tasks_open:'Open Tasks',instructions:'Instructions',compliance_rate:'Compliance %',deadlines_open:'Open Deadlines',risk_high:'High Risks',tenders_open:'Open Tenders',fin_revenue:'Revenue (Month)',fin_ebitda:'EBITDA (Month)',fin_liquidity:'Liquidity (Month)',expert_profiles:'Experts',questions:'Questions',inspections:'Inspections',team_members:'Team',audits_planned:'Planned Audits',audits_in_progress:'Running Audits',audit_findings_open:'Open Findings',audit_findings_overdue:'Overdue Findings',production_orders_open:'Running Orders',projects_open:'Open Projects',machines_active:'Machines Active',leave_requests_pending:'Leave Requests Open',questions_open:'Open Questions',ai_analyses:'AI Analyses',strategies_active:'Active Strategies',graph_entities:'Knowledge Graph',tender_applications:'Applications',instructions_pending:'Instructions Open',answers:'Answers',investments_active:'Investments Active',participations_active:'Participations Active'};
+    const T_EN = {'Neuer Mandant':'New Tenant','Umbenennen':'Rename','Verlassen':'Leave','Speichern':'Save','Abbrechen':'Cancel','Löschen':'Delete','Bearbeiten':'Edit','Duplizieren':'Duplicate','Alle gelesen':'Mark all read','Gelesene entfernen':'Delete read','Alle entfernen':'Delete all','Mehr laden':'Load more','Alle laden':'Load all','Drucken':'Print','Spalten':'Columns','Filter zurücksetzen':'Reset filters','Exportieren':'Export','Importieren':'Import','Suchen':'Search','Passwort ändern':'Change Password','Öffnen':'Open','Senden':'Send','Antworten':'Reply','Hochladen':'Upload','Ereignisse':'Events','Benachrichtigungen':'Notifications','Überfällig':'Overdue','Heute':'Today','Von mir':'Mine','Ungelesen':'Unread','Stumm':'Muted','Mitglieder':'Members','Aktionen':'Actions','alle auf':'expand all','alle zu':'collapse all','Module filtern…':'Filter modules…','Keine Einträge vorhanden.':'No entries.','Keine Einträge für diese Filter.':'No entries for these filters.','Eintrag':'entry','Einträge':'entries','überfällig':'overdue','heute':'today','Unternehmenssteuerung':'Business Management','Keine Berechtigung':'No permission','Fehler beim Laden':'Failed to load','Rückgängig':'Undo','zugewiesen':'assigned','Demo-Daten laden':'Load demo data','Lade Demo-Daten…':'Loading demo data…','Ausgeblendete: ':'Hidden: ','Fällig ':'Due ','Art gelesen':'Mark kind read','Art entfernen':'Delete kind','Art stummschalten':'Mute kind','Art ungelesen':'Mark kind unread','Code gelesen':'Mark code read','Code entfernen':'Delete code','leeren ×':'clear ×','Nächste Fristen':'Upcoming Deadlines','Offene Aufgaben':'Open Tasks','Letzte Ereignisse':'Recent Events','Aktivität':'Activity','alle →':'all →','Ansichten':'Views','Ansicht speichern':'Save view','Neu':'New','In Bearbeitung':'In progress','Anmelden':'Sign in','Abmelden':'Sign out','Gruppiert nach: ':'Grouped by: ','Gruppierung aus':'Grouping off','Nach Status gruppieren':'Group by status','Mir zugewiesen':'Assigned to me','Ohne Verantwortlichen':'Unassigned','≤7 Tage':'≤7 days','Schwere ':'Severity ','Zuletzt geändert':'Last changed','Mitglied seit':'Member since','Mitgliedschaften':'Memberships','Anmelde-Verlauf':'Login History','BENACHRICHTIGUNGEN':'NOTIFICATIONS','VERKNÜPFUNGEN':'LINKS','VERLAUF':'HISTORY','FESTSTELLUNGEN':'FINDINGS','BEWERBUNGEN':'APPLICATIONS','ANTWORTEN':'ANSWERS','VERSIONEN':'VERSIONS','Mitglied(er)':'member(s)','Keine Beschreibung':'No description'};
     return {
         section: initial, groups: GROUPS, kpiCards: KPI, icons: ICONS,
+        NOTIF_KIND,
+        lang: localStorage.getItem('af_lang') || 'de',
         NOTIF_KIND,
         tenant: '', rows: null, columns: [], metrics: null, insights: [], events: [], trends: [], evSummary: null, evWindow: 7, spark: {}, exec: null, execReports: [], reportOpen: {}, reportData: {}, lookups: {}, navOpen: false, collapsed: {}, me: null, upcoming: [], openTasks: [],
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
@@ -1454,6 +1463,7 @@ function workspace(initial) {
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
+            document.documentElement.lang = this.lang;
             window.addEventListener('online', () => { this.offline = false; this.loadSection(true); this.loadNavBadges(); });
             window.addEventListener('offline', () => { this.offline = true; });
             this.loadNotifications();
@@ -1602,16 +1612,22 @@ function workspace(initial) {
         },
         groupOf(key) {
             const g = GROUPS.find(g => g.items.some(i => i.key === key));
-            return g ? g.label : '';
+            return g ? this.gLabel(g.label) : '';
         },
-        title() { return this.item().label; },
+        t(s) { return this.lang === 'en' ? (T_EN[s] || s) : s; },
+        iLabel(i) { return this.lang === 'en' ? (ITEM_EN[i.key] || i.label) : i.label; },
+        gLabel(l) { return this.lang === 'en' ? (GROUP_EN[l] || l) : l; },
+        kLabel(m) { return this.lang === 'en' ? (KPI_EN[m.key] || m.label) : m.label; },
+        nKind(k) { return this.lang === 'en' ? (NOTIF_EN[k] || k) : (this.NOTIF_KIND[k] || k); },
+        setLang(l) { this.lang = l; try { localStorage.setItem('af_lang', l); } catch (e) {} document.documentElement.lang = l; },
+        title() { return this.iLabel(this.item()); },
         togglePin(key) {
             const was = this.pins.includes(key);
             this.pins = was ? this.pins.filter(k => k !== key) : [...this.pins, key];
             try { localStorage.setItem('af_pins', JSON.stringify(this.pins)); } catch (e) {}
             this.toast(was ? 'Aus Favoriten entfernt' : 'Zu Favoriten hinzugefügt');
         },
-        sectionLabel(k) { const i = this.groups.flatMap(g => g.items).find(x => x.key === k); return i ? i.label : k; },
+        sectionLabel(k) { const i = this.groups.flatMap(g => g.items).find(x => x.key === k); return i ? this.iLabel(i) : k; },
         recentRows() { this._rrTick = this._rrTick || 0; try { return JSON.parse(localStorage.getItem('af_recentrows') || '[]'); } catch (e) { return []; } },
         pushRecentRow(d) {
             const name = d.name || d.title || d.headline || d.subject || d.order_no || d.file_name || d.email || String(d.id).slice(0, 8);
@@ -1734,13 +1750,13 @@ function workspace(initial) {
             }
         },
         subtitle() {
-            const base = (this.section === 'dashboard' ? 'Unternehmenssteuerung' : 'Modul ' + (this.item().label||this.section)) + ' · ' + this.tenantName();
+            const base = (this.section === 'dashboard' ? this.t('Unternehmenssteuerung') : (this.lang === 'en' ? 'Module ' : 'Modul ') + (this.iLabel(this.item())||this.section)) + ' · ' + this.tenantName();
             if (this.section === 'dashboard') return base + ' · ' + new Date().toLocaleDateString('de-DE', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
             if (this.section === 'executive') return base;
             if (this.rows && this.rows.length) {
                 const od = this.rows.filter(r => this.overdue(r)).length;
                 const td = this.rows.filter(r => this.dueToday(r)).length;
-                return base + ' · ' + this.rows.length + ' ' + this.eintrag(this.rows.length) + (od ? ' · ' + od + ' überfällig' : '') + (td ? ' · ' + td + ' heute' : '');
+                return base + ' · ' + this.rows.length + ' ' + this.eintrag(this.rows.length) + (od ? ' · ' + od + ' ' + this.t('überfällig') : '') + (td ? ' · ' + td + ' ' + this.t('heute') : '');
             }
             return base;
         },
@@ -2408,7 +2424,7 @@ function workspace(initial) {
             return [...new Set(this.rows.map(r => r.severity).filter(Boolean))].sort();
         },
         roleLabel(n) { const M = {holding:'Holding',administrator:'Administrator',geschaeftsfuehrer:'Geschäftsführer',mitarbeiter:'Mitarbeiter',berater:'Berater',auditor:'Auditor',kunde:'Kunde'}; return M[String(n).toLowerCase()] || n; },
-        statusLabel(s) { return STATUS_DE[String(s).toLowerCase()] || s; },
+        statusLabel(s) { return (this.lang === 'en' ? STATUS_EN : STATUS_DE)[String(s).toLowerCase()] || s; },
         typeLabel(t) { const M = {vacation:'Urlaub',sick:'Krank',other:'Sonstiges',question:'Frage',feedback:'Feedback',maintenance:'Wartung',safety:'Sicherheit',general:'Allgemein',external:'Extern',internal:'Intern',onboarding:'Onboarding',video:'Video',document:'Dokument',workshop:'Workshop',audit:'Audit',inspection:'Prüfung',training:'Schulung',financial:'Finanzen',quality:'Qualität',environment:'Umwelt',risk:'Risiko',strategic:'Strategisch',operational:'Operativ',low:'Niedrig',medium:'Mittel',high:'Hoch',critical:'Kritisch',warning:'Warnung',info:'Info',analysis:'Analyse'}; return M[String(t).toLowerCase()] || t; },
         insightKey(i) { return (this.tenant || '') + '|' + (i.code || '') + '|' + (i.message || ''); },
         visibleInsights() { return (this.insights || []).filter(i => !this.insDismissed.includes(this.insightKey(i))); },
@@ -3077,7 +3093,7 @@ function workspace(initial) {
             const d = this.parseDate(row[key]), now = new Date();
             return !isNaN(d) && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
         },
-        eintrag(n) { return n === 1 ? 'Eintrag' : 'Einträge'; },
+        eintrag(n) { return this.t(n === 1 ? 'Eintrag' : 'Einträge'); },
         detailTitle() {
             if (!this.detail) return this.title() + ' · Details';
             const d = this.detail;
