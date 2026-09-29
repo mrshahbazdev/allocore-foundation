@@ -17,7 +17,7 @@
     @include('partials.dark-mode')
 </head>
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
-<a href="#hauptinhalt" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-[#0B0B0F] focus:text-[#FACC15] focus:px-3 focus:py-2 focus:rounded-lg focus:text-xs">Zum Inhalt springen</a>
+<a href="#hauptinhalt" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-[#0B0B0F] focus:text-[#FACC15] focus:px-3 focus:py-2 focus:rounded-lg focus:text-xs"><span x-text="t('Zum Inhalt springen')"></span></a>
 <div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak
      @keydown.escape.window="detail = null; closeCreate(); showCreate = false; navOpen = false; palette = false; colPicker = false; viewPicker = false; kbdHelp = false; showImport = false; confirmDel = false; notif = false; pwOpen = false"
      @keydown.arrowright.window="detail && navDetail(1)"
@@ -34,7 +34,7 @@
             <span class="font-semibold tracking-tight">ALLO<span class="text-[#FACC15]">CORE</span></span>
         </a>
         <span class="text-[13px] text-[#9CA3AF] truncate"><span class="text-[#FACC15] mr-1.5" x-text="icons[section] || ''"></span><span x-text="title()"></span></span>
-        <button @click="navOpen = !navOpen" class="p-2 -mr-2 text-[#9CA3AF] hover:text-white" title="Menü" aria-label="Navigation umschalten" :aria-expanded="navOpen">
+        <button @click="navOpen = !navOpen" class="p-2 -mr-2 text-[#9CA3AF] hover:text-white" :title="t('Menü')" :aria-label="t('Navigation umschalten')" :aria-expanded="navOpen">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
         </button>
     </div>
@@ -52,10 +52,10 @@
 
         {{-- Tenant picker --}}
         <div class="px-4 py-4 border-b border-[#1A1A1F]">
-            <label class="block text-[10px] font-medium tracking-wide text-[#9CA3AF] mb-1.5">MANDANT</label>
+            <label class="block text-[10px] font-medium tracking-wide text-[#9CA3AF] mb-1.5"><span x-text="t('MANDANT')"></span></label>
             <select x-model="tenant" @change="loadSection(); loadNavBadges()"
                     class="w-full rounded-lg bg-[#1A1A1F] border-[#2A2A31] text-white text-sm py-2 focus:border-[#FACC15] focus:ring-[#FACC15]/30">
-                <option value="">— wählen —</option>
+                <option value=""><span x-text="t('— wählen —')"></span></option>
                 <template x-for="t in sortedTenants()" :key="t.id">
                     <option :value="t.id" x-text="t.name"></option>
                 </template>
@@ -64,20 +64,20 @@
             <div class="mt-2 flex gap-3">
                 <button @click="createTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]" x-text="'+ ' + t('Neuer Mandant')"></button>
                 <button x-show="tenant && hasPerm('roles.manage')" @click="renameTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#FACC15]" x-text="'&#9998; ' + t('Umbenennen')"></button>
-                <button x-show="tenant" @click="leaveTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#A6362E]" title="Mitgliedschaft in diesem Mandanten beenden" x-text="'&#9094; ' + t('Verlassen')"></button>
+                <button x-show="tenant" @click="leaveTenant()" class="text-left text-[11px] text-[#9CA3AF] hover:text-[#A6362E]" :title="t('Mitgliedschaft in diesem Mandanten beenden')" x-text="'&#9094; ' + t('Verlassen')"></button>
                 <button @click="setLang(lang === 'de' ? 'en' : 'de')" class="ml-auto text-[11px] text-[#9CA3AF] hover:text-[#FACC15]" :title="lang === 'de' ? 'Switch to English' : 'Auf Deutsch wechseln'" x-text="lang === 'de' ? 'EN' : 'DE'"></button>
             </div>
         </div>
 
-        <nav class="flex-1 overflow-y-auto py-3 text-[13px]" aria-label="Hauptnavigation">
+        <nav class="flex-1 overflow-y-auto py-3 text-[13px]" :aria-label="t('Hauptnavigation')">
             <div class="px-4 pb-2">
                 <div class="relative">
                     <input x-model="navQ" :placeholder="t('Module filtern…')" @keydown.enter.prevent="const m = groups.flatMap(g => g.items).find(i => i.label.toLowerCase().includes(navQ.toLowerCase())); if (m) location.href = '/app/' + m.key + (tenant ? '?tenant=' + tenant : '')" class="w-full bg-[#141419] text-[#9CA3AF] text-[11px] pl-2.5 pr-6 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-[#FACC15] placeholder-[#4B5563]">
-                    <button x-show="navQ" @click="navQ = ''" title="Filter löschen" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#FACC15] text-xs">&times;</button>
+                    <button x-show="navQ" @click="navQ = ''" :title="t('Filter löschen')" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#FACC15] text-xs">&times;</button>
                 </div>
             </div>
             <div x-show="pins.length" class="mb-1" style="display:none">
-                <div class="px-5 pt-3 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280]">FAVORITEN</div>
+                <div class="px-5 pt-3 pb-1.5 text-[10px] font-semibold tracking-widest text-[#6B7280]"><span x-text="t('FAVORITEN')"></span></div>
                 <template x-for="pk in pins" :key="pk">
                     <a :href="'/app/' + pk + (tenant ? '?tenant='+tenant : '')"
                        class="flex items-center gap-3 px-5 py-2 transition"
@@ -122,11 +122,11 @@
                                class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#A6362E] text-white min-w-[1.1rem] text-center hover:bg-[#8C2B24]"></a>
                             <a x-show="navBadgesToday[item.key] > 0" x-text="navBadgesToday[item.key]"
                                :href="'/app/' + item.key + '?today=1' + (tenant ? '&tenant='+tenant : '')"
-                               title="Heute fällige Einträge anzeigen"
+                               :title="t('Heute fällige Einträge anzeigen')"
                                class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#CA8A04] text-black min-w-[1.1rem] text-center hover:bg-[#A16207]"></a>
                             <a x-show="navBadgesWeek[item.key] > 0" x-text="navBadgesWeek[item.key]"
                                :href="'/app/' + item.key + '?dueSoon=1' + (tenant ? '&tenant='+tenant : '')"
-                               title="≤7 Tage fällige Einträge anzeigen"
+                               :title="t('≤7 Tage fällige Einträge anzeigen')"
                                class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#B45309] text-white min-w-[1.1rem] text-center hover:bg-[#92400E]"></a>
                         </div>
                     </template>
@@ -136,7 +136,7 @@
 
         <div class="px-5 py-4 border-t border-[#1A1A1F] flex items-center justify-between">
             <div class="min-w-0">
-                <div class="text-sm font-medium truncate" :title="(me && me.email ? me.email : '') + (me && me.last_login_at ? ' · letzte Anmeldung ' + new Date(me.last_login_at).toLocaleString('de-DE') : '')">{{ $user->name }}</div>
+                <div class="text-sm font-medium truncate" :title="(me && me.email ? me.email : '') + (me && me.last_login_at ? ' · letzte Anmeldung ' + new Date(me.last_login_at).toLocaleString((this.lang==='en'?'en-GB':'de-DE')) : '')">{{ $user->name }}</div>
                 <div class="text-[11px] text-[#6B7280] truncate">{{ $user->email }}</div>
                 <div x-show="me && me.roles && me.roles.length" class="mt-1 flex flex-wrap gap-1">
                     <template x-for="r in (me ? (me.roles || []) : [])" :key="r">
@@ -144,12 +144,12 @@
                     </template>
                 </div>
             </div>
-            <button title="Profil bearbeiten" @click="pwOpen = true; pwErr = ''; pwForm = {name: (me && me.name) || '', email: (me && me.email) || '', current:'',next:'',confirm:''}; loadLoginHistory()" class="text-[#9CA3AF] hover:text-white mr-3">
+            <button :title="t('Profil bearbeiten')" @click="pwOpen = true; pwErr = ''; pwForm = {name: (me && me.name) || '', email: (me && me.email) || '', current:'',next:'',confirm:''}; loadLoginHistory()" class="text-[#9CA3AF] hover:text-white mr-3">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z"/></svg>
             </button>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button title="Abmelden" class="text-[#9CA3AF] hover:text-white">
+                <button :title="t('Abmelden')" class="text-[#9CA3AF] hover:text-white">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H9"/></svg>
                 </button>
             </form>
@@ -172,19 +172,19 @@
                 <p class="text-xs text-[#5B6B7E]" x-text="subtitle()"></p>
             </div>
             <div class="text-right">
-                <span x-show="loading" class="text-xs text-[#9CA3AF]">Lädt…</span>
-                <span x-show="!loading && lastLoad" class="text-[11px] text-[#9CA3AF]" x-text="lastLoad ? 'Stand ' + lastLoad.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'}) : ''"></span>
+                <span x-show="loading" class="text-xs text-[#9CA3AF]"><span x-text="t('Lädt…')"></span></span>
+                <span x-show="!loading && lastLoad" class="text-[11px] text-[#9CA3AF]" x-text="lastLoad ? t('Stand') + ' ' + lastLoad.toLocaleTimeString((this.lang==='en'?'en-GB':'de-DE'), {hour: '2-digit', minute: '2-digit'}) : ''"></span>
             </div>
             <div class="flex items-center gap-3">
                 <div class="relative" x-show="tenant">
-                    <button @click="notif = !notif" aria-label="Benachrichtigungen" :aria-expanded="notif" :title="'Benachrichtigungen' + (overdueTotal() ? ' — ' + overdueTotal() + ' überfällig' : '')" class="relative text-[#9CA3AF] hover:text-[#CA8A04] transition">
+                    <button @click="notif = !notif" :aria-label="t('Benachrichtigungen')" :aria-expanded="notif" :title="'Benachrichtigungen' + (overdueTotal() ? ' — ' + overdueTotal() + ' überfällig' : '')" class="relative text-[#9CA3AF] hover:text-[#CA8A04] transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                         <span x-show="overdueTotal() > 0" x-text="overdueTotal() + unreadNotifs()" class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#A6362E] text-white text-[9px] font-bold leading-4 text-center"></span>
                         <span x-show="overdueTotal() === 0 && (todayTotal() + unreadNotifs()) > 0" x-text="todayTotal() + unreadNotifs()" class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#CA8A04] text-[#0B0B0F] text-[9px] font-bold leading-4 text-center"></span>
                     </button>
                     <div x-show="notif" @click.outside="notif = false" class="absolute right-0 mt-1.5 w-72 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-2 z-30" style="display:none">
                         <div class="px-3 pb-1.5 flex items-center justify-between">
-                            <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF]">BENACHRICHTIGUNGEN</span>
+                            <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF]"><span x-text="t('BENACHRICHTIGUNGEN')"></span></span>
                             <span class="flex items-center gap-2">
                                 <button x-show="unreadNotifs()" @click="markAllNotifsRead()" class="text-[10px] text-[#CA8A04] hover:underline">alle gelesen</button>
                                 <a :href="'/app/notifications?tenant=' + tenant" class="text-[10px] text-[#CA8A04] hover:underline">alle →</a>
@@ -199,15 +199,15 @@
                                 <button x-show="n.kind" @click.prevent.stop="toggleMute(n.kind)" :aria-label="((me && me.muted_kinds || []).includes(n.kind) ? 'Stummschaltung für Art aufheben' : 'Art stummschalten')" :title="((me && me.muted_kinds || []).includes(n.kind) ? 'Stummschaltung aufheben' : 'Art stummschalten')" class="shrink-0 leading-none" :class="((me && me.muted_kinds || []).includes(n.kind)) ? 'text-[#CA8A04]' : 'text-[#9CA3AF] hover:text-[#CA8A04]'">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                                 </button>
-                                <button @click.prevent.stop="dismissNotif(n)" aria-label="Benachrichtigung entfernen" title="Entfernen" class="text-[#9CA3AF] hover:text-[#A6362E] shrink-0 leading-none">×</button>
+                                <button @click.prevent.stop="dismissNotif(n)" :aria-label="t('Benachrichtigung entfernen')" :title="t('Entfernen')" class="text-[#9CA3AF] hover:text-[#A6362E] shrink-0 leading-none">×</button>
                             </a>
                         </template>
                         </div>
-                        <div x-show="!overdueSections().length && !todaySections().length && !dbNotifs.length" class="px-3 py-2 text-xs text-[#5B6B7E]">Alles im grünen Bereich.</div>
+                        <div x-show="!overdueSections().length && !todaySections().length && !dbNotifs.length" class="px-3 py-2 text-xs text-[#5B6B7E]"><span x-text="t('Alles im grünen Bereich.')"></span></div>
                         <template x-for="o in overdueSections()"><a :href="'/app/' + o.key + '?tenant=' + tenant + '&overdue=1'" class="px-3 py-1.5 flex items-center justify-between gap-3 text-xs hover:bg-[#FAFBFC]"><span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#A6362E]"></span><span class="w-4 text-center text-[11px] text-[#9CA3AF]" x-text="icons[o.key] || '·'"></span><span x-text="o.label"></span></span><span class="font-mono text-[#A6362E]" x-text="o.count"></span></a></template>
                         <template x-for="o in todaySections()"><a :href="'/app/' + o.key + '?tenant=' + tenant + '&today=1'" class="px-3 py-1.5 flex items-center justify-between gap-3 text-xs hover:bg-[#FAFBFC]"><span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#CA8A04]"></span><span class="w-4 text-center text-[11px] text-[#9CA3AF]" x-text="icons[o.key] || '·'"></span><span x-text="o.label"></span></span><span class="font-mono text-[#CA8A04]" x-text="o.count"></span></a></template>
                         <div x-show="weekSections().length" class="px-3 pt-1.5 pb-0.5 flex items-center justify-between">
-                            <span class="text-[9px] uppercase tracking-wider text-[#9CA3AF]">Bald fällig</span>
+                            <span class="text-[9px] uppercase tracking-wider text-[#9CA3AF]"><span x-text="t('Bald fällig')"></span></span>
                             <select x-model.number="navWindow" @change="localStorage.setItem('af_navwindow', navWindow); loadNavBadges()" :title="'Fenster für »bald fällig«-Badges (Tage)'" class="text-[10px] border border-[#E4E9F0] rounded px-1 py-0 text-[#5B6B7E]">
                                 <option :value="7">≤7T</option><option :value="14">≤14T</option><option :value="30">≤30T</option>
                             </select>
@@ -215,11 +215,11 @@
                         <template x-for="o in weekSections()"><a :href="'/app/' + o.key + '?tenant=' + tenant + '&dueSoon=1'" class="px-3 py-1.5 flex items-center justify-between gap-3 text-xs hover:bg-[#FAFBFC]"><span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#B45309]"></span><span class="w-4 text-center text-[11px] text-[#9CA3AF]" x-text="icons[o.key] || '·'"></span><span x-text="o.label + ' ≤' + navWindow + 'T'"></span></span><span class="font-mono text-[#B45309]" x-text="o.count"></span></a></template>
                     </div>
                 </div>
-                <button @click="toggleDark()" aria-label="Darstellung umschalten" :title="dark ? 'Helle Darstellung (t)' : 'Dunkle Darstellung (t)'" class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
+                <button @click="toggleDark()" :aria-label="t('Darstellung umschalten')" :title="dark ? 'Helle Darstellung (t)' : 'Dunkle Darstellung (t)'" class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
                     <svg x-show="!dark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                     <svg x-show="dark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 </button>
-                <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" title="Aktualisieren (r)" aria-label="Liste aktualisieren"
+                <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" :title="t('Aktualisieren (r)')" :aria-label="t('Liste aktualisieren')"
                         class="transition" :class="loading ? 'text-[#CA8A04]' : 'text-[#9CA3AF] hover:text-[#CA8A04]'">
                     <svg class="w-4 h-4" :class="loading && 'animate-spin'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M5.5 9A8 8 0 0119 7.5M18.5 15A8 8 0 015 16.5"/></svg>
                 </button>
@@ -233,19 +233,19 @@
             </div>
             <div x-show="newToken" class="bg-[#FFFBEB] border border-[#CA8A04]/50 rounded-xl px-4 py-3 flex items-start justify-between gap-3" x-cloak>
                 <div class="min-w-0">
-                    <p class="text-xs font-semibold text-[#0B0B0F]">Neuer API-Token — nur einmal sichtbar. Jetzt kopieren:</p>
+                    <p class="text-xs font-semibold text-[#0B0B0F]"><span x-text="t('Neuer API-Token — nur einmal sichtbar. Jetzt kopieren:')"></span></p>
                     <code class="block mt-1 text-[11px] font-mono text-[#5B6B7E] break-all" x-text="newToken"></code>
                 </div>
                 <span class="shrink-0 flex items-center gap-2">
-                    <button @click="navigator.clipboard.writeText(newToken).then(() => toast('Token kopiert'))" class="text-xs px-2.5 py-1 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">Kopieren</button>
-                    <button @click="newToken = null" class="text-[#9CA3AF] hover:text-[#A6362E] leading-none" aria-label="Schließen">&times;</button>
+                    <button @click="navigator.clipboard.writeText(newToken).then(() => toast('Token kopiert'))" class="text-xs px-2.5 py-1 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition"><span x-text="t('Kopieren')"></span></button>
+                    <button @click="newToken = null" class="text-[#9CA3AF] hover:text-[#A6362E] leading-none" :aria-label="t('Schließen')">&times;</button>
                 </span>
             </div>
             <div x-show="error" class="bg-white border border-[#A6362E]/40 rounded-xl px-4 py-3 text-sm text-[#A6362E] flex items-start justify-between gap-3">
                 <span x-text="error"></span>
                 <span class="shrink-0 flex items-center gap-3">
-                    <button @click="error = ''; loadSection()" class="text-xs underline underline-offset-2 text-[#A6362E] hover:text-[#0B0B0F] transition">Erneut versuchen</button>
-                    <button @click="error = ''" class="text-[#A6362E]/60 hover:text-[#A6362E] leading-none" aria-label="Fehler schließen">&times;</button>
+                    <button @click="error = ''; loadSection()" class="text-xs underline underline-offset-2 text-[#A6362E] hover:text-[#0B0B0F] transition"><span x-text="t('Erneut versuchen')"></span></button>
+                    <button @click="error = ''" class="text-[#A6362E]/60 hover:text-[#A6362E] leading-none" :aria-label="t('Fehler schließen')">&times;</button>
                 </span>
             </div>
 
@@ -255,9 +255,9 @@
                     <div class="relative bg-white border border-[#E4E9F0] rounded-xl px-4 py-3">
                         <div class="flex items-center gap-2.5">
                             <svg class="w-4 h-4 text-[#9CA3AF] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
-                            <input x-model.debounce.300ms="dashQ" @keydown.enter.prevent="if (dashHits.length) location.href = '/app/' + dashHits[0].section + '?tenant=' + tenant + '&open=' + encodeURIComponent(dashHits[0].id)" placeholder="Globale Suche — Firma, Aufgabe, Dokument…"
+                            <input x-model.debounce.300ms="dashQ" @keydown.enter.prevent="if (dashHits.length) location.href = '/app/' + dashHits[0].section + '?tenant=' + tenant + '&open=' + encodeURIComponent(dashHits[0].id)" :placeholder="t('Globale Suche — Firma, Aufgabe, Dokument…')"
                                    class="w-full text-sm outline-none placeholder-[#9CA3AF] bg-transparent">
-                            <button x-show="dashQ" @click="dashQ = ''; dashHits = []" title="Suche löschen" class="text-[#9CA3AF] hover:text-[#CA8A04] text-sm leading-none shrink-0">&times;</button>
+                            <button x-show="dashQ" @click="dashQ = ''; dashHits = []" :title="t('Suche löschen')" class="text-[#9CA3AF] hover:text-[#CA8A04] text-sm leading-none shrink-0">&times;</button>
                         </div>
                         <div x-show="dashHits.length" class="mt-2 pt-2 border-t border-[#EEF1F5] space-y-0.5" x-cloak>
                             <template x-for="h in dashHits" :key="h.section + '-' + h.id">
@@ -268,7 +268,7 @@
                                 </a>
                             </template>
                         </div>
-                        <div x-show="dashQ && dashQ.trim().length >= 3 && !dashHits.length" class="mt-2 pt-2 border-t border-[#EEF1F5] text-xs text-[#9CA3AF]" x-cloak>Keine Treffer.</div>
+                        <div x-show="dashQ && dashQ.trim().length >= 3 && !dashHits.length" class="mt-2 pt-2 border-t border-[#EEF1F5] text-xs text-[#9CA3AF]" x-cloak><span x-text="t('Keine Treffer.')"></span></div>
                     </div>
                     <div x-show="visibleInsights().length || insDismissed.length" class="space-y-2">
                         <div x-show="visibleInsights().some(i => i.severity === 'warning' || i.severity === 'info') || insDismissed.length" class="flex gap-1.5">
@@ -282,7 +282,7 @@
                         </div>
                         <template x-for="i in visibleInsights().filter(x => !insightSev || x.severity === insightSev)" :key="i.code">
                             <div class="relative">
-                            <button @click="dismissInsight(i)" title="Ausblenden" class="absolute top-1.5 right-1.5 z-10 h-5 w-5 rounded text-[#9CA3AF] hover:text-[#A6362E] hover:bg-[#A6362E]/10 text-sm leading-none">&times;</button>
+                            <button @click="dismissInsight(i)" :title="t('Ausblenden')" class="absolute top-1.5 right-1.5 z-10 h-5 w-5 rounded text-[#9CA3AF] hover:text-[#A6362E] hover:bg-[#A6362E]/10 text-sm leading-none">&times;</button>
                             <a :href="insightSection(i.code) ? '/app/' + insightSection(i.code) + '?tenant=' + tenant + (insightFilter(i.code) ? '&' + insightFilter(i.code) : '') : '#'"
                                class="flex items-start gap-3 rounded-lg border bg-white px-4 py-3 text-sm transition"
                                :class="{'border-[#A6362E]/40': i.severity==='critical','border-[#CA8A04]/50': i.severity==='warning','border-[#D6DEE9]': i.severity==='info','hover:shadow-sm': insightSection(i.code)}">
@@ -298,7 +298,7 @@
                         </template>
                     </div>
                     <div x-show="tenant && metrics && !insights.length && !openTasks.length && !upcoming.length && !events.length" class="bg-white border border-[#E4E9F0] rounded-xl px-6 py-8 text-center">
-                        <div class="text-sm text-[#5B6B7E]">Noch keine Einträge für diesen Mandanten.</div>
+                        <div class="text-sm text-[#5B6B7E]"><span x-text="t('Noch keine Einträge für diesen Mandanten.')"></span></div>
                         <button @click="seedDemo()" :disabled="seeding" class="mt-3 text-xs px-4 py-2 bg-[#0B0B0F] text-[#FACC15] rounded-lg hover:opacity-90 disabled:opacity-50" x-text="seeding ? 'Lade Demo-Daten…' : 'Demo-Daten laden'"></button>
                     </div>
                     <div x-show="tenant && metrics && !visibleInsights().length" class="flex items-center gap-3 rounded-lg border border-[#2E7D5B]/30 bg-[#2E7D5B]/5 px-4 py-3 text-sm text-[#2E7D5B]">
@@ -327,14 +327,14 @@
                         </template>
                         <a x-show="overdueSections().length" :href="'/app/' + (overdueSections()[0] || {key: 'dashboard'}).key + '?tenant=' + tenant + '&overdue=1'"
                            class="bg-[#A6362E]/5 border border-[#A6362E]/40 rounded-xl px-5 py-4 block transition hover:border-[#A6362E] hover:shadow-sm">
-                            <div class="text-[11px] font-medium text-[#A6362E]">Überfällig gesamt</div>
+                            <div class="text-[11px] font-medium text-[#A6362E]"><span x-text="t('Überfällig gesamt')"></span></div>
                             <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#A6362E]" x-text="overdueSections().reduce((s, x) => s + x.count, 0)"></div>
                             <div class="mt-0.5 text-[11px] font-mono text-[#A6362E]/70" x-text="overdueSections().length + (overdueSections().length === 1 ? ' Sektion' : ' Sektionen')"></div>
                             <div class="mt-2 flex items-end"><div class="h-0.5 w-8 rounded-full bg-[#A6362E] mb-1"></div></div>
                         </a>
                         <a x-show="todaySections().length" :href="'/app/' + (todaySections()[0] || {key: 'dashboard'}).key + '?tenant=' + tenant + '&today=1'"
                            class="bg-[#FACC15]/10 border border-[#CA8A04]/40 rounded-xl px-5 py-4 block transition hover:border-[#CA8A04] hover:shadow-sm">
-                            <div class="text-[11px] font-medium text-[#B45309]">Heute fällig</div>
+                            <div class="text-[11px] font-medium text-[#B45309]"><span x-text="t('Heute fällig')"></span></div>
                             <div class="mt-1.5 font-mono text-2xl font-semibold tracking-tight text-[#0B0B0F]" x-text="todaySections().reduce((s, x) => s + x.count, 0)"></div>
                             <div class="mt-0.5 text-[11px] font-mono text-[#B45309]/80" x-text="todaySections().length + (todaySections().length === 1 ? ' Sektion' : ' Sektionen')"></div>
                             <div class="mt-2 flex items-end"><div class="h-0.5 w-8 rounded-full bg-[#CA8A04] mb-1"></div></div>
@@ -347,16 +347,16 @@
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </a>
                             <button @click="dashMyOnly = !dashMyOnly" class="text-[10px] px-2 py-0.5 rounded-full border transition"
-                                    :class="dashMyOnly ? 'border-[#CA8A04] bg-[#CA8A04] text-black' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'">Mir zugewiesen</button>
+                                    :class="dashMyOnly ? 'border-[#CA8A04] bg-[#CA8A04] text-black' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'"><span x-text="t('Mir zugewiesen')"></span></button>
                         </div>
                         <div class="divide-y divide-[#F0F3F7]">
-                            <div x-show="dashMyOnly && !openTasks.some(t => String(t.assignee_id || t.responsible_id || t.owner_id || '') === String(meId))" class="px-5 py-4 text-xs text-[#9CA3AF]">Ihnen ist nichts offen zugewiesen.</div>
+                            <div x-show="dashMyOnly && !openTasks.some(t => String(t.assignee_id || t.responsible_id || t.owner_id || '') === String(meId))" class="px-5 py-4 text-xs text-[#9CA3AF]"><span x-text="t('Ihnen ist nichts offen zugewiesen.')"></span></div>
                             <template x-for="t in openTasks.filter(t => !dashMyOnly || String(t.assignee_id || t.responsible_id || t.owner_id || '') === String(meId))" :key="t.id">
                                 <div class="px-5 py-2.5 flex items-center justify-between gap-4 hover:bg-[#FAFBFC]">
                                     <a :href="'/app/tasks?tenant=' + tenant + '&open=' + t.id" class="text-sm text-[#1A2433] truncate hover:text-[#CA8A04] transition" x-text="t.title"></a>
                                     <span class="flex items-center gap-2.5 shrink-0">
                                         <span class="text-[11px] font-mono" x-html="dueRel(t.due_at)"></span>
-                                        <button @click="completeDashTask(t)" title="Erledigt markieren" class="h-4.5 w-4.5 p-0.5 rounded border border-[#D6DEE9] text-transparent hover:border-[#2E7D5B] hover:text-[#2E7D5B] transition">
+                                        <button @click="completeDashTask(t)" :title="t('Erledigt markieren')" class="h-4.5 w-4.5 p-0.5 rounded border border-[#D6DEE9] text-transparent hover:border-[#2E7D5B] hover:text-[#2E7D5B] transition">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                                         </button>
                                     </span>
@@ -419,10 +419,10 @@
                         </div>
                     </div>
                     <div x-show="evSummary" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
-                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center">Aktivität (<span x-text="evWindow"></span> Tage)
+                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center"><span x-text="t('Aktivität (')"></span><span x-text="evWindow"></span> Tage)
                             <select x-model.number="evWindow" @change="api('/api/v1/events/summary?days=' + evWindow).then(r => r.ok ? r.json() : null).then(d => evSummary = d)" class="text-[10px] font-mono border border-[#E4E9F0] rounded px-1 py-0.5 bg-white dark:bg-zinc-900">
                                 <option :value="7">7T</option><option :value="14">14T</option><option :value="30">30T</option>
-                            </select> <span class="text-[10px] font-mono text-[#9CA3AF]" x-text="evSummary ? evSummary.total + ' gesamt' + (evSummary.avg_per_day ? ' · Ø ' + evSummary.avg_per_day + '/Tag' : '') + (evSummary.last_event_at ? ' · Stand ' + new Date(evSummary.last_event_at).toLocaleString('de-DE', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '') : ''"></span></div>
+                            </select> <span class="text-[10px] font-mono text-[#9CA3AF]" x-text="evSummary ? evSummary.total + ' ' + t('gesamt') + (evSummary.avg_per_day ? ' · Ø ' + evSummary.avg_per_day + (lang==='en'?'/day':'/Tag') : '') + (evSummary.last_event_at ? ' · ' + t('Stand') + ' ' + new Date(evSummary.last_event_at).toLocaleString((this.lang==='en'?'en-GB':'de-DE'), {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '') : ''"></span></div>
                         <div class="px-5 py-4">
                             <div class="flex items-end gap-1.5 h-16">
                                 <template x-for="d in evDays()" :key="d.key">
@@ -457,7 +457,7 @@
                                 <template x-for="a in evActorsTop()" :key="'w'+a.id">
                                     <a :href="'/app/events?tenant=' + tenant + '&ea=' + a.id" class="text-[10px] px-2 py-0.5 rounded-full border border-dashed border-[#E4E9F0] text-[#9CA3AF] hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="'Auslöser: ' + a.name" x-text="a.name + ' · ' + a.events"></a>
                                 </template>
-                                <a x-show="evSummary && evSummary.busiest_day" :href="'/app/events?tenant=' + tenant + '&day=' + (evSummary && evSummary.busiest_day ? evSummary.busiest_day.date : '')" class="text-[10px] px-2 py-0.5 rounded-full bg-[#CA8A04]/10 border border-[#CA8A04]/40 text-[#8A6A00] hover:border-[#CA8A04]" :title="'Meiste Ereignisse an einem Tag — Tag filtern'" x-text="evSummary && evSummary.busiest_day ? 'Top-Tag ' + new Date(evSummary.busiest_day.date + 'T00:00:00').toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'}) + ' · ' + evSummary.busiest_day.events : ''"></a>
+                                <a x-show="evSummary && evSummary.busiest_day" :href="'/app/events?tenant=' + tenant + '&day=' + (evSummary && evSummary.busiest_day ? evSummary.busiest_day.date : '')" class="text-[10px] px-2 py-0.5 rounded-full bg-[#CA8A04]/10 border border-[#CA8A04]/40 text-[#8A6A00] hover:border-[#CA8A04]" :title="t('Meiste Ereignisse an einem Tag — Tag filtern')" x-text="evSummary && evSummary.busiest_day ? t('Top-Tag') + ' ' + new Date(evSummary.busiest_day.date + 'T00:00:00').toLocaleDateString((this.lang==='en'?'en-GB':'de-DE'), {day:'2-digit', month:'2-digit'}) + ' · ' + evSummary.busiest_day.events : ''"></a>
                                 <template x-for="s in evSubjectsTop()" :key="'s'+s.id">
                                     <a :href="topSubjectLink(s)" class="text-[10px] px-2 py-0.5 rounded-full bg-[#FFFDF2] border border-[#EAD98B] text-[#8A6A00] hover:border-[#CA8A04]" :title="'Betreffend: ' + s.title" x-text="s.title + ' · ' + s.events"></a>
                                 </template>
@@ -465,7 +465,7 @@
                         </div>
                     </div>
                     <div x-show="events.length" class="bg-white border border-[#E4E9F0] rounded-xl overflow-hidden">
-                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center">Letzte Ereignisse <a :href="'/app/events?tenant=' + tenant" class="text-[10px] text-[#CA8A04] hover:underline font-normal">Alle →</a></div>
+                        <div class="px-5 py-3 border-b border-[#E4E9F0] text-xs font-medium text-[#5B6B7E] flex justify-between items-center">Letzte Ereignisse <a :href="'/app/events?tenant=' + tenant" class="text-[10px] text-[#CA8A04] hover:underline font-normal"><span x-text="t('Alle →')"></span></a></div>
                         <div class="divide-y divide-[#F0F3F7] max-h-64 overflow-y-auto">
                             <template x-for="(e, i) in events" :key="i">
                                 <div>
@@ -545,7 +545,7 @@
                                                 </span>
                                             </div>
                                             <div x-show="reportOpen[r.id]" class="px-5 pb-3" x-transition>
-                                                <div x-show="!reportData[r.id]" class="text-[11px] text-[#9CA3AF] py-2">Lade Report…</div>
+                                                <div x-show="!reportData[r.id]" class="text-[11px] text-[#9CA3AF] py-2"><span x-text="t('Lade Report…')"></span></div>
                                                 <template x-if="reportData[r.id] && reportData[r.id].payload">
                                                     <div class="space-y-1">
                                                         <template x-for="t in (reportData[r.id].payload.tenants || [])" :key="t.id">
@@ -581,15 +581,15 @@
                         </span>
                         <div class="relative">
                             <input x-ref="search" x-model.debounce.200ms="query" @keydown.enter="if (filtered().length) { detail = sorted(filtered())[0]; $event.target.blur(); }" :placeholder="'Suchen in ' + title() + '… (/)'" class="w-40 sm:w-48 lg:w-64 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-                            <button x-show="query" @click="query = ''; $refs.search.focus()" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#5B6B7E] text-xs leading-none" aria-label="Suche löschen">&times;</button>
+                            <button x-show="query" @click="query = ''; $refs.search.focus()" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#5B6B7E] text-xs leading-none" :aria-label="t('Suche löschen')">&times;</button>
                         </div>
                         <div class="relative shrink-0">
-                            <button @click="colPicker = !colPicker" title="Spalten (c)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Spalten<span x-show="Object.values(hiddenCols).filter(Boolean).length" class="ml-1 text-[#CA8A04]" x-text="'(' + Object.values(hiddenCols).filter(Boolean).length + ')'"></span></button>
+                            <button @click="colPicker = !colPicker" :title="t('Spalten (c)')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition"><span x-text="t('Spalten')"></span><span x-show="Object.values(hiddenCols).filter(Boolean).length" class="ml-1 text-[#CA8A04]" x-text="'(' + Object.values(hiddenCols).filter(Boolean).length + ')'"></span></button>
                             <button @click="compact = !compact; try { localStorage.setItem('af_density', compact ? '1' : '0'); } catch (e) {}" :title="compact ? 'Normale Zeilenhöhe' : 'Kompakte Zeilenhöhe'"
                                     class="text-xs px-3 py-1.5 border rounded-lg transition shrink-0"
                                     :class="compact ? 'border-[#CA8A04] text-[#CA8A04] bg-[#CA8A04]/5' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'">≡</button>
                             <div x-show="colPicker" @click.outside="colPicker = false" class="absolute right-0 mt-1.5 w-48 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20 max-h-64 overflow-y-auto" style="display:none">
-                                <button x-show="Object.values(hiddenCols).some(Boolean)" @click="hiddenCols = {}; saveColPrefs()" class="w-full text-left px-3 py-1.5 text-xs text-[#CA8A04] hover:bg-[#CA8A04]/10 border-b border-[#E4E9F0]">Alle einblenden</button>
+                                <button x-show="Object.values(hiddenCols).some(Boolean)" @click="hiddenCols = {}; saveColPrefs()" class="w-full text-left px-3 py-1.5 text-xs text-[#CA8A04] hover:bg-[#CA8A04]/10 border-b border-[#E4E9F0]"><span x-text="t('Alle einblenden')"></span></button>
                                 <template x-for="c in columns" :key="c">
                                     <label class="flex items-center gap-2 px-3 py-1.5 text-xs text-[#1A2433] hover:bg-[#FAFBFC] cursor-pointer">
                                         <input type="checkbox" :aria-label="'Spalte ' + label(c)" :checked="!hiddenCols[c]" @change="toggleCol(c)" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
@@ -598,33 +598,33 @@
                                 </template>
                             </div>
                         </div>
-                        <select x-model="groupBy" title="Gruppieren nach" class="text-xs px-2 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg bg-white hover:border-[#CA8A04] transition shrink-0 max-w-[10rem]">
-                            <option value="">Keine Gruppierung</option>
-                            <option x-show="rows && (rows||[]).some(r => r.updated_at)" value="__period">Zeitraum</option>
+                        <select x-model="groupBy" :title="t('Gruppieren nach')" class="text-xs px-2 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg bg-white hover:border-[#CA8A04] transition shrink-0 max-w-[10rem]">
+                            <option value=""><span x-text="t('Keine Gruppierung')"></span></option>
+                            <option x-show="rows && (rows||[]).some(r => r.updated_at)" value="__period"><span x-text="t('Zeitraum')"></span></option>
                             <template x-for="c in columns" :key="'g-'+c">
                                 <option :value="c" x-text="label(c)"></option>
                             </template>
                         </select>
-                        <button x-show="groupBy && Object.keys(collapsedGroups).length" @click="collapsedGroups = {}; localStorage.removeItem('af_gc_' + section)" title="Alle Gruppen aufklappen" class="text-[11px] px-2 py-1.5 text-[#9CA3AF] hover:text-[#CA8A04] transition shrink-0">alle auf</button>
+                        <button x-show="groupBy && Object.keys(collapsedGroups).length" @click="collapsedGroups = {}; localStorage.removeItem('af_gc_' + section)" :title="t('Alle Gruppen aufklappen')" class="text-[11px] px-2 py-1.5 text-[#9CA3AF] hover:text-[#CA8A04] transition shrink-0">alle auf</button>
                         <div class="relative shrink-0">
-                            <button @click="viewPicker = !viewPicker" title="Gespeicherte Ansichten" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Ansichten<span x-show="Object.keys(views()).length" class="ml-1 text-[#CA8A04]" x-text="'(' + Object.keys(views()).length + ')'"></span></button>
+                            <button @click="viewPicker = !viewPicker" :title="t('Gespeicherte Ansichten')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition"><span x-text="t('Ansichten')"></span><span x-show="Object.keys(views()).length" class="ml-1 text-[#CA8A04]" x-text="'(' + Object.keys(views()).length + ')'"></span></button>
                             <div x-show="viewPicker" @click.outside="viewPicker = false" class="absolute right-0 mt-1.5 w-56 bg-white border border-[#E4E9F0] rounded-lg shadow-lg py-1 z-20" style="display:none">
-                                <button @click="saveView()" class="w-full text-left px-3 py-1.5 text-xs text-[#CA8A04] hover:bg-[#CA8A04]/10 border-b border-[#E4E9F0]">+ Aktuelle Ansicht speichern</button>
-                                <p x-show="!Object.keys(views()).length" class="px-3 py-2 text-[11px] text-[#9CA3AF]">Noch keine Ansichten.</p>
+                                <button @click="saveView()" class="w-full text-left px-3 py-1.5 text-xs text-[#CA8A04] hover:bg-[#CA8A04]/10 border-b border-[#E4E9F0]">+ <span x-text="t('Aktuelle Ansicht speichern')"></span></button>
+                                <p x-show="!Object.keys(views()).length" class="px-3 py-2 text-[11px] text-[#9CA3AF]"><span x-text="t('Noch keine Ansichten.')"></span></p>
                                 <template x-for="(v, name) in views()" :key="name">
                                     <div class="flex items-center hover:bg-[#FAFBFC]">
                                         <button @click="applyView(name)" class="flex-1 text-left px-3 py-1.5 text-xs text-[#1A2433] truncate" x-text="name"></button>
-                                        <button @click="deleteView(name)" class="px-2 text-[#9CA3AF] hover:text-[#A6362E] text-xs" title="Ansicht löschen">&times;</button>
+                                        <button @click="deleteView(name)" class="px-2 text-[#9CA3AF] hover:text-[#A6362E] text-xs" :title="t('Ansicht löschen')">&times;</button>
                                     </div>
                                 </template>
                             </div>
                         </div>
-                        <button @click="exportCsv()" title="CSV exportieren" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
-                        <button x-show="section === 'notifications'" @click="exportNotifs()" title="Benachrichtigungen als NDJSON exportieren (aktive Filter werden übernommen)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">NDJSON</button>
-                        <button x-show="section === 'events'" @click="exportEvents()" title="Serverseitiger Audit-Export (NDJSON, alle Einträge)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">NDJSON</button>
-                        <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" title="CSV importieren (i)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
-                        <button @click="window.print()" title="Drucken" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">Drucken</button>
-                        <button x-show="section === 'tokens' && rows && (rows||[]).length > 1" @click="revokeAllTokens()" title="Alle API-Token widerrufen" class="text-xs px-3 py-1.5 border border-[#A6362E] text-[#A6362E] rounded-lg hover:bg-[#A6362E] hover:text-white transition shrink-0">Alle widerrufen</button>
+                        <button @click="exportCsv()" :title="t('CSV exportieren')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV</button>
+                        <button x-show="section === 'notifications'" @click="exportNotifs()" :title="t('Benachrichtigungen als NDJSON exportieren (aktive Filter werden übernommen)')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">NDJSON</button>
+                        <button x-show="section === 'events'" @click="exportEvents()" :title="t('Serverseitiger Audit-Export (NDJSON, alle Einträge)')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">NDJSON</button>
+                        <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" :title="t('CSV importieren (i)')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
+                        <button @click="window.print()" :title="t('Drucken')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0"><span x-text="t('Drucken')"></span></button>
+                        <button x-show="section === 'tokens' && rows && (rows||[]).length > 1" @click="revokeAllTokens()" :title="t('Alle API-Token widerrufen')" class="text-xs px-3 py-1.5 border border-[#A6362E] text-[#A6362E] rounded-lg hover:bg-[#A6362E] hover:text-white transition shrink-0"><span x-text="t('Alle widerrufen')"></span></button>
                         <button x-show="canCreate()" @click="openCreate()" :title="'Neu anlegen: ' + title() + ' (n)'" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0"x-text="'+ ' + t('Neu')"></button>
                     </div>
                     <div x-show="rows && recentRows().some(r => r.key === section)" class="flex items-center gap-1.5 px-5 py-1.5 border-b border-[#E4E9F0] print:hidden overflow-x-auto">
@@ -634,31 +634,31 @@
                                     :class="detail && String(detail.id) === String(rr.id) ? 'border-[#CA8A04] text-[#CA8A04] bg-[#CA8A04]/5' : 'border-[#E4E9F0] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]'">
                                 <button @click="const t = (rows || []).find(x => String(x.id) === String(rr.id)); if (t) detail = t"
                                         class="text-[11px] pl-2 py-0.5 whitespace-nowrap" x-text="'↻ ' + (rr.name || rr.id)"></button>
-                                <button @click.stop="removeRecentRow(rr)" title="Entfernen"
+                                <button @click.stop="removeRecentRow(rr)" :title="t('Entfernen')"
                                         class="text-[10px] px-1 text-[#9CA3AF] hover:text-[#A6362E] opacity-0 group-hover/rr:opacity-100 transition">&times;</button>
                             </span>
                         </template>
-                        <button x-show="recentRows().filter(r => r.key === section).length > 1" @click="clearRecentSection()" title="Zuletzt-Liste für diese Sektion leeren" class="ml-auto shrink-0 text-[10px] text-[#9CA3AF] hover:text-[#A6362E]">leeren ×</button>
+                        <button x-show="recentRows().filter(r => r.key === section).length > 1" @click="clearRecentSection()" :title="t('Zuletzt-Liste für diese Sektion leeren')" class="ml-auto shrink-0 text-[10px] text-[#9CA3AF] hover:text-[#A6362E]">leeren ×</button>
                     </div>
                     <div x-show="rows && (statusOpts().length > 1 || (rows||[]).some(r => overdue(r)) || section === 'notifications')" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
-                        <button x-show="(rows||[]).some(r => overdue(r))" @click="overdueOnly = !overdueOnly" title="Überfällig (u)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                        <button x-show="(rows||[]).some(r => overdue(r))" @click="overdueOnly = !overdueOnly" :title="t('Überfällig (u)')" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
                                 x-text="t('Überfällig') + ' · ' + (rows||[]).filter(r => overdue(r)).length"></button>
-                        <button x-show="(rows||[]).some(r => dueToday(r))" @click="dueTodayOnly = !dueTodayOnly" title="Heute fällig" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                        <button x-show="(rows||[]).some(r => dueToday(r))" @click="dueTodayOnly = !dueTodayOnly" :title="t('Heute fällig')" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="dueTodayOnly ? 'border-[#CA8A04] bg-[#CA8A04] text-black' : 'border-[#CA8A04]/40 text-[#B45309] hover:bg-[#CA8A04]/10'"
                                 x-text="'Heute · ' + (rows||[]).filter(r => dueToday(r)).length"></button>
-                        <button x-show="(rows||[]).some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" title="≤7 Tage (s)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                        <button x-show="(rows||[]).some(r => dueSoon(r))" @click="dueSoonOnly = !dueSoonOnly" :title="t('≤7 Tage (s)')" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="dueSoonOnly ? 'border-[#B45309] bg-[#B45309] text-white' : 'border-[#B45309]/40 text-[#B45309] hover:bg-[#B45309]/5'"
                                 x-text="'≤ 7 Tage · ' + (rows||[]).filter(r => dueSoon(r)).length"></button>
                         <button x-show="(rows||[]).some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)" @click="myOnly = !myOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
-                                :class="myOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">Mir zugewiesen</button>
+                                :class="myOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"><span x-text="t('Mir zugewiesen')"></span></button>
                         <button x-show="(rows||[]).some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r || 'assigned_to' in r) && (rows||[]).some(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to))" @click="unassignedOnly = !unassignedOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="unassignedOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
                                 x-text="'Ohne Verantwortlichen · ' + (rows||[]).filter(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to)).length"></button>
-                        <button x-show="section === 'events'" @click="evDay = new Date().toISOString().slice(0,10)" :class="evDay === new Date().toISOString().slice(0,10) ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'" class="text-[11px] px-2.5 py-1 rounded-full border transition">Heute</button>
-                        <button x-show="section === 'events'" @click="evActor = evActor === 'me' ? '' : 'me'" :class="evActor === 'me' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'" class="text-[11px] px-2.5 py-1 rounded-full border transition">Von mir</button>
+                        <button x-show="section === 'events'" @click="evDay = new Date().toISOString().slice(0,10)" :class="evDay === new Date().toISOString().slice(0,10) ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'" class="text-[11px] px-2.5 py-1 rounded-full border transition"><span x-text="t('Heute')"></span></button>
+                        <button x-show="section === 'events'" @click="evActor = evActor === 'me' ? '' : 'me'" :class="evActor === 'me' ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'" class="text-[11px] px-2.5 py-1 rounded-full border transition"><span x-text="t('Von mir')"></span></button>
                         <button x-show="section === 'events' && evActorName" @click="evActorName = ''" class="text-[11px] px-2.5 py-1 rounded-full border border-[#0B0B0F] bg-[#0B0B0F] text-white transition">von: <span x-text="evActorName"></span> ×</button>
-                            <button x-show="evDay" @click="evDay = ''" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04] text-[#CA8A04] transition" x-text="'Tag: ' + new Date(evDay + 'T12:00').toLocaleDateString('de-DE') + ' ×'"></button>
+                            <button x-show="evDay" @click="evDay = ''" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04] text-[#CA8A04] transition" x-text="t('Tag') + ': ' + new Date(evDay + 'T12:00').toLocaleDateString((this.lang==='en'?'en-GB':'de-DE')) + ' ×'"></button>
                             <button x-show="evWeekday" @click="evWeekday = ''" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04] text-[#CA8A04] transition" x-text="'Wochentag: ' + ['','So','Mo','Di','Mi','Do','Fr','Sa'][evWeekday] + ' ×'"></button>
                             <button x-show="evHour !== ''" @click="evHour = ''" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04] text-[#CA8A04] transition" x-text="'Stunde: ' + String(evHour).padStart(2,'0') + ' Uhr ×'"></button>
                             <template x-for="t in evTypeGroups()" :key="'eg'+t.g">
@@ -706,9 +706,9 @@
                         <button x-show="section === 'notifications' && rows && (rows||[]).some(r => r.muted)" @click="mutedOnly = !mutedOnly" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="mutedOnly ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
                                 x-text="'Stumm · ' + (rows||[]).filter(r => r.muted).length"></button>
-                        <button x-show="section === 'notifications' && rows && (rows||[]).some(r => !r.read)" @click="markAllNotifsRead(); toast('Alle als gelesen markiert')" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 transition">Alle gelesen</button>
-                        <button x-show="section === 'notifications' && rows && (rows||[]).some(r => r.read)" @click="deleteReadNotifs()" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition">Gelesene entfernen</button>
-                        <button x-show="section === 'notifications' && rows && (rows||[]).length > 1" @click="if (confirm('Alle Benachrichtigungen entfernen?')) this.api('/api/v1/notifications', {method: 'DELETE'}).then(r => r.ok ? r.json() : null).then(d => { if (d) { this.toast((d.deleted ?? 0) + ' entfernt'); this.loadSection(); } })" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition">Alle entfernen</button>
+                        <button x-show="section === 'notifications' && rows && (rows||[]).some(r => !r.read)" @click="markAllNotifsRead(); toast('Alle als gelesen markiert')" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 transition"><span x-text="t('Alle gelesen')"></span></button>
+                        <button x-show="section === 'notifications' && rows && (rows||[]).some(r => r.read)" @click="deleteReadNotifs()" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition"><span x-text="t('Gelesene entfernen')"></span></button>
+                        <button x-show="section === 'notifications' && rows && (rows||[]).length > 1" @click="if (confirm(t('Alle Benachrichtigungen entfernen?'))) this.api('/api/v1/notifications', {method: 'DELETE'}).then(r => r.ok ? r.json() : null).then(d => { if (d) { this.toast((d.deleted ?? 0) + ' entfernt'); this.loadSection(); } })" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition"><span x-text="t('Alle entfernen')"></span></button>
                         <template x-for="rn in roleOpts()" :key="'role-' + rn">
                             <button @click="roleFilter = roleFilter === rn ? '' : rn" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="roleFilter === rn ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">
@@ -726,7 +726,7 @@
                     <div x-show="rows && filtered().length === 0" class="px-6 py-12 text-center">
                         <p class="text-sm text-[#5B6B7E]" x-text="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || evActorName || evWeekday || evHour !== '' || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly ? t('Keine Einträge für diese Filter.') : t('Keine Einträge vorhanden.')"></p>
                         <button x-show="query || statusFilter || severityFilter || roleFilter || kindFilter || codeFilter || unreadOnly || mutedOnly || evGroup || evDay || evActor || overdueOnly || dueSoonOnly || dueTodayOnly || myOnly || unassignedOnly" @click="query = ''; statusFilter = ''; severityFilter = ''; roleFilter = ''; kindFilter = ''; codeFilter = ''; unreadOnly = false; mutedOnly = false; evGroup = ''; evDay = ''; evActor = ''; evActorName = ''; evWeekday = ''; evHour = ''; overdueOnly = false; dueSoonOnly = false; dueTodayOnly = false; myOnly = false; unassignedOnly = false"
-                                title="Filter zurücksetzen (x)" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition">Filter zurücksetzen</button>
+                                :title="t('Filter zurücksetzen (x)')" class="mt-3 text-xs px-3.5 py-2 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition"><span x-text="t('Filter zurücksetzen')"></span></button>
                         <button x-show="canCreate() && !query && !statusFilter && !severityFilter && !roleFilter && !kindFilter && !codeFilter && !unreadOnly && !mutedOnly && !evGroup && !overdueOnly && !dueSoonOnly && !dueTodayOnly && !myOnly && !unassignedOnly" @click="openCreate()"
                                 class="mt-3 text-xs px-3.5 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition">+ Ersten Eintrag erstellen</button>
                     </div>
@@ -736,25 +736,25 @@
                         <template x-for="a in sectionActions()" :key="a[1]">
                             <button @click="bulkStatus(a[1])" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" x-text="a[0]"></button>
                         </template>
-                        <button @click="copySel()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Als TSV in die Zwischenablage">Kopieren</button>
-                        <button @click="invertSel()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Auswahl umkehren (sichtbare Zeilen)">Invertieren</button>
+                        <button @click="copySel()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="t('Als TSV in die Zwischenablage')"><span x-text="t('Kopieren')"></span></button>
+                        <button @click="invertSel()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="t('Auswahl umkehren (sichtbare Zeilen)')"><span x-text="t('Invertieren')"></span></button>
                         <button @click="exportCsv((this.rows || []).filter(r => selected[r.id]))" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">CSV</button>
-                        <button @click="exportJson((this.rows || []).filter(r => selected[r.id]))" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Ausgewählte Zeilen als JSON-Datei">JSON</button>
+                        <button @click="exportJson((this.rows || []).filter(r => selected[r.id]))" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="t('Ausgewählte Zeilen als JSON-Datei')">JSON</button>
                         <template x-if="section === 'notifications'">
                             <span class="inline-flex gap-2">
-                                <button @click="notifBatch('read')" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" title="Ausgewählte als gelesen markieren">Gelesen</button>
-                                <button @click="notifBatch('unread')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" title="Ausgewählte als ungelesen markieren">Ungelesen</button>
+                                <button @click="notifBatch('read')" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" :title="t('Ausgewählte als gelesen markieren')"><span x-text="t('Gelesen')"></span></button>
+                                <button @click="notifBatch('unread')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" :title="t('Ausgewählte als ungelesen markieren')"><span x-text="t('Ungelesen')"></span></button>
                             </span>
                         </template>
-                        <button @click="bulkDelete()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5">Löschen</button>
-                        <button @click="selected = {}" class="text-xs px-3 py-1.5 text-[#5B6B7E] hover:text-[#0B0B0F]">Auswahl aufheben</button>
+                        <button @click="bulkDelete()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/5"><span x-text="t('Löschen')"></span></button>
+                        <button @click="selected = {}" class="text-xs px-3 py-1.5 text-[#5B6B7E] hover:text-[#0B0B0F]"><span x-text="t('Auswahl aufheben')"></span></button>
                     </div>
                     <div class="max-h-[70vh] overflow-y-auto">
                     <table x-show="rows && filtered().length" class="w-full text-sm" :aria-busy="!rows">
                         <thead>
                             <tr class="border-b border-[#E4E9F0] bg-[#FAFBFC] text-left">
                                 <th x-show="writable()" scope="col" class="px-4 py-3 w-10">
-                                    <input type="checkbox" aria-label="Alle sichtbaren Zeilen auswählen" @change="toggleAll($event.target.checked)" :checked="sorted(filtered()).length > 0 && selCount() === sorted(filtered()).length"
+                                    <input type="checkbox" :aria-label="t('Alle sichtbaren Zeilen auswählen')" @change="toggleAll($event.target.checked)" :checked="sorted(filtered()).length > 0 && selCount() === sorted(filtered()).length"
                                            x-effect="$el.indeterminate = selCount() > 0 && selCount() < sorted(filtered()).length"
                                            class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 </th>
@@ -764,7 +764,7 @@
                                         <span x-text="label(c)"></span><span class="ml-1 text-[#CA8A04]" x-text="sortKey===c ? (sortAsc?'▲':'▼') : ''"></span>
                                     </th>
                                 </template>
-                                <th x-show="sectionActions().length || canEdit()" scope="col" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] w-28">Aktionen</th>
+                                <th x-show="sectionActions().length || canEdit()" scope="col" class="px-5 py-3 text-[11px] font-semibold tracking-wide text-[#5B6B7E] w-28"><span x-text="t('Aktionen')"></span></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -790,17 +790,17 @@
                                                     <span x-text="it.i + 1"></span>
                                                 </template>
                                                 <template x-if="e.t === 'c'">
-                                                    <span><span x-html="cell(it.r, e.c)"></span><span x-show="e.c === visCols()[0] && isNew(it.r)" class="ml-1.5 text-[9px] font-bold px-1 py-0.5 rounded bg-[#FACC15] text-[#0B0B0F] align-middle">NEU</span></span>
+                                                    <span><span x-html="cell(it.r, e.c)"></span><span x-show="e.c === visCols()[0] && isNew(it.r)" class="ml-1.5 text-[9px] font-bold px-1 py-0.5 rounded bg-[#FACC15] text-[#0B0B0F] align-middle"><span x-text="t('NEU')"></span></span></span>
                                                 </template>
                                                 <template x-if="e.t === 'act'">
                                                     <div class="flex gap-1 items-center" @click.stop>
                                                         <template x-for="a in rowActions(it.r).slice(0, 2)" :key="a[1]">
                                                             <button @click="applyRowStatus(it.r, a[1])" class="text-[10px] px-2 py-1 rounded-md border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 whitespace-nowrap" x-text="a[0]"></button>
                                                         </template>
-                                                        <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(it.r)" title="Herunterladen" class="text-[11px] px-1.5 py-1 rounded-md border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]">&#11123;</button>
-                                                        <button x-show="canEdit() && section !== 'documents'" @click="detail = it.r; openDuplicate()" title="Duplizieren" class="text-[11px] px-1.5 py-1 rounded-md border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]">&#10697;</button>
-                                                        <button x-show="canEdit()" @click="detail = it.r; openEdit()" title="Bearbeiten" class="text-[11px] px-1.5 py-1 rounded-md border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]">&#9998;</button>
-                                                        <button x-show="canEdit()" @click="deleteRow(it.r)" title="Löschen" class="text-[11px] px-1.5 py-1 rounded-md border border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5">&#128465;</button>
+                                                        <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(it.r)" :title="t('Herunterladen')" class="text-[11px] px-1.5 py-1 rounded-md border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]">&#11123;</button>
+                                                        <button x-show="canEdit() && section !== 'documents'" @click="detail = it.r; openDuplicate()" :title="t('Duplizieren')" class="text-[11px] px-1.5 py-1 rounded-md border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]">&#10697;</button>
+                                                        <button x-show="canEdit()" @click="detail = it.r; openEdit()" :title="t('Bearbeiten')" class="text-[11px] px-1.5 py-1 rounded-md border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]">&#9998;</button>
+                                                        <button x-show="canEdit()" @click="deleteRow(it.r)" :title="t('Löschen')" class="text-[11px] px-1.5 py-1 rounded-md border border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5">&#128465;</button>
                                                     </div>
                                                 </template>
                                             </td>
@@ -825,7 +825,7 @@
                         <button @click="limit += 100" class="text-xs text-[#CA8A04] hover:underline">
                             <span x-text="t('Mehr laden') + ' ('"></span><span x-text="filtered().length - limit"></span> <span x-text="t('weitere') + ')'"></span>
                         </button>
-                        <button x-show="filtered().length - limit > 100" @click="limit = filtered().length" title="Alle laden (l)" class="text-xs text-[#5B6B7E] hover:text-[#CA8A04] hover:underline">
+                        <button x-show="filtered().length - limit > 100" @click="limit = filtered().length" :title="t('Alle laden (l)')" class="text-xs text-[#5B6B7E] hover:text-[#CA8A04] hover:underline">
                             <span x-text="t('Alle laden')"></span>
                         </button>
                     </div>
@@ -838,17 +838,17 @@
             <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="detail = null"></div>
             <div x-ref="drawer" tabindex="-1" class="absolute inset-y-0 right-0 w-full bg-white shadow-xl flex flex-col transition-[max-width] duration-200 outline-none" :class="drawerWide ? 'max-w-2xl' : 'max-w-md'" role="dialog" aria-modal="true" :aria-label="title() + ' · Details'">
                 <div class="px-6 py-4 border-b border-[#E4E9F0] flex items-center justify-between">
-                    <h2 class="font-semibold text-[#0B0B0F] flex items-center gap-2 min-w-0"><span class="shrink-0 text-[#CA8A04] text-sm" x-text="icons[section] || ''"></span><span class="truncate" x-text="detailTitle()"></span><span x-show="overdue(detail)" class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#A6362E] text-white">ÜBERFÄLLIG</span></h2>
+                    <h2 class="font-semibold text-[#0B0B0F] flex items-center gap-2 min-w-0"><span class="shrink-0 text-[#CA8A04] text-sm" x-text="icons[section] || ''"></span><span class="truncate" x-text="detailTitle()"></span><span x-show="overdue(detail)" class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#A6362E] text-white"><span x-text="t('ÜBERFÄLLIG')"></span></span></h2>
                     <div class="flex items-center gap-1">
                         <button @click="drawerWide = !drawerWide; try { localStorage.setItem('af_drawer_wide', drawerWide ? '1' : '0'); } catch (e) {}" class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7] transition" :title="drawerWide ? 'Schmal' : 'Breit'">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 3v3m0 0l-3-3m3 3l3-3M16 21v-3m0 0l-3 3m3-3l3 3"/></svg>
                         </button>
-                        <button @click="navDetail(-1)" :disabled="!hasNav(-1)" :class="hasNav(-1) ? 'text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7]' : 'text-[#E4E9F0] cursor-not-allowed'" class="p-1.5 rounded-lg transition" title="Vorheriger (←)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
-                        <button @click="navDetail(1)" :disabled="!hasNav(1)" :class="hasNav(1) ? 'text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7]' : 'text-[#E4E9F0] cursor-not-allowed'" class="p-1.5 rounded-lg transition" title="Nächster (→)"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+                        <button @click="navDetail(-1)" :disabled="!hasNav(-1)" :class="hasNav(-1) ? 'text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7]' : 'text-[#E4E9F0] cursor-not-allowed'" class="p-1.5 rounded-lg transition" :title="t('Vorheriger (←)')"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
+                        <button @click="navDetail(1)" :disabled="!hasNav(1)" :class="hasNav(1) ? 'text-[#9CA3AF] hover:text-[#0B0B0F] hover:bg-[#F0F3F7]' : 'text-[#E4E9F0] cursor-not-allowed'" class="p-1.5 rounded-lg transition" :title="t('Nächster (→)')"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
                         <span class="text-[11px] font-mono text-[#9CA3AF] px-1" x-text="detailPos()"></span>
                     </div>
-                    <button x-show="!['dashboard','executive'].includes(section)" @click="reloadRow()" class="text-[#5B6B7E] hover:text-[#CA8A04] inline-block" :class="rowLoading && 'animate-spin'" title="Aktualisieren">&#8635;</button>
-                    <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]" title="Schließen (Esc)" aria-label="Schließen">&times;</button>
+                    <button x-show="!['dashboard','executive'].includes(section)" @click="reloadRow()" class="text-[#5B6B7E] hover:text-[#CA8A04] inline-block" :class="rowLoading && 'animate-spin'" :title="t('Aktualisieren')">&#8635;</button>
+                    <button @click="detail = null" class="text-[#5B6B7E] hover:text-[#0B0B0F]" :title="t('Schließen (Esc)')" :aria-label="t('Schließen')">&times;</button>
                 </div>
                 <div class="flex-1 overflow-y-auto p-6">
                     <dl class="space-y-3 text-sm">
@@ -873,10 +873,10 @@
                                     <a x-show="linkOf(detail[k])" :href="linkOf(detail[k])" :target="/^https?:/.test(linkOf(detail[k]) || '') ? '_blank' : null" rel="noopener"
                                        class="text-[#CA8A04] hover:underline break-all" x-text="fmtD(detail, k)"></a>
                                     <a x-show="refSection(k) && detail[k]" :href="'/app/' + refSection(k) + '?tenant=' + tenant + '&open=' + detail[k]"
-                                       class="ml-1.5 text-[#CA8A04] hover:underline text-[11px] font-sans whitespace-nowrap">öffnen →</a>
+                                       class="ml-1.5 text-[#CA8A04] hover:underline text-[11px] font-sans whitespace-nowrap"><span x-text="t('öffnen →')"></span></a>
                                 </dd>
                                 <button x-show="detail[k] !== null && detail[k] !== undefined && detail[k] !== ''"
-                                        @click="copyVal(detail[k])" title="Wert kopieren"
+                                        @click="copyVal(detail[k])" :title="t('Wert kopieren')"
                                         class="self-start shrink-0 opacity-0 group-hover:opacity-100 transition text-[#9CA3AF] hover:text-[#CA8A04] text-xs leading-none">⧉</button>
                             </div>
                         </template>
@@ -889,11 +889,11 @@
                 </div>
                 <div x-show="section === 'notifications'" class="px-6 py-3 border-t border-[#E4E9F0] flex flex-wrap gap-2">
                     <button @click="toggleNotifRead(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10" x-text="detail && detail.read ? 'Als ungelesen markieren' : 'Als gelesen markieren'"></button>
-                    <button @click="dismissNotif(detail)" class="text-xs px-3 py-1.5 border border-[#A6362E]/50 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/10">Entfernen</button>
+                    <button @click="dismissNotif(detail)" class="text-xs px-3 py-1.5 border border-[#A6362E]/50 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/10"><span x-text="t('Entfernen')"></span></button>
                 </div>
                 <div x-show="section === 'tenders'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">BEWERBUNGEN</div>
-                    <div x-show="!apps.length" class="text-xs text-[#9CA3AF]">Noch keine Bewerbungen.</div>
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]"><span x-text="t('BEWERBUNGEN')"></span></div>
+                    <div x-show="!apps.length" class="text-xs text-[#9CA3AF]"><span x-text="t('Noch keine Bewerbungen.')"></span></div>
                     <template x-for="a in apps" :key="a.id">
                         <div class="rounded-lg border px-3 py-2.5" :class="a.status === 'awarded' ? 'border-[#2E7D5B]/50 bg-[#2E7D5B]/5' : 'border-[#E4E9F0]'">
                             <div class="flex items-center justify-between gap-2">
@@ -904,62 +904,62 @@
                             <div x-show="a.price" class="mt-1 text-xs text-[#5B6B7E]"><span x-text="a.price"></span> €</div>
                             <div class="mt-2 flex flex-wrap gap-3">
                                 <template x-for="t in [['shortlisted','Vormerken'],['awarded','Vergeben'],['rejected','Ablehnen']]" :key="t[0]">
-                                    <button x-show="a.status !== t[0]" @click="setAppStatus(a.id, t[0])" class="text-[11px] font-medium text-[#CA8A04] hover:underline" x-text="t[1]"></button>
+                                    <button x-show="a.status !== t[0]" @click="setAppStatus(a.id, t[0])" class="text-[11px] font-medium text-[#CA8A04] hover:underline" x-text="this.t(t[1])"></button>
                                 </template>
-                                <button @click="deleteApp(a.id)" class="text-[11px] text-[#A6362E] hover:underline">Löschen</button>
+                                <button @click="deleteApp(a.id)" class="text-[11px] text-[#A6362E] hover:underline"><span x-text="t('Löschen')"></span></button>
                             </div>
                         </div>
                     </template>
                     <form x-show="detail && detail.status === 'open'" @submit.prevent="submitApp()" class="space-y-2 rounded-lg border border-dashed border-[#D6DEE9] p-3">
                         <select x-model="appForm.expert_profile_id" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-                            <option value="">— Experte wählen —</option>
+                            <option value=""><span x-text="t('— Experte wählen —')"></span></option>
                             <template x-for="o in fkOptions('expert_profiles')" :key="o[0]">
                                 <option :value="o[0]" x-text="o[1]"></option>
                             </template>
                         </select>
-                        <textarea x-model="appForm.proposal" rows="2" placeholder="Angebot / Beschreibung…"
+                        <textarea x-model="appForm.proposal" rows="2" :placeholder="t('Angebot / Beschreibung…')"
                                   class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30"></textarea>
-                        <input x-model="appForm.price" type="number" min="0" step="0.01" placeholder="Preis (€)"
+                        <input x-model="appForm.price" type="number" min="0" step="0.01" :placeholder="t('Preis (€)')"
                                class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                         <div class="flex justify-end">
-                            <button type="submit" :disabled="!appForm.expert_profile_id" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40">Bewerbung anlegen</button>
+                            <button type="submit" :disabled="!appForm.expert_profile_id" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40"><span x-text="t('Bewerbung anlegen')"></span></button>
                         </div>
                     </form>
                 </div>
                 <div x-show="section === 'questions'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">ANTWORTEN</div>
-                    <div x-show="!answers.length" class="text-xs text-[#9CA3AF]">Noch keine Antworten.</div>
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]"><span x-text="t('ANTWORTEN')"></span></div>
+                    <div x-show="!answers.length" class="text-xs text-[#9CA3AF]"><span x-text="t('Noch keine Antworten.')"></span></div>
                     <template x-for="ans in answers" :key="ans.id">
                         <div class="rounded-lg border px-3 py-2.5" :class="ans.is_accepted ? 'border-[#2E7D5B]/50 bg-[#2E7D5B]/5' : 'border-[#E4E9F0]'">
                             <div class="flex items-center justify-between gap-2">
                                 <span class="text-xs font-medium text-[#1A2433]" x-text="ans.author?.name || resolveId('answered_by', ans.answered_by) || '—'"></span>
-                                <span x-show="ans.is_accepted" class="text-[10px] font-semibold text-[#2E7D5B]">AKZEPTIERT</span>
+                                <span x-show="ans.is_accepted" class="text-[10px] font-semibold text-[#2E7D5B]"><span x-text="t('AKZEPTIERT')"></span></span>
                             </div>
                             <p class="mt-1 text-sm text-[#42536A] whitespace-pre-wrap" x-text="ans.body"></p>
                             <div class="mt-2 flex gap-3">
-                                <button x-show="!ans.is_accepted" @click="acceptAnswer(ans.id)" class="text-[11px] font-medium text-[#2E7D5B] hover:underline">Akzeptieren</button>
-                                <button @click="deleteAnswer(ans.id)" class="text-[11px] text-[#A6362E] hover:underline">Löschen</button>
+                                <button x-show="!ans.is_accepted" @click="acceptAnswer(ans.id)" class="text-[11px] font-medium text-[#2E7D5B] hover:underline"><span x-text="t('Akzeptieren')"></span></button>
+                                <button @click="deleteAnswer(ans.id)" class="text-[11px] text-[#A6362E] hover:underline"><span x-text="t('Löschen')"></span></button>
                             </div>
                         </div>
                     </template>
                     <form @submit.prevent="postAnswer()" class="space-y-2">
-                        <textarea x-model="answerText" rows="3" placeholder="Antwort schreiben…"
+                        <textarea x-model="answerText" rows="3" :placeholder="t('Antwort schreiben…')"
                                   class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30"></textarea>
                         <div class="flex justify-end">
-                            <button type="submit" :disabled="!answerText.trim()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40">Antworten</button>
+                            <button type="submit" :disabled="!answerText.trim()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40"><span x-text="t('Antworten')"></span></button>
                         </div>
                     </form>
                 </div>
                 <div x-show="section === 'users'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">ROLLEN</div>
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]"><span x-text="t('ROLLEN')"></span></div>
                     <template x-for="r in allRoles" :key="r.id">
                         <div>
                             <div class="flex items-center gap-2.5 text-sm text-[#1A2433]">
                                 <input type="checkbox" :value="r.name" x-model="userRoles" :disabled="!hasPerm('roles.manage')" class="rounded border-[#D6DEE9] text-[#CA8A04] focus:ring-[#CA8A04]/30 disabled:opacity-50">
                                 <span x-text="roleLabel(r.name)" :title="r.name"></span>
                                 <span class="text-[11px] text-[#9CA3AF]" x-text="'(' + (r.permissions || []).length + ' Rechte)'"></span>
-                                <button x-show="hasPerm('roles.manage')" @click="openRoleEdit(r)" class="text-[10px] text-[#9CA3AF] hover:text-[#CA8A04] underline underline-offset-2" title="Rechte der Rolle bearbeiten">bearbeiten</button>
-                                <button x-show="hasPerm('roles.manage') && !['holding','administrator'].includes(r.name)" @click="deleteRole(r)" class="text-[10px] text-[#9CA3AF] hover:text-[#A6362E] underline underline-offset-2" title="Rolle löschen">löschen</button>
+                                <button x-show="hasPerm('roles.manage')" @click="openRoleEdit(r)" class="text-[10px] text-[#9CA3AF] hover:text-[#CA8A04] underline underline-offset-2" :title="t('Rechte der Rolle bearbeiten')">bearbeiten</button>
+                                <button x-show="hasPerm('roles.manage') && !['holding','administrator'].includes(r.name)" @click="deleteRole(r)" class="text-[10px] text-[#9CA3AF] hover:text-[#A6362E] underline underline-offset-2" :title="t('Rolle löschen')"><span x-text="t('löschen')"></span></button>
                             </div>
                             <div x-show="roleEdit === r.id" class="mt-1.5 ml-6 p-2.5 rounded-lg border border-[#E4E9F0] bg-[#F8FAFC] space-y-1.5">
                                 <div class="flex flex-wrap gap-x-3 gap-y-1 max-h-40 overflow-y-auto">
@@ -971,23 +971,23 @@
                                     </template>
                                 </div>
                                 <div class="flex justify-end gap-2 pt-1">
-                                    <button @click="roleEdit = null" class="text-[11px] text-[#9CA3AF] hover:text-[#1A2433]">Abbrechen</button>
-                                    <button @click="saveRolePerms(r)" class="text-[11px] px-2.5 py-1 bg-[#0B0B0F] text-white rounded-md hover:bg-[#1A1A1F]">Rechte speichern</button>
+                                    <button @click="roleEdit = null" class="text-[11px] text-[#9CA3AF] hover:text-[#1A2433]"><span x-text="t('Abbrechen')"></span></button>
+                                    <button @click="saveRolePerms(r)" class="text-[11px] px-2.5 py-1 bg-[#0B0B0F] text-white rounded-md hover:bg-[#1A1A1F]"><span x-text="t('Rechte speichern')"></span></button>
                                 </div>
                             </div>
                         </div>
                     </template>
                     <div x-show="hasPerm('roles.manage')" class="flex items-center gap-2">
-                        <input x-model="newRole" placeholder="neue_rolle" class="flex-1 text-xs px-2 py-1.5 border border-[#D6DEE9] rounded-md bg-white font-mono" @keydown.enter.prevent="createRole()">
-                        <button @click="createRole()" :disabled="!newRole.trim()" class="text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] rounded-md hover:border-[#CA8A04] disabled:opacity-40" title="Eigene Rolle anlegen">+ Rolle</button>
+                        <input x-model="newRole" :placeholder="t('neue_rolle')" class="flex-1 text-xs px-2 py-1.5 border border-[#D6DEE9] rounded-md bg-white font-mono" @keydown.enter.prevent="createRole()">
+                        <button @click="createRole()" :disabled="!newRole.trim()" class="text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] rounded-md hover:border-[#CA8A04] disabled:opacity-40" :title="t('Eigene Rolle anlegen')">+ Rolle</button>
                     </div>
-                    <div x-show="!allRoles.length" class="text-xs text-[#9CA3AF]">Keine Rollen für diesen Mandanten.</div>
+                    <div x-show="!allRoles.length" class="text-xs text-[#9CA3AF]"><span x-text="t('Keine Rollen für diesen Mandanten.')"></span></div>
                     <div class="flex items-center justify-between" x-show="allRoles.length">
-                        <button x-show="hasPerm('roles.manage') && detail && me && detail.id !== me.id" @click="removeMember()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/10" title="Mitglied aus diesem Mandanten entfernen">Entfernen</button>
-                        <button x-show="hasPerm('roles.manage')" @click="saveUserRoles()" :disabled="!userRoles.length" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 ml-auto">Rollen speichern</button>
+                        <button x-show="hasPerm('roles.manage') && detail && me && detail.id !== me.id" @click="removeMember()" class="text-xs px-3 py-1.5 border border-[#A6362E]/40 text-[#A6362E] rounded-lg hover:bg-[#A6362E]/10" :title="t('Mitglied aus diesem Mandanten entfernen')"><span x-text="t('Entfernen')"></span></button>
+                        <button x-show="hasPerm('roles.manage')" @click="saveUserRoles()" :disabled="!userRoles.length" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 ml-auto"><span x-text="t('Rollen speichern')"></span></button>
                     </div>
                     <div x-show="userPerms.length" class="pt-2">
-                        <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5">BERECHTIGUNGEN</div>
+                        <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5"><span x-text="t('BERECHTIGUNGEN')"></span></div>
                         <div class="flex flex-wrap gap-1">
                             <template x-for="p in userPerms" :key="p">
                                 <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#F4F6F9] text-[#42536A] font-mono" x-text="p"></span>
@@ -996,23 +996,23 @@
                     </div>
                 </div>
                 <div x-show="section === 'documents'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERSIONEN</div>
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]"><span x-text="t('VERSIONEN')"></span></div>
                     <template x-for="v in docVersions" :key="v.id">
                         <div class="flex items-center justify-between gap-2 rounded-lg border border-[#E4E9F0] px-3 py-2">
                             <div class="min-w-0">
                                 <span class="text-xs font-semibold text-[#0B0B0F]">v<span x-text="v.version"></span></span>
                                 <span class="ml-2 text-xs text-[#42536A] truncate" x-text="v.original_name"></span>
                             </div>
-                            <a :href="'/api/v1/documents/' + (detail ? detail.id : '') + '/download/' + v.id" class="text-[11px] font-medium text-[#CA8A04] hover:underline shrink-0">Download</a>
+                            <a :href="'/api/v1/documents/' + (detail ? detail.id : '') + '/download/' + v.id" class="text-[11px] font-medium text-[#CA8A04] hover:underline shrink-0"><span x-text="t('Download')"></span></a>
                         </div>
                     </template>
                     <form x-show="writable()" @submit.prevent="uploadVersion()" class="flex items-center gap-2">
                         <input type="file" x-ref="versionFile" class="min-w-0 flex-1 text-xs text-[#42536A]">
-                        <button type="submit" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] shrink-0">Neue Version</button>
+                        <button type="submit" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] shrink-0"><span x-text="t('Neue Version')"></span></button>
                     </form>
                 </div>
                 <div x-show="section === 'graph-entities'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERKNÜPFUNGEN</div>
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]"><span x-text="t('VERKNÜPFUNGEN')"></span></div>
                     <template x-for="e in entityEdges" :key="e.relation + e.other">
                         <div>
                             <div class="flex items-center gap-2 rounded-lg border border-[#E4E9F0] px-3 py-2 text-xs hover:border-[#CA8A04]/60 transition">
@@ -1022,7 +1022,7 @@
                                     <span class="ml-auto font-medium text-[#1A2433] truncate" x-text="e.name"></span>
                                 </a>
                                 <button @click="expandedEdge = expandedEdge === e.relation + e.other ? null : e.relation + e.other"
-                                        class="shrink-0 text-[#9CA3AF] hover:text-[#CA8A04] px-1" title="Nachbarn zeigen">
+                                        class="shrink-0 text-[#9CA3AF] hover:text-[#CA8A04] px-1" :title="t('Nachbarn zeigen')">
                                     <span x-text="expandedEdge === e.relation + e.other ? '−' : '+'"></span>
                                 </button>
                             </div>
@@ -1035,11 +1035,11 @@
                                         <span class="ml-auto font-medium text-[#1A2433] truncate" x-text="n.name"></span>
                                     </a>
                                 </template>
-                                <div x-show="edgeNeighbors(e.other).length === 0" class="text-[11px] text-[#9CA3AF] px-3 py-1">Keine weiteren Kanten.</div>
+                                <div x-show="edgeNeighbors(e.other).length === 0" class="text-[11px] text-[#9CA3AF] px-3 py-1"><span x-text="t('Keine weiteren Kanten.')"></span></div>
                             </div>
                         </div>
                     </template>
-                    <div x-show="entityEdges.length === 0" class="text-xs text-[#9CA3AF]">Keine Kanten zu dieser Entität.</div>
+                    <div x-show="entityEdges.length === 0" class="text-xs text-[#9CA3AF]"><span x-text="t('Keine Kanten zu dieser Entität.')"></span></div>
                     <a :href="'/app/graph-edges?tenant=' + tenant + '&new=1&from=' + (detail ? detail.id : '')" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Kante anlegen</a>
                 </div>
                 <div x-show="section === 'audits'" class="px-6 py-4 border-t border-[#E4E9F0] space-y-2">
@@ -1054,25 +1054,25 @@
                             </span>
                         </a>
                     </template>
-                    <div x-show="auditFindings.length === 0" class="text-xs text-[#9CA3AF]">Keine Feststellungen.</div>
+                    <div x-show="auditFindings.length === 0" class="text-xs text-[#9CA3AF]"><span x-text="t('Keine Feststellungen.')"></span></div>
                     <a :href="'/app/audit-findings?tenant=' + tenant + '&new=1&audit=' + (detail ? detail.id : '')" class="inline-block text-[11px] px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">+ Feststellung anlegen</a>
                 </div>
                 <div x-show="section === 'integrations' && detail && detail.token" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5">WEBHOOK-URL</div>
                     <div class="flex items-center gap-2">
                         <code class="flex-1 text-[11px] font-mono text-[#5B6B7E] break-all" x-text="webhookUrl()"></code>
-                        <button @click="navigator.clipboard.writeText(webhookUrl()).then(() => toast('URL kopiert'))" class="text-xs px-2.5 py-1 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0">Kopieren</button>
+                        <button @click="navigator.clipboard.writeText(webhookUrl()).then(() => toast('URL kopiert'))" class="text-xs px-2.5 py-1 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0"><span x-text="t('Kopieren')"></span></button>
                     </div>
                     <p class="text-[11px] text-[#9CA3AF] mt-1">Externe Systeme senden Events per POST {type, subject?, …} an diese URL — jeder Aufruf landet im Event Store.</p>
                 </div>
                 <div x-show="section === 'connectors' && detail" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="flex items-center gap-2">
-                        <button @click="runConnector()" :disabled="rowLoading" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition disabled:opacity-50">Jetzt abrufen</button>
+                        <button @click="runConnector()" :disabled="rowLoading" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition disabled:opacity-50"><span x-text="t('Jetzt abrufen')"></span></button>
                         <span class="text-[11px] text-[#5B6B7E]" x-text="detail && detail.last_status ? ('Letzter Status: ' + detail.last_status) : 'Noch nie ausgeführt'"></span>
                     </div>
                 </div>
                 <div x-show="section === 'events' && detail && detail.meta_data && detail.meta_data.actor" class="px-6 py-4 border-t border-[#E4E9F0]">
-                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5">AUSLÖSER</div>
+                    <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E] mb-1.5"><span x-text="t('AUSLÖSER')"></span></div>
                     <div class="flex items-center gap-2 text-xs">
                         <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#0B0B0F] text-[10px] font-bold text-[#FACC15]" x-text="(detail && detail.meta_data && detail.meta_data.actor && detail.meta_data.actor.name || '?').charAt(0).toUpperCase()"></span>
                         <span class="font-medium text-[#1A2433]" x-text="detail && detail.meta_data && detail.meta_data.actor ? detail.meta_data.actor.name : ''"></span>
@@ -1082,20 +1082,20 @@
                 <div x-show="rowEvents.length" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="flex items-center justify-between mb-2">
                         <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">VERLAUF <span class="text-[#9CA3AF] font-normal" x-text="'(' + rowEvents.length + ')'"></span></div>
-                        <a :href="'/app/events?tenant=' + tenant + '&q=' + encodeURIComponent((detail && detail.id) || '')" class="text-[10px] text-[#CA8A04] hover:underline" title="Alle Ereignisse zu diesem Datensatz">Alle →</a>
+                        <a :href="'/app/events?tenant=' + tenant + '&q=' + encodeURIComponent((detail && detail.id) || '')" class="text-[10px] text-[#CA8A04] hover:underline" :title="t('Alle Ereignisse zu diesem Datensatz')"><span x-text="t('Alle →')"></span></a>
                     </div>
                     <template x-for="(e, i) in rowEvents.slice(0, evShown)" :key="i">
                         <a :href="'/app/events?tenant=' + tenant + '&open=' + e.id" class="flex items-center justify-between text-xs py-1 rounded hover:bg-[#FAFBFC] -mx-1 px-1">
                             <span class="text-[#1A2433]"><span class="text-[#CA8A04] font-semibold uppercase text-[10px] tracking-wide" x-text="eventGroup(e.event_type)"></span> <span x-text="eventLabel(e.event_type)"></span><span x-show="e.meta_data && e.meta_data.actor" class="text-[#9CA3AF]" x-text="' · ' + (e.meta_data && e.meta_data.actor ? e.meta_data.actor.name : '')"></span></span>
-                            <span class="text-[10px] text-[#9CA3AF] font-mono" :title="e.created_at ? new Date(e.created_at).toLocaleString('de-DE') : ''" x-text="ago(e.created_at)"></span>
+                            <span class="text-[10px] text-[#9CA3AF] font-mono" :title="e.created_at ? new Date(e.created_at).toLocaleString((this.lang==='en'?'en-GB':'de-DE')) : ''" x-text="ago(e.created_at)"></span>
                         </a>
                     </template>
                     <button x-show="rowEvents.length > evShown" @click="evShown += 20" class="text-[11px] text-[#CA8A04] hover:underline mt-1" x-text="'+ ' + Math.min(20, rowEvents.length - evShown) + ' weitere'"></button>
                 </div>
                 <div x-show="rowNotifs.length" class="px-6 py-4 border-t border-[#E4E9F0]">
                     <div class="flex items-center justify-between mb-2">
-                        <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]">BENACHRICHTIGUNGEN <span class="text-[#9CA3AF] font-normal" x-text="'(' + rowNotifs.length + ')'"></span></div>
-                        <a :href="'/app/notifications?tenant=' + tenant + '&q=' + encodeURIComponent((detail && detail.id) || '')" class="text-[10px] text-[#CA8A04] hover:underline" title="Alle Benachrichtigungen zu diesem Datensatz">Alle →</a>
+                        <div class="text-[10px] font-semibold tracking-widest text-[#5B6B7E]"><span x-text="t('BENACHRICHTIGUNGEN')"></span> <span class="text-[#9CA3AF] font-normal" x-text="'(' + rowNotifs.length + ')'"></span></div>
+                        <a :href="'/app/notifications?tenant=' + tenant + '&q=' + encodeURIComponent((detail && detail.id) || '')" class="text-[10px] text-[#CA8A04] hover:underline" :title="t('Alle Benachrichtigungen zu diesem Datensatz')"><span x-text="t('Alle →')"></span></a>
                     </div>
                     <template x-for="(n, i) in rowNotifs.slice(0, 6)" :key="i">
                         <a :href="'/app/notifications?tenant=' + tenant + '&open=' + n.id" class="flex items-center justify-between text-xs py-1 rounded hover:bg-[#FAFBFC] -mx-1 px-1" :class="n.read ? 'opacity-60' : ''">
@@ -1105,29 +1105,29 @@
                     </template>
                 </div>
                 <div x-show="detail && (detail.created_at || detail.updated_at)" class="px-6 py-2.5 border-t border-[#F0F3F7] text-[10px] text-[#9CA3AF] flex gap-4">
-                    <span x-show="detail && detail.created_at">Erstellt: <span x-text="detail && new Date(detail.created_at).toLocaleString('de-DE')"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.created_at) + ')'"></span></span>
-                    <span x-show="detail && detail.updated_at">Geändert: <span x-text="detail && new Date(detail.updated_at).toLocaleString('de-DE')"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.updated_at) + ')'"></span></span>
+                    <span x-show="detail && detail.created_at">Erstellt: <span x-text="detail && new Date(detail.created_at).toLocaleString((this.lang==='en'?'en-GB':'de-DE'))"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.created_at) + ')'"></span></span>
+                    <span x-show="detail && detail.updated_at">Geändert: <span x-text="detail && new Date(detail.updated_at).toLocaleString((this.lang==='en'?'en-GB':'de-DE'))"></span> <span class="text-[#CA8A04]" x-text="detail && '(' + relAgo(detail.updated_at) + ')'"></span></span>
                 </div>
                 <div class="px-6 py-4 border-t border-[#E4E9F0] flex justify-end gap-2">
-                    <button @click="copyLink()" title="Link kopieren (p)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="linkCopied ? 'Kopiert' : 'Link'"></button>
+                    <button @click="copyLink()" :title="t('Link kopieren (p)')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="linkCopied ? 'Kopiert' : 'Link'"></button>
                     <button @click="copyJson()" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="jsonCopied ? 'Kopiert' : 'JSON'"></button>
-                    <button @click="copyText()" title="Alle Felder als lesbarer Text" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="textCopied ? 'Kopiert' : 'Text'"></button>
-                    <a x-show="section === 'events' && eventLink(detail)" :href="eventLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Datensatz öffnen</a>
-                    <a x-show="section === 'notifications' && notifLink(detail)" :href="notifLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Zum Datensatz</a>
+                    <button @click="copyText()" :title="t('Alle Felder als lesbarer Text')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="textCopied ? 'Kopiert' : 'Text'"></button>
+                    <a x-show="section === 'events' && eventLink(detail)" :href="eventLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10"><span x-text="t('Datensatz öffnen')"></span></a>
+                    <a x-show="section === 'notifications' && notifLink(detail)" :href="notifLink(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10"><span x-text="t('Zum Datensatz')"></span></a>
                     <button x-show="section === 'notifications' && detail && detail.kind" @click="toggleMute(detail.kind)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]" x-text="(me && me.muted_kinds || []).includes(detail && detail.kind) ? 'Stummschaltung aufheben' : 'Art stummschalten'"></button>
-                    <button x-show="section === 'notifications' && detail && detail.kind && rows && (rows||[]).some(r => r.kind === detail.kind && !r.read)" @click="api('/api/v1/notifications/read-all?kind=' + encodeURIComponent(detail.kind), {method: 'POST'}).then(r => { if (r.ok) { (rows || []).forEach(n => { if (n.kind === detail.kind) n.read = true; }); (dbNotifs || []).forEach(n => { if (n.kind === detail.kind) n.read = true; }); navBadges['notifications'] = unreadNotifs(); toast('Art als gelesen markiert'); } })" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Art gelesen</button>
+                    <button x-show="section === 'notifications' && detail && detail.kind && rows && (rows||[]).some(r => r.kind === detail.kind && !r.read)" @click="api('/api/v1/notifications/read-all?kind=' + encodeURIComponent(detail.kind), {method: 'POST'}).then(r => { if (r.ok) { (rows || []).forEach(n => { if (n.kind === detail.kind) n.read = true; }); (dbNotifs || []).forEach(n => { if (n.kind === detail.kind) n.read = true; }); navBadges['notifications'] = unreadNotifs(); toast('Art als gelesen markiert'); } })" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]"><span x-text="t('Art gelesen')"></span></button>
                     <button x-show="section === 'notifications' && detail && detail.kind && rows && (rows||[]).filter(r => r.kind === detail.kind).length > 1" @click="confirmKindDel ? deleteKind(detail.kind) : (confirmKindDel = true, setTimeout(() => confirmKindDel = false, 3000))"
                             class="text-xs px-3 py-1.5 border rounded-lg transition"
                             :class="confirmKindDel ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E]'"
                             x-text="confirmKindDel ? 'Wirklich?' : 'Art entfernen'"></button>
-                    <button x-show="section === 'notifications' && detail && detail.code && rows && (rows||[]).some(r => r.code === detail.code && !r.read)" @click="api('/api/v1/notifications/read-all?code=' + encodeURIComponent(detail.code), {method: 'POST'}).then(r => { if (r.ok) { (rows || []).forEach(n => { if (n.code === detail.code) n.read = true; }); (dbNotifs || []).forEach(n => { if (n.code === detail.code) n.read = true; }); navBadges['notifications'] = unreadNotifs(); toast('Code als gelesen markiert'); } })" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Code gelesen</button>
+                    <button x-show="section === 'notifications' && detail && detail.code && rows && (rows||[]).some(r => r.code === detail.code && !r.read)" @click="api('/api/v1/notifications/read-all?code=' + encodeURIComponent(detail.code), {method: 'POST'}).then(r => { if (r.ok) { (rows || []).forEach(n => { if (n.code === detail.code) n.read = true; }); (dbNotifs || []).forEach(n => { if (n.code === detail.code) n.read = true; }); navBadges['notifications'] = unreadNotifs(); toast('Code als gelesen markiert'); } })" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]"><span x-text="t('Code gelesen')"></span></button>
                     <button x-show="section === 'notifications' && detail && detail.code && rows && (rows||[]).filter(r => r.code === detail.code).length > 1" @click="confirmCodeDel ? deleteCode(detail.code) : (confirmCodeDel = true, setTimeout(() => confirmCodeDel = false, 3000))"
                             class="text-xs px-3 py-1.5 border rounded-lg transition"
                             :class="confirmCodeDel ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E]'"
                             x-text="confirmCodeDel ? 'Wirklich?' : 'Code entfernen'"></button>
-                    <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10">Download</button>
-                    <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" title="Duplizieren (d)" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]">Duplizieren</button>
-                    <button x-show="canEdit()" @click="openEdit()" title="Bearbeiten (e)" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]">Bearbeiten</button>
+                    <button x-show="['documents','data-objects'].includes(section)" @click="downloadDoc(detail)" class="text-xs px-3 py-1.5 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10"><span x-text="t('Download')"></span></button>
+                    <button x-show="canEdit() && section !== 'documents'" @click="openDuplicate()" :title="t('Duplizieren (d)')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04]"><span x-text="t('Duplizieren')"></span></button>
+                    <button x-show="canEdit()" @click="openEdit()" :title="t('Bearbeiten (e)')" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F]"><span x-text="t('Bearbeiten')"></span></button>
                     <button x-show="writable()" @click="confirmDel ? deleteRow(detail) : (confirmDel = true, setTimeout(() => confirmDel = false, 3000))"
                             class="text-xs px-3 py-1.5 border rounded-lg transition"
                             :class="confirmDel ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
@@ -1137,15 +1137,15 @@
         </div>
 
         {{-- Shortcuts help (?) --}}
-        <div x-show="kbdHelp" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none" role="dialog" aria-modal="true" aria-label="Tastenkürzel">
+        <div x-show="kbdHelp" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none" role="dialog" aria-modal="true" :aria-label="t('Tastenkürzel')">
             <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="kbdHelp = false"></div>
             <div class="relative w-full max-w-sm bg-white rounded-xl shadow-2xl p-6 max-h-[80vh] overflow-y-auto">
-                <h2 class="font-semibold text-[#0B0B0F] mb-4">Tastenkürzel</h2>
+                <h2 class="font-semibold text-[#0B0B0F] mb-4"><span x-text="t('Tastenkürzel')"></span></h2>
                 <dl class="space-y-2 text-sm">
                     <template x-for="k in [['Ctrl/⌘ + K', 'Befehlspalette öffnen (↑/↓ wählen, Enter öffnen)'], ['/', 'Suche fokussieren'], ['n', 'Neuen Eintrag anlegen'], ['e', 'Eintrag bearbeiten (Drawer)'], ['d', 'Eintrag duplizieren (Drawer)'], ['f', 'Sektion (ent)pinnen'], ['a', 'Alle Zeilen (ab)wählen'], ['p', 'Deep-Link kopieren (Drawer)'], ['o', 'Erste gefilterte Zeile öffnen'], ['l', 'Alle Zeilen laden'], ['r', 'Liste / Datensatz neu laden'], ['i', 'CSV-Import öffnen'], ['c', 'Spalten-Picker'], ['v', 'Ansichten-Picker'], ['x', 'Filter zurücksetzen'], ['u', 'Überfällig-Filter'], ['s', '≤7-Tage-Filter'], ['b', 'Heute-Filter'], ['m', 'Mir zugewiesen'], ['q', 'Ohne Verantwortlichen'], ['g', 'Gruppierung wechseln (Status, Zeitraum, FK-Spalten)'], ['.', 'Zum Dashboard'], ['1–9', 'n-te Zeile öffnen'], ['← / →', 'Vorheriger / nächster Eintrag (Drawer)'], ['Pos1 / Ende', 'Erster / letzter Eintrag (Drawer)'], ['w', 'Drawer breit/schmal'], ['k', 'Kompakte Zeilen'], ['j', 'JSON kopieren (Drawer)'], ['z', 'Rückgängig (Löschen/Status)'], ['y', 'Nächster Mandant'], ['Ctrl + Enter', 'Formular absenden'], ['B', 'Benachrichtigungen'], ['t', 'Dunkel/Hell umschalten'], ['Esc', 'Schließen'], ['? / h', 'Diese Übersicht']]" :key="k[0]">
                         <div class="flex justify-between items-center">
                             <dt class="text-[#5B6B7E]"><kbd class="px-1.5 py-0.5 bg-[#F0F3F7] border border-[#E4E9F0] rounded text-xs font-mono" x-text="k[0]"></kbd></dt>
-                            <dd class="text-[#1A2433]" x-text="k[1]"></dd>
+                            <dd class="text-[#1A2433]" x-text="this.t(k[1])"></dd>
                         </div>
                     </template>
                 </dl>
@@ -1153,11 +1153,11 @@
         </div>
 
         {{-- Command palette (Ctrl+K) --}}
-        <div x-show="palette" class="fixed inset-0 z-50" style="display:none" role="dialog" aria-modal="true" aria-label="Befehlspalette">
+        <div x-show="palette" class="fixed inset-0 z-50" style="display:none" role="dialog" aria-modal="true" :aria-label="t('Befehlspalette')">
             <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="palette = false"></div>
             <div class="relative mx-auto mt-24 w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
                 <input x-ref="paletteInput" x-model="paletteQ" x-init="$watch('palette', v => v && $nextTick(() => $refs.paletteInput.focus())); $watch('paletteQ', () => palIdx = 0)"
-                       placeholder="Modul oder Aktion suchen…" class="w-full px-5 py-4 text-sm border-0 border-b border-[#E4E9F0] focus:ring-0 focus:border-[#CA8A04]"
+                       :placeholder="t('Modul oder Aktion suchen…')" class="w-full px-5 py-4 text-sm border-0 border-b border-[#E4E9F0] focus:ring-0 focus:border-[#CA8A04]"
                        @keydown.arrow-down.prevent="palIdx = Math.min(palIdx + 1, paletteItems().length - 1)"
                        @keydown.arrow-up.prevent="palIdx = Math.max(palIdx - 1, 0)"
                        @keydown.enter.prevent="paletteGo()">
@@ -1172,7 +1172,7 @@
                             <span class="ml-2 text-[10px] text-[#9CA3AF] tracking-wide" x-text="it.group"></span>
                         </a>
                     </template>
-                    <div x-show="paletteItems().length === 0" class="px-5 py-6 text-center text-xs text-[#9CA3AF]">Kein Modul gefunden.</div>
+                    <div x-show="paletteItems().length === 0" class="px-5 py-6 text-center text-xs text-[#9CA3AF]"><span x-text="t('Kein Modul gefunden.')"></span></div>
                 </div>
             </div>
         </div>
@@ -1191,11 +1191,11 @@
                                 <span x-text="label(f.key)"></span><span x-show="f.req" class="text-[#A6362E]"> *</span>
                             </label>
                             <div x-show="f.type === 'fk'">
-                                <input x-show="fkOptions(f.table).length > 10" x-model="fkQ[f.key]" placeholder="Filtern…"
+                                <input x-show="fkOptions(f.table).length > 10" x-model="fkQ[f.key]" :placeholder="t('Filtern…')"
                                        class="w-full mb-1 rounded-lg border-[#E4E9F0] text-xs focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 <select x-model="form[f.key]"
                                         class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-                                    <option value="">— wählen —</option>
+                                    <option value=""><span x-text="t('— wählen —')"></span></option>
                                     <template x-for="o in fkOptions(f.table).filter(o => !fkQ[f.key] || String(o[1]).toLowerCase().includes(String(fkQ[f.key]).toLowerCase()))" :key="o[0]">
                                         <option :value="o[0]" x-text="o[1]"></option>
                                     </template>
@@ -1204,7 +1204,7 @@
                             <div x-show="f.type === 'enum'">
                                 <select x-model="form[f.key]"
                                         class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-                                    <option value="">— wählen —</option>
+                                    <option value=""><span x-text="t('— wählen —')"></span></option>
                                     <template x-for="o in f.opts" :key="o">
                                         <option :value="o" x-text="typeLabel(o)"></option>
                                     </template>
@@ -1221,12 +1221,12 @@
                                        class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                                 <button x-show="f.type === 'date' || f.type === 'datetime-local'" type="button"
                                         @click="form[f.key] = f.type === 'date' ? new Date().toISOString().slice(0,10) : new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16)"
-                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-[#CA8A04] hover:underline">Heute</button>
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-[#CA8A04] hover:underline"><span x-text="t('Heute')"></span></button>
                             </div>
                         </div>
                     </template>
                     <div x-show="section === 'users' && !editing">
-                        <label class="block text-[13px] font-medium text-[#42536A] mb-1">Rollen</label>
+                        <label class="block text-[13px] font-medium text-[#42536A] mb-1"><span x-text="t('Rollen')"></span></label>
                         <div class="flex flex-wrap gap-x-3 gap-y-1 max-h-32 overflow-y-auto">
                             <template x-for="r in allRoles" :key="r.id">
                                 <label class="flex items-center gap-1.5 text-[11px] text-[#42536A]">
@@ -1237,7 +1237,7 @@
                         </div>
                     </div>
                     <div x-show="section === 'tokens' && !editing">
-                        <label class="block text-[13px] font-medium text-[#42536A] mb-1">Rechte (Abilities)</label>
+                        <label class="block text-[13px] font-medium text-[#42536A] mb-1"><span x-text="t('Rechte (Abilities)')"></span></label>
                         <div class="flex flex-wrap gap-x-3 gap-y-1 max-h-32 overflow-y-auto">
                             <template x-for="a in tokenAbilities" :key="a">
                                 <label class="flex items-center gap-1.5 text-[11px] text-[#42536A]">
@@ -1249,16 +1249,16 @@
                         <p class="text-[11px] text-[#9CA3AF] mt-1">leer = * (alle Rechte)</p>
                     </div>
                     <div x-show="['documents','data-objects'].includes(section) && !editing">
-                        <label class="block text-[13px] font-medium text-[#42536A] mb-1">Datei</label>
+                        <label class="block text-[13px] font-medium text-[#42536A] mb-1"><span x-text="t('Datei')"></span></label>
                         <input type="file" x-ref="fileInput" class="w-full text-sm">
                     </div>
                     <div x-show="formError" class="text-xs text-[#A6362E]" x-text="formError"></div>
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" @click="closeCreate()" class="text-sm px-4 py-2 text-[#5B6B7E]" x-text="t('Abbrechen')"></button>
                         <button type="button" x-show="!editing && !['documents','data-objects'].includes(section)" @click="submitCreate(true)" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
-                                class="text-sm px-4 py-2 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10 disabled:opacity-40 disabled:cursor-not-allowed" title="Speichern und nächsten Eintrag anlegen" x-text="t('Speichern & neu')"></button>
+                                class="text-sm px-4 py-2 border border-[#CA8A04]/50 text-[#CA8A04] rounded-lg hover:bg-[#CA8A04]/10 disabled:opacity-40 disabled:cursor-not-allowed" :title="t('Speichern und nächsten Eintrag anlegen')" x-text="t('Speichern & neu')"></button>
                         <button type="submit" :disabled="createFields().some(f => f.req && !String(form[f.key] || '').trim())"
-                                class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 disabled:cursor-not-allowed" title="Speichern (Strg+↵)" x-text="t('Speichern')"></button>
+                                class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-40 disabled:cursor-not-allowed" :title="t('Speichern (Strg+↵)')" x-text="t('Speichern')"></button>
                     </div>
                 </form>
             </div>
@@ -1272,12 +1272,12 @@
                     <h2 class="font-semibold text-[#0B0B0F]">CSV Import: <span x-text="title()"></span></h2>
                 </div>
                 <div class="p-6 space-y-3">
-                    <p class="text-xs text-[#5B6B7E]">Erste Zeile = Spaltennamen (<span x-text="createFields().map(f => f.key).join(', ')"></span>). Trennzeichen ; oder ,</p>
+                    <p class="text-xs text-[#5B6B7E]"><span x-text="t('Erste Zeile = Spaltennamen (')"></span><span x-text="createFields().map(f => f.key).join(', ')"></span>). Trennzeichen ; oder ,</p>
                     <textarea x-model="importText" rows="8" class="w-full rounded-lg border-[#D6DEE9] text-xs font-mono focus:border-[#CA8A04] focus:ring-[#CA8A04]/30" placeholder="title;status&#10;Beispiel;open"></textarea>
-                    <div class="flex justify-end"><button type="button" @click="importText = importTemplate()" class="text-xs text-[#CA8A04] hover:underline">Vorlage mit Beispielzeile einfügen</button></div>
+                    <div class="flex justify-end"><button type="button" @click="importText = importTemplate()" class="text-xs text-[#CA8A04] hover:underline"><span x-text="t('Vorlage mit Beispielzeile einfügen')"></span></button></div>
                     <div x-show="importResult" class="text-xs" :class="importErr ? 'text-[#A6362E]' : 'text-[#2E7D4F]'" x-text="importResult"></div>
                     <div class="flex justify-end gap-2 pt-1">
-                        <button type="button" @click="showImport = false" class="text-sm px-4 py-2 text-[#5B6B7E]">Schließen</button>
+                        <button type="button" @click="showImport = false" class="text-sm px-4 py-2 text-[#5B6B7E]"><span x-text="t('Schließen')"></span></button>
                         <button type="button" @click="importCsv()" :disabled="importing" class="text-sm px-4 py-2 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] disabled:opacity-50" x-text="importing ? 'Importiere… ' + importProgress : 'Importieren'"></button>
                     </div>
                 </div>
@@ -1292,7 +1292,7 @@
                 <span x-text="t.msg" class="flex-1"></span>
                 <button x-show="t.action" @click="t.action.fn(); toasts = toasts.filter(x => x.id !== t.id)"
                         class="text-[#FACC15] font-semibold hover:underline shrink-0" x-text="t.action ? t.action.label : ''"></button>
-                <button @click="toasts = toasts.filter(x => x.id !== t.id)" aria-label="Schließen"
+                <button @click="toasts = toasts.filter(x => x.id !== t.id)" :aria-label="t('Schließen')"
                         class="text-white/40 hover:text-white shrink-0 leading-none">×</button>
             </div>
         </template>
@@ -1302,24 +1302,24 @@
 {{-- Passwort ändern --}}
 <div x-show="pwOpen" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none">
     <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="pwOpen = false"></div>
-    <div class="relative w-full max-w-sm bg-white rounded-xl shadow-xl" role="dialog" aria-modal="true" aria-label="Passwort ändern">
-        <div class="px-6 py-4 border-b border-[#E4E9F0]"><h2 class="font-semibold text-[#0B0B0F]">Profil bearbeiten</h2></div>
+    <div class="relative w-full max-w-sm bg-white rounded-xl shadow-xl" role="dialog" aria-modal="true" :aria-label="t('Passwort ändern')">
+        <div class="px-6 py-4 border-b border-[#E4E9F0]"><h2 class="font-semibold text-[#0B0B0F]"><span x-text="t('Profil bearbeiten')"></span></h2></div>
         <div class="p-6 space-y-3" @keydown.enter="submitPassword()">
             <div x-show="pwErr" class="text-xs text-[#A6362E] bg-[#A6362E]/10 rounded-lg px-3 py-2" x-text="pwErr"></div>
-            <input type="text" x-model="pwForm.name" placeholder="Name" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-            <input type="email" x-model="pwForm.email" placeholder="E-Mail" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-            <input type="password" x-model="pwForm.current" placeholder="Aktuelles Passwort (nur für Passwort-Änderung)" autocomplete="current-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-            <input type="password" x-model="pwForm.next" placeholder="Neues Passwort (min. 12 Zeichen, Groß-/Kleinbuchstabe, Zahl)" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-            <input type="password" x-model="pwForm.confirm" placeholder="Neues Passwort wiederholen" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
-            <p class="text-[11px] text-[#5B6B7E]" x-show="me && me.password_changed_at" x-text="'Zuletzt geändert: ' + new Date(me.password_changed_at).toLocaleString('de-DE')"></p>
-            <p class="text-[11px] text-[#5B6B7E]" x-show="me && me.created_at" x-text="'Mitglied seit: ' + new Date(me.created_at).toLocaleDateString('de-DE')"></p>
+            <input type="text" x-model="pwForm.name" :placeholder="t('Name')" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+            <input type="email" x-model="pwForm.email" :placeholder="t('E-Mail')" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+            <input type="password" x-model="pwForm.current" :placeholder="t('Aktuelles Passwort (nur für Passwort-Änderung)')" autocomplete="current-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+            <input type="password" x-model="pwForm.next" :placeholder="t('Neues Passwort (min. 12 Zeichen, Groß-/Kleinbuchstabe, Zahl)')" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+            <input type="password" x-model="pwForm.confirm" :placeholder="t('Neues Passwort wiederholen')" autocomplete="new-password" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+            <p class="text-[11px] text-[#5B6B7E]" x-show="me && me.password_changed_at" x-text="'Zuletzt geändert: ' + new Date(me.password_changed_at).toLocaleString((this.lang==='en'?'en-GB':'de-DE'))"></p>
+            <p class="text-[11px] text-[#5B6B7E]" x-show="me && me.created_at" x-text="'Mitglied seit: ' + new Date(me.created_at).toLocaleDateString((this.lang==='en'?'en-GB':'de-DE'))"></p>
             <p class="text-[11px] text-[#5B6B7E]" x-show="me && me.last_login_ip"><span x-text="'Letzte Anmeldung von: ' + me.last_login_ip"></span></p>
             <p class="text-[11px] text-[#5B6B7E]" x-show="me && me.tokens_count !== undefined"><span x-text="(me.tokens_count || 0) + ' aktive API-Token'"></span> · <a :href="'/app/tokens?tenant=' + tenant" class="text-[#CA8A04] hover:underline">verwalten →</a></p>
-            <p class="text-[11px] text-[#A6362E]" x-show="me && me.email_verified === false">E-Mail noch nicht verifiziert — wird nach Änderung erneut ausstehend.</p>
-            <p class="text-[11px] text-[#5B6B7E]">Nach der Änderung werden alle API-Token widerrufen — die Seite lädt neu.</p>
+            <p class="text-[11px] text-[#A6362E]" x-show="me && me.email_verified === false"><span x-text="t('E-Mail noch nicht verifiziert — wird nach Änderung erneut ausstehend.')"></span></p>
+            <p class="text-[11px] text-[#5B6B7E]"><span x-text="t('Nach der Änderung werden alle API-Token widerrufen — die Seite lädt neu.')"></span></p>
             <template x-if="me && me.tenants && me.tenants.length">
                 <div class="pt-2 border-t border-[#E4E9F0]">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[#8A97A6] mb-1.5">Mitgliedschaften</p>
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[#8A97A6] mb-1.5"><span x-text="t('Mitgliedschaften')"></span></p>
                     <div class="space-y-1 max-h-32 overflow-y-auto">
                         <template x-for="t in me.tenants" :key="t.id">
                             <div class="flex items-center gap-2 text-xs">
@@ -1336,7 +1336,7 @@
             </template>
             <template x-if="me && me.muted_kinds && me.muted_kinds.length">
                 <div class="pt-2 border-t border-[#E4E9F0]">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[#8A97A6] mb-1.5">Stummgeschaltete Arten</p>
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[#8A97A6] mb-1.5"><span x-text="t('Stummgeschaltete Arten')"></span></p>
                     <div class="flex flex-wrap gap-1.5">
                         <template x-for="k in me.muted_kinds" :key="k">
                             <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-[#0B0B0F]/5 text-[#5B6B7E]">
@@ -1349,21 +1349,21 @@
             </template>
             <template x-if="loginHistory.length">
                 <div class="pt-2 border-t border-[#E4E9F0]">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[#8A97A6] mb-1.5">Anmelde-Verlauf</p>
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[#8A97A6] mb-1.5"><span x-text="t('Anmelde-Verlauf')"></span></p>
                     <div class="space-y-1">
                         <template x-for="e in loginHistory" :key="e.id">
-                            <p class="text-[11px] text-[#5B6B7E]"><span x-text="new Date(e.created_at).toLocaleString('de-DE')"></span> · <span x-text="e.event_properties?.payload?.ip || '—'"></span></p>
+                            <p class="text-[11px] text-[#5B6B7E]"><span x-text="new Date(e.created_at).toLocaleString((this.lang==='en'?'en-GB':'de-DE'))"></span> · <span x-text="e.event_properties?.payload?.ip || '—'"></span></p>
                         </template>
                     </div>
                 </div>
             </template>
         </div>
         <div class="px-6 py-3 border-t border-[#E4E9F0] flex items-center gap-2">
-            <button @click="api('/api/v1/notifications/test', {method: 'POST'}).then(r => r.ok && toast('Testbenachrichtigung gesendet'))" title="Testet die Benachrichtigungsglocke" class="px-3 py-1.5 text-xs rounded-lg border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]">Test-Benachrichtigung</button>
-            <button @click="deleteAccount()" class="px-3 py-1.5 text-xs rounded-lg border border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/10">Konto löschen</button>
+            <button @click="api('/api/v1/notifications/test', {method: 'POST'}).then(r => r.ok && toast('Testbenachrichtigung gesendet'))" :title="t('Testet die Benachrichtigungsglocke')" class="px-3 py-1.5 text-xs rounded-lg border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]"><span x-text="t('Test-Benachrichtigung')"></span></button>
+            <button @click="deleteAccount()" class="px-3 py-1.5 text-xs rounded-lg border border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/10"><span x-text="t('Konto löschen')"></span></button>
             <span class="flex-1"></span>
-            <button @click="pwOpen = false" class="px-3 py-1.5 text-sm rounded-lg border border-[#D6DEE9] text-[#5B6B7E]">Abbrechen</button>
-            <button @click="submitPassword()" :disabled="(!pwForm.current && !(pwForm.name && pwForm.email)) || (pwForm.next && pwForm.next !== pwForm.confirm)" class="px-4 py-1.5 text-sm rounded-lg bg-[#FACC15] text-black font-semibold disabled:opacity-50">Ändern</button>
+            <button @click="pwOpen = false" class="px-3 py-1.5 text-sm rounded-lg border border-[#D6DEE9] text-[#5B6B7E]"><span x-text="t('Abbrechen')"></span></button>
+            <button @click="submitPassword()" :disabled="(!pwForm.current && !(pwForm.name && pwForm.email)) || (pwForm.next && pwForm.next !== pwForm.confirm)" class="px-4 py-1.5 text-sm rounded-lg bg-[#FACC15] text-black font-semibold disabled:opacity-50"><span x-text="t('Ändern')"></span></button>
         </div>
     </div>
 </div>
@@ -1380,9 +1380,9 @@ function workspace(initial) {
         ]},
         {label:'COMPLIANCE', items:[
             {key:'instructions',label:'Unterweisungen',ep:'/api/v1/instructions'},
-            {key:'inspections',label:'Prüfungen',ep:'/api/v1/inspections'},
+            {key:'inspections',label:this.t('Prüfungen'),ep:'/api/v1/inspections'},
             {key:'deadlines',label:'Fristen',ep:'/api/v1/deadlines'},
-            {key:'risk-assessments',label:'Gefährdungsbeurteilungen',ep:'/api/v1/risk-assessments'},
+            {key:'risk-assessments',label:this.t('Gefährdungsbeurteilungen'),ep:'/api/v1/risk-assessments'},
             {key:'operating-instructions',label:'Betriebsanweisungen',ep:'/api/v1/operating-instructions'},
             {key:'audits',label:'Audits',ep:'/api/v1/audits'},
             {key:'audit-findings',label:'Feststellungen',ep:'/api/v1/audit-findings'},
@@ -1404,7 +1404,7 @@ function workspace(initial) {
         ]},
         {label:'PRODUKTION', items:[
             {key:'machines',label:'Maschinen',ep:'/api/v1/machines'},
-            {key:'production-orders',label:'Aufträge',ep:'/api/v1/production-orders'},
+            {key:'production-orders',label:this.t('Aufträge'),ep:'/api/v1/production-orders'},
         ]},
         {label:'ORGANISATION', items:[
             {key:'leave-requests',label:'Abwesenheiten',ep:'/api/v1/leave-requests'},
@@ -1416,7 +1416,7 @@ function workspace(initial) {
             {key:'events',label:'Events',ep:'/api/v1/events'},
             {key:'data-objects',label:'Data Lake',ep:'/api/v1/data-objects'},
             {key:'ai-analyses',label:'KI-Analysen',ep:'/api/v1/ai-analyses'},
-            {key:'graph-entities',label:'Graphen · Entitäten',ep:'/api/v1/graph-entities'},
+            {key:'graph-entities',label:this.t('Graphen · Entitäten'),ep:'/api/v1/graph-entities'},
             {key:'graph-edges',label:'Graphen · Kanten',ep:'/api/v1/graph-edges'},
             {key:'integrations',label:'Webhook-Quellen',ep:'/api/v1/integrations'},
             {key:'connectors',label:'Konnektoren',ep:'/api/v1/connectors'},
@@ -1425,21 +1425,21 @@ function workspace(initial) {
     ];
     const ICONS = {dashboard:'◈',companies:'▣',persons:'◉',documents:'▤',tasks:'☑',instructions:'ⓘ',inspections:'✓',deadlines:'◷','risk-assessments':'⚠','operating-instructions':'✎','expert-profiles':'◎',questions:'?',tenders:'☰',strategies:'⌘',projects:'◇',measures:'→',portfolios:'▲',investments:'€',participations:'◆',machines:'⚙','production-orders':'▶','leave-requests':'◔','financial-reports':'₣',events:'≋','data-objects':'▦','ai-analyses':'✦','graph-entities':'●','graph-edges':'↔',executive:'∑',users:'☺',audits:'§','audit-findings':'∴',notifications:'✉',tokens:'⚿',integrations:'⇄',connectors:'⤓'};
     const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',audit_id:'audits',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',generated_by:'users',current_version_id:'documents',assigned_to:'persons',from_entity_id:'graph_entities',to_entity_id:'graph_entities',subject_id:'graph_entities'};
-    const NOTIF_KIND = {unterweisung:'Unterweisung',pruefung:'Prüfung',frist:'Frist',feststellung:'Feststellung',audit:'Audit',massnahme:'Maßnahme',aufgabe:'Aufgabe',gefaehrdungsbeurteilung:'Gefährdungsbeurteilung',projekt:'Projekt',auftrag:'Produktionsauftrag',ausschreibung:'Ausschreibung',antwort:'Antwort',frage:'Frage',urlaub:'Urlaubsantrag',rollen:'Rollen',unterweisung_wiederholung:'Unterweisung (Wiederholung)',hinweis:'Kritischer Hinweis',passwort_geaendert:'Passwort geändert',anmeldung:'Anmeldung',anmeldeversuche:'Fehlgeschlagene Anmeldung',ki_coach:'KI-Coach'};
-    const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv',todo:'Offen',overdue:'Überfällig',sent:'Gesendet',paid:'Bezahlt',unpaid:'Unbezahlt',expired:'Abgelaufen',suspended:'Gesperrt',review:'In Prüfung',assigned:'Zugewiesen',requested:'Angefragt',confirmed:'Bestätigt',declined:'Abgelehnt',exited:'Ausgestiegen',candidate:'Kandidat',resolved:'Gelöst',internal:'Intern',external:'Extern',vacation:'Urlaub',sick:'Krank',other:'Sonstiges'};
+    const NOTIF_KIND = {unterweisung:'Unterweisung',pruefung:this.t('Prüfung'),frist:'Frist',feststellung:'Feststellung',audit:'Audit',massnahme:'Maßnahme',aufgabe:'Aufgabe',gefaehrdungsbeurteilung:this.t('Gefährdungsbeurteilung'),projekt:'Projekt',auftrag:'Produktionsauftrag',ausschreibung:'Ausschreibung',antwort:'Antwort',frage:'Frage',urlaub:'Urlaubsantrag',rollen:this.t('Rollen'),unterweisung_wiederholung:'Unterweisung (Wiederholung)',hinweis:'Kritischer Hinweis',passwort_geaendert:this.t('Passwort geändert'),anmeldung:'Anmeldung',anmeldeversuche:'Fehlgeschlagene Anmeldung',ki_coach:'KI-Coach'};
+    const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv',todo:'Offen',overdue:'Überfällig',sent:'Gesendet',paid:'Bezahlt',unpaid:'Unbezahlt',expired:'Abgelaufen',suspended:'Gesperrt',review:this.t('In Prüfung'),assigned:'Zugewiesen',requested:'Angefragt',confirmed:this.t('Bestätigt'),declined:'Abgelehnt',exited:'Ausgestiegen',candidate:'Kandidat',resolved:this.t('Gelöst'),internal:'Intern',external:'Extern',vacation:'Urlaub',sick:'Krank',other:'Sonstiges'};
     const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at','meta_data']);
     const KPI = [
         {key:'companies',label:'Unternehmen',to:'companies'},{key:'persons',label:'Personen',to:'persons'},
         {key:'documents',label:'Dokumente',to:'documents'},{key:'tasks_open',label:'Offene Aufgaben',to:'tasks'},
         {key:'instructions',label:'Unterweisungen',to:'instructions'},{key:'compliance_rate',label:'Compliance %',to:'instructions'},
         {key:'deadlines_open',label:'Offene Fristen',to:'deadlines'},{key:'risk_high',label:'Hohe Risiken',to:'risk-assessments'},
-        {key:'tenders_open',label:'Offene Ausschreibungen',to:'tenders'},{key:'fin_revenue',label:'Umsatz (Monat)',to:'financial-reports',money:true},{key:'fin_ebitda',label:'EBITDA (Monat)',to:'financial-reports',money:true},{key:'fin_liquidity',label:'Liquidität (Monat)',to:'financial-reports',money:true},{key:'expert_profiles',label:'Experten',to:'expert-profiles'},
-        {key:'questions',label:'Fragen',to:'questions'},{key:'inspections',label:'Prüfungen',to:'inspections'},
+        {key:'tenders_open',label:'Offene Ausschreibungen',to:'tenders'},{key:'fin_revenue',label:'Umsatz (Monat)',to:'financial-reports',money:true},{key:'fin_ebitda',label:'EBITDA (Monat)',to:'financial-reports',money:true},{key:'fin_liquidity',label:this.t('Liquidität (Monat)'),to:'financial-reports',money:true},{key:'expert_profiles',label:'Experten',to:'expert-profiles'},
+        {key:'questions',label:'Fragen',to:'questions'},{key:'inspections',label:this.t('Prüfungen'),to:'inspections'},
         {key:'team_members',label:'Team',to:'users'},
         {key:'audits_planned',label:'Geplante Audits',to:'audits'},{key:'audits_in_progress',label:'Laufende Audits',to:'audits'},
-        {key:'audit_findings_open',label:'Offene Feststellungen',to:'audit-findings'},{key:'audit_findings_overdue',label:'Überfällige Feststellungen',to:'audit-findings'},
-        {key:'production_orders_open',label:'Laufende Aufträge',to:'production-orders'},{key:'projects_open',label:'Offene Projekte',to:'projects'},
-        {key:'machines_active',label:'Maschinen aktiv',to:'machines'},{key:'leave_requests_pending',label:'Urlaubsanträge offen',to:'leave-requests'},{key:'questions_open',label:'Offene Fragen',to:'questions'},{key:'ai_analyses',label:'KI-Analysen',to:'ai-analyses'},{key:'strategies_active',label:'Aktive Strategien',to:'strategies'},{key:'graph_entities',label:'Wissensgraph',to:'graph-entities'},{key:'tender_applications',label:'Bewerbungen',to:'tenders'},{key:'instructions_pending',label:'Unterweisungen offen',to:'instructions'},{key:'answers',label:'Antworten',to:'questions'},
+        {key:'audit_findings_open',label:'Offene Feststellungen',to:'audit-findings'},{key:'audit_findings_overdue',label:this.t('Überfällige Feststellungen'),to:'audit-findings'},
+        {key:'production_orders_open',label:this.t('Laufende Aufträge'),to:'production-orders'},{key:'projects_open',label:'Offene Projekte',to:'projects'},
+        {key:'machines_active',label:'Maschinen aktiv',to:'machines'},{key:'leave_requests_pending',label:this.t('Urlaubsanträge offen'),to:'leave-requests'},{key:'questions_open',label:'Offene Fragen',to:'questions'},{key:'ai_analyses',label:'KI-Analysen',to:'ai-analyses'},{key:'strategies_active',label:'Aktive Strategien',to:'strategies'},{key:'graph_entities',label:'Wissensgraph',to:'graph-entities'},{key:'tender_applications',label:'Bewerbungen',to:'tenders'},{key:'instructions_pending',label:'Unterweisungen offen',to:'instructions'},{key:'answers',label:this.t('Antworten'),to:'questions'},
         {key:'investments_active',label:'Investitionen aktiv',to:'investments'},{key:'participations_active',label:'Beteiligungen aktiv',to:'participations'},
     ];
     const GROUP_EN = {STAMMDATEN:'MASTER DATA',NETZWERK:'NETWORK',ENTWICKLUNG:'DEVELOPMENT',KAPITAL:'CAPITAL',PRODUKTION:'PRODUCTION',ORGANISATION:'ORGANIZATION',PLATTFORM:'PLATFORM'};
@@ -1447,7 +1447,145 @@ function workspace(initial) {
     const STATUS_EN = {open:'Open',pending:'Pending',in_progress:'Running',active:'Active',done:'Done',completed:'Completed',approved:'Approved',archived:'Archived',draft:'Draft',maintenance:'Maintenance',retired:'Retired',awarded:'Awarded',info:'Info',warning:'Warning',critical:'Critical',high:'High',medium:'Medium',low:'Low',scheduled:'Scheduled',cancelled:'Cancelled',rejected:'Rejected',answered:'Answered',closed:'Closed',submitted:'Submitted',shortlisted:'Shortlisted',queued:'Queued',running:'Running',mitigated:'Mitigated',accepted:'Accepted',planned:'Planned',on_hold:'On hold',inactive:'Inactive',todo:'Open',overdue:'Overdue',sent:'Sent',paid:'Paid',unpaid:'Unpaid',expired:'Expired',suspended:'Suspended',review:'In review',assigned:'Assigned',requested:'Requested',confirmed:'Confirmed',declined:'Declined',exited:'Exited',candidate:'Candidate',resolved:'Resolved',internal:'Internal',external:'External',vacation:'Vacation',sick:'Sick',other:'Other'};
     const NOTIF_EN = {unterweisung:'Instruction',pruefung:'Inspection',frist:'Deadline',feststellung:'Finding',audit:'Audit',massnahme:'Measure',aufgabe:'Task',gefaehrdungsbeurteilung:'Risk Assessment',projekt:'Project',auftrag:'Production Order',ausschreibung:'Tender',antwort:'Answer',frage:'Question',urlaub:'Leave Request',rollen:'Roles',unterweisung_wiederholung:'Instruction (Renewal)',hinweis:'Critical Notice',passwort_geaendert:'Password Changed',anmeldung:'Login',anmeldeversuche:'Failed Login',ki_coach:'AI Coach'};
     const KPI_EN = {companies:'Companies',persons:'Persons',documents:'Documents',tasks_open:'Open Tasks',instructions:'Instructions',compliance_rate:'Compliance %',deadlines_open:'Open Deadlines',risk_high:'High Risks',tenders_open:'Open Tenders',fin_revenue:'Revenue (Month)',fin_ebitda:'EBITDA (Month)',fin_liquidity:'Liquidity (Month)',expert_profiles:'Experts',questions:'Questions',inspections:'Inspections',team_members:'Team',audits_planned:'Planned Audits',audits_in_progress:'Running Audits',audit_findings_open:'Open Findings',audit_findings_overdue:'Overdue Findings',production_orders_open:'Running Orders',projects_open:'Open Projects',machines_active:'Machines Active',leave_requests_pending:'Leave Requests Open',questions_open:'Open Questions',ai_analyses:'AI Analyses',strategies_active:'Active Strategies',graph_entities:'Knowledge Graph',tender_applications:'Applications',instructions_pending:'Instructions Open',answers:'Answers',investments_active:'Investments Active',participations_active:'Participations Active'};
+const T_EN2 = {
+ 'AKZEPTIERT':'ACCEPTED','ANTWORTEN':'ANSWERS','AUSLÖSER':'TRIGGERED BY','Abbrechen':'Cancel','Aktionen':'Actions',
+ 'Aktivität (':'Activity (','Akzeptieren':'Accept','Alle einblenden':'Show all','Alle entfernen':'Delete all',
+ 'Alle gelesen':'Mark all read','Alle widerrufen':'Revoke all','Alle →':'All →','Alles im grünen Bereich.':'All good.',
+ 'Anmelde-Verlauf':'Login History','Ansichten':'Views','Antworten':'Reply','Art gelesen':'Mark kind read',
+ 'Auswahl aufheben':'Clear selection','BENACHRICHTIGUNGEN':'NOTIFICATIONS','BERECHTIGUNGEN':'PERMISSIONS',
+ 'BEWERBUNGEN':'APPLICATIONS','Bald fällig':'Due soon','Bearbeiten':'Edit','Bewerbung anlegen':'New application',
+ 'CSV Import:':'CSV Import:','Code gelesen':'Mark code read','Datei':'File','Datensatz öffnen':'Open record',
+ 'Download':'Download','Drucken':'Print','Duplizieren':'Duplicate',
+ 'E-Mail noch nicht verifiziert — wird nach Änderung erneut ausstehend.':'E-mail not verified yet — will be pending again after a change.',
+ 'Entfernen':'Remove','Erneut versuchen':'Retry','Erste Zeile = Spaltennamen (':'First row = column names (',
+ 'Erstellt:':'Created:','FAVORITEN':'FAVORITES','FESTSTELLUNGEN':'FINDINGS','Filter zurücksetzen':'Reset filters',
+ 'Gelesen':'Read','Gelesene entfernen':'Delete read','Geändert:':'Changed:','Heute':'Today','Heute fällig':'Due today',
+ 'Ihnen ist nichts offen zugewiesen.':'Nothing open is assigned to you.','Invertieren':'Invert','Jetzt abrufen':'Fetch now',
+ 'Kein Modul gefunden.':'No module found.','Keine Feststellungen.':'No findings.','Keine Gruppierung':'No grouping',
+ 'Keine Kanten zu dieser Entität.':'No edges for this entity.','Keine Rollen für diesen Mandanten.':'No roles for this tenant.',
+ 'Keine Treffer.':'No hits.','Keine weiteren Kanten.':'No more edges.','Konto löschen':'Delete account','Kopieren':'Copy',
+ 'Lade Report…':'Loading report…','Letzte Ereignisse':'Recent Events','Lädt…':'Loading…','Löschen':'Delete',
+ 'MANDANT':'TENANT','Metrik-Trends':'Metric Trends','Mir zugewiesen':'Assigned to me','Mitgliedschaften':'Memberships',
+ 'Nach der Änderung werden alle API-Token widerrufen — die Seite lädt neu.':'After the change all API tokens will be revoked — the page reloads.',
+ 'Neue Version':'New version','Neuer API-Token — nur einmal sichtbar. Jetzt kopieren:':'New API token — visible only once. Copy now:',
+ 'Noch keine Ansichten.':'No saved views yet.','Noch keine Antworten.':'No answers yet.','Noch keine Bewerbungen.':'No applications yet.',
+ 'Noch keine Einträge für diesen Mandanten.':'No entries for this tenant yet.','Profil bearbeiten':'Edit profile','ROLLEN':'ROLES',
+ 'Rechte (Abilities)':'Permissions (abilities)','Rechte speichern':'Save permissions','Rollen':'Roles','Rollen speichern':'Save roles',
+ 'Schließen':'Close','Spalten':'Columns','Stummgeschaltete Arten':'Muted kinds','Tastenkürzel':'Shortcuts',
+ 'Test-Benachrichtigung':'Test notification','Ungelesen':'Unread','VERKNÜPFUNGEN':'LINKS','VERLAUF':'HISTORY',
+ 'VERSIONEN':'VERSIONS','Von mir':'Mine','Vorlage mit Beispielzeile einfügen':'Insert template with example row',
+ 'Zeitraum':'Period','Zum Datensatz':'To the record','Zum Inhalt springen':'Skip to content','Ändern':'Change',
+ 'ÜBERFÄLLIG':'OVERDUE','Überfällig gesamt':'Overdue total',
+ 'Abmelden':'Sign out','Aktualisieren':'Refresh','Alle API-Token widerrufen':'Revoke all API tokens',
+ 'Alle Benachrichtigungen zu diesem Datensatz':'All notifications for this record','Alle Ereignisse zu diesem Datensatz':'All events for this record',
+ 'Alle Felder als lesbarer Text':'All fields as readable text','Alle Gruppen aufklappen':'Expand all groups',
+ 'Alle Gruppen einklappen':'Collapse all groups','Alle laden (l)':'Load all (l)','Als TSV in die Zwischenablage':'Copy as TSV to clipboard',
+ 'Ansicht löschen':'Delete view','Ausblenden':'Hide','Ausgewählte Zeilen als JSON-Datei':'Selected rows as JSON file',
+ 'Ausgewählte als gelesen markieren':'Mark selected as read','Ausgewählte als ungelesen markieren':'Mark selected as unread',
+ 'Auswahl umkehren (sichtbare Zeilen)':'Invert selection (visible rows)','Bearbeiten (e)':'Edit (e)',
+ 'Benachrichtigungen als NDJSON exportieren (aktive Filter werden übernommen)':'Export notifications as NDJSON (active filters applied)',
+ 'CSV exportieren':'Export CSV','CSV importieren (i)':'Import CSV (i)','Duplizieren (d)':'Duplicate (d)',
+ 'Eigene Rolle anlegen':'Create custom role','Erledigt markieren':'Mark as done','Filter löschen':'Clear filter',
+ 'Filter zurücksetzen (x)':'Reset filters (x)','Gespeicherte Ansichten':'Saved views','Gruppieren nach':'Group by',
+ 'Herunterladen':'Download','Heute fällige Einträge anzeigen':'Show entries due today','Link kopieren (p)':'Copy link (p)',
+ 'Menü':'Menu','Mitglied aus diesem Mandanten entfernen':'Remove member from this tenant',
+ 'Mitgliedschaft in diesem Mandanten beenden':'End membership in this tenant','Nachbarn zeigen':'Show neighbors',
+ 'Nächster (→)':'Next (→)','Rechte der Rolle bearbeiten':'Edit role permissions','Rolle löschen':'Delete role',
+ 'Schließen (Esc)':'Close (Esc)','Serverseitiger Audit-Export (NDJSON, alle Einträge)':'Server-side audit export (NDJSON, all entries)',
+ 'Spalten (c)':'Columns (c)','Speichern (Strg+↵)':'Save (Ctrl+↵)','Speichern und nächsten Eintrag anlegen':'Save and create next entry',
+ 'Suche löschen':'Clear search','Testet die Benachrichtigungsglocke':'Tests the notification bell','Vorheriger (←)':'Previous (←)',
+ 'Wert kopieren':'Copy value','Zuletzt-Liste für diese Sektion leeren':'Clear recent list for this section',
+ 'Überfällig (u)':'Overdue (u)','≤7 Tage (s)':'≤7 days (s)','≤7 Tage fällige Einträge anzeigen':'Show entries due within ≤7 days',
+ 'Aktualisieren (r)':'Refresh (r)','Ungelesene anzeigen':'Show unread','Überfällige Einträge anzeigen':'Show overdue entries',
+ 'Aktuelles Passwort (nur für Passwort-Änderung)':'Current password (only for password change)',
+ 'Angebot / Beschreibung…':'Proposal / description…','Antwort schreiben…':'Write a reply…','Filtern…':'Filter…',
+ 'Globale Suche — Firma, Aufgabe, Dokument…':'Global search — company, task, document…','Modul oder Aktion suchen…':'Search module or action…',
+ 'Neues Passwort (min. 12 Zeichen, Groß-/Kleinbuchstabe, Zahl)':'New password (min. 12 chars, upper/lowercase, digit)',
+ 'Neues Passwort wiederholen':'Repeat new password','Preis (€)':'Price (€)',
+ 'Alle sichtbaren Zeilen auswählen':'Select all visible rows','Befehlspalette':'Command palette',
+ 'Benachrichtigung entfernen':'Remove notification','Darstellung umschalten':'Toggle appearance','Fehler schließen':'Dismiss error',
+ 'Hauptnavigation':'Main navigation','Liste aktualisieren':'Refresh list','Navigation umschalten':'Toggle navigation',
+ 'API-Token angelegt — einmalig sichtbar.':'API token created — visible only once.','Aktion fehlgeschlagen (HTTP':'Action failed (HTTP',
+ 'Aktualisieren fehlgeschlagen (HTTP':'Refresh failed (HTTP','Analyse fehlgeschlagen (HTTP':'Analysis failed (HTTP',
+ 'Alle API-Token widerrufen? Der aktuell verwendete bleibt aktiv.':'Revoke all API tokens? The one currently in use stays active.',
+ 'Alle Benachrichtigungen entfernen?':'Delete all notifications?','Alle als gelesen markiert':'All marked as read',
+ 'Anfrage fehlgeschlagen — Rate-Limit erreicht, bitte':'Request failed — rate limit reached, please',
+ 'Anlegen fehlgeschlagen (HTTP':'Creation failed (HTTP','Antwort akzeptiert.':'Answer accepted.',
+ 'Antwort fehlgeschlagen (HTTP':'Reply failed (HTTP','Antwort gelöscht.':'Reply deleted.','Antwort gespeichert.':'Reply saved.',
+ 'Antwort löschen?':'Delete reply?','Art als gelesen markiert':'Kind marked as read','Aufgabe erledigt.':'Task completed.',
+ 'Benachrichtigung entfernt':'Notification removed','Benachrichtigungen exportiert':'Notifications exported',
+ 'Benutzer angelegt — Initiales Passwort:':'User created — initial password:','Bewerbung eingereicht.':'Application submitted.',
+ 'Bewerbung fehlgeschlagen (HTTP':'Application failed (HTTP','Bewerbung gelöscht.':'Application deleted.',
+ 'Bewerbung löschen?':'Delete application?','Code als gelesen markiert':'Code marked as read','Datensatz aktualisiert.':'Record updated.',
+ 'Demo-Seed fehlgeschlagen.':'Demo seed failed.','Download fehlgeschlagen':'Download failed',
+ 'Eigenes Konto wirklich löschen? Nur möglich, wenn du in keinem Mandanten mehr Mitglied bist. Alle API-Tokens werden widerrufen.':'Really delete your own account? Only possible when you are not a member of any tenant. All API tokens will be revoked.',
+ 'Eintrag angelegt.':'Entry created.','Ereignisse exportiert':'Events exported','Export fehlgeschlagen':'Export failed',
+ 'Fehler (HTTP':'Error (HTTP','Fehler beim Speichern.':'Failed to save.','Gelöscht.':'Deleted.','Hinweis ausgeblendet.':'Hint hidden.',
+ 'Konto gelöscht.':'Account deleted.','Kopieren fehlgeschlagen.':'Copy failed.','Kopiert.':'Copied.',
+ 'Mandant angelegt:':'Tenant created:','Mandant umbenannt:':'Tenant renamed:','Mandant verlassen.':'Tenant left.',
+ 'Report fehlgeschlagen (HTTP':'Report failed (HTTP','Rolle angelegt.':'Role created.',
+ 'Sitzung abgelaufen — bitte neu anmelden.':'Session expired — please sign in again.','Testbenachrichtigung gesendet':'Test notification sent',
+ 'Token kopiert':'Token copied','URL kopiert':'URL copied','Umbenennen fehlgeschlagen (HTTP':'Rename failed (HTTP',
+ 'Ungespeicherte Änderungen verwerfen?':'Discard unsaved changes?','Upload fehlgeschlagen (HTTP':'Upload failed (HTTP',
+ 'Version hochgeladen.':'Version uploaded.','Webhook-Quelle angelegt — URL kopieren und im Quellsystem hinterlegen.':'Webhook source created — copy the URL into your source system.',
+ 'Wiederhergestellt.':'Restored.','Wirklich löschen?':'Really delete?',
+ 'entfernt':'removed','gelesene Benachrichtigungen entfernt':'read notifications removed','Benachrichtigungen entfernt':'notifications removed',
+ 'gelöscht.':'deleted.','Zeilen kopiert.':'rows copied.','Auswahl zurückgesetzt.':'selection cleared.','weitere':'more',
+ 'Abschließen':'Complete','Als gelesen markieren':'Mark as read','Als gelesen markiert.':'Marked as read.',
+ 'Als ungelesen markieren':'Mark as unread','Als ungelesen markiert.':'Marked as unread.','Bestätigt':'Confirmed',
+ 'Bitte eine Datei wählen.':'Please choose a file.','Demo-Daten geladen.':'Demo data loaded.','Demo-Seed fehlgeschlagen (HTTP':'Demo seed failed (HTTP',
+ 'Entfernen fehlgeschlagen (HTTP':'Removal failed (HTTP','Entität':'Entity','Fenster für »bald fällig«-Badges (Tage)':'Window for "due soon" badges (days)',
+ 'Filter: Überfällig':'Filter: Overdue','Fällig':'Due','Gefährdung':'Hazard','Gefährdungsbeurteilung':'Risk assessment',
+ 'Gefährdungsbeurteilungen':'Risk assessments','Gelöst':'Resolved','Geschäftsführer':'Managing director','Geändert von':'Changed by',
+ 'Graphen · Entitäten':'Graph · Entities','Gültig ab':'Valid from','In Prüfung':'Under review','Kapazität/Tag':'Capacity/day',
+ 'Keine Änderung.':'No change.','Kompakte Zeilenhöhe':'Compact row height','Laufende Aufträge':'Running orders',
+ 'Löschen fehlgeschlagen (HTTP':'Deletion failed (HTTP','Mitglied entfernt.':'Member removed.','Neuer Name für':'New name for',
+ 'Noch nie ausgeführt':'Never run','Normale Zeilenhöhe':'Normal row height','Passwort geändert':'Password changed',
+ 'Passwort geändert — Seite wird neu geladen.':'Password changed — page will reload.','Passwort-Felder unvollständig oder ungleich.':'Password fields incomplete or mismatch.',
+ 'Profil aktualisiert.':'Profile updated.','Prüfung':'Inspection','Prüfungen':'Inspections','Qualität':'Quality',
+ 'Rechte gespeichert.':'Permissions saved.','Rechte geändert':'Permissions changed','Rolle gelöscht.':'Role deleted.',
+ 'Rollen gespeichert.':'Roles saved.','Rollen geändert':'Roles changed','Speichern fehlgeschlagen (HTTP':'Save failed (HTTP',
+ 'Stummschaltung für':'Mute for','Stummschaltung für Art aufheben':'Unmute kind','Teilweise fehlgeschlagen.':'Partially failed.',
+ 'Verlassen fehlgeschlagen (HTTP':'Leave failed (HTTP','Wieder öffnen':'Reopen','Wiederherstellen fehlgeschlagen.':'Restore failed.',
+ 'Zeile auswählen:':'Select row:','Zu Favoriten hinzufügen':'Add to favorites','Zu Favoriten hinzugefügt':'Added to favorites',
+ 'Zuletzt geändert:':'Last changed:','Aus Favoriten entfernt':'Removed from favorites','aktualisiert':'updated',
+ 'hinzugefügt':'added','hochgeladen':'uploaded','leer = zufällig generiert':'empty = randomly generated',
+ 'Älter':'Older','Öffnen':'Open','Übergeordnet':'Parent','Überfällige Feststellungen':'Overdue findings',
+ 'Aufträge':'Orders','Aufträge offen':'Open orders','Urlaubsanträge offen':'Open leave requests','Liquidität (Monat)':'Liquidity (month)',
+ '“ gespeichert.':'” saved.','“ gelöscht.':'” deleted.','Ansicht „':'View "','Rolle „':'Role "','Mandant „':'Tenant "',
+ 'aus dem Mandanten entfernen?':'remove from this tenant?','Diese Woche':'This week','Ohne Status':'No status','Nicht zugewiesen':'Unassigned',
+ 'Rolle löschen? Zugewiesene Nutzer verlieren diese Rolle.':'Delete role? Assigned users lose this role.',
+ 'Mandant wirklich verlassen? Du verlierst alle Rollen und Zugriff.':'Really leave this tenant? You lose all roles and access.',
+ 'Einträge wirklich löschen?':'Really delete the entries?','Mitglied':'Member','Vormerken':'Shortlist','Vergeben':'Award','Ablehnen':'Reject',
+ 'Befehlspalette öffnen (↑/↓ wählen, Enter öffnen)':'Open command palette (↑/↓ to select, Enter to open)','Suche fokussieren':'Focus search',
+ 'Neuen Eintrag anlegen':'Create new entry','Eintrag bearbeiten (Drawer)':'Edit entry (drawer)','Eintrag duplizieren (Drawer)':'Duplicate entry (drawer)',
+ 'Sektion (ent)pinnen':'(Un)pin section','Alle Zeilen (ab)wählen':'(De)select all rows','Deep-Link kopieren (Drawer)':'Copy deep link (drawer)',
+ 'Erste gefilterte Zeile öffnen':'Open first filtered row','Alle Zeilen laden':'Load all rows','Liste / Datensatz neu laden':'Reload list / record',
+ 'CSV-Import öffnen':'Open CSV import','Spalten-Picker':'Column picker','Ansichten-Picker':'Views picker','Überfällig-Filter':'Overdue filter',
+ '≤7-Tage-Filter':'≤7-day filter','Heute-Filter':'Today filter','Gruppierung wechseln (Status, Zeitraum, FK-Spalten)':'Cycle grouping (status, period, FK columns)',
+ 'Zum Dashboard':'To dashboard','n-te Zeile öffnen':'Open nth row','Vorheriger / nächster Eintrag (Drawer)':'Previous / next entry (drawer)',
+ 'Erster / letzter Eintrag (Drawer)':'First / last entry (drawer)','Drawer breit/schmal':'Drawer wide/narrow','Kompakte Zeilen':'Compact rows',
+ 'JSON kopieren (Drawer)':'Copy JSON (drawer)','Rückgängig (Löschen/Status)':'Undo (delete/status)','Nächster Mandant':'Next tenant',
+ 'Formular absenden':'Submit form','Dunkel/Hell umschalten':'Toggle dark/light','Diese Übersicht':'This overview',
+ 'Speichern & neu':'Save & new','Sekunden':'seconds','Minute':'minute','Minuten':'minutes','Stunde':'hour','Stunden':'hours','Tag':'day','Tagen':'days',
+ 'Neue Benachrichtigung':'New notification','Keine Ansichten gespeichert':'No saved views',
+};
     const T_EN = {'Neuer Mandant':'New Tenant','Umbenennen':'Rename','Verlassen':'Leave','Speichern':'Save','Abbrechen':'Cancel','Löschen':'Delete','Bearbeiten':'Edit','Duplizieren':'Duplicate','Alle gelesen':'Mark all read','Gelesene entfernen':'Delete read','Alle entfernen':'Delete all','Mehr laden':'Load more','Alle laden':'Load all','Drucken':'Print','Spalten':'Columns','Filter zurücksetzen':'Reset filters','Exportieren':'Export','Importieren':'Import','Suchen':'Search','Passwort ändern':'Change Password','Öffnen':'Open','Senden':'Send','Antworten':'Reply','Hochladen':'Upload','Ereignisse':'Events','Benachrichtigungen':'Notifications','Überfällig':'Overdue','Heute':'Today','Von mir':'Mine','Ungelesen':'Unread','Stumm':'Muted','Mitglieder':'Members','Aktionen':'Actions','alle auf':'expand all','alle zu':'collapse all','Module filtern…':'Filter modules…','Keine Einträge vorhanden.':'No entries.','Keine Einträge für diese Filter.':'No entries for these filters.','Eintrag':'entry','Einträge':'entries','überfällig':'overdue','heute':'today','Unternehmenssteuerung':'Business Management','Keine Berechtigung':'No permission','Fehler beim Laden':'Failed to load','Rückgängig':'Undo','zugewiesen':'assigned','Demo-Daten laden':'Load demo data','Lade Demo-Daten…':'Loading demo data…','Ausgeblendete: ':'Hidden: ','Fällig ':'Due ','Art gelesen':'Mark kind read','Art entfernen':'Delete kind','Art stummschalten':'Mute kind','Art ungelesen':'Mark kind unread','Code gelesen':'Mark code read','Code entfernen':'Delete code','leeren ×':'clear ×','Nächste Fristen':'Upcoming Deadlines','Offene Aufgaben':'Open Tasks','Letzte Ereignisse':'Recent Events','Aktivität':'Activity','alle →':'all →','Ansichten':'Views','Ansicht speichern':'Save view','Neu':'New','In Bearbeitung':'In progress','Anmelden':'Sign in','Abmelden':'Sign out','Gruppiert nach: ':'Grouped by: ','Gruppierung aus':'Grouping off','Nach Status gruppieren':'Group by status','Mir zugewiesen':'Assigned to me','Ohne Verantwortlichen':'Unassigned','≤7 Tage':'≤7 days','Schwere ':'Severity ','Zuletzt geändert':'Last changed','Mitglied seit':'Member since','Mitgliedschaften':'Memberships','Anmelde-Verlauf':'Login History','BENACHRICHTIGUNGEN':'NOTIFICATIONS','VERKNÜPFUNGEN':'LINKS','VERLAUF':'HISTORY','FESTSTELLUNGEN':'FINDINGS','BEWERBUNGEN':'APPLICATIONS','ANTWORTEN':'ANSWERS','VERSIONEN':'VERSIONS','Mitglied(er)':'member(s)','Keine Beschreibung':'No description'};
+    Object.assign(T_EN, T_EN2);
+    Object.assign(T_EN, {'Aufgabe':'Task','Unternehmen':'Company','Person':'Person','Dokument':'Document','Dokumentversion':'Document version','Unterweisung':'Instruction','Prüfung':'Inspection','Frist':'Deadline','Gefährdungsbeurteilung':'Risk assessment','Betriebsanweisung':'Operating instruction','Experte':'Expert','Frage':'Question','Ausschreibung':'Tender','Finanzbericht':'Financial report','Urlaubsantrag':'Leave request','Maschine':'Machine','Produktionsauftrag':'Production order','Beteiligung':'Participation','Data-Objekt':'Data object','Portfolio':'Portfolio','Investition':'Investment','Kante':'Edge','Strategie':'Strategy','Projekt':'Project','KI-Analyse':'AI analysis','Executive-Report':'Executive report','Audit':'Audit','Feststellung':'Finding','Benutzer':'User','Webhook':'Webhook','Konnektor':'Connector','Webhook-Quelle':'Webhook source'});
+    Object.assign(T_EN, {'— wählen —':'— select —','— Experte wählen —':'— select expert —','Aktuelle Ansicht speichern':'Save current view','ausgewählt':'selected','öffnen →':'open →','löschen':'delete','Geändert:':'Changed:'});
+
+    Object.assign(T_EN, {
+ 'Stand':'As of','gesamt':'total','Tag':'Day','Top-Tag':'Top day','Meiste Ereignisse an einem Tag — Tag filtern':'Most events in one day — filter by day',
+ 'Zuletzt':'Recent','Eintrag':'Entry','gestern':'yesterday','heute':'today','morgen':'tomorrow','Neu':'New',
+ 'Fällig gesamt':'Due total','Einträge':'entries','Zeilen':'rows','Bewerbung':'Application','Antwort':'Reply',
+ 'gespeichert':'saved','gelöscht':'deleted','gefunden':'found','anlegen':'create','verfügbar':'available',
+ 'Mehr laden':'Load more','Alle laden':'Load all','Zurück':'Back','Weiter':'Next','Exportieren':'Export',
+ 'Importieren':'Import','Abbrechen':'Cancel','Senden':'Send','Antworten':'Reply','Fällig':'Due',
+ 'Kopieren':'Copy','JSON exportieren':'Export JSON','Liste neu laden':'Reload list','Liste drucken':'Print list',
+ 'Alle zu':'Collapse all','Alle auf':'Expand all','Zuletzt ':'Recent ','Keine':'No','heute ':'today ','überfällig ':'overdue ',
+});
+
     return {
         section: initial, groups: GROUPS, kpiCards: KPI, icons: ICONS,
         NOTIF_KIND,
@@ -1625,7 +1763,7 @@ function workspace(initial) {
             const was = this.pins.includes(key);
             this.pins = was ? this.pins.filter(k => k !== key) : [...this.pins, key];
             try { localStorage.setItem('af_pins', JSON.stringify(this.pins)); } catch (e) {}
-            this.toast(was ? 'Aus Favoriten entfernt' : 'Zu Favoriten hinzugefügt');
+            this.toast(was ? this.t('Aus Favoriten entfernt') : this.t('Zu Favoriten hinzugefügt'));
         },
         sectionLabel(k) { const i = this.groups.flatMap(g => g.items).find(x => x.key === k); return i ? this.iLabel(i) : k; },
         recentRows() { this._rrTick = this._rrTick || 0; try { return JSON.parse(localStorage.getItem('af_recentrows') || '[]'); } catch (e) { return []; } },
@@ -1675,30 +1813,30 @@ function workspace(initial) {
         unreadNotifs() { return this.dbNotifs.filter(n => !n.read).length; },
         paletteItems() {
             const q = this.paletteQ.trim().toLowerCase();
-            const all = this.visGroups().flatMap(g => g.items.map(i => ({key: i.key, label: i.label, group: g.label})));
+            const all = this.visGroups().flatMap(g => g.items.map(i => ({key: i.key, label: this.iLabel(i), group: this.gLabel(g.label)})));
             const acts = [];
-            if (this.canCreate()) acts.push({key: null, action: 'create', label: '+ Neu: ' + this.title(), group: 'Aktion'});
-            if (this.rows && this.section !== 'dashboard') acts.push({key: null, action: 'export', label: 'CSV exportieren', group: 'Aktion'}, {key: null, action: 'exportJson', label: 'JSON exportieren', group: 'Aktion'}, {key: null, action: 'reload', label: 'Liste neu laden', group: 'Aktion'}, {key: null, action: 'print', label: 'Liste drucken', group: 'Aktion'});
-            if (this.rows && this.canImport()) acts.push({key: null, action: 'import', label: 'CSV importieren', group: 'Aktion'});
-            acts.push({key: null, action: 'dark', label: 'Dunkel/Hell umschalten', group: 'Aktion'});
-            acts.push({key: null, action: 'newtenant', label: '+ Neuer Mandant', group: 'Aktion'});
-            if (this.tenantList.length > 1) this.sortedTenants().filter(t => t.id !== this.tenant).forEach(t => acts.push({key: null, action: 'tenant', tenant: t.id, label: 'Mandant: ' + t.name, group: 'Aktion'}));
-            if (this.rows) Object.keys(this.views()).forEach(vn => acts.push({key: null, action: 'view', view: vn, label: 'Ansicht: ' + vn, group: 'Aktion'}));
+            if (this.canCreate()) acts.push({key: null, action: 'create', label: '+ ' + this.t('Neu') + ': ' + this.title(), group: this.t('Aktionen')});
+            if (this.rows && this.section !== 'dashboard') acts.push({key: null, action: 'export', label: this.t('CSV exportieren'), group: 'Aktion'}, {key: null, action: 'exportJson', label: (this.lang==='en'?'Export JSON':'JSON exportieren'), group: this.t('Aktionen')}, {key: null, action: 'reload', label: (this.lang==='en'?'Reload list':'Liste neu laden'), group: this.t('Aktionen')}, {key: null, action: 'print', label: (this.lang==='en'?'Print list':'Liste drucken'), group: this.t('Aktionen')});
+            if (this.rows && this.canImport()) acts.push({key: null, action: 'import', label: this.t('CSV importieren (i)').replace(' (i)',''), group: this.t('Aktionen')});
+            acts.push({key: null, action: 'dark', label: this.t('Dunkel/Hell umschalten'), group: this.t('Aktionen')});
+            acts.push({key: null, action: 'newtenant', label: '+ ' + this.t('Neuer Mandant'), group: this.t('Aktionen')});
+            if (this.tenantList.length > 1) this.sortedTenants().filter(t => t.id !== this.tenant).forEach(t => acts.push({key: null, action: 'tenant', tenant: t.id, label: this.t('Mandant') + ': ' + t.name, group: this.t('Aktionen')}));
+            if (this.rows) Object.keys(this.views()).forEach(vn => acts.push({key: null, action: 'view', view: vn, label: this.t('Ansichten') + ': ' + vn, group: this.t('Aktionen')}));
             if (this.rows && this.rows.length) {
                 if (this.rows.some(r => this.dueKey(r))) acts.push(
-                    {key: null, action: 'filter', filter: 'overdueOnly', label: 'Filter: Überfällig ' + (this.overdueOnly ? '(an)' : '(aus)'), group: 'Aktion'},
-                    {key: null, action: 'filter', filter: 'dueSoonOnly', label: 'Filter: ≤7 Tage ' + (this.dueSoonOnly ? '(an)' : '(aus)'), group: 'Aktion'},
-                    {key: null, action: 'filter', filter: 'dueTodayOnly', label: 'Filter: Heute ' + (this.dueTodayOnly ? '(an)' : '(aus)'), group: 'Aktion'});
+                    {key: null, action: 'filter', filter: 'overdueOnly', label: this.t('Filter: Überfällig ') + (this.overdueOnly ? '(an)' : '(aus)'), group: 'Aktion'},
+                    {key: null, action: 'filter', filter: 'dueSoonOnly', label: (this.lang==='en'?'Filter: ≤7 days ':'Filter: ≤7 Tage ') + (this.dueSoonOnly ? '(an)' : '(aus)'), group: 'Aktion'},
+                    {key: null, action: 'filter', filter: 'dueTodayOnly', label: this.t('Filter: Überfällig').replace('Überfällig','' + this.t('Heute') + '') + ' ' + (this.dueTodayOnly ? '(an)' : '(aus)'), group: 'Aktion'});
                 if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)) {
-                    acts.push({key: null, action: 'filter', filter: 'myOnly', label: 'Filter: Mir zugewiesen ' + (this.myOnly ? '(an)' : '(aus)'), group: 'Aktion'});
+                    acts.push({key: null, action: 'filter', filter: 'myOnly', label: (this.lang==='en'?'Filter: Assigned to me ':'Filter: Mir zugewiesen ') + (this.myOnly ? '(an)' : '(aus)'), group: 'Aktion'});
                 }
                 if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r || 'assigned_to' in r) && this.rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to))) {
-                    acts.push({key: null, action: 'filter', filter: 'unassignedOnly', label: 'Filter: Ohne Verantwortlichen ' + (this.unassignedOnly ? '(an)' : '(aus)'), group: 'Aktion'});
+                    acts.push({key: null, action: 'filter', filter: 'unassignedOnly', label: (this.lang==='en'?'Filter: Unassigned ':'Filter: Ohne Verantwortlichen ') + (this.unassignedOnly ? '(an)' : '(aus)'), group: 'Aktion'});
                 }
-                if (this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.unassignedOnly || this.statusFilter || this.query) acts.push({key: null, action: 'filter', filter: '_reset', label: 'Filter zurücksetzen', group: 'Aktion'});
+                if (this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.unassignedOnly || this.statusFilter || this.query) acts.push({key: null, action: 'filter', filter: '_reset', label: this.t('Filter zurücksetzen'), group: 'Aktion'});
             }
-            this.recentRows().forEach(r => acts.push({key: null, action: 'openrow', row: r, label: '↻ ' + (r.name || r.id) + ' (' + this.sectionLabel(r.key) + ')', group: 'Zuletzt'}));
-            if (q && this.rows && this.rows.length) this.rows.filter(r => JSON.stringify(r).toLowerCase().includes(q)).slice(0, 5).forEach(r => acts.push({key: null, action: 'openrowcur', id: r.id, label: '→ ' + (r.name || r.title || r.headline || r.id) + ' (' + this.title() + ')', group: 'Eintrag'}));
+            this.recentRows().forEach(r => acts.push({key: null, action: 'openrow', row: r, label: '↻ ' + (r.name || r.id) + ' (' + this.sectionLabel(r.key) + ')', group: this.t('Zuletzt')}));
+            if (q && this.rows && this.rows.length) this.rows.filter(r => JSON.stringify(r).toLowerCase().includes(q)).slice(0, 5).forEach(r => acts.push({key: null, action: 'openrowcur', id: r.id, label: '→ ' + (r.name || r.title || r.headline || r.id) + ' (' + this.title() + ')', group: this.t('Eintrag')}));
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
             mods.sort((a, b) => ((this.pins || []).includes(b.key) ? 1 : 0) - ((this.pins || []).includes(a.key) ? 1 : 0));
             const globals = this.globHits.map(h => ({key: null, action: 'gsearch', section: h.section, id: h.id, icon: this.icons[h.section], label: '⇉ ' + (h.label || h.id) + ' (' + this.sectionLabel(h.section) + ')', group: 'Global'}));
@@ -1734,12 +1872,12 @@ function workspace(initial) {
         insightFilter(code) { return ({tasks_overdue:'overdue=1',tasks_due_soon:'dueSoon=1',tasks_unassigned:'unassigned=1',tasks_done_no_stamp:'status=done',deadlines_due_soon:'dueSoon=1',deadlines_unassigned:'unassigned=1',inspections_due_soon:'dueSoon=1',inspections_unassigned:'unassigned=1',fin_negative_liquidity:'',fin_reports_missing:'',machines_in_maintenance:'status=maintenance',orders_overdue:'overdue=1',orders_due_soon:'dueSoon=1',orders_unassigned:'unassigned=1',orders_no_machine:'',orders_machine_maintenance:'',orders_done_incomplete:'status=done',orders_running_no_start:'status=running',orders_done_no_finish:'status=done',machines_idle:'status=active',instructions_no_person:'status=pending',projects_no_owner:'status=active',investments_stale_value:'',investments_no_value:'',documents_no_category:'',expert_profiles_no_rate:'status=active',persons_no_contact:'',leave_overlap:'status=approved',leave_decided_no_stamp:'status=approved',applications_no_price:'',applications_no_proposal:'',applications_stale:'status=submitted',audits_no_findings:'status=done',audits_no_result:'status=done',instructions_no_completed_at:'status=completed',risk_assessments_no_person:'status=open',risks_no_measures:'status=open',ai_analyses_failed:'status=failed',tenders_no_budget:'status=open',machines_zero_capacity:'status=active',inspections_no_person:'status=scheduled',instructions_renewal_due:'status=completed',data_objects_no_category:'',data_objects_empty:'',graph_edges_no_relation:'',measures_no_project:'',projects_stalled:'status=active',projects_done_incomplete:'status=done',projects_no_strategy:'status=active',questions_unassigned:'status=open',questions_no_answers:'',questions_no_accepted:'status=answered',deadlines_no_subject:'status=open',deadlines_completed_no_stamp:'status=completed',risk_reviews_overdue:'overdue=1',risk_reviews_due_soon:'dueSoon=1',compliance_rate_low:'',graph_orphans:'',leave_pending_stale:'status=pending',measures_overdue:'overdue=1',measures_due_soon:'dueSoon=1',measures_unassigned:'unassigned=1',projects_overdue:'overdue=1',projects_ending_soon:'dueSoon=1',projects_unassigned:'unassigned=1',projects_no_measures:'status=active',portfolios_no_investments:'',instructions_due_soon:'dueSoon=1',instructions_overdue:'overdue=1',instructions_unassigned:'unassigned=1',deadlines_overdue:'overdue=1',high_risks_open:'status=open',tenders_open:'status=open',questions_open:'status=open',questions_stale:'status=open',tenders_deadline_soon:'dueSoon=1',tenders_overdue:'overdue=1',tenders_no_applications:'status=open',tenders_awarded_no_winner:'status=awarded',expert_profiles_incomplete:'status=active',documents_no_version:'',persons_without_company:'',companies_no_persons:'',investments_drawdown:'',strategies_overdue:'overdue=1',strategies_no_projects:'status=active',strategies_ending_soon:'dueSoon=1',participations_capital_need:'status=active',participations_exited_with_stake:'status=exited',inspections_overdue:'overdue=1',inspections_no_result:'status=completed',leave_requests_pending:'status=pending',leave_active_today:'status=approved',audit_findings_overdue:'overdue=1',audit_findings_critical:'severity=critical',audit_findings_due_soon:'dueSoon=1',audit_findings_unassigned:'unassigned=1',audits_starting_soon:'status=planned',audits_overdue:'overdue=1',audits_unassigned:'unassigned=1',audits_no_auditor:'status=planned',op_instructions_draft:'status=draft',op_instructions_review:'status=active',op_instructions_no_document:'',instructions_no_document:'',members_never_logged_in:''})[code] || ''; },
         tenantName() { const t = this.tenantList.find(x => x.id === this.tenant); return t ? t.name : '— kein Mandant —'; },
         sortedTenants() { return [...this.tenantList].sort((a, b) => String(a.name).localeCompare(String(b.name), 'de')); },
-        execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake',audits_open:'Audits offen',findings_open:'Festst. offen',leave_pending:'Urlaub offen',orders_open:'Aufträge offen',documents:'Dokumente',questions_open:'Offene Fragen',investments_active:'Investitionen',participations_active:'Beteiligungen'}; return M[k] || k; },
+        execLabel(k) { const M = {companies:'Unternehmen',persons:'Personen',tasks_open:'Offene Aufgaben',deadlines_open:'Offene Fristen',high_risks:'Hohe Risiken',data_objects:'Data Lake',audits_open:'Audits offen',findings_open:'Festst. offen',leave_pending:'Urlaub offen',orders_open:this.t('Aufträge offen'),documents:'Dokumente',questions_open:'Offene Fragen',investments_active:'Investitionen',participations_active:'Beteiligungen'}; return M[k] || k; },
         createExecReport() {
-            const title = prompt('Report-Titel', 'Executive Report ' + new Date().toLocaleDateString('de-DE'));
+            const title = prompt('Report-Titel', 'Executive Report ' + new Date().toLocaleDateString((this.lang==='en'?'en-GB':'de-DE')));
             if (!title) return;
             this.api('/api/v1/exec-reports', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title})})
-                .then(r => { if (r.ok) this.loadSection(); else this.toast('Report fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) this.loadSection(); else this.toast(this.t('Report fehlgeschlagen (HTTP ')+r.status+')'); });
         },
         toggleReport(r) {
             const id = r.id;
@@ -1751,7 +1889,7 @@ function workspace(initial) {
         },
         subtitle() {
             const base = (this.section === 'dashboard' ? this.t('Unternehmenssteuerung') : (this.lang === 'en' ? 'Module ' : 'Modul ') + (this.iLabel(this.item())||this.section)) + ' · ' + this.tenantName();
-            if (this.section === 'dashboard') return base + ' · ' + new Date().toLocaleDateString('de-DE', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
+            if (this.section === 'dashboard') return base + ' · ' + new Date().toLocaleDateString((this.lang==='en'?'en-GB':'de-DE'), {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
             if (this.section === 'executive') return base;
             if (this.rows && this.rows.length) {
                 const od = this.rows.filter(r => this.overdue(r)).length;
@@ -1761,7 +1899,7 @@ function workspace(initial) {
             return base;
         },
         metric(k) { const v = this.metrics && this.metrics[k]; return v ? parseFloat(v.value) : '–'; },
-        kpiValue(m) { const v = this.metric(m.key); if (v === '–' || !m.money) return v; return v.toLocaleString('de-DE', {maximumFractionDigits: 0}) + ' €'; },
+        kpiValue(m) { const v = this.metric(m.key); if (v === '–' || !m.money) return v; return v.toLocaleString((this.lang==='en'?'en-GB':'de-DE'), {maximumFractionDigits: 0}) + ' €'; },
         trend(k) { const t = this.trends.find(x => x.metric === k); return t || {delta: null, direction: 'unknown'}; },
         sparkPath(k) {
             const v = this.spark[k] || [];
@@ -1772,18 +1910,18 @@ function workspace(initial) {
         seedDemo() {
             this.seeding = true;
             this.api('/api/v1/demo-seed', {method: 'POST'})
-                .then(r => { this.seeding = false; this.toast(r.ok ? 'Demo-Daten geladen.' : 'Demo-Seed fehlgeschlagen (HTTP ' + r.status + ')'); if (r.ok) this.loadSection(); })
-                .catch(() => { this.seeding = false; this.toast('Demo-Seed fehlgeschlagen.'); });
+                .then(r => { this.seeding = false; this.toast(r.ok ? this.t('Demo-Daten geladen.') : this.t('Demo-Seed fehlgeschlagen (HTTP ') + r.status + ')'); if (r.ok) this.loadSection(); })
+                .catch(() => { this.seeding = false; this.toast(this.t('Demo-Seed fehlgeschlagen.')); });
         },
         completeDashTask(t) {
             const prev = t.status, id = t.id;
             this.api('/api/v1/tasks/' + id, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status: 'done'})})
                 .then(r => {
-                    if (!r.ok) { this.toast('Fehler (HTTP ' + r.status + ')'); return; }
+                    if (!r.ok) { this.toast(this.t('Fehler (HTTP ') + r.status + ')'); return; }
                     this.openTasks = this.openTasks.filter(x => String(x.id) !== String(id));
-                    this.toast('Aufgabe erledigt.', {label: 'Rückgängig', fn: () => this.api('/api/v1/tasks/' + id, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status: prev || 'open'})}).then(() => this.loadSection(true))});
+                    this.toast(this.t('Aufgabe erledigt.'), {label: 'Rückgängig', fn: () => this.api('/api/v1/tasks/' + id, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status: prev || 'open'})}).then(() => this.loadSection(true))});
                 })
-                .catch(() => this.toast('Fehler beim Speichern.'));
+                .catch(() => this.toast(this.t('Fehler beim Speichern.')));
         },
         toast(msg, action) {
             const type = /fehlgeschlagen|abgelaufen|fehler/i.test(msg) ? 'error' : 'info';
@@ -1802,24 +1940,24 @@ function workspace(initial) {
             this.pwErr = '';
             const profileChanged = this.me && (this.pwForm.name !== this.me.name || this.pwForm.email !== this.me.email);
             const pwChanged = !!this.pwForm.next;
-            if (pwChanged && (!this.pwForm.current || this.pwForm.next !== this.pwForm.confirm)) { this.pwErr = 'Passwort-Felder unvollständig oder ungleich.'; return; }
+            if (pwChanged && (!this.pwForm.current || this.pwForm.next !== this.pwForm.confirm)) { this.pwErr = this.t('Passwort-Felder unvollständig oder ungleich.'); return; }
             const done = (msg) => { this.toast(msg); this.pwOpen = false; if (pwChanged) setTimeout(() => location.reload(), 1200); };
             const fail = async (r) => { const d = await r.json().catch(() => null); this.pwErr = (d && d.message) ? d.message : 'Fehler ' + r.status; };
             const savePw = () => this.api('/api/v1/me/password', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({current_password: this.pwForm.current, password: this.pwForm.next, password_confirmation: this.pwForm.confirm})})
-                .then(r => { if (r.ok) done('Passwort geändert — Seite wird neu geladen.'); else fail(r); })
+                .then(r => { if (r.ok) done(this.t('Passwort geändert — Seite wird neu geladen.')); else fail(r); })
                 .catch(() => { this.pwErr = 'Netzwerkfehler.'; });
             if (profileChanged) {
                 this.api('/api/v1/me', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name: this.pwForm.name, email: this.pwForm.email})})
-                    .then(r => { if (!r.ok) return fail(r); if (pwChanged) savePw(); else { this.me.name = this.pwForm.name; this.me.email = this.pwForm.email; done('Profil aktualisiert.'); } })
+                    .then(r => { if (!r.ok) return fail(r); if (pwChanged) savePw(); else { this.me.name = this.pwForm.name; this.me.email = this.pwForm.email; done(this.t('Profil aktualisiert.')); } })
                     .catch(() => { this.pwErr = 'Netzwerkfehler.'; });
             } else if (pwChanged) savePw();
-            else this.pwErr = 'Keine Änderung.';
+            else this.pwErr = this.t('Keine Änderung.');
         },
         deleteAccount() {
-            if (!confirm('Eigenes Konto wirklich löschen? Nur möglich, wenn du in keinem Mandanten mehr Mitglied bist. Alle API-Tokens werden widerrufen.')) return;
+            if (!confirm(this.t(this.t('Eigenes Konto wirklich löschen? Nur möglich, wenn du in keinem Mandanten mehr Mitglied bist. Alle API-Tokens werden widerrufen.')))) return;
             this.api('/api/v1/me', {method: 'DELETE'})
                 .then(async r => {
-                    if (r.ok) { this.toast('Konto gelöscht.'); setTimeout(() => { location.href = '/login'; }, 1200); return; }
+                    if (r.ok) { this.toast(this.t('Konto gelöscht.')); setTimeout(() => { location.href = '/login'; }, 1200); return; }
                     const d = await r.json().catch(() => null);
                     this.pwErr = (d && d.message) ? d.message : 'Fehler ' + r.status;
                 })
@@ -1837,7 +1975,7 @@ function workspace(initial) {
             return fetch(path, opts).then(r => {
                 if ((r.status === 401 || r.status === 419) && !this._authRedirect) {
                     this._authRedirect = true;
-                    this.toast('Sitzung abgelaufen — bitte neu anmelden.');
+                    this.toast(this.t('Sitzung abgelaufen — bitte neu anmelden.'));
                     setTimeout(() => { location.href = '/login'; }, 1400);
                 }
                 if (r.status === 400 && !this._tenantToast) {
@@ -1857,7 +1995,7 @@ function workspace(initial) {
                 if (r.status === 429 && !this._rlToast) {
                     this._rlToast = true;
                     const s = r.headers.get('Retry-After') || 60;
-                    this.toast('Anfrage fehlgeschlagen — Rate-Limit erreicht, bitte ' + s + ' s warten.');
+                    this.toast(this.t('Anfrage fehlgeschlagen — Rate-Limit erreicht, bitte ') + s + ' s warten.');
                     setTimeout(() => { this._rlToast = false; }, Math.min(s, 15) * 1000);
                 }
                 return r;
@@ -1915,7 +2053,7 @@ function workspace(initial) {
             this.api(url, {method: 'POST'}).then(r => { if (r.ok) { n.read = !n.read; this.navBadges['notifications'] = this.unreadNotifs(); this.loadSection(true); } }).catch(() => {});
         },
         dismissNotif(n) {
-            this.api('/api/v1/notifications/' + n.id, {method: 'DELETE'}).then(r => { if (r.ok) { this.dbNotifs = this.dbNotifs.filter(x => x.id !== n.id); this.navBadges['notifications'] = this.unreadNotifs(); this.rows = (this.rows || []).filter(x => x.id !== n.id); if (this.detail && this.detail.id === n.id) this.detail = null; this.toast('Benachrichtigung entfernt'); } }).catch(() => {});
+            this.api('/api/v1/notifications/' + n.id, {method: 'DELETE'}).then(r => { if (r.ok) { this.dbNotifs = this.dbNotifs.filter(x => x.id !== n.id); this.navBadges['notifications'] = this.unreadNotifs(); this.rows = (this.rows || []).filter(x => x.id !== n.id); if (this.detail && this.detail.id === n.id) this.detail = null; this.toast(this.t('Benachrichtigung entfernt')); } }).catch(() => {});
         },
         toggleMute(kind) {
             const cur = (this.me && this.me.muted_kinds) || [];
@@ -1965,7 +2103,7 @@ function workspace(initial) {
             this.api('/api/v1/notifications/read-all', {method: 'POST'}).then(r => { if (r.ok) { this.dbNotifs.forEach(n => n.read = true); (this.rows || []).forEach(n => n.read = true); this.navBadges['notifications'] = this.unreadNotifs(); } }).catch(() => {});
         },
         async revokeAllTokens() {
-            if (!confirm('Alle API-Token widerrufen? Der aktuell verwendete bleibt aktiv.')) return;
+            if (!confirm(this.t(this.t('Alle API-Token widerrufen? Der aktuell verwendete bleibt aktiv.')))) return;
             const r = await this.api('/api/v1/tokens', {method: 'DELETE'});
             const d = await r.json().catch(() => ({}));
             if (r.ok) { this.toast((d.deleted ?? 0) + ' Token widerrufen'); this.loadSection(); }
@@ -2091,7 +2229,7 @@ function workspace(initial) {
             });
             const out = []; let i = 0;
             for (const [label, rs] of buckets) {
-                const disp = this.groupBy === '__period' ? label : ((this.groupBy === 'status' || this.groupBy === 'severity' || this.groupBy === 'risk_level') ? (label ? this.statusLabel(label) : 'Ohne Status') : (/_id$/.test(this.groupBy) ? (label ? (this.resolveId(this.groupBy, label) || label) : 'Nicht zugewiesen') : (label || '—')));
+                const disp = this.groupBy === '__period' ? label : ((this.groupBy === 'status' || this.groupBy === 'severity' || this.groupBy === 'risk_level') ? (label ? this.statusLabel(label) : this.t('Ohne Status')) : (/_id$/.test(this.groupBy) ? (label ? (this.resolveId(this.groupBy, label) || label) : this.t('Nicht zugewiesen')) : (label || '—')));
                 out.push({t: 'h', label, disp, count: rs.length, overdue: rs.filter(r => this.overdue(r)).length});
                 if (!this.collapsedGroups[label]) rs.forEach(r => out.push(mk(r, i++)));
                 else i += rs.length;
@@ -2113,23 +2251,23 @@ function workspace(initial) {
             if (!this.canManage()) return [];
             const A = {
                 'leave-requests': [['Genehmigen','approved'],['Ablehnen','rejected']],
-                'tasks': [['Starten','in_progress'],['Erledigen','done'],['Absagen','cancelled'],['Wieder öffnen','open']],
+                'tasks': [['Starten','in_progress'],['Erledigen','done'],['Absagen','cancelled'],[this.t('Wieder öffnen'),'open']],
                 'instructions': [['Erledigt','completed']],
-                'inspections': [['Abschließen','completed'],['Absagen','cancelled']],
+                'inspections': [[this.t('Abschließen'),'completed'],['Absagen','cancelled']],
                 'deadlines': [['Erledigt','completed']],
-                'tenders': [['Schließen','closed']],
-                'questions': [['Schließen','closed']],
-                'projects': [['Aktivieren','active'],['Abschließen','done'],['Absagen','cancelled']],
+                'tenders': [[this.t('Schließen'),'closed']],
+                'questions': [[this.t('Schließen'),'closed']],
+                'projects': [['Aktivieren','active'],[this.t('Abschließen'),'done'],['Absagen','cancelled']],
                 'measures': [['Starten','in_progress'],['Erledigt','done'],['Absagen','cancelled']],
                 'production-orders': [['Starten','running'],['Fertig','done'],['Absagen','cancelled']],
-                'risk-assessments': [['Akzeptieren','accepted'],['Gemindert','mitigated']],
+                'risk-assessments': [[this.t('Akzeptieren'),'accepted'],['Gemindert','mitigated']],
                 'strategies': [['Aktivieren','active'],['Archivieren','archived']],
                 'machines': [['In Wartung','maintenance'],['Aktivieren','active'],['Ausmustern','retired']],
                 'operating-instructions': [['Aktivieren','active'],['Archivieren','archived']],
                 'participations': [['Als Kandidat','candidate'],['Aktivieren','active'],['Ausgestiegen','exited']],
                 'expert-profiles': [['Aktivieren','active'],['Deaktivieren','inactive']],
-                'audits': [['Starten','in_progress'],['Abschließen','done'],['Absagen','cancelled']],
-                'audit-findings': [['In Bearbeitung','in_progress'],['Gelöst','resolved'],['Akzeptiert','accepted'],['Wieder öffnen','open']],
+                'audits': [['Starten','in_progress'],[this.t('Abschließen'),'done'],['Absagen','cancelled']],
+                'audit-findings': [['In Bearbeitung','in_progress'],[this.t('Gelöst'),'resolved'],['Akzeptiert','accepted'],[this.t('Wieder öffnen'),'open']],
             };
             return A[this.section] || [];
         },
@@ -2149,7 +2287,7 @@ function workspace(initial) {
             if (s === 'approved' && 'approved_by' in row && !row.approved_by) payload.approved_by = this.meId;
             this.api(this.item().ep + '/' + row.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
                 .then(r => {
-                    if (!r.ok) { this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); return; }
+                    if (!r.ok) { this.toast(this.t('Aktion fehlgeschlagen (HTTP ')+r.status+')'); return; }
                     this.loadSection(true);
                     this.toast(this.statusLabel(s) + '.', {label: 'Rückgängig', fn: () => {
                         this.api(this.item().ep + '/' + row.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status: prev})}).then(() => this.loadSection(true));
@@ -2164,7 +2302,7 @@ function workspace(initial) {
             if (s === 'approved' && 'approved_by' in this.detail && !this.detail.approved_by) payload.approved_by = this.meId;
             this.api(this.item().ep + '/' + id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
                 .then(r => {
-                    if (!r.ok) { this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); return; }
+                    if (!r.ok) { this.toast(this.t('Aktion fehlgeschlagen (HTTP ')+r.status+')'); return; }
                     this.detail = null; this.loadSection();
                     this.toast(this.statusLabel(s) + '.', {label: 'Rückgängig', fn: () => {
                         this.api(this.item().ep + '/' + id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status: prev})}).then(() => this.loadSection());
@@ -2184,17 +2322,17 @@ function workspace(initial) {
         submitApp() {
             if (!this.appForm.expert_profile_id || !this.detail) return;
             this.api('/api/v1/tenders/' + this.detail.id + '/applications', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(this.appForm)})
-                .then(r => { if (r.ok) { this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.loadApps(this.detail.id); this.loadSection(); this.toast('Bewerbung eingereicht.'); } else this.toast('Bewerbung fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.appForm = {expert_profile_id: '', proposal: '', price: ''}; this.loadApps(this.detail.id); this.loadSection(); this.toast(this.t('Bewerbung eingereicht.')); } else this.toast(this.t('Bewerbung fehlgeschlagen (HTTP ')+r.status+')'); });
         },
         setAppStatus(id, s) {
             this.api('/api/v1/tender-applications/' + id, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
-                .then(r => { if (r.ok) { this.loadApps(this.detail.id); this.loadSection(); this.toast(this.statusLabel(s) + '.'); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.loadApps(this.detail.id); this.loadSection(); this.toast(this.statusLabel(s) + '.'); } else this.toast(this.t('Aktion fehlgeschlagen (HTTP ')+r.status+')'); });
         },
         deleteApp(id) {
-            if (!confirm('Bewerbung löschen?')) return;
+            if (!confirm(this.t(this.t('Bewerbung löschen?')))) return;
             const row = (this.apps || []).find(a => String(a.id) === String(id));
             this.api('/api/v1/tender-applications/' + id, {method:'DELETE'})
-                .then(() => { this.loadApps(this.detail.id); this.toast('Bewerbung gelöscht.', row ? {label: 'Rückgängig', fn: () => {
+                .then(() => { this.loadApps(this.detail.id); this.toast(this.t('Bewerbung gelöscht.'), row ? {label: 'Rückgängig', fn: () => {
                     const {id: _i, created_at: _c, updated_at: _u, tenant_id: _t, tender_id, ...rest} = row;
                     return this.api('/api/v1/tenders/' + tender_id + '/applications', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(rest)}).then(() => this.loadApps(this.detail.id));
                 }} : undefined); });
@@ -2216,7 +2354,7 @@ function workspace(initial) {
         saveUserRoles() {
             if (!this.detail) return;
             this.api('/api/v1/users/' + this.detail.id + '/roles', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({roles: this.userRoles})})
-                .then(r => { this.toast(r.ok ? 'Rollen gespeichert.' : 'Speichern fehlgeschlagen (HTTP ' + r.status + ')'); if (r.ok) this.loadUserRoles(this.detail.id); });
+                .then(r => { this.toast(r.ok ? this.t('Rollen gespeichert.') : this.t('Speichern fehlgeschlagen (HTTP ') + r.status + ')'); if (r.ok) this.loadUserRoles(this.detail.id); });
         },
         openRoleEdit(r) {
             this.roleEdit = this.roleEdit === r.id ? null : r.id;
@@ -2230,28 +2368,28 @@ function workspace(initial) {
             if (!name) return;
             this.api('/api/v1/roles', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, permissions: this.rolePerms})})
                 .then(async res => {
-                    if (!res.ok) { const d = await res.json().catch(() => ({})); this.toast(d.message || 'Anlegen fehlgeschlagen (HTTP ' + res.status + ')'); return; }
-                    this.newRole = ''; this.rolePerms = []; this.toast('Rolle angelegt.'); this.loadUserRoles(this.detail.id);
+                    if (!res.ok) { const d = await res.json().catch(() => ({})); this.toast(d.message || this.t('Anlegen fehlgeschlagen (HTTP ') + res.status + ')'); return; }
+                    this.newRole = ''; this.rolePerms = []; this.toast(this.t('Rolle angelegt.')); this.loadUserRoles(this.detail.id);
                 });
         },
         deleteRole(r) {
-            if (!confirm('Rolle „' + r.name + '" löschen? Zugewiesene Nutzer verlieren diese Rolle.')) return;
+            if (!confirm(this.t('Rolle „') + r.name + '" löschen? Zugewiesene Nutzer verlieren diese Rolle.')) return;
             this.api('/api/v1/roles/' + r.id, {method: 'DELETE'}).then(res => {
-                this.toast(res.ok ? 'Rolle gelöscht.' : 'Löschen fehlgeschlagen (HTTP ' + res.status + ')');
+                this.toast(res.ok ? this.t('Rolle gelöscht.') : this.t('Löschen fehlgeschlagen (HTTP ') + res.status + ')');
                 if (res.ok) { this.loadUserRoles(this.detail.id); this.loadMe(); }
             });
         },
         saveRolePerms(r) {
             this.api('/api/v1/roles/' + r.id, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({permissions: this.rolePerms})})
                 .then(res => {
-                    this.toast(res.ok ? 'Rechte gespeichert.' : 'Speichern fehlgeschlagen (HTTP ' + res.status + ')');
+                    this.toast(res.ok ? this.t('Rechte gespeichert.') : this.t('Speichern fehlgeschlagen (HTTP ') + res.status + ')');
                     if (res.ok) { this.roleEdit = null; this.loadUserRoles(this.detail.id); this.loadMe(); }
                 });
         },
         removeMember() {
-            if (!this.detail || !confirm((this.detail.name || 'Mitglied') + ' aus dem Mandanten entfernen?')) return;
+            if (!this.detail || !confirm((this.detail.name || this.t('Mitglied')) + ' aus dem Mandanten entfernen?')) return;
             this.api('/api/v1/users/' + this.detail.id, {method: 'DELETE'}).then(r => {
-                this.toast(r.ok || r.status === 204 ? 'Mitglied entfernt.' : 'Entfernen fehlgeschlagen (HTTP ' + r.status + ')');
+                this.toast(r.ok || r.status === 204 ? this.t('Mitglied entfernt.') : this.t('Entfernen fehlgeschlagen (HTTP ') + r.status + ')');
                 if (r.ok || r.status === 204) { this.detail = null; this.loadSection(); }
             });
         },
@@ -2264,17 +2402,17 @@ function workspace(initial) {
             const body = this.answerText.trim();
             if (!body || !this.detail) return;
             this.api('/api/v1/questions/' + this.detail.id + '/answers', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({body})})
-                .then(r => { if (r.ok) { this.answerText = ''; this.loadAnswers(this.detail.id); this.loadSection(); this.toast('Antwort gespeichert.'); } else this.toast('Antwort fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.answerText = ''; this.loadAnswers(this.detail.id); this.loadSection(); this.toast(this.t('Antwort gespeichert.')); } else this.toast(this.t('Antwort fehlgeschlagen (HTTP ')+r.status+')'); });
         },
         acceptAnswer(id) {
             this.api('/api/v1/answers/' + id + '/accept', {method:'POST'})
-                .then(r => { if (r.ok) { this.loadAnswers(this.detail.id); this.loadSection(); this.toast('Antwort akzeptiert.'); } else this.toast('Aktion fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.loadAnswers(this.detail.id); this.loadSection(); this.toast(this.t('Antwort akzeptiert.')); } else this.toast(this.t('Aktion fehlgeschlagen (HTTP ')+r.status+')'); });
         },
         deleteAnswer(id) {
-            if (!confirm('Antwort löschen?')) return;
+            if (!confirm(this.t(this.t('Antwort löschen?')))) return;
             const row = (this.answers || []).find(a => String(a.id) === String(id));
             this.api('/api/v1/answers/' + id, {method:'DELETE'})
-                .then(() => { this.loadAnswers(this.detail.id); this.toast('Antwort gelöscht.', row ? {label: 'Rückgängig', fn: () =>
+                .then(() => { this.loadAnswers(this.detail.id); this.toast(this.t('Antwort gelöscht.'), row ? {label: 'Rückgängig', fn: () =>
                     this.api('/api/v1/questions/' + this.detail.id + '/answers', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({body: row.body})}).then(() => this.loadAnswers(this.detail.id))
                 } : undefined); });
         },
@@ -2319,7 +2457,7 @@ function workspace(initial) {
             const fd = new FormData();
             fd.append('file', f);
             this.api('/api/v1/documents/' + this.detail.id + '/versions', {method:'POST', body:fd})
-                .then(r => { if (r.ok) { this.$refs.versionFile.value = ''; this.loadDocVersions(this.detail.id); this.loadSection(); this.toast('Version hochgeladen.'); } else this.toast('Upload fehlgeschlagen (HTTP '+r.status+')'); });
+                .then(r => { if (r.ok) { this.$refs.versionFile.value = ''; this.loadDocVersions(this.detail.id); this.loadSection(); this.toast(this.t('Version hochgeladen.')); } else this.toast(this.t('Upload fehlgeschlagen (HTTP ')+r.status+')'); });
         },
         dlPath(row) {
             if (this.section === 'data-objects') return '/api/v1/data-objects/' + row.id + '/download';
@@ -2327,7 +2465,7 @@ function workspace(initial) {
         },
         async downloadDoc(row) {
             const r = await this.api(this.dlPath(row));
-            if (!r.ok) { this.toast('Download fehlgeschlagen'); return; }
+            if (!r.ok) { this.toast(this.t('Download fehlgeschlagen')); return; }
             const blob = await r.blob();
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -2344,30 +2482,30 @@ function workspace(initial) {
                 'Authorization': 'Bearer {{ $apiToken }}', 'Accept':'application/json',
                 'Content-Type':'application/json'},
                 body: JSON.stringify({name: name.trim()})});
-            if (!r.ok) { this.toast('Anlegen fehlgeschlagen (HTTP '+r.status+')'); return; }
+            if (!r.ok) { this.toast(this.t('Anlegen fehlgeschlagen (HTTP ')+r.status+')'); return; }
             const t = await r.json();
             this.tenantList.push({id: t.id, name: t.name});
             this.tenant = t.id;
-            this.toast('Mandant angelegt: ' + t.name);
+            this.toast(this.t('Mandant angelegt: ') + t.name);
             this.loadSection();
             this.loadNavBadges();
         },
         async renameTenant() {
             const cur = this.tenantList.find(t => t.id === this.tenant);
-            const name = prompt('Neuer Name für ' + (cur ? cur.name : 'Mandanten') + ':', cur ? cur.name : '');
+            const name = prompt(this.t('Neuer Name für ') + (cur ? cur.name : 'Mandanten') + ':', cur ? cur.name : '');
             if (!name || !name.trim() || name.trim() === (cur ? cur.name : '')) return;
             const r = await this.api('/api/v1/tenant', {method:'PUT', headers:{'Content-Type':'application/json'},
                 body: JSON.stringify({name: name.trim()})});
-            if (!r.ok) { this.toast('Umbenennen fehlgeschlagen (HTTP '+r.status+')'); return; }
+            if (!r.ok) { this.toast(this.t('Umbenennen fehlgeschlagen (HTTP ')+r.status+')'); return; }
             if (cur) cur.name = name.trim();
-            this.toast('Mandant umbenannt: ' + name.trim());
+            this.toast(this.t('Mandant umbenannt: ') + name.trim());
         },
         async leaveTenant() {
             const cur = this.tenantList.find(t => t.id === this.tenant);
-            if (!confirm('Mandant „' + (cur ? cur.name : '') + '" wirklich verlassen? Du verlierst alle Rollen und Zugriff.')) return;
+            if (!confirm(this.t('Mandant „') + (cur ? cur.name : '') + '" wirklich verlassen? Du verlierst alle Rollen und Zugriff.')) return;
             const r = await this.api('/api/v1/me/membership', {method:'DELETE'});
-            if (!r.ok) { const d = await r.json().catch(() => null); this.toast((d && d.message) ? d.message : 'Verlassen fehlgeschlagen (HTTP '+r.status+')', 'error'); return; }
-            this.toast('Mandant verlassen.');
+            if (!r.ok) { const d = await r.json().catch(() => null); this.toast((d && d.message) ? d.message : this.t('Verlassen fehlgeschlagen (HTTP ')+r.status+')', 'error'); return; }
+            this.toast(this.t('Mandant verlassen.'));
             localStorage.removeItem('af_last_tenant');
             this.tenantList = this.tenantList.filter(t => t.id !== this.tenant);
             this.tenant = this.tenantList.length ? this.tenantList[0].id : '';
@@ -2423,16 +2561,16 @@ function workspace(initial) {
             if (!this.rows || !this.rows.some(r => r.severity)) return [];
             return [...new Set(this.rows.map(r => r.severity).filter(Boolean))].sort();
         },
-        roleLabel(n) { const M = {holding:'Holding',administrator:'Administrator',geschaeftsfuehrer:'Geschäftsführer',mitarbeiter:'Mitarbeiter',berater:'Berater',auditor:'Auditor',kunde:'Kunde'}; return M[String(n).toLowerCase()] || n; },
+        roleLabel(n) { const M = {holding:'Holding',administrator:'Administrator',geschaeftsfuehrer:this.t('Geschäftsführer'),mitarbeiter:'Mitarbeiter',berater:'Berater',auditor:'Auditor',kunde:'Kunde'}; return M[String(n).toLowerCase()] || n; },
         statusLabel(s) { return (this.lang === 'en' ? STATUS_EN : STATUS_DE)[String(s).toLowerCase()] || s; },
-        typeLabel(t) { const M = {vacation:'Urlaub',sick:'Krank',other:'Sonstiges',question:'Frage',feedback:'Feedback',maintenance:'Wartung',safety:'Sicherheit',general:'Allgemein',external:'Extern',internal:'Intern',onboarding:'Onboarding',video:'Video',document:'Dokument',workshop:'Workshop',audit:'Audit',inspection:'Prüfung',training:'Schulung',financial:'Finanzen',quality:'Qualität',environment:'Umwelt',risk:'Risiko',strategic:'Strategisch',operational:'Operativ',low:'Niedrig',medium:'Mittel',high:'Hoch',critical:'Kritisch',warning:'Warnung',info:'Info',analysis:'Analyse'}; return M[String(t).toLowerCase()] || t; },
+        typeLabel(t) { const M = {vacation:'Urlaub',sick:'Krank',other:'Sonstiges',question:'Frage',feedback:'Feedback',maintenance:'Wartung',safety:'Sicherheit',general:'Allgemein',external:'Extern',internal:'Intern',onboarding:'Onboarding',video:'Video',document:'Dokument',workshop:'Workshop',audit:'Audit',inspection:this.t('Prüfung'),training:'Schulung',financial:'Finanzen',quality:this.t('Qualität'),environment:'Umwelt',risk:'Risiko',strategic:'Strategisch',operational:'Operativ',low:'Niedrig',medium:'Mittel',high:'Hoch',critical:'Kritisch',warning:'Warnung',info:'Info',analysis:'Analyse'}; return M[String(t).toLowerCase()] || t; },
         insightKey(i) { return (this.tenant || '') + '|' + (i.code || '') + '|' + (i.message || ''); },
         visibleInsights() { return (this.insights || []).filter(i => !this.insDismissed.includes(this.insightKey(i))); },
         dismissInsight(i) {
             const key = this.insightKey(i);
             this.insDismissed.push(key);
             localStorage.setItem('af_insdismissed', JSON.stringify(this.insDismissed));
-            this.toast('Hinweis ausgeblendet.', {label: 'Rückgängig', fn: () => {
+            this.toast(this.t('Hinweis ausgeblendet.'), {label: 'Rückgängig', fn: () => {
                 this.insDismissed = this.insDismissed.filter(k => k !== key);
                 localStorage.setItem('af_insdismissed', JSON.stringify(this.insDismissed));
             }});
@@ -2450,9 +2588,9 @@ function workspace(initial) {
             if (k === 'type') return this.typeLabel(row[k]);
             const v = row[k];
             if (typeof v === 'number' && k !== 'id' && !k.endsWith('_id')) {
-                if (/price|amount|value|budget|revenue|ebitda|cashflow|liquidity|capital|cost|salary|hourly|invested|valuation/i.test(k)) return v.toLocaleString('de-DE', {maximumFractionDigits: 2}) + ' €';
-                if (/pct|percent|progress|rate$|quote/i.test(k)) return v.toLocaleString('de-DE') + ' %';
-                return v.toLocaleString('de-DE');
+                if (/price|amount|value|budget|revenue|ebitda|cashflow|liquidity|capital|cost|salary|hourly|invested|valuation/i.test(k)) return v.toLocaleString((this.lang==='en'?'en-GB':'de-DE'), {maximumFractionDigits: 2}) + ' €';
+                if (/pct|percent|progress|rate$|quote/i.test(k)) return v.toLocaleString((this.lang==='en'?'en-GB':'de-DE')) + ' %';
+                return v.toLocaleString((this.lang==='en'?'en-GB':'de-DE'));
             }
             return this.fmt(v);
         },
@@ -2465,9 +2603,9 @@ function workspace(initial) {
         colSum(c) {
             if (!this.numericCol(c)) return '';
             const sum = this.filtered().reduce((a, r) => a + (Number(r[c]) || 0), 0);
-            if (/price|amount|value|budget|revenue|ebitda|cashflow|liquidity|capital|cost|salary|hourly|invested|valuation/i.test(c)) return 'Σ ' + sum.toLocaleString('de-DE', {maximumFractionDigits: 2}) + ' €';
-            if (/pct|percent|progress|rate$|quote/i.test(c)) return 'Ø ' + (sum / this.filtered().length).toLocaleString('de-DE', {maximumFractionDigits: 1}) + ' %';
-            return 'Σ ' + sum.toLocaleString('de-DE', {maximumFractionDigits: 2});
+            if (/price|amount|value|budget|revenue|ebitda|cashflow|liquidity|capital|cost|salary|hourly|invested|valuation/i.test(c)) return 'Σ ' + sum.toLocaleString((this.lang==='en'?'en-GB':'de-DE'), {maximumFractionDigits: 2}) + ' €';
+            if (/pct|percent|progress|rate$|quote/i.test(c)) return 'Ø ' + (sum / this.filtered().length).toLocaleString((this.lang==='en'?'en-GB':'de-DE'), {maximumFractionDigits: 1}) + ' %';
+            return 'Σ ' + sum.toLocaleString((this.lang==='en'?'en-GB':'de-DE'), {maximumFractionDigits: 2});
         },
         hasSums() { return this.visCols().some(c => this.numericCol(c)); },
         selSums() {
@@ -2478,7 +2616,7 @@ function workspace(initial) {
                 return vals.length && vals.every(v => typeof v === 'number' || (typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v.trim())));
             }).slice(0, 2).map(c => {
                 const sum = sel.reduce((a, r) => a + (Number(r[c]) || 0), 0);
-                return 'Σ ' + this.label(c) + ' ' + sum.toLocaleString('de-DE', {maximumFractionDigits: 2}) + (/price|amount|value|budget|revenue|ebitda|cashflow|liquidity|capital|cost|salary|hourly|invested|valuation/i.test(c) ? ' €' : '');
+                return 'Σ ' + this.label(c) + ' ' + sum.toLocaleString((this.lang==='en'?'en-GB':'de-DE'), {maximumFractionDigits: 2}) + (/price|amount|value|budget|revenue|ebitda|cashflow|liquidity|capital|cost|salary|hourly|invested|valuation/i.test(c) ? ' €' : '');
             }).join(' · ');
         },
         statusColor(v) {
@@ -2510,17 +2648,18 @@ function workspace(initial) {
             if (typeof v === 'object') return Object.entries(v).map(([k2, v2]) => k2 + ': ' + (v2 === null || v2 === undefined ? '—' : (typeof v2 === 'object' ? JSON.stringify(v2) : String(v2)))).join(' · ');
             if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v)) {
                 const d = new Date(v);
-                if (!isNaN(d)) return d.toLocaleString('de-DE', {dateStyle: 'medium', timeStyle: 'short'});
+                if (!isNaN(d)) return d.toLocaleString((this.lang==='en'?'en-GB':'de-DE'), {dateStyle: 'medium', timeStyle: 'short'});
             }
             return String(v);
         },
         ago(ts) {
             if (!ts) return '';
             const s = (Date.now() - new Date(ts)) / 1000;
-            if (s < 90) return 'gerade eben';
-            if (s < 3600) return 'vor ' + Math.round(s / 60) + ' Min.';
-            if (s < 86400) return 'vor ' + Math.round(s / 3600) + ' Std.';
-            return 'vor ' + Math.round(s / 86400) + ' T';
+            const en = this.lang === 'en';
+            if (s < 90) return en ? 'just now' : 'gerade eben';
+            if (s < 3600) return (en ? '' : 'vor ') + Math.round(s / 60) + (en ? ' min ago' : ' Min.');
+            if (s < 86400) return (en ? '' : 'vor ') + Math.round(s / 3600) + (en ? ' h ago' : ' Std.');
+            return (en ? '' : 'vor ') + Math.round(s / 86400) + (en ? ' d ago' : ' T');
         },
         notifLink(n) {
             if (n && n.kind === 'hinweis') return '/app/dashboard?tenant=' + this.tenant + '&severity=critical';
@@ -2537,19 +2676,20 @@ function workspace(initial) {
         },
         eventGroup(t) {
             const g = String(t || '').split('.')[0];
-            return {task: 'Aufgabe', company: 'Unternehmen', person: 'Person', document: 'Dokument', document_version: 'Dokumentversion', instruction: 'Unterweisung', inspection: 'Prüfung', deadline: 'Frist', risk_assessment: 'Gefährdungsbeurteilung', operating_instruction: 'Betriebsanweisung', expert_profile: 'Experte', question: 'Frage', answer: 'Antwort', tender: 'Ausschreibung', tender_application: 'Bewerbung', financial_report: 'Finanzbericht', leave_request: 'Urlaubsantrag', machine: 'Maschine', production_order: 'Produktionsauftrag', participation: 'Beteiligung', data_object: 'Data-Objekt', portfolio: 'Portfolio', investment: 'Investition', graph_entity: 'Entität', graph_edge: 'Kante', strategy: 'Strategie', project: 'Projekt', measure: 'Maßnahme', ai_analysis: 'KI-Analyse', exec_report: 'Executive-Report', audit: 'Audit', audit_finding: 'Feststellung', user: 'Benutzer', role: 'Rolle', tenant: 'Mandant', webhook: 'Webhook', connector: 'Konnektor', integration_source: 'Webhook-Quelle'}[g] || g;
+            const v = {task: 'Aufgabe', company: 'Unternehmen', person: 'Person', document: 'Dokument', document_version: 'Dokumentversion', instruction: 'Unterweisung', inspection: 'Prüfung', deadline: 'Frist', risk_assessment: 'Gefährdungsbeurteilung', operating_instruction: 'Betriebsanweisung', expert_profile: 'Experte', question: 'Frage', answer: 'Antwort', tender: 'Ausschreibung', tender_application: 'Bewerbung', financial_report: 'Finanzbericht', leave_request: 'Urlaubsantrag', machine: 'Maschine', production_order: 'Produktionsauftrag', participation: 'Beteiligung', data_object: 'Data-Objekt', portfolio: 'Portfolio', investment: 'Investition', graph_entity: 'Entität', graph_edge: 'Kante', strategy: 'Strategie', project: 'Projekt', measure: 'Maßnahme', ai_analysis: 'KI-Analyse', exec_report: 'Executive-Report', audit: 'Audit', audit_finding: 'Feststellung', user: 'Benutzer', role: 'Rolle', tenant: 'Mandant', webhook: 'Webhook', connector: 'Konnektor', integration_source: 'Webhook-Quelle'}[g];
+            return this.lang === 'en' ? (T_EN[v] || v) : v;
         },
         evTypeGroups() { const m = {}; (this.evTypeList || []).forEach(t => { const g = this.eventGroup(t.type); m[g] = (m[g] || 0) + t.events; }); return Object.entries(m).map(([g, events]) => ({g, events})).sort((a, b) => b.events - a.events); },
         eventLabel(t) {
             const a = String(t || '').split('.').pop();
-            return {created: 'erstellt', updated: 'aktualisiert', deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: 'hochgeladen', answered: 'beantwortet', created_event: 'erstellt', added: 'hinzugefügt', roles_updated: 'Rollen geändert', removed: 'entfernt', left: 'verlassen', permissions_updated: 'Rechte geändert', password_changed: 'Passwort geändert', logged_in: 'angemeldet', logged_out: 'abgemeldet', pulled: 'abgerufen', received: 'empfangen'}[a] || a;
+            return {created: 'erstellt', updated: this.t('aktualisiert'), deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: this.t('hochgeladen'), answered: 'beantwortet', created_event: 'erstellt', added: this.t('hinzugefügt'), roles_updated: this.t('Rollen geändert'), removed: this.t('entfernt'), left: 'verlassen', permissions_updated: this.t('Rechte geändert'), password_changed: this.t('Passwort geändert'), logged_in: 'angemeldet', logged_out: 'abgemeldet', pulled: 'abgerufen', received: 'empfangen'}[a] || a;
         },
         createFields() {
             const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes', 'role_names']);
             if (this.section === 'users') return [
                 {key:'name', type:'text', req:true},
                 {key:'email', type:'text', req:true},
-                {key:'password', type:'text', req:false, hint:'leer = zufällig generiert'},
+                {key:'password', type:'text', req:false, hint:this.t('leer = zufällig generiert')},
             ];
             if (this.section === 'tokens') return [
                 {key:'name', type:'text', req:true},
@@ -2601,7 +2741,7 @@ function workspace(initial) {
             for (let i = this.evWindow - 1; i >= 0; i--) {
                 const d = new Date(); d.setDate(d.getDate() - i);
                 const key = d.toISOString().slice(0, 10);
-                days.push({key, label: d.toLocaleDateString('de-DE', {weekday: 'short', day: '2-digit'}), n: this.evSummary.per_day[key] || 0});
+                days.push({key, label: d.toLocaleDateString((this.lang==='en'?'en-GB':'de-DE'), {weekday: 'short', day: '2-digit'}), n: this.evSummary.per_day[key] || 0});
             }
             const max = Math.max(1, ...days.map(d => d.n));
             return days.map(d => ({...d, pct: Math.round(d.n / max * 100)}));
@@ -2616,7 +2756,7 @@ function workspace(initial) {
         },
         evWeekdays() {
             if (!this.evSummary || !this.evSummary.by_weekday) return [];
-            const L = ['','So','Mo','Di','Mi','Do','Fr','Sa'];
+            const L = this.lang === 'en' ? ['','Su','Mo','Tu','We','Th','Fr','Sa'] : ['','So','Mo','Di','Mi','Do','Fr','Sa'];
             const ws = [];
             for (let d = 2; d <= 7; d++) ws.push({d, n: this.evSummary.by_weekday[d] || 0});
             ws.push({d: 1, n: this.evSummary.by_weekday[1] || 0});
@@ -2636,7 +2776,7 @@ function workspace(initial) {
         openCreate(prefill) {
             if (this.section === 'ai-analyses') {
                 this.api('/api/v1/ai-analyses', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'})
-                    .then(r => { if (r.ok) this.loadSection(); else this.toast('Analyse fehlgeschlagen (HTTP '+r.status+')'); });
+                    .then(r => { if (r.ok) this.loadSection(); else this.toast(this.t('Analyse fehlgeschlagen (HTTP ')+r.status+')'); });
                 return;
             }
             this.editing = null; this.dupMode = false; this.form = prefill || {}; if (this.section === 'tokens') { this.form.abilities = this.form.abilities || []; if (!this.tokenAbilities.length) this.api('/api/v1/tokens/abilities').then(r => r.ok ? r.json() : []).then(d => { this.tokenAbilities = d; }); } if (this.section === 'users') { this.form.roles = this.form.roles || []; if (!this.allRoles.length) this.api('/api/v1/roles').then(r => r.ok ? r.json() : []).then(d => { this.allRoles = Array.isArray(d) ? d : (d.data || []); }); } this.formError = ''; this.formDirty = false; this.showCreate = true;
@@ -2652,20 +2792,20 @@ function workspace(initial) {
             all[name] = {query: this.query, statusFilter: this.statusFilter, roleFilter: this.roleFilter, kindFilter: this.kindFilter, codeFilter: this.codeFilter, unreadOnly: this.unreadOnly, mutedOnly: this.mutedOnly, overdueOnly: this.overdueOnly, dueSoonOnly: this.dueSoonOnly, dueTodayOnly: this.dueTodayOnly, myOnly: this.myOnly, unassignedOnly: this.unassignedOnly, evGroup: this.evGroup, evActor: this.evActor, groupBy: this.groupBy, sortKey: this.sortKey, sortAsc: this.sortAsc, hiddenCols: this.hiddenCols};
             localStorage.setItem('af_views_' + this.section, JSON.stringify(all));
             this.viewPicker = false;
-            this.toast('Ansicht „' + name + '“ gespeichert.');
+            this.toast(this.t('Ansicht „') + name + (' ' + this.t((' ' + this.t(this.t('“ gespeichert.'))))));
         },
         applyView(name) {
             const v = this.views()[name];
             if (!v) return;
             this.query = v.query || ''; this.statusFilter = v.statusFilter || ''; this.roleFilter = v.roleFilter || ''; this.kindFilter = v.kindFilter || ''; this.codeFilter = v.codeFilter || ''; this.unreadOnly = !!v.unreadOnly; this.mutedOnly = !!v.mutedOnly; this.overdueOnly = !!v.overdueOnly; this.dueSoonOnly = !!v.dueSoonOnly; this.dueTodayOnly = !!v.dueTodayOnly; this.myOnly = !!v.myOnly; this.unassignedOnly = !!v.unassignedOnly; this.evGroup = v.evGroup || ''; this.evActor = v.evActor || '';
             this.groupBy = v.groupBy || ''; this.sortKey = v.sortKey || ''; this.sortAsc = v.sortAsc !== false; this.hiddenCols = v.hiddenCols || {};
-            this.viewPicker = false; this.toast('Ansicht „' + name + '“ angewendet.');
+            this.viewPicker = false; this.toast(this.t('Ansicht „') + name + '“ angewendet.');
         },
         deleteView(name) {
             const all = this.views(); delete all[name];
             localStorage.setItem('af_views_' + this.section, JSON.stringify(all));
             this.viewPicker = false; this.viewPicker = true;
-            this.toast('Ansicht „' + name + '“ gelöscht.');
+            this.toast(this.t('Ansicht „') + name + (' ' + this.t((' ' + this.t(this.t('“ gelöscht.'))))));
         },
         copySel() {
             const sel = (this.rows || []).filter(r => this.selected[r.id]);
@@ -2684,7 +2824,7 @@ function workspace(initial) {
                 if (rn) return rn;
                 if (typeof v === 'boolean') return v ? 'Ja' : 'Nein';
                 if (['status','severity','type'].includes(c) && v) return STATUS_DE[String(v).toLowerCase()] || v;
-                if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleDateString('de-DE');
+                if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return new Date(v).toLocaleDateString((this.lang==='en'?'en-GB':'de-DE'));
                 return v;
             };
             const cols = this.visCols();
@@ -2711,7 +2851,7 @@ function workspace(initial) {
             if (this.evActor) params.push('actor=' + encodeURIComponent(this.evActor));
             if (params.length) url += '?' + params.join('&');
             const r = await this.api(url);
-            if (!r.ok) { this.toast('Export fehlgeschlagen', 'error'); return; }
+            if (!r.ok) { this.toast(this.t('Export fehlgeschlagen'), 'error'); return; }
             const blob = await r.blob();
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -2720,7 +2860,7 @@ function workspace(initial) {
             a.download = m ? m[1] : this.exportName('ndjson');
             a.click();
             URL.revokeObjectURL(a.href);
-            this.toast('Ereignisse exportiert');
+            this.toast(this.t('Ereignisse exportiert'));
         },
         async exportNotifs() {
             let url = '/api/v1/notifications/export';
@@ -2732,7 +2872,7 @@ function workspace(initial) {
             if (this.query) params.push('q=' + encodeURIComponent(this.query));
             if (params.length) url += '?' + params.join('&');
             const r = await this.api(url);
-            if (!r.ok) { this.toast('Export fehlgeschlagen', 'error'); return; }
+            if (!r.ok) { this.toast(this.t('Export fehlgeschlagen'), 'error'); return; }
             const blob = await r.blob();
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -2741,7 +2881,7 @@ function workspace(initial) {
             a.download = m ? m[1] : this.exportName('ndjson');
             a.click();
             URL.revokeObjectURL(a.href);
-            this.toast('Benachrichtigungen exportiert');
+            this.toast(this.t('Benachrichtigungen exportiert'));
         },
         exportName(ext) {
             const t = this.tenantName().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'export';
@@ -2819,7 +2959,7 @@ function workspace(initial) {
             let fetchOpts = {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)};
             if (['documents','data-objects'].includes(this.section) && !this.editing) {
                 const f = this.$refs.fileInput && this.$refs.fileInput.files[0];
-                if (!f) { this.formError = 'Bitte eine Datei wählen.'; return; }
+                if (!f) { this.formError = this.t('Bitte eine Datei wählen.'); return; }
                 const fd = new FormData();
                 fd.append(this.section === 'data-objects' ? 'name' : 'title', body.title || body.name || f.name);
                 if (body.category) fd.append('category', body.category);
@@ -2834,22 +2974,22 @@ function workspace(initial) {
                             this.formError = errs || (d && d.message ? d.message : 'HTTP ' + r.status + ' — Pflichtfelder fehlen?');
                         }).catch(() => { this.formError = 'HTTP ' + r.status + ' — Pflichtfelder fehlen?'; });
                     }
-                    if (keepOpen && !this.editing) { this.form = {}; this.formDirty = false; this.formError = ''; this.toast('Eintrag angelegt.'); this.loadSection(); this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select, #createForm textarea'); if (el) el.focus(); }); return r.json().then(d => { this.afterCreate(d); return d; }); }
+                    if (keepOpen && !this.editing) { this.form = {}; this.formDirty = false; this.formError = ''; this.toast(this.t('Eintrag angelegt.')); this.loadSection(); this.$nextTick(() => { const el = document.querySelector('#createForm input, #createForm select, #createForm textarea'); if (el) el.focus(); }); return r.json().then(d => { this.afterCreate(d); return d; }); }
                     this.showCreate = false; this.formDirty = false; this.detail = null; this.editing = null; this.loadSection(); return r.json().then(d => { this.afterCreate(d); return d; });
                 });
         },
         afterCreate(d) {
             if (this.section === 'users' && d && d.initial_password) {
-                this.toast('Benutzer angelegt — Initiales Passwort: ' + d.initial_password);
+                this.toast(this.t('Benutzer angelegt — Initiales Passwort: ') + d.initial_password);
                 try { navigator.clipboard.writeText(d.initial_password); } catch (_) {}
             }
             if (this.section === 'tokens' && d && d.token) {
                 this.newToken = d.token;
-                this.toast('API-Token angelegt — einmalig sichtbar.');
+                this.toast(this.t('API-Token angelegt — einmalig sichtbar.'));
             }
             if (this.section === 'integrations' && d && d.webhook_url) {
                 this.newToken = d.webhook_url;
-                this.toast('Webhook-Quelle angelegt — URL kopieren und im Quellsystem hinterlegen.');
+                this.toast(this.t('Webhook-Quelle angelegt — URL kopieren und im Quellsystem hinterlegen.'));
             }
         },
         webhookUrl() {
@@ -2866,7 +3006,7 @@ function workspace(initial) {
             } finally { this.rowLoading = false; }
         },
         closeCreate() {
-            if (this.showCreate && this.formDirty && !confirm('Ungespeicherte Änderungen verwerfen?')) return;
+            if (this.showCreate && this.formDirty && !confirm(this.t(this.t('Ungespeicherte Änderungen verwerfen?')))) return;
             this.showCreate = false; this.formDirty = false;
         },
         toggleSel(id) {
@@ -2892,7 +3032,7 @@ function workspace(initial) {
                 .then(r => {
                     this.selected = {};
                     this.loadSection(); this.unreadNotifs();
-                    if (r.ok) this.toast(action === 'read' ? 'Als gelesen markiert.' : action === 'unread' ? 'Als ungelesen markiert.' : 'Entfernt.');
+                    if (r.ok) this.toast(action === 'read' ? this.t('Als gelesen markiert.') : action === 'unread' ? this.t('Als ungelesen markiert.') : 'Entfernt.');
                 });
         },
         bulkStatus(s) {
@@ -2904,7 +3044,7 @@ function workspace(initial) {
                     this.selected = {}; this.loadSection();
                     this.toast(ids.length + ' × ' + this.statusLabel(s) + '.', {label: 'Rückgängig', fn: () => {
                         Promise.all(prev.map(p => this.api(this.item().ep + '/' + p.id, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status: p.status})})))
-                            .then(() => { this.toast('Wiederhergestellt.'); this.loadSection(); });
+                            .then(() => { this.toast(this.t('Wiederhergestellt.')); this.loadSection(); });
                     }});
                 });
         },
@@ -2920,7 +3060,7 @@ function workspace(initial) {
         },
         copyVal(v) {
             const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
-            navigator.clipboard && navigator.clipboard.writeText(s).then(() => this.toast('Kopiert.')).catch(() => this.toast('Kopieren fehlgeschlagen.'));
+            navigator.clipboard && navigator.clipboard.writeText(s).then(() => this.toast(this.t('Kopiert.'))).catch(() => this.toast(this.t('Kopieren fehlgeschlagen.')));
         },
         restoreRows(rows) {
             Promise.all(rows.map(r => {
@@ -2932,16 +3072,16 @@ function workspace(initial) {
                 });
                 return this.api(this.item().ep, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p)});
             })).then(rs => {
-                this.toast(rs.every(r => r.ok) ? 'Wiederhergestellt.' : 'Teilweise fehlgeschlagen.');
+                this.toast(rs.every(r => r.ok) ? this.t('Wiederhergestellt.') : this.t('Teilweise fehlgeschlagen.'));
                 this.loadSection();
             });
         },
         deleteRow(row) {
-            if (!row || !row.id || !confirm('Wirklich löschen?')) return;
+            if (!row || !row.id || !confirm(this.t(this.t('Wirklich löschen?')))) return;
             const snapshot = {...row};
             this.api(this.item().ep + '/' + row.id, {method: 'DELETE'}).then(() => {
                 this.detail = null; this.loadSection();
-                this.toast('Gelöscht.', {label: 'Rückgängig', fn: () => this.restoreRow(snapshot)});
+                this.toast(this.t('Gelöscht.'), {label: 'Rückgängig', fn: () => this.restoreRow(snapshot)});
             });
         },
         restoreRow(row) {
@@ -2952,7 +3092,7 @@ function workspace(initial) {
                 if (v === null || typeof v !== 'object') p[k] = v;
             });
             this.api(this.item().ep, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p)})
-                .then(r => { this.toast(r.ok ? 'Wiederhergestellt.' : 'Wiederherstellen fehlgeschlagen.'); if (r.ok) this.loadSection(); });
+                .then(r => { this.toast(r.ok ? this.t('Wiederhergestellt.') : this.t('Wiederherstellen fehlgeschlagen.')); if (r.ok) this.loadSection(); });
         },
         loadLookups() {
             const SPECS = {
@@ -3101,13 +3241,15 @@ function workspace(initial) {
             return name ? this.title() + ' · ' + name : this.title() + ' · Details';
         },
         label(c) {
-            const L = {__period:'Zeitraum',name:'Name',title:'Titel',first_name:'Vorname',last_name:'Nachname',email:'E-Mail',phone:'Telefon',type:'Typ',status:'Status',description:'Beschreibung',content:'Inhalt',category:'Kategorie',subject:'Betreff',area:'Bereich',hazard:'Gefährdung',risk_level:'Risikostufe',measures:'Maßnahmen',result:'Ergebnis',notes:'Notizen',progress:'Fortschritt',quantity:'Menge',order_no:'Auftrag-Nr.',product:'Produkt',scrap_qty:'Ausschuss',headline:'Schlagzeile',bio:'Bio',skills:'Skills',hourly_rate:'Stundensatz',budget:'Budget',price:'Preis',proposal:'Angebot',stake_pct:'Anteil %',invested_amount:'Investiert',current_valuation:'Bewertung',capital_need:'Kapitalbedarf',revenue:'Umsatz',cashflow:'Cashflow',ebitda:'EBITDA',liquidity:'Liquidität',period:'Periode',legal_form:'Rechtsform',street:'Straße',zip:'PLZ',city:'Stadt',country:'Land',version:'Version',valid_from:'Gültig ab',interval_months:'Intervall (Mon.)',capacity_units_per_day:'Kapazität/Tag',asset_class:'Anlageklasse',cost_basis:'Kostenbasis',current_value:'Aktueller Wert',currency:'Währung',due_at:'Fällig',deadline_at:'Frist',scheduled_at:'Geplant',starts_on:'Von',ends_on:'Bis',starts_at:'Start',ends_at:'Ende',acquired_at:'Erworben',valued_at:'Bewertet am',body:'Inhalt',is_accepted:'Akzeptiert',document_id:'Dokument',audit_id:'Audit',auditor:'Auditor',standard:'Norm',severity:'Schwere',audits_open:'Offene Audits',findings_open:'Offene Festst.',open_findings_count:'Offene Festst.',findings_count:'Feststellungen',applications_count:'Bewerbungen',answers_count:'Antworten',open_tasks_count:'Offene Aufgaben',members_count:'Mitglieder',projects_count:'Projekte',measures_count:'Maßnahmen',role_names:'Rollen',password:'Passwort',last_login_at:'Letzte Anmeldung',last_login_ip:'Anmeldung IP',read:'Gelesen',kind:'Art',entity_id:'Datensatz',abilities:'Rechte',expires_at:'Läuft ab',last_used_at:'Zuletzt genutzt',expires_in_days:'Ablauf (Tage)'};
-            if (!L[c] && c.endsWith('_id')) {
-                const F = {person_id:'Person',company_id:'Unternehmen',machine_id:'Maschine',task_id:'Aufgabe',question_id:'Frage',answer_id:'Antwort',tender_id:'Ausschreibung',project_id:'Projekt',strategy_id:'Strategie',measure_id:'Maßnahme',portfolio_id:'Portfolio',investment_id:'Investment',participation_id:'Beteiligung',expert_profile_id:'Experte',instruction_id:'Unterweisung',inspection_id:'Prüfung',risk_assessment_id:'Gefährdungsbeurteilung',financial_report_id:'Finanzbericht',leave_request_id:'Abwesenheit',parent_id:'Übergeordnet',responsible_id:'Verantwortlich',assignee_id:'Zugewiesen',created_by:'Erstellt von',updated_by:'Geändert von',approved_by:'Genehmigt von',awarded_by:'Vergeben von',user_id:'Benutzer',document_id:'Dokument',audit_id:'Audit',auditor:'Auditor',standard:'Norm',severity:'Schwere',audits_open:'Offene Audits',findings_open:'Offene Festst.',open_findings_count:'Offene Festst.',findings_count:'Feststellungen',applications_count:'Bewerbungen',answers_count:'Antworten',open_tasks_count:'Offene Aufgaben',members_count:'Mitglieder',projects_count:'Projekte',measures_count:'Maßnahmen'};
+            const L_EN = {__period:'Period',name:'Name',title:'Title',first_name:'First name',last_name:'Last name',email:'E-mail',phone:'Phone',type:'Type',status:'Status',description:'Description',content:'Content',category:'Category',subject:'Subject',area:'Area',hazard:'Hazard',risk_level:'Risk level',measures:'Measures',result:'Result',notes:'Notes',progress:'Progress',quantity:'Quantity',order_no:'Order no.',product:'Product',scrap_qty:'Scrap',headline:'Headline',bio:'Bio',skills:'Skills',hourly_rate:'Hourly rate',budget:'Budget',price:'Price',proposal:'Proposal',stake_pct:'Stake %',invested_amount:'Invested',current_valuation:'Valuation',capital_need:'Capital need',revenue:'Revenue',cashflow:'Cashflow',ebitda:'EBITDA',liquidity:'Liquidity',period:'Period',legal_form:'Legal form',street:'Street',zip:'ZIP',city:'City',country:'Country',version:'Version',valid_from:'Valid from',interval_months:'Interval (mo.)',capacity_units_per_day:'Capacity/day',asset_class:'Asset class',cost_basis:'Cost basis',current_value:'Current value',currency:'Currency',due_at:'Due',deadline_at:'Deadline',scheduled_at:'Scheduled',starts_on:'From',ends_on:'To',starts_at:'Start',ends_at:'End',acquired_at:'Acquired',valued_at:'Valued at',body:'Body',is_accepted:'Accepted',document_id:'Document',audit_id:'Audit',auditor:'Auditor',standard:'Standard',severity:'Severity',audits_open:'Open audits',findings_open:'Open findings',open_findings_count:'Open findings',findings_count:'Findings',applications_count:'Applications',answers_count:'Answers',open_tasks_count:'Open tasks',members_count:'Members',projects_count:'Projects',measures_count:'Measures',role_names:'Roles',password:'Password',last_login_at:'Last login',last_login_ip:'Login IP',read:'Read',kind:'Kind',entity_id:'Record',abilities:'Abilities',expires_at:'Expires',last_used_at:'Last used',expires_in_days:'Expiry (days)'};
+            const L = {__period:this.t('Zeitraum'),name:'Name',title:'Titel',first_name:'Vorname',last_name:'Nachname',email:'E-Mail',phone:'Telefon',type:'Typ',status:'Status',description:'Beschreibung',content:'Inhalt',category:'Kategorie',subject:'Betreff',area:'Bereich',hazard:this.t('Gefährdung'),risk_level:'Risikostufe',measures:'Maßnahmen',result:'Ergebnis',notes:'Notizen',progress:'Fortschritt',quantity:'Menge',order_no:'Auftrag-Nr.',product:'Produkt',scrap_qty:'Ausschuss',headline:'Schlagzeile',bio:'Bio',skills:'Skills',hourly_rate:'Stundensatz',budget:'Budget',price:'Preis',proposal:'Angebot',stake_pct:'Anteil %',invested_amount:'Investiert',current_valuation:'Bewertung',capital_need:'Kapitalbedarf',revenue:'Umsatz',cashflow:'Cashflow',ebitda:'EBITDA',liquidity:'Liquidität',period:'Periode',legal_form:'Rechtsform',street:'Straße',zip:'PLZ',city:'Stadt',country:'Land',version:'Version',valid_from:this.t('Gültig ab'),interval_months:'Intervall (Mon.)',capacity_units_per_day:this.t('Kapazität/Tag'),asset_class:'Anlageklasse',cost_basis:'Kostenbasis',current_value:'Aktueller Wert',currency:'Währung',due_at:this.t('Fällig'),deadline_at:'Frist',scheduled_at:'Geplant',starts_on:'Von',ends_on:'Bis',starts_at:'Start',ends_at:'Ende',acquired_at:'Erworben',valued_at:'Bewertet am',body:'Inhalt',is_accepted:'Akzeptiert',document_id:'Dokument',audit_id:'Audit',auditor:'Auditor',standard:'Norm',severity:'Schwere',audits_open:'Offene Audits',findings_open:'Offene Festst.',open_findings_count:'Offene Festst.',findings_count:'Feststellungen',applications_count:'Bewerbungen',answers_count:this.t('Antworten'),open_tasks_count:'Offene Aufgaben',members_count:'Mitglieder',projects_count:'Projekte',measures_count:'Maßnahmen',role_names:this.t('Rollen'),password:'Passwort',last_login_at:'Letzte Anmeldung',last_login_ip:'Anmeldung IP',read:this.t('Gelesen'),kind:'Art',entity_id:'Datensatz',abilities:'Rechte',expires_at:'Läuft ab',last_used_at:'Zuletzt genutzt',expires_in_days:'Ablauf (Tage)'};
+            const LM = this.lang === 'en' ? L_EN : L;
+            if (!LM[c] && c.endsWith('_id')) {
+                const F = {person_id:'Person',company_id:'Unternehmen',machine_id:'Maschine',task_id:'Aufgabe',question_id:'Frage',answer_id:'Antwort',tender_id:'Ausschreibung',project_id:'Projekt',strategy_id:'Strategie',measure_id:'Maßnahme',portfolio_id:'Portfolio',investment_id:'Investment',participation_id:'Beteiligung',expert_profile_id:'Experte',instruction_id:'Unterweisung',inspection_id:this.t('Prüfung'),risk_assessment_id:this.t('Gefährdungsbeurteilung'),financial_report_id:'Finanzbericht',leave_request_id:'Abwesenheit',parent_id:this.t('Übergeordnet'),responsible_id:'Verantwortlich',assignee_id:'Zugewiesen',created_by:'Erstellt von',updated_by:this.t('Geändert von'),approved_by:'Genehmigt von',awarded_by:'Vergeben von',user_id:'Benutzer',document_id:'Dokument',audit_id:'Audit',auditor:'Auditor',standard:'Norm',severity:'Schwere',audits_open:'Offene Audits',findings_open:'Offene Festst.',open_findings_count:'Offene Festst.',findings_count:'Feststellungen',applications_count:'Bewerbungen',answers_count:this.t('Antworten'),open_tasks_count:'Offene Aufgaben',members_count:'Mitglieder',projects_count:'Projekte',measures_count:'Maßnahmen'};
                 if (F[c]) return F[c];
                 return c.slice(0, -3).replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
             }
-            return L[c] || c.replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
+            return LM[c] || c.replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
         },
         periodKey(v) {
             const d = new Date(v);
@@ -3115,21 +3257,21 @@ function workspace(initial) {
             const now = new Date();
             const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate());
             const diff = Math.round((day(now) - day(d)) / 86400000);
-            return diff <= 0 ? 'Heute' : (diff < 7 ? 'Diese Woche' : 'Älter');
+            return diff <= 0 ? this.t('Heute') : (diff < 7 ? this.t('Diese Woche') : this.t('Älter'));
         },
         dueRel(v) {
             if (!v) return '';
             const d = new Date(v);
             const days = Math.ceil((d - Date.now()) / 86400000);
-            const rel = days === -1 ? 'gestern' : days === 0 ? 'heute' : days === 1 ? 'morgen' : days < 0 ? `vor ${-days} T` : `in ${days} T`;
+            const rel = days === -1 ? this.t('gestern') : days === 0 ? this.t('heute') : days === 1 ? this.t('morgen') : days < 0 ? (this.lang==='en' ? `${-days}d ago` : `vor ${-days} T`) : (this.lang==='en' ? `in ${days}d` : `in ${days} T`);
             const col = days < 0 ? 'text-[#A6362E]' : days <= 7 ? 'text-[#CA8A04]' : 'text-[#9CA3AF]';
-            return `<span class="${col}">${d.toLocaleDateString('de-DE')} (${rel})</span>`;
+            return `<span class="${col}">${d.toLocaleDateString((this.lang==='en'?'en-GB':'de-DE'))} (${rel})</span>`;
         },
         reloadRow() {
             if (!this.detail || !this.detail.id || ['dashboard','executive'].includes(this.section)) return;
             this.rowLoading = true;
             this.api(this.item().ep + '/' + this.detail.id).then(r => {
-                if (!r.ok) { this.toast('Aktualisieren fehlgeschlagen (HTTP ' + r.status + ').'); return null; }
+                if (!r.ok) { this.toast(this.t('Aktualisieren fehlgeschlagen (HTTP ') + r.status + ').'); return null; }
                 return r.json();
             }).then(d => {
                 if (!d) return;
@@ -3138,7 +3280,7 @@ function workspace(initial) {
                 this.rows = (this.rows || []).map(r => String(r.id) === String(row.id) ? row : r);
                 this.loadRowEvents(row.id);
                 this.rowLoading = false;
-                this.toast('Datensatz aktualisiert.');
+                this.toast(this.t('Datensatz aktualisiert.'));
             }).finally(() => { this.rowLoading = false; });
         },
         cell(row, c) {
@@ -3163,13 +3305,13 @@ function workspace(initial) {
                 if (/_?size_?bytes?$|bytes/i.test(c)) {
                     const u = ['B','KB','MB','GB']; let s = v, i = 0;
                     while (s >= 1024 && i < 3) { s /= 1024; i++; }
-                    return s.toLocaleString('de-DE', {maximumFractionDigits: i ? 1 : 0}) + ' ' + u[i];
+                    return s.toLocaleString((this.lang==='en'?'en-GB':'de-DE'), {maximumFractionDigits: i ? 1 : 0}) + ' ' + u[i];
                 }
                 if (/progress|pct|percent|rate$|quote|completion/i.test(c) && v >= 0 && v <= 100) {
                     const col = v >= 100 ? '#2E7D5B' : v >= 50 ? '#CA8A04' : '#A6362E';
                     return `<span class="inline-flex items-center gap-2"><span class="inline-block w-16 h-1.5 rounded-full bg-[#E4E9F0] overflow-hidden"><span class="block h-full rounded-full" style="width:${Math.min(100,v)}%;background:${col}"></span></span><span>${v}%</span></span>`;
                 }
-                const f = Math.abs(v) % 1 ? v.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : v.toLocaleString('de-DE');
+                const f = Math.abs(v) % 1 ? v.toLocaleString((this.lang==='en'?'en-GB':'de-DE'), {minimumFractionDigits: 2, maximumFractionDigits: 2}) : v.toLocaleString((this.lang==='en'?'en-GB':'de-DE'));
                 return /price|amount|value|cost|rate|budget|revenue|ebitda|salary|euro|eur/i.test(c) ? f + ' €' : f;
             }
             if (c === 'status' || c === 'severity' || c === 'type' || c === 'risk_level') {
@@ -3180,18 +3322,18 @@ function workspace(initial) {
             }
             if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) {
                 const d = new Date(v);
-                let out = d.toLocaleDateString('de-DE', {weekday: 'short'}) + ', ' + d.toLocaleDateString('de-DE');
-                if (d.getHours() !== 0 || d.getMinutes() !== 0) out += ' ' + d.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+                let out = d.toLocaleDateString((this.lang==='en'?'en-GB':'de-DE'), {weekday: 'short'}) + ', ' + d.toLocaleDateString((this.lang==='en'?'en-GB':'de-DE'));
+                if (d.getHours() !== 0 || d.getMinutes() !== 0) out += ' ' + d.toLocaleTimeString((this.lang==='en'?'en-GB':'de-DE'), {hour: '2-digit', minute: '2-digit'});
                 if (/due|deadline|scheduled/.test(c)) {
                     const days = Math.ceil((d - Date.now()) / 86400000);
-                    const rel = days === -1 ? 'gestern' : days === 0 ? 'heute' : days === 1 ? 'morgen' : days < 0 ? `vor ${-days} T` : `in ${days} T`;
+                    const rel = days === -1 ? this.t('gestern') : days === 0 ? this.t('heute') : days === 1 ? this.t('morgen') : days < 0 ? (this.lang==='en' ? `${-days}d ago` : `vor ${-days} T`) : (this.lang==='en' ? `in ${days}d` : `in ${days} T`);
                     if (days < 0) out += ` <span class="text-[#A6362E]">(${rel})</span>`;
                     else if (days <= 7) out += ` <span class="text-[#CA8A04]">(${rel})</span>`;
                 }
                 return out;
             }
-            if (c === 'kind' && NOTIF_KIND[String(v).toLowerCase()]) {
-                return `<span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-[#CA8A04]"></span>${NOTIF_KIND[String(v).toLowerCase()]}</span>`;
+            if (c === 'kind' && this.nKind(String(v).toLowerCase()) !== String(v).toLowerCase()) {
+                return `<span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-[#CA8A04]"></span>${this.nKind(String(v).toLowerCase())}</span>`;
             }
             if (typeof v === 'string' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) && /mail/i.test(c))
                 return `<a href="mailto:${v}" onclick="event.stopPropagation()" class="text-[#CA8A04] hover:underline">${v}</a>`;
