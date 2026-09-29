@@ -1668,21 +1668,21 @@ function workspace(initial) {
             acts.push({key: null, action: 'newtenant', label: '+ Neuer Mandant', group: 'Aktion'});
             if (this.tenantList.length > 1) this.sortedTenants().filter(t => t.id !== this.tenant).forEach(t => acts.push({key: null, action: 'tenant', tenant: t.id, label: 'Mandant: ' + t.name, group: 'Aktion'}));
             if (this.rows) Object.keys(this.views()).forEach(vn => acts.push({key: null, action: 'view', view: vn, label: 'Ansicht: ' + vn, group: 'Aktion'}));
-            if (this.rows && this.(rows||[]).length) {
-                if (this.(rows||[]).some(r => this.dueKey(r))) acts.push(
+            if (this.rows && this.rows.length) {
+                if (this.rows.some(r => this.dueKey(r))) acts.push(
                     {key: null, action: 'filter', filter: 'overdueOnly', label: 'Filter: Überfällig ' + (this.overdueOnly ? '(an)' : '(aus)'), group: 'Aktion'},
                     {key: null, action: 'filter', filter: 'dueSoonOnly', label: 'Filter: ≤7 Tage ' + (this.dueSoonOnly ? '(an)' : '(aus)'), group: 'Aktion'},
                     {key: null, action: 'filter', filter: 'dueTodayOnly', label: 'Filter: Heute ' + (this.dueTodayOnly ? '(an)' : '(aus)'), group: 'Aktion'});
-                if (this.(rows||[]).some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)) {
+                if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r)) {
                     acts.push({key: null, action: 'filter', filter: 'myOnly', label: 'Filter: Mir zugewiesen ' + (this.myOnly ? '(an)' : '(aus)'), group: 'Aktion'});
                 }
-                if (this.(rows||[]).some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r || 'assigned_to' in r) && this.(rows||[]).some(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to))) {
+                if (this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r || 'assigned_to' in r) && this.rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to))) {
                     acts.push({key: null, action: 'filter', filter: 'unassignedOnly', label: 'Filter: Ohne Verantwortlichen ' + (this.unassignedOnly ? '(an)' : '(aus)'), group: 'Aktion'});
                 }
                 if (this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.unassignedOnly || this.statusFilter || this.query) acts.push({key: null, action: 'filter', filter: '_reset', label: 'Filter zurücksetzen', group: 'Aktion'});
             }
             this.recentRows().forEach(r => acts.push({key: null, action: 'openrow', row: r, label: '↻ ' + (r.name || r.id) + ' (' + this.sectionLabel(r.key) + ')', group: 'Zuletzt'}));
-            if (q && this.rows && this.(rows||[]).length) this.(rows||[]).filter(r => JSON.stringify(r).toLowerCase().includes(q)).slice(0, 5).forEach(r => acts.push({key: null, action: 'openrowcur', id: r.id, label: '→ ' + (r.name || r.title || r.headline || r.id) + ' (' + this.title() + ')', group: 'Eintrag'}));
+            if (q && this.rows && this.rows.length) this.rows.filter(r => JSON.stringify(r).toLowerCase().includes(q)).slice(0, 5).forEach(r => acts.push({key: null, action: 'openrowcur', id: r.id, label: '→ ' + (r.name || r.title || r.headline || r.id) + ' (' + this.title() + ')', group: 'Eintrag'}));
             const mods = q ? all.filter(i => i.label.toLowerCase().includes(q) || i.key.includes(q)) : all;
             mods.sort((a, b) => ((this.pins || []).includes(b.key) ? 1 : 0) - ((this.pins || []).includes(a.key) ? 1 : 0));
             const globals = this.globHits.map(h => ({key: null, action: 'gsearch', section: h.section, id: h.id, icon: this.icons[h.section], label: '⇉ ' + (h.label || h.id) + ' (' + this.sectionLabel(h.section) + ')', group: 'Global'}));
@@ -1737,10 +1737,10 @@ function workspace(initial) {
             const base = (this.section === 'dashboard' ? 'Unternehmenssteuerung' : 'Modul ' + (this.item().label||this.section)) + ' · ' + this.tenantName();
             if (this.section === 'dashboard') return base + ' · ' + new Date().toLocaleDateString('de-DE', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
             if (this.section === 'executive') return base;
-            if (this.rows && this.(rows||[]).length) {
-                const od = this.(rows||[]).filter(r => this.overdue(r)).length;
-                const td = this.(rows||[]).filter(r => this.dueToday(r)).length;
-                return base + ' · ' + this.(rows||[]).length + ' ' + this.eintrag(this.(rows||[]).length) + (od ? ' · ' + od + ' überfällig' : '') + (td ? ' · ' + td + ' heute' : '');
+            if (this.rows && this.rows.length) {
+                const od = this.rows.filter(r => this.overdue(r)).length;
+                const td = this.rows.filter(r => this.dueToday(r)).length;
+                return base + ' · ' + this.rows.length + ' ' + this.eintrag(this.rows.length) + (od ? ' · ' + od + ' überfällig' : '') + (td ? ' · ' + td + ' heute' : '');
             }
             return base;
         },
@@ -2051,7 +2051,7 @@ function workspace(initial) {
                                 const hit = o2 && this.rows.find(x => String(x.id) === o2);
                                 if (hit) this.detail = hit;
                             }
-                            if (this.(rows||[]).length < this.rowsTotal) loadRest(page + 1);
+                            if (this.rows.length < this.rowsTotal) loadRest(page + 1);
                         });
                     };
                     loadRest(2);
@@ -2404,7 +2404,7 @@ function workspace(initial) {
             return [...new Set(this.rows.flatMap(r => r.role_names || []))].sort();
         },
         severityOpts() {
-            if (!this.rows || !this.(rows||[]).some(r => r.severity)) return [];
+            if (!this.rows || !this.rows.some(r => r.severity)) return [];
             return [...new Set(this.rows.map(r => r.severity).filter(Boolean))].sort();
         },
         roleLabel(n) { const M = {holding:'Holding',administrator:'Administrator',geschaeftsfuehrer:'Geschäftsführer',mitarbeiter:'Mitarbeiter',berater:'Berater',auditor:'Auditor',kunde:'Kunde'}; return M[String(n).toLowerCase()] || n; },
@@ -2989,18 +2989,18 @@ function workspace(initial) {
             else if (e.key === 'x') { if (!this.detail && !this.showCreate && !this.palette && (this.query || this.statusFilter || this.severityFilter || this.roleFilter || this.kindFilter || this.codeFilter || this.unreadOnly || this.mutedOnly || this.evGroup || this.evDay || this.evActor || this.overdueOnly || this.dueSoonOnly || this.dueTodayOnly || this.myOnly || this.unassignedOnly)) { this.query = ''; this.statusFilter = ''; this.severityFilter = ''; this.roleFilter = ''; this.kindFilter = ''; this.codeFilter = ''; this.unreadOnly = false; this.mutedOnly = false; this.evGroup = ''; this.evDay = ''; evActor = ''; evDay = ''; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.unassignedOnly = false; } }
             else if (e.key === 'c') { if (!this.detail && !this.showCreate && !this.palette && this.rows) this.colPicker = !this.colPicker; }
             else if (e.key === 'v') { if (!this.detail && !this.showCreate && !this.palette && this.rows) this.viewPicker = !this.viewPicker; }
-            else if (e.key === 's') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.(rows||[]).some(r => this.dueSoon(r))) this.dueSoonOnly = !this.dueSoonOnly; }
+            else if (e.key === 's') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.dueSoon(r))) this.dueSoonOnly = !this.dueSoonOnly; }
             else if (e.key === 'y') { if (!this.detail && !this.showCreate && !this.palette && this.tenantList.length > 1) { const ts = this.sortedTenants().map(t => t.id); const i = ts.indexOf(this.tenant); this.tenant = ts[(i + 1) % ts.length]; this.loadSection(); this.loadNavBadges(); this.toast('Mandant: ' + this.tenantName()); } }
             else if (e.key === 'z') { if (this._undo) { this._undo.fn(); this._undo = null; } }
             else if (e.key === 'j') { if (this.detail && !this.showCreate) this.copyJson(); }
             else if (e.key === 'k') { if (!this.detail && !this.showCreate && !this.palette) { this.compact = !this.compact; try { localStorage.setItem('af_density', this.compact ? '1' : '0'); } catch (err) {} this.toast(this.compact ? 'Kompakte Zeilen an' : 'Kompakte Zeilen aus'); } }
             else if (e.key === 'w') { if (this.detail && !this.showCreate) { this.drawerWide = !this.drawerWide; try { localStorage.setItem('af_drawer_wide', this.drawerWide ? '1' : '0'); } catch (err) {} } }
-            else if (e.key === 'g') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.(rows||[]).length) { const opts = ['status', '__period', ...this.visCols().filter(c => /_id$/.test(c)), '']; const cyc = opts.filter(o => o === '' || (o === '__period' ? this.(rows||[]).some(r => r.updated_at) : this.(rows||[]).some(r => o in r))); const i = cyc.indexOf(this.groupBy); this.groupBy = cyc[(i + 1) % cyc.length]; this.toast(this.groupBy ? 'Gruppiert nach: ' + this.label(this.groupBy) : 'Gruppierung aus'); } }
-            else if (e.key === 'b') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.(rows||[]).some(r => this.dueToday(r))) this.dueTodayOnly = !this.dueTodayOnly; }
+            else if (e.key === 'g') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.length) { const opts = ['status', '__period', ...this.visCols().filter(c => /_id$/.test(c)), '']; const cyc = opts.filter(o => o === '' || (o === '__period' ? this.rows.some(r => r.updated_at) : this.rows.some(r => o in r))); const i = cyc.indexOf(this.groupBy); this.groupBy = cyc[(i + 1) % cyc.length]; this.toast(this.groupBy ? 'Gruppiert nach: ' + this.label(this.groupBy) : 'Gruppierung aus'); } }
+            else if (e.key === 'b') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.dueToday(r))) this.dueTodayOnly = !this.dueTodayOnly; }
             else if (e.key === 'B') { if (!this.detail && !this.showCreate && !this.palette) this.notif = !this.notif; }
-            else if (e.key === 'm') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.(rows||[]).some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r || 'assigned_to' in r)) this.myOnly = !this.myOnly; }
-            else if (e.key === 'q') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.(rows||[]).some(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to))) this.unassignedOnly = !this.unassignedOnly; }
-            else if (e.key === 'u') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.(rows||[]).some(r => this.overdue(r))) this.overdueOnly = !this.overdueOnly; }
+            else if (e.key === 'm') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => 'assignee_id' in r || 'responsible_id' in r || 'owner_id' in r || 'assigned_to' in r)) this.myOnly = !this.myOnly; }
+            else if (e.key === 'q') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => !(r.assignee_id || r.responsible_id || r.owner_id || r.assigned_to))) this.unassignedOnly = !this.unassignedOnly; }
+            else if (e.key === 'u') { if (!this.detail && !this.showCreate && !this.palette && this.rows && this.rows.some(r => this.overdue(r))) this.overdueOnly = !this.overdueOnly; }
             else if (e.key === '.') { if (!this.detail && !this.showCreate && !this.palette && this.section !== 'dashboard') window.location.href = '/app/dashboard' + (this.tenant ? '?tenant=' + this.tenant : ''); }
             else if (/^[1-9]$/.test(e.key)) { if (!this.detail && !this.showCreate && !this.palette && this.sorted(this.filtered()).length >= +e.key) this.detail = this.sorted(this.filtered())[e.key - 1]; }
         },
