@@ -2714,12 +2714,46 @@ const T_EN2 = {
             };
 
             const enums = ENUMS[this.section] || {};
-            return Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12).map(k => ({
+            const DEFS = {
+                tasks: ['title','description','assignee_id','due_at','status'],
+                instructions: ['title','content','person_id','responsible_id','document_id','due_at'],
+                inspections: ['title','subject','type','person_id','responsible_id','scheduled_at'],
+                deadlines: ['title','description','responsible_id','due_at'],
+                'risk-assessments': ['title','area','hazard','measures','person_id','risk_level','review_at'],
+                'operating-instructions': ['title','content','document_id','valid_from'],
+                audits: ['title','type','auditor','company_id','responsible_id','starts_on','ends_on'],
+                'audit-findings': ['title','description','audit_id','severity','responsible_id','due_at'],
+                companies: ['name','legal_form','street','zip','city','country'],
+                persons: ['first_name','last_name','email','phone','type','company_id'],
+                documents: ['title','category'],
+                questions: ['title','body','category','expert_profile_id'],
+                tenders: ['title','description','company_id','required_skills','budget','deadline_at'],
+                answers: ['body'],
+                'expert-profiles': ['person_id','headline','bio','skills','hourly_rate'],
+                strategies: ['name','description','starts_at','ends_at','status'],
+                projects: ['name','description','strategy_id','owner_id','starts_at','ends_at'],
+                measures: ['title','description','project_id','responsible_id','due_at'],
+                portfolios: ['name','type','currency'],
+                investments: ['name','asset_class','portfolio_id','quantity','cost_basis','current_value','acquired_at'],
+                participations: ['name','legal_form','company_id','stake_pct','invested_amount','current_valuation'],
+                machines: ['name','type','capacity_units_per_day'],
+                'production-orders': ['order_no','product','quantity','machine_id','assigned_to','due_at'],
+                'leave-requests': ['person_id','type','starts_on','ends_on','note'],
+                'financial-reports': ['company_id','period','revenue','ebitda','cashflow','liquidity'],
+                'graph-entities': ['name','type'],
+                'graph-edges': ['from_entity_id','relation','to_entity_id'],
+                'data-objects': ['name','category'],
+                events: ['type'],
+            };
+            const keys = Object.keys(src).length
+                ? Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12)
+                : (DEFS[this.section] || ['title', 'description']);
+            return keys.map((k, i) => ({
                 key: k,
-                type: FKMAP[k] ? 'fk' : (enums[k] ? 'enum' : (typeof src[k] === 'boolean' ? 'checkbox' : (typeof src[k] === 'number' ? 'number' : (/_at$/.test(k) ? 'datetime-local' : (/_date$/.test(k) ? 'date' : (LONGTEXT.has(k) ? 'textarea' : 'text')))))),
+                type: FKMAP[k] ? 'fk' : (enums[k] ? 'enum' : (typeof src[k] === 'boolean' ? 'checkbox' : (typeof src[k] === 'number' ? 'number' : (/_at$/.test(k) ? 'datetime-local' : (/_on$|_date$|valid_from$/.test(k) ? 'date' : (LONGTEXT.has(k) ? 'textarea' : 'text')))))),
                 table: FKMAP[k] || null,
                 opts: enums[k] || null,
-                req: ['name', 'title'].includes(k),
+                req: i === 0 || ['name', 'title'].includes(k),
             }));
         },
         fkOptions(table) {
