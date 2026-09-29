@@ -1380,9 +1380,9 @@ function workspace(initial) {
         ]},
         {label:'COMPLIANCE', items:[
             {key:'instructions',label:'Unterweisungen',ep:'/api/v1/instructions'},
-            {key:'inspections',label:this.t('Prüfungen'),ep:'/api/v1/inspections'},
+            {key:'inspections',label:'Prüfungen',ep:'/api/v1/inspections'},
             {key:'deadlines',label:'Fristen',ep:'/api/v1/deadlines'},
-            {key:'risk-assessments',label:this.t('Gefährdungsbeurteilungen'),ep:'/api/v1/risk-assessments'},
+            {key:'risk-assessments',label:'Gefährdungsbeurteilungen',ep:'/api/v1/risk-assessments'},
             {key:'operating-instructions',label:'Betriebsanweisungen',ep:'/api/v1/operating-instructions'},
             {key:'audits',label:'Audits',ep:'/api/v1/audits'},
             {key:'audit-findings',label:'Feststellungen',ep:'/api/v1/audit-findings'},
@@ -1404,7 +1404,7 @@ function workspace(initial) {
         ]},
         {label:'PRODUKTION', items:[
             {key:'machines',label:'Maschinen',ep:'/api/v1/machines'},
-            {key:'production-orders',label:this.t('Aufträge'),ep:'/api/v1/production-orders'},
+            {key:'production-orders',label:'Aufträge',ep:'/api/v1/production-orders'},
         ]},
         {label:'ORGANISATION', items:[
             {key:'leave-requests',label:'Abwesenheiten',ep:'/api/v1/leave-requests'},
@@ -1416,7 +1416,7 @@ function workspace(initial) {
             {key:'events',label:'Events',ep:'/api/v1/events'},
             {key:'data-objects',label:'Data Lake',ep:'/api/v1/data-objects'},
             {key:'ai-analyses',label:'KI-Analysen',ep:'/api/v1/ai-analyses'},
-            {key:'graph-entities',label:this.t('Graphen · Entitäten'),ep:'/api/v1/graph-entities'},
+            {key:'graph-entities',label:'Graphen · Entitäten',ep:'/api/v1/graph-entities'},
             {key:'graph-edges',label:'Graphen · Kanten',ep:'/api/v1/graph-edges'},
             {key:'integrations',label:'Webhook-Quellen',ep:'/api/v1/integrations'},
             {key:'connectors',label:'Konnektoren',ep:'/api/v1/connectors'},
@@ -1425,21 +1425,21 @@ function workspace(initial) {
     ];
     const ICONS = {dashboard:'◈',companies:'▣',persons:'◉',documents:'▤',tasks:'☑',instructions:'ⓘ',inspections:'✓',deadlines:'◷','risk-assessments':'⚠','operating-instructions':'✎','expert-profiles':'◎',questions:'?',tenders:'☰',strategies:'⌘',projects:'◇',measures:'→',portfolios:'▲',investments:'€',participations:'◆',machines:'⚙','production-orders':'▶','leave-requests':'◔','financial-reports':'₣',events:'≋','data-objects':'▦','ai-analyses':'✦','graph-entities':'●','graph-edges':'↔',executive:'∑',users:'☺',audits:'§','audit-findings':'∴',notifications:'✉',tokens:'⚿',integrations:'⇄',connectors:'⤓'};
     const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',audit_id:'audits',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',generated_by:'users',current_version_id:'documents',assigned_to:'persons',from_entity_id:'graph_entities',to_entity_id:'graph_entities',subject_id:'graph_entities'};
-    const NOTIF_KIND = {unterweisung:'Unterweisung',pruefung:this.t('Prüfung'),frist:'Frist',feststellung:'Feststellung',audit:'Audit',massnahme:'Maßnahme',aufgabe:'Aufgabe',gefaehrdungsbeurteilung:this.t('Gefährdungsbeurteilung'),projekt:'Projekt',auftrag:'Produktionsauftrag',ausschreibung:'Ausschreibung',antwort:'Antwort',frage:'Frage',urlaub:'Urlaubsantrag',rollen:this.t('Rollen'),unterweisung_wiederholung:'Unterweisung (Wiederholung)',hinweis:'Kritischer Hinweis',passwort_geaendert:this.t('Passwort geändert'),anmeldung:'Anmeldung',anmeldeversuche:'Fehlgeschlagene Anmeldung',ki_coach:'KI-Coach'};
-    const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv',todo:'Offen',overdue:'Überfällig',sent:'Gesendet',paid:'Bezahlt',unpaid:'Unbezahlt',expired:'Abgelaufen',suspended:'Gesperrt',review:this.t('In Prüfung'),assigned:'Zugewiesen',requested:'Angefragt',confirmed:this.t('Bestätigt'),declined:'Abgelehnt',exited:'Ausgestiegen',candidate:'Kandidat',resolved:this.t('Gelöst'),internal:'Intern',external:'Extern',vacation:'Urlaub',sick:'Krank',other:'Sonstiges'};
+    const NOTIF_KIND = {unterweisung:'Unterweisung',pruefung:'Prüfung',frist:'Frist',feststellung:'Feststellung',audit:'Audit',massnahme:'Maßnahme',aufgabe:'Aufgabe',gefaehrdungsbeurteilung:'Gefährdungsbeurteilung',projekt:'Projekt',auftrag:'Produktionsauftrag',ausschreibung:'Ausschreibung',antwort:'Antwort',frage:'Frage',urlaub:'Urlaubsantrag',rollen:'Rollen',unterweisung_wiederholung:'Unterweisung (Wiederholung)',hinweis:'Kritischer Hinweis',passwort_geaendert:'Passwort geändert',anmeldung:'Anmeldung',anmeldeversuche:'Fehlgeschlagene Anmeldung',ki_coach:'KI-Coach'};
+    const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv',todo:'Offen',overdue:'Überfällig',sent:'Gesendet',paid:'Bezahlt',unpaid:'Unbezahlt',expired:'Abgelaufen',suspended:'Gesperrt',review:'In Prüfung',assigned:'Zugewiesen',requested:'Angefragt',confirmed:'Bestätigt',declined:'Abgelehnt',exited:'Ausgestiegen',candidate:'Kandidat',resolved:'Gelöst',internal:'Intern',external:'Extern',vacation:'Urlaub',sick:'Krank',other:'Sonstiges'};
     const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at','meta_data']);
     const KPI = [
         {key:'companies',label:'Unternehmen',to:'companies'},{key:'persons',label:'Personen',to:'persons'},
         {key:'documents',label:'Dokumente',to:'documents'},{key:'tasks_open',label:'Offene Aufgaben',to:'tasks'},
         {key:'instructions',label:'Unterweisungen',to:'instructions'},{key:'compliance_rate',label:'Compliance %',to:'instructions'},
         {key:'deadlines_open',label:'Offene Fristen',to:'deadlines'},{key:'risk_high',label:'Hohe Risiken',to:'risk-assessments'},
-        {key:'tenders_open',label:'Offene Ausschreibungen',to:'tenders'},{key:'fin_revenue',label:'Umsatz (Monat)',to:'financial-reports',money:true},{key:'fin_ebitda',label:'EBITDA (Monat)',to:'financial-reports',money:true},{key:'fin_liquidity',label:this.t('Liquidität (Monat)'),to:'financial-reports',money:true},{key:'expert_profiles',label:'Experten',to:'expert-profiles'},
-        {key:'questions',label:'Fragen',to:'questions'},{key:'inspections',label:this.t('Prüfungen'),to:'inspections'},
+        {key:'tenders_open',label:'Offene Ausschreibungen',to:'tenders'},{key:'fin_revenue',label:'Umsatz (Monat)',to:'financial-reports',money:true},{key:'fin_ebitda',label:'EBITDA (Monat)',to:'financial-reports',money:true},{key:'fin_liquidity',label:'Liquidität (Monat)',to:'financial-reports',money:true},{key:'expert_profiles',label:'Experten',to:'expert-profiles'},
+        {key:'questions',label:'Fragen',to:'questions'},{key:'inspections',label:'Prüfungen',to:'inspections'},
         {key:'team_members',label:'Team',to:'users'},
         {key:'audits_planned',label:'Geplante Audits',to:'audits'},{key:'audits_in_progress',label:'Laufende Audits',to:'audits'},
-        {key:'audit_findings_open',label:'Offene Feststellungen',to:'audit-findings'},{key:'audit_findings_overdue',label:this.t('Überfällige Feststellungen'),to:'audit-findings'},
-        {key:'production_orders_open',label:this.t('Laufende Aufträge'),to:'production-orders'},{key:'projects_open',label:'Offene Projekte',to:'projects'},
-        {key:'machines_active',label:'Maschinen aktiv',to:'machines'},{key:'leave_requests_pending',label:this.t('Urlaubsanträge offen'),to:'leave-requests'},{key:'questions_open',label:'Offene Fragen',to:'questions'},{key:'ai_analyses',label:'KI-Analysen',to:'ai-analyses'},{key:'strategies_active',label:'Aktive Strategien',to:'strategies'},{key:'graph_entities',label:'Wissensgraph',to:'graph-entities'},{key:'tender_applications',label:'Bewerbungen',to:'tenders'},{key:'instructions_pending',label:'Unterweisungen offen',to:'instructions'},{key:'answers',label:this.t('Antworten'),to:'questions'},
+        {key:'audit_findings_open',label:'Offene Feststellungen',to:'audit-findings'},{key:'audit_findings_overdue',label:'Überfällige Feststellungen',to:'audit-findings'},
+        {key:'production_orders_open',label:'Laufende Aufträge',to:'production-orders'},{key:'projects_open',label:'Offene Projekte',to:'projects'},
+        {key:'machines_active',label:'Maschinen aktiv',to:'machines'},{key:'leave_requests_pending',label:'Urlaubsanträge offen',to:'leave-requests'},{key:'questions_open',label:'Offene Fragen',to:'questions'},{key:'ai_analyses',label:'KI-Analysen',to:'ai-analyses'},{key:'strategies_active',label:'Aktive Strategien',to:'strategies'},{key:'graph_entities',label:'Wissensgraph',to:'graph-entities'},{key:'tender_applications',label:'Bewerbungen',to:'tenders'},{key:'instructions_pending',label:'Unterweisungen offen',to:'instructions'},{key:'answers',label:'Antworten',to:'questions'},
         {key:'investments_active',label:'Investitionen aktiv',to:'investments'},{key:'participations_active',label:'Beteiligungen aktiv',to:'participations'},
     ];
     const GROUP_EN = {STAMMDATEN:'MASTER DATA',NETZWERK:'NETWORK',ENTWICKLUNG:'DEVELOPMENT',KAPITAL:'CAPITAL',PRODUKTION:'PRODUCTION',ORGANISATION:'ORGANIZATION',PLATTFORM:'PLATFORM'};
