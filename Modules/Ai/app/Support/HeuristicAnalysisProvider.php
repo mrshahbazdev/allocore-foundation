@@ -58,6 +58,29 @@ class HeuristicAnalysisProvider implements AnalysisProvider
             ];
         }
 
+        $kpis = $context['kpis'] ?? [];
+        if (isset($kpis['net_cash_flow']) && $kpis['net_cash_flow'] < 0) {
+            $findings[] = [
+                'severity' => 'critical',
+                'code' => 'negative_cash_flow',
+                'message' => 'Netto-Cashflow negativ ('.number_format($kpis['net_cash_flow'], 0, ',', '.').' €) — Liquiditätslücke prüfen.',
+            ];
+        }
+        if (isset($kpis['ebitda_margin']) && $kpis['ebitda_margin'] < 5) {
+            $findings[] = [
+                'severity' => 'warning',
+                'code' => 'ebitda_margin_low',
+                'message' => 'EBITDA-Marge bei '.number_format($kpis['ebitda_margin'], 1, ',', '.').' % — Ziel ≥ 5%.',
+            ];
+        }
+        if (isset($kpis['lead_to_customer_rate']) && $kpis['lead_to_customer_rate'] < 10) {
+            $findings[] = [
+                'severity' => 'info',
+                'code' => 'lead_conversion_low',
+                'message' => 'Lead→Kunde-Rate bei '.number_format($kpis['lead_to_customer_rate'], 1, ',', '.').' % — Vertriebsprozess prüfen.',
+            ];
+        }
+
         $openTenders = $context['tenders_open'] ?? 0;
         if ($openTenders > 0) {
             $findings[] = [
