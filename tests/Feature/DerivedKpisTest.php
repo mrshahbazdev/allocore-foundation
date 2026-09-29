@@ -75,6 +75,24 @@ class DerivedKpisTest extends TestCase
         tenancy()->end();
     }
 
+    public function test_lab_kpis_from_order_metrics(): void
+    {
+        $tenant = $this->auth();
+
+        tenancy()->initialize($tenant);
+        $this->snap('ext_orders_done', 20);
+        $this->snap('ext_orders_on_time', 17);
+        $this->snap('ext_lead_time_days', 110);
+        $this->snap('ext_complaints', 2);
+
+        $kpis = collect($this->getJson('/api/v1/kpis', ['X-Tenant' => $tenant->id])->assertOk()->json('kpis'))->keyBy('key');
+
+        $this->assertEquals(85, $kpis['on_time_delivery_rate']['value']);
+        $this->assertEquals(5.5, $kpis['avg_order_lead_time_days']['value']);
+        $this->assertEquals(10, $kpis['order_complaint_rate']['value']);
+        tenancy()->end();
+    }
+
     public function test_fin_ebitda_margin_and_date_window(): void
     {
         $tenant = $this->auth();

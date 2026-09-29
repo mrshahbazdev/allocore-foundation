@@ -78,6 +78,12 @@ class KpiService
             $kpis[] = $kpi('revenue_per_billable_hour', 'eur', fn () => $v('ext_billable_hours') !== 0.0 ? $v('ext_revenue_paid') / $v('ext_billable_hours') : throw new \DivisionByZeroError);
         }
 
+        if ($has('ext_orders_done')) {
+            $kpis[] = $kpi('on_time_delivery_rate', 'pct', fn () => $v('ext_orders_done') !== 0.0 ? $v('ext_orders_on_time') / $v('ext_orders_done') * 100 : throw new \DivisionByZeroError);
+            $kpis[] = $kpi('avg_order_lead_time_days', 'days', fn () => $v('ext_orders_done') !== 0.0 ? $v('ext_lead_time_days') / $v('ext_orders_done') : throw new \DivisionByZeroError);
+            $kpis[] = $kpi('order_complaint_rate', 'pct', fn () => $v('ext_orders_done') !== 0.0 ? $v('ext_complaints') / $v('ext_orders_done') * 100 : throw new \DivisionByZeroError);
+        }
+
         return $kpis;
     }
 }
