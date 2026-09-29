@@ -7,6 +7,7 @@ use Modules\DataPlatform\Http\Controllers\ConnectorController;
 use Modules\DataPlatform\Http\Controllers\EventController;
 use Modules\DataPlatform\Http\Controllers\InsightController;
 use Modules\DataPlatform\Http\Controllers\IntegrationController;
+use Modules\DataPlatform\Http\Controllers\KpiController;
 use Modules\DataPlatform\Http\Controllers\MetricController;
 use Modules\DataPlatform\Http\Controllers\NavCountsController;
 use Modules\DataPlatform\Http\Controllers\NotificationController;
@@ -25,6 +26,7 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api', 'permission
     Route::get('events/actions', [EventController::class, 'actions'])->name('data-platform.events.actions');
     Route::get('events/{event}', [EventController::class, 'show'])->name('data-platform.events.show');
     Route::get('metrics', [MetricController::class, 'index'])->name('data-platform.metrics');
+    Route::get('kpis', [KpiController::class, 'index'])->name('data-platform.kpis');
     Route::get('insights', [InsightController::class, 'index'])->name('data-platform.insights');
     Route::get('insights/stats', [InsightController::class, 'stats'])->name('data-platform.insights.stats');
     Route::get('nav-counts', [NavCountsController::class, 'index'])->name('data-platform.nav-counts');
