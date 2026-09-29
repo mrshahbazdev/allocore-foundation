@@ -30,6 +30,10 @@ class IngestMetrics extends Command
         'lead_qualified' => ['ext_mql', 'count'],
         'customer_created' => ['ext_new_customers', 'count'],
         'order_complaint' => ['ext_complaints', 'count'],
+        'order_created' => ['ext_orders', 'count'],
+        'order_done' => ['ext_orders_done', 'count'],
+        'order_done_on_time' => ['ext_orders_on_time', 'count'],
+        'order_lead_time' => ['ext_lead_time_days', 'sum', 'days'],
         'timeentry_billable' => ['ext_billable_hours', 'sum', 'hours'],
         'website_visitors' => ['ext_web_visitors', 'sum', 'visitors'],
     ];

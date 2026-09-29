@@ -142,6 +142,19 @@ class IntegrationsTest extends TestCase
         $this->assertEquals(10000.0, $snap('ext_pipeline_value'));
         $this->assertEquals(9000.0, $snap('ext_cash_in'));
 
+        $post(['type' => 'order_created', 'order_id' => 'o1']);
+        $post(['type' => 'order_done', 'order_id' => 'o1']);
+        $post(['type' => 'order_done_on_time', 'order_id' => 'o1']);
+        $post(['type' => 'order_lead_time', 'days' => 6]);
+        $post(['type' => 'order_complaint', 'order_id' => 'o2']);
+
+        $this->artisan('metrics:ingest')->assertSuccessful();
+        $this->assertEquals(1.0, $snap('ext_orders'));
+        $this->assertEquals(1.0, $snap('ext_orders_done'));
+        $this->assertEquals(1.0, $snap('ext_orders_on_time'));
+        $this->assertEquals(6.0, $snap('ext_lead_time_days'));
+        $this->assertEquals(1.0, $snap('ext_complaints'));
+
         // idempotent: zweiter Lauf überschreibt dieselben Snapshots, kein Doppel-Count
         $this->artisan('metrics:ingest')->assertSuccessful();
         $this->assertEquals(12500.0, $snap('ext_revenue_paid'));
