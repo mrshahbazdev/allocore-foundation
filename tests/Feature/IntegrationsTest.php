@@ -65,6 +65,47 @@ class IntegrationsTest extends TestCase
         $this->postJson('/api/v1/webhooks/wh_nope', [])->assertNotFound();
     }
 
+    public function test_connect_lists_tenants_and_creates_source(): void
+    {
+        $tenant = Tenant::create(['name' => 'Zahntechnik']);
+        $user = User::factory()->create(['password' => bcrypt('geheim123')]);
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+
+        // Schritt 1: Zugangsdaten → Mandantenliste
+        $res = $this->postJson('/api/v1/connect', [
+            'email' => $user->email,
+            'password' => 'geheim123',
+        ]);
+        $res->assertOk();
+        $res->assertJsonPath('tenants.0.id', $tenant->id);
+
+        // Schritt 2: tenant_id → Webhook-Quelle + URL
+        $res = $this->postJson('/api/v1/connect', [
+            'email' => $user->email,
+            'password' => 'geheim123',
+            'tenant_id' => $tenant->id,
+            'source_name' => 'Allocore Suite',
+        ]);
+        $res->assertCreated();
+        $this->assertStringContainsString('/api/v1/webhooks/wh_', $res->json('webhook_url'));
+        $this->assertSame($tenant->id, IntegrationSource::find($res->json('source_id'))->tenant_id);
+
+        // fremder Mandant → 403
+        $other = Tenant::create(['name' => 'Fremd GmbH']);
+        $this->postJson('/api/v1/connect', [
+            'email' => $user->email,
+            'password' => 'geheim123',
+            'tenant_id' => $other->id,
+        ])->assertForbidden();
+
+        // falsches Passwort → 422
+        $this->postJson('/api/v1/connect', [
+            'email' => $user->email,
+            'password' => 'falsch',
+        ])->assertStatus(422);
+    }
+
     public function test_integrations_require_auth_and_tenant(): void
     {
         $this->getJson('/api/v1/integrations')->assertStatus(400); // ohne X-Tenant keine Identifikation
