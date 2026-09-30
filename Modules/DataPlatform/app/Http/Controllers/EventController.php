@@ -57,6 +57,7 @@ class EventController extends Controller
         $page->through(function ($row) {
             $row->event_properties = json_decode($row->event_properties, true);
             $row->meta_data = json_decode($row->meta_data, true);
+            $row->event_type = $row->event_properties['type'] ?? class_basename($row->event_class);
 
             return $row;
         });

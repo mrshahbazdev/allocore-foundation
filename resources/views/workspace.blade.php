@@ -2974,7 +2974,12 @@ const T_EN2 = {
         evTypeGroups() { const m = {}; (this.evTypeList || []).forEach(t => { const g = this.eventGroup(t.type); m[g] = (m[g] || 0) + t.events; }); return Object.entries(m).map(([g, events]) => ({g, events})).sort((a, b) => b.events - a.events); },
         eventLabel(t) {
             const a = String(t || '').split('.').pop();
-            return {created: 'erstellt', updated: this.t('aktualisiert'), deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: this.t('hochgeladen'), answered: 'beantwortet', created_event: 'erstellt', added: this.t('hinzugefügt'), roles_updated: this.t('Rollen geändert'), removed: this.t('entfernt'), left: 'verlassen', permissions_updated: this.t('Rechte geändert'), password_changed: this.t('Passwort geändert'), logged_in: 'angemeldet', logged_out: 'abgemeldet', pulled: 'abgerufen', received: 'empfangen'}[a] || a;
+            return {created: 'erstellt', updated: this.t('aktualisiert'), deleted: 'gelöscht', completed: 'abgeschlossen', approved: 'genehmigt', awarded: 'vergeben', uploaded: this.t('hochgeladen'), answered: 'beantwortet', created_event: 'erstellt', added: this.t('hinzugefügt'), roles_updated: this.t('Rollen geändert'), removed: this.t('entfernt'), left: 'verlassen', permissions_updated: this.t('Rechte geändert'), password_changed: this.t('Passwort geändert'), logged_in: 'angemeldet', logged_out: 'abgemeldet', pulled: 'abgerufen', received: 'empfangen',
+                invoice_created: 'Rechnung erstellt', invoice_paid: 'Rechnung bezahlt', payment_received: 'Zahlung erhalten',
+                expense_created: 'Ausgabe erfasst', customer_created: 'Kunde erstellt', lead_created: 'Lead erstellt',
+                lead_qualified: 'Lead qualifiziert', order_created: 'Auftrag erstellt', order_done: 'Auftrag fertig',
+                order_done_on_time: 'Auftrag pünktlich', order_complaint: 'Reklamation', order_lead_time: 'Durchlaufzeit',
+                timeentry_billable: 'Fakturierbare Std.', website_visitors: 'Websitebesucher', offer_created: 'Angebot erstellt'}[a] || a;
         },
         createFields() {
             const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes', 'role_names']);
