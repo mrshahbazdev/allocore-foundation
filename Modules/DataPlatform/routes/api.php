@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\DataPlatform\Http\Controllers\AnalyticsController;
 use Modules\DataPlatform\Http\Controllers\AnonymizedRecordController;
+use Modules\DataPlatform\Http\Controllers\ConnectController;
 use Modules\DataPlatform\Http\Controllers\ConnectorController;
 use Modules\DataPlatform\Http\Controllers\EventController;
 use Modules\DataPlatform\Http\Controllers\InsightController;
@@ -53,6 +54,10 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api', 'permission
     Route::post('connectors/{connector}/run', [ConnectorController::class, 'run']);
     Route::apiResource('connectors', ConnectorController::class)->only(['index', 'store', 'update', 'destroy']);
 });
+
+// Suite-Connect — Zugangsdaten liefern Mandantenliste bzw. Webhook-URL.
+Route::post('v1/connect', [ConnectController::class, 'store'])
+    ->middleware('throttle:10,1')->name('data-platform.connect');
 
 // Öffentlicher Webhook-Eingang — Token in der URL identifiziert Quelle + Mandant.
 Route::post('v1/webhooks/{token}', [IntegrationController::class, 'webhook'])
