@@ -6,6 +6,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Modules\DataPlatform\Models\IntegrationSource;
@@ -59,7 +60,7 @@ class ConnectController extends Controller
         ], 201);
     }
 
-    private function tenantsOf(User $user): \Illuminate\Support\Collection
+    private function tenantsOf(User $user): Collection
     {
         $teamIds = DB::table('model_has_roles')
             ->where('model_type', $user::class)
