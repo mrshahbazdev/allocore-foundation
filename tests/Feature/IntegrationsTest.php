@@ -245,4 +245,32 @@ class IntegrationsTest extends TestCase
         $this->artisan('metrics:ingest')->assertSuccessful();
         $this->assertEquals(12500.0, $snap('ext_revenue_paid'));
     }
+
+    public function test_metrics_ingest_buckets_by_occurred_at_month(): void
+    {
+        $tenant = Tenant::create(['name' => 'Backfill GmbH']);
+        $this->acting($tenant);
+
+        $token = $this->postJson('/api/v1/integrations', ['name' => 'InvoiceMaker'], ['X-Tenant' => $tenant->id])->json('token');
+        $post = fn (array $body) => $this->postJson('/api/v1/webhooks/'.$token, $body)->assertCreated();
+
+        $post(['type' => 'invoice_paid', 'amount' => 5000, 'occurred_at' => '2026-07-14']);
+        $post(['type' => 'invoice_paid', 'amount' => 3000, 'occurred_at' => '2026-08-02']);
+        $post(['type' => 'invoice_paid', 'amount' => 1000]);
+        $post(['type' => 'lead_created', 'occurred_at' => '2026-06-30']);
+
+        $this->artisan('metrics:ingest')->assertSuccessful();
+
+        $snap = fn (string $metric, string $on) => (float) MetricSnapshot::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)->where('metric', $metric)
+            ->where('captured_on', $on)->value('value');
+
+        $this->assertEquals(5000.0, $snap('ext_revenue_paid', '2026-07-31'));
+        $this->assertEquals(3000.0, $snap('ext_revenue_paid', '2026-08-31'));
+        $this->assertEquals(1.0, $snap('ext_leads', '2026-06-30'));
+        $this->assertEquals(1000.0, $snap('ext_revenue_paid', today()->toDateString()));
+
+        $this->artisan('metrics:ingest')->assertSuccessful();
+        $this->assertEquals(5000.0, $snap('ext_revenue_paid', '2026-07-31'));
+    }
 }
