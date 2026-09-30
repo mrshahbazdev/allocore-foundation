@@ -2984,13 +2984,14 @@ const T_EN2 = {
         },
         eventSummary(e) {
             const p = (e && e.event_properties) || {};
-            const b = (p.payload && p.payload.body) || {};
+            const b = (p.payload && p.payload.body) || p.payload || {};
             const parts = [];
-            if (p.subject && p.subject.title) parts.push(p.subject.title);
+            if (p.subject && p.subject.title && p.subject.type !== 'integration_source') parts.push(p.subject.title);
             const loc = this.lang === 'en' ? 'en-GB' : 'de-DE';
             for (const [k, v] of Object.entries(b)) {
                 if (parts.length >= 4) break;
                 if (v === null || v === undefined || v === '' || typeof v === 'object') continue;
+                if (/_id$/.test(k) || /^(source_id|source_name|tenantId|tenant_id|currency|ip)$/.test(k)) continue;
                 if (/amount|total|price|value|cost|sum/.test(k)) parts.push(Number(v).toLocaleString(loc, {maximumFractionDigits: 2}) + ' €');
                 else if (/occurred|date|_at$/.test(k)) { const d = new Date(v); if (!isNaN(d)) parts.push(d.toLocaleDateString(loc)); }
                 else if (typeof v === 'string' && v.length <= 60) parts.push(v);
