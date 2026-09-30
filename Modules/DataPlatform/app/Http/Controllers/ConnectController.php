@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Modules\DataPlatform\Models\IntegrationSource;
@@ -55,6 +56,34 @@ class ConnectController extends Controller
 
         return response()->json([
             'tenant_id' => $tenant['id'],
+            'source_id' => $source->id,
+            'webhook_url' => url('/api/v1/webhooks/'.$source->token),
+        ], 201);
+    }
+
+    /**
+     * Einmal-Code aus dem OAuth-ähnlichen Flow (ConnectAuthorizeController)
+     * gegen eine fertige Webhook-URL tauschen — kein Passwort nötig.
+     */
+    public function exchange(Request $request)
+    {
+        $data = $request->validate([
+            'code' => 'required|string|max:128',
+        ]);
+
+        $grant = Cache::pull('connect_code:'.$data['code']);
+        abort_unless(is_array($grant) && ! empty($grant['tenant_id']), 422, 'Code ungültig oder abgelaufen.');
+
+        $source = IntegrationSource::create([
+            'tenant_id' => (string) $grant['tenant_id'],
+            'name' => $grant['source_name'] ?? 'Allocore Suite',
+            'kind' => 'webhook',
+            'token' => IntegrationSource::generateToken(),
+        ]);
+
+        return response()->json([
+            'tenant_id' => $grant['tenant_id'],
+            'tenant_name' => $grant['tenant_name'] ?? null,
             'source_id' => $source->id,
             'webhook_url' => url('/api/v1/webhooks/'.$source->token),
         ], 201);

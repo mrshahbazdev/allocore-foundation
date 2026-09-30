@@ -106,6 +106,51 @@ class IntegrationsTest extends TestCase
         ])->assertStatus(422);
     }
 
+    public function test_connect_authorize_oauth_flow(): void
+    {
+        $tenant = Tenant::create(['name' => 'Zahntechnik']);
+        $user = User::factory()->create();
+        tenancy()->initialize($tenant);
+        $user->assignRole('holding');
+
+        $redirectUri = 'https://allocore.de/admin/allocore/callback';
+
+        // GET /connect/authorize — zeigt Mandanten des Nutzers
+        $res = $this->actingAs($user)->get('/connect/authorize?'.http_build_query([
+            'redirect_uri' => $redirectUri,
+            'state' => 'abc123',
+        ]));
+        $res->assertOk();
+        $res->assertSee('Zahntechnik');
+
+        // POST /connect/authorize — erzeugt Code und leitet zurück
+        $res = $this->actingAs($user)->post('/connect/authorize', [
+            'redirect_uri' => $redirectUri,
+            'state' => 'abc123',
+            'tenant_id' => $tenant->id,
+        ]);
+        $res->assertRedirect();
+        parse_str(parse_url($res->headers->get('Location'), PHP_URL_QUERY), $q);
+        $this->assertSame('abc123', $q['state']);
+        $this->assertStringStartsWith('ac_', $q['code']);
+
+        // Fremder Mandant → 403
+        $other = Tenant::create(['name' => 'Fremd GmbH']);
+        $this->actingAs($user)->post('/connect/authorize', [
+            'redirect_uri' => $redirectUri,
+            'tenant_id' => $other->id,
+        ])->assertForbidden();
+
+        // POST /api/v1/connect/exchange — Code → Webhook-URL (einmalig)
+        $res = $this->postJson('/api/v1/connect/exchange', ['code' => $q['code']]);
+        $res->assertCreated();
+        $this->assertStringContainsString('/api/v1/webhooks/wh_', $res->json('webhook_url'));
+        $this->assertSame($tenant->id, IntegrationSource::find($res->json('source_id'))->tenant_id);
+
+        // Zweite Nutzung desselben Codes → 422
+        $this->postJson('/api/v1/connect/exchange', ['code' => $q['code']])->assertStatus(422);
+    }
+
     public function test_integrations_require_auth_and_tenant(): void
     {
         $this->getJson('/api/v1/integrations')->assertStatus(400); // ohne X-Tenant keine Identifikation

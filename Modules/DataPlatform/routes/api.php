@@ -58,6 +58,8 @@ Route::middleware(['auth:sanctum', 'tenant.request', 'throttle:api', 'permission
 // Suite-Connect — Zugangsdaten liefern Mandantenliste bzw. Webhook-URL.
 Route::post('v1/connect', [ConnectController::class, 'store'])
     ->middleware('throttle:10,1')->name('data-platform.connect');
+Route::post('v1/connect/exchange', [ConnectController::class, 'exchange'])
+    ->middleware('throttle:10,1')->name('data-platform.connect.exchange');
 
 // Öffentlicher Webhook-Eingang — Token in der URL identifiziert Quelle + Mandant.
 Route::post('v1/webhooks/{token}', [IntegrationController::class, 'webhook'])
