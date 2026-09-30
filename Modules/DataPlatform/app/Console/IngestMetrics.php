@@ -11,7 +11,7 @@ use Modules\DataPlatform\Models\MetricSnapshot;
 /**
  * External-KPI ingest: maps known webhook event types (company tools pushing
  * to /api/v1/webhooks/{token}) onto atomic metric_snapshots per tenant.
- * Recomputes the full month window each run — idempotent and replayable.
+ * Buckets events per month (payload occurred_at, fallback arrival); idempotent and replayable.
  */
 class IngestMetrics extends Command
 {
@@ -41,9 +41,7 @@ class IngestMetrics extends Command
     public function handle(): int
     {
         $date = $this->option('date') ?? today()->toDateString();
-        $month = substr($date, 0, 7);
-        $monthStart = $month.'-01 00:00:00';
-        $monthEnd = Carbon::parse($monthStart)->addMonth()->toDateTimeString();
+        $currentMonth = substr($date, 0, 7);
         $written = 0;
 
         foreach (Tenant::all() as $tenant) {
@@ -53,42 +51,56 @@ class IngestMetrics extends Command
             $events = DB::table('stored_events')
                 ->where('meta_data->tenant_id', $tenantKey)
                 ->where('event_properties->type', 'like', 'webhook.%')
-                ->where('created_at', '>=', $monthStart)
-                ->where('created_at', '<', $monthEnd)
-                ->get(['event_properties']);
+                ->get(['event_properties', 'created_at']);
 
             foreach ($events as $row) {
                 $props = json_decode($row->event_properties, true) ?: [];
                 $sub = substr((string) ($props['type'] ?? ''), strlen('webhook.'));
                 $body = $props['payload']['body'] ?? [];
 
+                $month = substr((string) $row->created_at, 0, 7);
+                $occurred = (string) ($body['occurred_at'] ?? '');
+                if (preg_match('/^\d{4}-\d{2}/', $occurred) === 1) {
+                    $month = substr($occurred, 0, 7);
+                }
+
+                $bump = static function (string $metric, float $value) use (&$metrics, $month): void {
+                    $metrics[$month][$metric] = ($metrics[$month][$metric] ?? 0) + $value;
+                };
+
                 if (isset(self::MAP[$sub])) {
                     [$metric, $op, $field] = array_pad(self::MAP[$sub], 3, null);
-                    $metrics[$metric] = ($metrics[$metric] ?? 0) + ($op === 'count' ? 1 : (float) ($body[$field] ?? 0));
+                    $bump($metric, $op === 'count' ? 1 : (float) ($body[$field] ?? 0));
                 }
 
                 if ($sub === 'offer_created') {
                     $weighted = isset($body['probability'])
                         ? (float) ($body['value'] ?? 0) * ((float) $body['probability'] / 100)
                         : (float) ($body['value'] ?? 0);
-                    $metrics['ext_pipeline_value'] = ($metrics['ext_pipeline_value'] ?? 0) + $weighted;
+                    $bump('ext_pipeline_value', $weighted);
                 }
 
                 if ($sub === 'expense_created' && ($body['category'] ?? '') === 'marketing') {
-                    $metrics['ext_costs_marketing'] = ($metrics['ext_costs_marketing'] ?? 0) + (float) ($body['amount'] ?? 0);
+                    $bump('ext_costs_marketing', (float) ($body['amount'] ?? 0));
                 }
             }
 
-            foreach ($metrics as $metric => $value) {
-                MetricSnapshot::withoutGlobalScopes()->updateOrCreate(
-                    ['tenant_id' => $tenantKey, 'metric' => $metric, 'captured_on' => $date],
-                    ['value' => round($value, 4)],
-                );
-                $written++;
+            foreach ($metrics as $month => $values) {
+                $capturedOn = $month === $currentMonth
+                    ? $date
+                    : Carbon::parse($month.'-01')->endOfMonth()->toDateString();
+
+                foreach ($values as $metric => $value) {
+                    MetricSnapshot::withoutGlobalScopes()->updateOrCreate(
+                        ['tenant_id' => $tenantKey, 'metric' => $metric, 'captured_on' => $capturedOn],
+                        ['value' => round($value, 4)],
+                    );
+                    $written++;
+                }
             }
         }
 
-        $this->info("{$written} ext_-Metriken geschrieben fuer {$date} (Monat {$month}).");
+        $this->info("{$written} ext_-Metriken geschrieben (Stichtag {$date}, je Monat bucketed).");
 
         return self::SUCCESS;
     }
