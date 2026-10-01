@@ -33,3 +33,6 @@ Then browse `https://localhost:8443/...` (Chrome auto-proceeds or click through 
 ## Gotchas
 - `resources/views/dashboard.blade.php` has had a bad merge leaving a truncated duplicate `load()`/`api()` block — check for syntax errors in the inline `<script>` if Alpine sections don't render.
 - Dashboard APIs need `Authorization: Bearer <token>` + `X-Tenant: <uuid>` headers (the blade injects the token).
+- Webhook test data: seed rows into `stored_events` via `DB::table('stored_events')->insert(...)` with `event_properties` shaped `{"type":"webhook.<x>","payload":{"body":{...},"source_name":"Suite"},"subject":{"type":"integration_source","title":"Suite"},"tenantId":<tenant-uuid>}` — the Tool-Daten section and the `metrics:ingest` map both read this shape.
+- Run `php artisan migrate --force` before testing — pending migrations cause 500s on list endpoints.
+- Tenant-switch keyboard shortcut is `y` (cycles tenants); `o`/`1`-`9` open rows.
