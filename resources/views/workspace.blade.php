@@ -19,7 +19,7 @@
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
 <a href="#hauptinhalt" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-[#0B0B0F] focus:text-[#FACC15] focus:px-3 focus:py-2 focus:rounded-lg focus:text-xs"><span x-text="t('Zum Inhalt springen')"></span></a>
 <div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak
-     @keydown.escape.window="detail = null; closeCreate(); showCreate = false; navOpen = false; palette = false; colPicker = false; viewPicker = false; kbdHelp = false; showImport = false; confirmDel = false; notif = false; pwOpen = false"
+     @keydown.escape.window="detail = null; closeCreate(); showCreate = false; navOpen = false; palette = false; colPicker = false; viewPicker = false; kbdHelp = false; showImport = false; confirmDel = false; notif = false; pwOpen = false; endTour()"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
      @keydown.home.window="detail && (detail = sorted(filtered())[0])"
@@ -43,7 +43,7 @@
     <div x-show="navOpen" @click="navOpen = false" class="lg:hidden fixed inset-0 bg-black/50 z-30" x-transition.opacity aria-hidden="true"></div>
 
     {{-- Sidebar --}}
-    <aside class="bg-[#0B0B0F] text-white w-64 flex flex-col fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-200 lg:translate-x-0 lg:static lg:min-h-screen lg:sticky lg:top-0 lg:shrink-0 print:hidden"
+    <aside data-tour="nav" class="bg-[#0B0B0F] text-white w-64 flex flex-col fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-200 lg:translate-x-0 lg:static lg:min-h-screen lg:sticky lg:top-0 lg:shrink-0 print:hidden"
            :class="navOpen ? 'translate-x-0' : '-translate-x-full'">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-5 h-16 border-b border-[#1A1A1F]">
             <img src="{{ asset('logo-mark.png') }}" alt="ALLOCORE" class="h-9 w-auto">
@@ -51,7 +51,7 @@
         </a>
 
         {{-- Tenant picker --}}
-        <div class="px-4 py-4 border-b border-[#1A1A1F]">
+        <div data-tour="tenant" class="px-4 py-4 border-b border-[#1A1A1F]">
             <label class="block text-[10px] font-medium tracking-wide text-[#9CA3AF] mb-1.5"><span x-text="t('MANDANT')"></span></label>
             <select x-model="tenant" @change="loadSection(); loadNavBadges()"
                     class="w-full rounded-lg bg-[#1A1A1F] border-[#2A2A31] text-white text-sm py-2 focus:border-[#FACC15] focus:ring-[#FACC15]/30">
@@ -72,7 +72,7 @@
         <nav class="flex-1 overflow-y-auto py-3 text-[13px]" :aria-label="t('Hauptnavigation')">
             <div class="px-4 pb-2">
                 <div class="relative">
-                    <input x-model="navQ" :placeholder="t('Module filtern…')" @keydown.enter.prevent="const m = groups.flatMap(g => g.items).find(i => i.label.toLowerCase().includes(navQ.toLowerCase())); if (m) location.href = '/app/' + m.key + (tenant ? '?tenant=' + tenant : '')" class="w-full bg-[#141419] text-[#9CA3AF] text-[11px] pl-2.5 pr-6 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-[#FACC15] placeholder-[#4B5563]">
+                    <input data-tour="navq" x-model="navQ" :placeholder="t('Module filtern…')" @keydown.enter.prevent="const m = groups.flatMap(g => g.items).find(i => i.label.toLowerCase().includes(navQ.toLowerCase())); if (m) location.href = '/app/' + m.key + (tenant ? '?tenant=' + tenant : '')" class="w-full bg-[#141419] text-[#9CA3AF] text-[11px] pl-2.5 pr-6 py-1.5 rounded-lg border-0 focus:ring-1 focus:ring-[#FACC15] placeholder-[#4B5563]">
                     <button x-show="navQ" @click="navQ = ''" :title="t('Filter löschen')" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#FACC15] text-xs">&times;</button>
                 </div>
             </div>
@@ -176,7 +176,7 @@
                 <span x-show="!loading && lastLoad" class="text-[11px] text-[#9CA3AF]" x-text="lastLoad ? t('Stand') + ' ' + lastLoad.toLocaleTimeString((this.lang==='en'?'en-GB':'de-DE'), {hour: '2-digit', minute: '2-digit'}) : ''"></span>
             </div>
             <div class="flex items-center gap-3">
-                <div class="relative" x-show="tenant">
+                <div class="relative" x-show="tenant" data-tour="bell">
                     <button @click="notif = !notif" :aria-label="t('Benachrichtigungen')" :aria-expanded="notif" :title="'Benachrichtigungen' + (overdueTotal() ? ' — ' + overdueTotal() + ' überfällig' : '')" class="relative text-[#9CA3AF] hover:text-[#CA8A04] transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                         <span x-show="overdueTotal() > 0" x-text="overdueTotal() + unreadNotifs()" class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-[#A6362E] text-white text-[9px] font-bold leading-4 text-center"></span>
@@ -215,9 +215,12 @@
                         <template x-for="o in weekSections()"><a :href="'/app/' + o.key + '?tenant=' + tenant + '&dueSoon=1'" class="px-3 py-1.5 flex items-center justify-between gap-3 text-xs hover:bg-[#FAFBFC]"><span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[#B45309]"></span><span class="w-4 text-center text-[11px] text-[#9CA3AF]" x-text="icons[o.key] || '·'"></span><span x-text="o.label + ' ≤' + navWindow + 'T'"></span></span><span class="font-mono text-[#B45309]" x-text="o.count"></span></a></template>
                     </div>
                 </div>
-                <button @click="toggleDark()" :aria-label="t('Darstellung umschalten')" :title="dark ? 'Helle Darstellung (t)' : 'Dunkle Darstellung (t)'" class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
+                <button data-tour="dark" @click="toggleDark()" :aria-label="t('Darstellung umschalten')" :title="dark ? 'Helle Darstellung (t)' : 'Dunkle Darstellung (t)'" class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
                     <svg x-show="!dark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                     <svg x-show="dark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                </button>
+                <button @click="startTour()" :title="t('Rundgang starten')" :aria-label="t('Rundgang starten')" class="text-[#9CA3AF] hover:text-[#CA8A04] transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"/></svg>
                 </button>
                 <button x-show="tenant && !['dashboard','executive'].includes(section)" @click="loadSection(true)" :title="t('Aktualisieren (r)')" :aria-label="t('Liste aktualisieren')"
                         class="transition" :class="loading ? 'text-[#CA8A04]' : 'text-[#9CA3AF] hover:text-[#CA8A04]'">
@@ -252,7 +255,7 @@
             {{-- Dashboard --}}
             <template x-if="section === 'dashboard'">
                 <div class="space-y-5">
-                    <div class="relative bg-white border border-[#E4E9F0] rounded-xl px-4 py-3">
+                    <div data-tour="globalsearch" class="relative bg-white border border-[#E4E9F0] rounded-xl px-4 py-3">
                         <div class="flex items-center gap-2.5">
                             <svg class="w-4 h-4 text-[#9CA3AF] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
                             <input x-model.debounce.300ms="dashQ" @keydown.enter.prevent="if (dashHits.length) location.href = '/app/' + dashHits[0].section + '?tenant=' + tenant + '&open=' + encodeURIComponent(dashHits[0].id)" :placeholder="t('Globale Suche — Firma, Aufgabe, Dokument…')"
@@ -270,7 +273,7 @@
                         </div>
                         <div x-show="dashQ && dashQ.trim().length >= 3 && !dashHits.length" class="mt-2 pt-2 border-t border-[#EEF1F5] text-xs text-[#9CA3AF]" x-cloak><span x-text="t('Keine Treffer.')"></span></div>
                     </div>
-                    <div x-show="visibleInsights().length || insDismissed.length" class="space-y-2">
+                    <div x-show="visibleInsights().length || insDismissed.length" data-tour="insights" class="space-y-2">
                         <div x-show="visibleInsights().some(i => i.severity === 'warning' || i.severity === 'info') || insDismissed.length" class="flex gap-1.5">
                         <button x-show="insDismissed.length" @click="insDismissed = []; localStorage.removeItem('af_insdismissed')"
                                 class="text-[11px] px-2 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04] hover:text-[#CA8A04]"
@@ -308,7 +311,7 @@
                                 class="ml-auto text-[11px] px-2 py-1 rounded-full border border-[#2E7D5B]/30 text-[#2E7D5B] hover:bg-[#2E7D5B]/10"
                                 x-text="'Ausgeblendete: ' + insDismissed.length + ' \u21ba'"></button>
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div data-tour="kpis" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                         <template x-for="m in kpiCards" :key="m.key">
                             <a :href="m.to ? '/app/' + m.to + (tenant ? '?tenant='+tenant : '') : '#'"
                                class="bg-white border border-[#E4E9F0] rounded-xl px-5 py-4 block transition"
@@ -579,7 +582,7 @@
                             <span x-show="rows && (rows||[]).some(r => overdue(r))" class="text-[#A6362E]" x-text="'· ' + (rows||[]).filter(r => overdue(r)).length + ' ' + t('überfällig')"></span>
                             <span x-show="rows && (rows||[]).some(r => dueSoon(r))" class="text-[#B45309]" x-text="'· ' + (rows||[]).filter(r => dueSoon(r)).length + ' ≤ 7 Tage'"></span>
                         </span>
-                        <div class="relative">
+                        <div class="relative" data-tour="listsearch">
                             <input x-ref="search" x-model.debounce.200ms="query" @keydown.enter="if (filtered().length) { detail = sorted(filtered())[0]; $event.target.blur(); }" :placeholder="'Suchen in ' + title() + '… (/)'" class="w-40 sm:w-48 lg:w-64 rounded-lg border-[#D6DEE9] text-xs py-1.5 pr-6 focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
                             <button x-show="query" @click="query = ''; $refs.search.focus()" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#5B6B7E] text-xs leading-none" :aria-label="t('Suche löschen')">&times;</button>
                         </div>
@@ -625,7 +628,7 @@
                         <button x-show="canImport()" @click="showImport = true; importText = ''; importResult = ''" :title="t('CSV importieren (i)')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0">CSV ↑</button>
                         <button @click="window.print()" :title="t('Drucken')" class="text-xs px-3 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04] hover:text-[#CA8A04] transition shrink-0"><span x-text="t('Drucken')"></span></button>
                         <button x-show="section === 'tokens' && rows && (rows||[]).length > 1" @click="revokeAllTokens()" :title="t('Alle API-Token widerrufen')" class="text-xs px-3 py-1.5 border border-[#A6362E] text-[#A6362E] rounded-lg hover:bg-[#A6362E] hover:text-white transition shrink-0"><span x-text="t('Alle widerrufen')"></span></button>
-                        <button x-show="canCreate()" @click="openCreate()" :title="'Neu anlegen: ' + title() + ' (n)'" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0"x-text="'+ ' + t('Neu')"></button>
+                        <button data-tour="new" x-show="canCreate()" @click="openCreate()" :title="'Neu anlegen: ' + title() + ' (n)'" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-white rounded-lg hover:bg-[#1A1A1F] transition shrink-0"x-text="'+ ' + t('Neu')"></button>
                     </div>
                     <div x-show="rows && recentRows().some(r => r.key === section)" class="flex items-center gap-1.5 px-5 py-1.5 border-b border-[#E4E9F0] print:hidden overflow-x-auto">
                         <span class="text-[10px] font-semibold tracking-widest text-[#9CA3AF] shrink-0" x-text="t('Zuletzt').toUpperCase()"></span>
@@ -1141,6 +1144,36 @@
             </div>
         </div>
 
+        {{-- Onboarding tour prompt (first visit) --}}
+        <div x-show="tourPrompt" class="fixed bottom-5 right-5 z-[60] w-72 bg-white border border-[#E4E9F0] rounded-xl shadow-2xl p-4" x-cloak>
+            <div class="font-semibold text-sm text-[#0B0B0F]" x-text="t('Neu bei ALLOCORE?')"></div>
+            <p class="text-xs text-[#5B6B7E] mt-1 leading-relaxed" x-text="t('Eine kurze Tour zeigt dir die wichtigsten Bereiche — Schritt für Schritt.')"></p>
+            <div class="mt-3 flex items-center gap-2">
+                <button @click="startTour()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-[#FACC15] rounded-lg hover:bg-[#1A1A1F]" x-text="t('Tour starten')"></button>
+                <button @click="tourPrompt = false; tourDone()" class="text-xs px-3 py-1.5 text-[#9CA3AF] hover:text-[#5B6B7E]" x-text="t('Später')"></button>
+            </div>
+        </div>
+
+        {{-- Onboarding tour overlay --}}
+        <div x-show="tour" class="fixed inset-0 z-[70]" style="display:none">
+            <div class="absolute inset-0" @click="endTour()"></div>
+            <div x-show="tourRect" class="absolute rounded-xl ring-2 ring-[#FACC15] pointer-events-none transition-all duration-200"
+                 :style="tourRect ? `top:${tourRect.top}px;left:${tourRect.left}px;width:${tourRect.width}px;height:${tourRect.height}px;box-shadow:0 0 0 9999px rgba(11,11,15,.55)` : ''"></div>
+            <div x-show="!tourRect" class="absolute inset-0 bg-[#0B0B0F]/55"></div>
+            <div class="absolute w-80 max-w-[90vw] bg-white rounded-xl shadow-2xl p-5" :style="tourTip()" role="dialog" :aria-label="t('Tour')">
+                <div class="text-[10px] font-mono text-[#9CA3AF]" x-text="t('Schritt') + ' ' + (tourStep + 1) + ' / ' + tourSteps.length"></div>
+                <h3 class="font-semibold text-[#0B0B0F] mt-1" x-text="tourSteps[tourStep] ? tourSteps[tourStep].t : ''"></h3>
+                <p class="text-xs text-[#5B6B7E] mt-1.5 leading-relaxed" x-text="tourSteps[tourStep] ? tourSteps[tourStep].d : ''"></p>
+                <div class="mt-4 flex items-center justify-between">
+                    <button @click="endTour()" class="text-[11px] text-[#9CA3AF] hover:text-[#A6362E]" x-text="t('Überspringen')"></button>
+                    <div class="flex gap-2">
+                        <button x-show="tourStep > 0" @click="tourBack()" class="text-xs px-2.5 py-1.5 border border-[#D6DEE9] text-[#5B6B7E] rounded-lg hover:border-[#CA8A04]" x-text="t('Zurück')"></button>
+                        <button @click="tourNext()" class="text-xs px-3 py-1.5 bg-[#0B0B0F] text-[#FACC15] rounded-lg hover:bg-[#1A1A1F]" x-text="tourStep + 1 >= tourSteps.length ? t('Fertig') : t('Weiter')"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Shortcuts help (?) --}}
         <div x-show="kbdHelp" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none" role="dialog" aria-modal="true" :aria-label="t('Tastenkürzel')">
             <div class="absolute inset-0 bg-[#0B0B0F]/50" @click="kbdHelp = false"></div>
@@ -1589,6 +1622,7 @@ const T_EN2 = {
     Object.assign(T_EN, T_EN2);
     Object.assign(T_EN, {'Aufgabe':'Task','Unternehmen':'Company','Person':'Person','Dokument':'Document','Dokumentversion':'Document version','Unterweisung':'Instruction','Prüfung':'Inspection','Frist':'Deadline','Gefährdungsbeurteilung':'Risk assessment','Betriebsanweisung':'Operating instruction','Experte':'Expert','Frage':'Question','Ausschreibung':'Tender','Finanzbericht':'Financial report','Urlaubsantrag':'Leave request','Maschine':'Machine','Produktionsauftrag':'Production order','Beteiligung':'Participation','Data-Objekt':'Data object','Portfolio':'Portfolio','Investition':'Investment','Kante':'Edge','Strategie':'Strategy','Projekt':'Project','KI-Analyse':'AI analysis','Executive-Report':'Executive report','Audit':'Audit','Feststellung':'Finding','Benutzer':'User','Webhook':'Webhook','Konnektor':'Connector','Webhook-Quelle':'Webhook source'});
     Object.assign(T_EN, {'— wählen —':'— select —','— Experte wählen —':'— select expert —','Aktuelle Ansicht speichern':'Save current view','ausgewählt':'selected','öffnen →':'open →','löschen':'delete','Geändert:':'Changed:'});
+    Object.assign(T_EN, {'Neu bei ALLOCORE?':'New to ALLOCORE?','Eine kurze Tour zeigt dir die wichtigsten Bereiche — Schritt für Schritt.':'A short tour walks you through the key areas — step by step.','Tour starten':'Start tour','Später':'Later','Schritt':'Step','Überspringen':'Skip','Zurück':'Back','Weiter':'Next','Fertig!':'Done!','Fertig':'Done','Tour':'Tour','Rundgang starten':'Start tour','Navigation':'Navigation','Alle Module in einer Seitenleiste — Dashboard, Aufgaben, Dokumente, Compliance, Team und mehr. Ein Klick öffnet die Sektion.':'All modules in one sidebar — dashboard, tasks, documents, compliance, team and more. One click opens the section.','Mandant wählen':'Choose tenant','Hier wechselst du zwischen deinen Unternehmen/Mandanten — alle Daten gehören zum gewählten Mandanten.':'Switch between your companies/tenants here — all data belongs to the selected tenant.','Module filtern':'Filter modules','Tippen, um Module schnell zu finden — z. B. „Aufgaben" — Enter öffnet den ersten Treffer.':'Type to quickly find modules — e.g. "tasks" — Enter opens the first match.','Globale Suche':'Global search','Suche über alles: Firmen, Aufgaben, Dokumente — Enter öffnet den ersten Treffer direkt.':'Search across everything: companies, tasks, documents — Enter opens the first hit directly.','KPI-Karten':'KPI cards','Deine wichtigsten Kennzahlen auf einen Blick. Ein Klick auf eine Karte öffnet die zugehörige Sektion.':'Your key metrics at a glance. Clicking a card opens the related section.','KI-Hinweise':'AI insights','Automatisch erkannte Risiken und offene Punkte — ein Klick springt zum betroffenen Eintrag.':'Automatically detected risks and open items — one click jumps to the affected record.','Erinnerungen zu Fristen und Zuweisungen — das Badge zeigt, was ansteht.':'Reminders for deadlines and assignments — the badge shows what is pending.','Suchen & Filtern':'Search & filter','Jede Liste durchsuchbar und filterbar — Taste „/" fokussiert die Suche, „x" setzt Filter zurück.':'Every list is searchable and filterable — press "/" to focus search, "x" resets filters.','Neuer Eintrag':'New entry','Hier legst du neue Datensätze an — oder mit Taste „n". Eine Zeile anklicken öffnet Details, Bearbeiten und Status-Aktionen.':'Create new records here — or press "n". Clicking a row opens details, editing and status actions.','Darstellung':'Appearance','Zwischen heller und dunkler Darstellung wechseln — auch mit Taste „t".':'Switch between light and dark mode — also via the "t" key.','Das war der Rundgang. Tipp: Ctrl+K öffnet die Befehlspalette, „?" zeigt alle Tastenkürzel.':'That was the tour. Tip: Ctrl+K opens the command palette, "?" shows all shortcuts.'});
 
     Object.assign(T_EN, {
  'Stand':'As of','gesamt':'total','Tag':'Day','Top-Tag':'Top day','Meiste Ereignisse an einem Tag — Tag filtern':'Most events in one day — filter by day',
@@ -1896,6 +1930,7 @@ const T_EN2 = {
         sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActorName: '', evWeekday: '', evHour: '', evActors: [], evActorsKey: '', evTypeList: [], tdType: '', linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {}, navBadgesWeek: {}, navTotal: null, navWindow: parseInt(localStorage.getItem('af_navwindow') || '7'),
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, rowNotifs: [], allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
+        tour: false, tourStep: 0, tourRect: null, tourSteps: [], tourPrompt: false,
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
@@ -1912,6 +1947,7 @@ const T_EN2 = {
                 const next = [this.section, ...this.recent.filter(k => k !== this.section)].slice(0, 5);
                 try { localStorage.setItem('af_recent', JSON.stringify(next)); } catch (e) {}
             }
+            try { if (! localStorage.getItem('af_tour_done')) this.tourPrompt = true; } catch (e) {}
             if (t) this.tenant = t;
             else if (localStorage.getItem('allocore.tenant')) this.tenant = localStorage.getItem('allocore.tenant');
             if (this.tenant) { this.loadSection(); this.loadNavBadges(); }
@@ -3549,6 +3585,59 @@ const T_EN2 = {
             document.documentElement.classList.toggle('dark', this.dark);
             try { localStorage.setItem('af_dark', this.dark ? '1' : '0'); } catch (e) {}
         },
+        buildTour() {
+            const defs = [
+                {sel: '[data-tour="nav"]', t: this.t('Navigation'), d: this.t('Alle Module in einer Seitenleiste — Dashboard, Aufgaben, Dokumente, Compliance, Team und mehr. Ein Klick öffnet die Sektion.')},
+                {sel: '[data-tour="tenant"]', t: this.t('Mandant wählen'), d: this.t('Hier wechselst du zwischen deinen Unternehmen/Mandanten — alle Daten gehören zum gewählten Mandanten.')},
+                {sel: '[data-tour="navq"]', t: this.t('Module filtern'), d: this.t('Tippen, um Module schnell zu finden — z. B. „Aufgaben" — Enter öffnet den ersten Treffer.')},
+                {sel: '[data-tour="globalsearch"]', t: this.t('Globale Suche'), d: this.t('Suche über alles: Firmen, Aufgaben, Dokumente — Enter öffnet den ersten Treffer direkt.')},
+                {sel: '[data-tour="kpis"]', t: this.t('KPI-Karten'), d: this.t('Deine wichtigsten Kennzahlen auf einen Blick. Ein Klick auf eine Karte öffnet die zugehörige Sektion.')},
+                {sel: '[data-tour="insights"]', t: this.t('KI-Hinweise'), d: this.t('Automatisch erkannte Risiken und offene Punkte — ein Klick springt zum betroffenen Eintrag.')},
+                {sel: '[data-tour="bell"]', t: this.t('Benachrichtigungen'), d: this.t('Erinnerungen zu Fristen und Zuweisungen — das Badge zeigt, was ansteht.')},
+                {sel: '[data-tour="listsearch"]', t: this.t('Suchen & Filtern'), d: this.t('Jede Liste durchsuchbar und filterbar — Taste „/" fokussiert die Suche, „x" setzt Filter zurück.')},
+                {sel: '[data-tour="new"]', t: this.t('Neuer Eintrag'), d: this.t('Hier legst du neue Datensätze an — oder mit Taste „n". Eine Zeile anklicken öffnet Details, Bearbeiten und Status-Aktionen.')},
+                {sel: '[data-tour="dark"]', t: this.t('Darstellung'), d: this.t('Zwischen heller und dunkler Darstellung wechseln — auch mit Taste „t".')},
+                {sel: null, t: this.t('Fertig!'), d: this.t('Das war der Rundgang. Tipp: Ctrl+K öffnet die Befehlspalette, „?" zeigt alle Tastenkürzel.')},
+            ];
+            return defs.filter(s => {
+                if (! s.sel) return true;
+                const el = document.querySelector(s.sel);
+                return el && el.offsetParent !== null;
+            });
+        },
+        startTour() {
+            this.tourPrompt = false;
+            this.tourSteps = this.buildTour();
+            this.tourStep = 0;
+            this.tour = true;
+            this.$nextTick(() => this.tourPlace());
+        },
+        tourPlace() {
+            const s = this.tourSteps[this.tourStep];
+            const el = s && s.sel ? document.querySelector(s.sel) : null;
+            if (! el) { this.tourRect = null; return; }
+            el.scrollIntoView({block: 'center'});
+            const r = el.getBoundingClientRect();
+            this.tourRect = {top: r.top - 4, left: r.left - 4, width: r.width + 8, height: r.height + 8};
+        },
+        tourTip() {
+            if (! this.tourRect) return 'top:50%;left:50%;transform:translate(-50%,-50%)';
+            const w = 320, m = 12, vw = window.innerWidth, vh = window.innerHeight;
+            const left = Math.min(Math.max(this.tourRect.left, m), vw - w - m);
+            let top = this.tourRect.top + this.tourRect.height + m;
+            if (top + 170 > vh) top = Math.max(m, this.tourRect.top - 170 - m);
+            return `top:${top}px;left:${left}px`;
+        },
+        tourNext() {
+            if (this.tourStep + 1 >= this.tourSteps.length) { this.endTour(); return; }
+            this.tourStep++;
+            this.$nextTick(() => this.tourPlace());
+        },
+        tourBack() {
+            if (this.tourStep > 0) { this.tourStep--; this.$nextTick(() => this.tourPlace()); }
+        },
+        tourDone() { try { localStorage.setItem('af_tour_done', '1'); } catch (e) {} },
+        endTour() { this.tour = false; this.tourDone(); },
         copyLink() {
             const url = location.origin + '/app/' + this.section + '?tenant=' + this.tenant + '&open=' + this.detail.id;
             navigator.clipboard.writeText(url).then(() => { this.linkCopied = true; setTimeout(() => this.linkCopied = false, 1500); });
