@@ -19,7 +19,7 @@
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
 <a href="#hauptinhalt" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-[#0B0B0F] focus:text-[#FACC15] focus:px-3 focus:py-2 focus:rounded-lg focus:text-xs"><span x-text="t('Zum Inhalt springen')"></span></a>
 <div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak
-     @keydown.escape.window="detail = null; closeCreate(); showCreate = false; navOpen = false; palette = false; colPicker = false; viewPicker = false; kbdHelp = false; showImport = false; confirmDel = false; notif = false; pwOpen = false; tenantModal = false; endTour()"
+     @keydown.escape.window="detail = null; closeCreate(); showCreate = false; navOpen = false; palette = false; colPicker = false; viewPicker = false; kbdHelp = false; showImport = false; confirmDel = false; notif = false; pwOpen = false; tenantModal = false; cfmAnswer(false); endTour()"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
      @keydown.home.window="detail && (detail = sorted(filtered())[0])"
@@ -716,7 +716,7 @@
                                 x-text="t('Stumm · ') + (rows||[]).filter(r => r.muted).length"></button>
                         <button x-show="section === 'notifications' && rows && (rows||[]).some(r => !r.read)" @click="markAllNotifsRead(); toast('Alle als gelesen markiert')" class="text-[11px] px-2.5 py-1 rounded-full border border-[#CA8A04]/50 text-[#CA8A04] hover:bg-[#CA8A04]/10 transition"><span x-text="t('Alle gelesen')"></span></button>
                         <button x-show="section === 'notifications' && rows && (rows||[]).some(r => r.read)" @click="deleteReadNotifs()" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition"><span x-text="t('Gelesene entfernen')"></span></button>
-                        <button x-show="section === 'notifications' && rows && (rows||[]).length > 1" @click="if (confirm(t('Alle Benachrichtigungen entfernen?'))) this.api('/api/v1/notifications', {method: 'DELETE'}).then(r => r.ok ? r.json() : null).then(d => { if (d) { this.toast((d.deleted ?? 0) + ' entfernt'); this.loadSection(); } })" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition"><span x-text="t('Alle entfernen')"></span></button>
+                        <button x-show="section === 'notifications' && rows && (rows||[]).length > 1" @click="cfmAsk(t('Alle Benachrichtigungen entfernen?')).then(ok => { if (ok) this.api('/api/v1/notifications', {method: 'DELETE'}).then(r => r.ok ? r.json() : null).then(d => { if (d) { this.toast((d.deleted ?? 0) + ' entfernt'); this.loadSection(); } }) })" class="text-[11px] px-2.5 py-1 rounded-full border border-[#D6DEE9] text-[#5B6B7E] hover:border-[#A6362E] hover:text-[#A6362E] transition"><span x-text="t('Alle entfernen')"></span></button>
                         <template x-for="rn in roleOpts()" :key="'role-' + rn">
                             <button @click="roleFilter = roleFilter === rn ? '' : rn" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="roleFilter === rn ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'">
@@ -1404,6 +1404,19 @@
     </div>
 </div>
 
+{{-- Confirm dialog (replaces window.confirm) --}}
+<div x-show="cfmOpen" class="fixed inset-0 flex items-center justify-center" style="display:none; z-index:70">
+    <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="cfmAnswer(false)"></div>
+    <div class="relative w-full max-w-sm bg-white rounded-xl shadow-xl" role="dialog" aria-modal="true" :aria-label="t('Bestätigen')">
+        <div class="px-6 py-4 border-b border-[#E4E9F0]"><h2 class="font-semibold text-[#0B0B0F]" x-text="t('Bestätigen')"></h2></div>
+        <div class="p-6"><p class="text-sm text-[#1A2433]" x-text="cfmText"></p></div>
+        <div class="px-6 py-3 border-t border-[#E4E9F0] flex items-center gap-2 justify-end">
+            <button @click="cfmAnswer(false)" class="px-3 py-1.5 text-sm rounded-lg border border-[#D6DEE9] text-[#5B6B7E]" x-text="t('Abbrechen')"></button>
+            <button @click="cfmAnswer(true)" class="px-4 py-1.5 text-sm rounded-lg bg-[#A6362E] text-white font-semibold" x-text="t('Bestätigen')"></button>
+        </div>
+    </div>
+</div>
+
 {{-- Tenant create/rename modal --}}
 <div x-show="tenantModal" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none">
     <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="tenantModal = false"></div>
@@ -1948,7 +1961,7 @@ const T_EN2 = {
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {}, navBadgesWeek: {}, navTotal: null, navWindow: parseInt(localStorage.getItem('af_navwindow') || '7'),
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, rowNotifs: [], allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         tour: false, tourStep: 0, tourRect: null, tourSteps: [], tourPrompt: false,
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, tenantModal: false, tenantMode: 'create', tenantName: '', pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, tenantModal: false, cfmOpen: false, cfmText: '', cfmResolve: null, tenantMode: 'create', tenantName: '', pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
             document.documentElement.lang = this.lang;
@@ -2304,8 +2317,8 @@ const T_EN2 = {
             } else if (pwChanged) savePw();
             else this.pwErr = this.t('Keine Änderung.');
         },
-        deleteAccount() {
-            if (!confirm(this.t(this.t('Eigenes Konto wirklich löschen? Nur möglich, wenn du in keinem Mandanten mehr Mitglied bist. Alle API-Tokens werden widerrufen.')))) return;
+        async deleteAccount() {
+            if (!await this.cfmAsk(this.t('Eigenes Konto wirklich löschen? Nur möglich, wenn du in keinem Mandanten mehr Mitglied bist. Alle API-Tokens werden widerrufen.'))) return;
             this.api('/api/v1/me', {method: 'DELETE'})
                 .then(async r => {
                     if (r.ok) { this.toast(this.t('Konto gelöscht.')); setTimeout(() => { location.href = '/login'; }, 1200); return; }
@@ -2454,7 +2467,7 @@ const T_EN2 = {
             this.api('/api/v1/notifications/read-all', {method: 'POST'}).then(r => { if (r.ok) { this.dbNotifs.forEach(n => n.read = true); (this.rows || []).forEach(n => n.read = true); this.navBadges['notifications'] = this.unreadNotifs(); } }).catch(() => {});
         },
         async revokeAllTokens() {
-            if (!confirm(this.t(this.t('Alle API-Token widerrufen? Der aktuell verwendete bleibt aktiv.')))) return;
+            if (!await this.cfmAsk(this.t('Alle API-Token widerrufen? Der aktuell verwendete bleibt aktiv.'))) return;
             const r = await this.api('/api/v1/tokens', {method: 'DELETE'});
             const d = await r.json().catch(() => ({}));
             if (r.ok) { this.toast((d.deleted ?? 0) + this.t(' Token widerrufen')); this.loadSection(); }
@@ -2683,8 +2696,8 @@ const T_EN2 = {
             this.api('/api/v1/tender-applications/' + id, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:s})})
                 .then(r => { if (r.ok) { this.loadApps(this.detail.id); this.loadSection(); this.toast(this.statusLabel(s) + '.'); } else this.toast(this.t('Aktion fehlgeschlagen (HTTP ')+r.status+')'); });
         },
-        deleteApp(id) {
-            if (!confirm(this.t(this.t('Bewerbung löschen?')))) return;
+        async deleteApp(id) {
+            if (!await this.cfmAsk(this.t('Bewerbung löschen?'))) return;
             const row = (this.apps || []).find(a => String(a.id) === String(id));
             this.api('/api/v1/tender-applications/' + id, {method:'DELETE'})
                 .then(() => { this.loadApps(this.detail.id); this.toast(this.t('Bewerbung gelöscht.'), row ? {label: this.t('Rückgängig'), fn: () => {
@@ -2727,8 +2740,8 @@ const T_EN2 = {
                     this.newRole = ''; this.rolePerms = []; this.toast(this.t('Rolle angelegt.')); this.loadUserRoles(this.detail.id);
                 });
         },
-        deleteRole(r) {
-            if (!confirm(this.t('Rolle „') + r.name + this.t('" löschen? Zugewiesene Nutzer verlieren diese Rolle.'))) return;
+        async deleteRole(r) {
+            if (!await this.cfmAsk(this.t('Rolle „') + r.name + this.t('" löschen? Zugewiesene Nutzer verlieren diese Rolle.'))) return;
             this.api('/api/v1/roles/' + r.id, {method: 'DELETE'}).then(res => {
                 this.toast(res.ok ? this.t('Rolle gelöscht.') : this.t('Löschen fehlgeschlagen (HTTP ') + res.status + ')');
                 if (res.ok) { this.loadUserRoles(this.detail.id); this.loadMe(); }
@@ -2741,8 +2754,8 @@ const T_EN2 = {
                     if (res.ok) { this.roleEdit = null; this.loadUserRoles(this.detail.id); this.loadMe(); }
                 });
         },
-        removeMember() {
-            if (!this.detail || !confirm((this.detail.name || this.t('Mitglied')) + this.t(' aus dem Mandanten entfernen?'))) return;
+        async removeMember() {
+            if (!this.detail || !await this.cfmAsk((this.detail.name || this.t('Mitglied')) + this.t(' aus dem Mandanten entfernen?'))) return;
             this.api('/api/v1/users/' + this.detail.id, {method: 'DELETE'}).then(r => {
                 this.toast(r.ok || r.status === 204 ? this.t('Mitglied entfernt.') : this.t('Entfernen fehlgeschlagen (HTTP ') + r.status + ')');
                 if (r.ok || r.status === 204) { this.detail = null; this.loadSection(); }
@@ -2763,8 +2776,8 @@ const T_EN2 = {
             this.api('/api/v1/answers/' + id + '/accept', {method:'POST'})
                 .then(r => { if (r.ok) { this.loadAnswers(this.detail.id); this.loadSection(); this.toast(this.t('Antwort akzeptiert.')); } else this.toast(this.t('Aktion fehlgeschlagen (HTTP ')+r.status+')'); });
         },
-        deleteAnswer(id) {
-            if (!confirm(this.t(this.t('Antwort löschen?')))) return;
+        async deleteAnswer(id) {
+            if (!await this.cfmAsk(this.t('Antwort löschen?'))) return;
             const row = (this.answers || []).find(a => String(a.id) === String(id));
             this.api('/api/v1/answers/' + id, {method:'DELETE'})
                 .then(() => { this.loadAnswers(this.detail.id); this.toast(this.t('Antwort gelöscht.'), row ? {label: this.t('Rückgängig'), fn: () =>
@@ -2863,9 +2876,11 @@ const T_EN2 = {
             }
             this.tenantModal = false;
         },
+        cfmAsk(text) { this.cfmText = text; this.cfmOpen = true; return new Promise(res => { this.cfmResolve = res; }); },
+        cfmAnswer(v) { this.cfmOpen = false; if (this.cfmResolve) this.cfmResolve(v); this.cfmResolve = null; },
         async leaveTenant() {
             const cur = this.tenantList.find(t => t.id === this.tenant);
-            if (!confirm(this.t('Mandant „') + (cur ? cur.name : '') + '" wirklich verlassen? Du verlierst alle Rollen und Zugriff.')) return;
+            if (!await this.cfmAsk(this.t('Mandant „') + (cur ? cur.name : '') + '" wirklich verlassen? Du verlierst alle Rollen und Zugriff.')) return;
             const r = await this.api('/api/v1/me/membership', {method:'DELETE'});
             if (!r.ok) { const d = await r.json().catch(() => null); this.toast((d && d.message) ? d.message : this.t('Verlassen fehlgeschlagen (HTTP ')+r.status+')', 'error'); return; }
             this.toast(this.t('Mandant verlassen.'));
@@ -3450,8 +3465,8 @@ const T_EN2 = {
                 this.detail = null; this.loadSection();
             } finally { this.rowLoading = false; }
         },
-        closeCreate() {
-            if (this.showCreate && this.formDirty && !confirm(this.t(this.t('Ungespeicherte Änderungen verwerfen?')))) return;
+        async closeCreate() {
+            if (this.showCreate && this.formDirty && !await this.cfmAsk(this.t('Ungespeicherte Änderungen verwerfen?'))) return;
             this.showCreate = false; this.formDirty = false;
         },
         toggleSel(id) {
@@ -3493,9 +3508,9 @@ const T_EN2 = {
                     }});
                 });
         },
-        bulkDelete() {
+        async bulkDelete() {
             const ids = Object.keys(this.selected);
-            if (!ids.length || !confirm(ids.length + this.t(' Einträge wirklich löschen?'))) return;
+            if (!ids.length || !await this.cfmAsk(ids.length + this.t(' Einträge wirklich löschen?'))) return;
             const snapshots = (this.rows || []).filter(r => this.selected[r.id]).map(r => ({...r}));
             Promise.all(ids.map(id => this.api(this.item().ep + '/' + id, {method:'DELETE'})))
                 .then(() => {
@@ -3521,8 +3536,8 @@ const T_EN2 = {
                 this.loadSection();
             });
         },
-        deleteRow(row) {
-            if (!row || !row.id || !confirm(this.t(this.t('Wirklich löschen?')))) return;
+        async deleteRow(row) {
+            if (!row || !row.id || !await this.cfmAsk(this.t('Wirklich löschen?'))) return;
             const snapshot = {...row};
             this.api(this.item().ep + '/' + row.id, {method: 'DELETE'}).then(() => {
                 this.detail = null; this.loadSection();
