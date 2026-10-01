@@ -48,3 +48,28 @@ jobs:
           DB_DATABASE: allocore_test
           DB_USERNAME: allocore
           DB_PASSWORD: allocore
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - run: composer install --no-interaction --prefer-dist
+
+      - name: Dependency audit (composer)
+        run: composer audit
+
+      - name: Dependency audit (npm)
+        run: npm audit --audit-level=high
+
+      - name: Larastan (level 1)
+        run: vendor/bin/phpstan analyse --memory-limit=2G
