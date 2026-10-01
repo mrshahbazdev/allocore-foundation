@@ -4,7 +4,7 @@ namespace Modules\DataPlatform\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\DataPlatform\Events\DomainEvent;
+use Modules\DataPlatform\Jobs\StoreWebhookEvent;
 use Modules\DataPlatform\Models\IntegrationSource;
 
 class IntegrationController extends Controller
@@ -68,24 +68,13 @@ class IntegrationController extends Controller
             'subject.title' => 'nullable|string|max:500',
         ]);
 
-        $tenantKey = $source->tenant_id;
-        $kind = $data['type'] ?? 'received';
-
-        $event = new DomainEvent(
-            type: 'webhook.'.$kind,
-            tenantId: $tenantKey,
-            subject: $data['subject'] ?? ['type' => 'integration_source', 'id' => (string) $source->id, 'title' => $source->name],
-            payload: [
-                'source_id' => $source->id,
-                'source_name' => $source->name,
-                'body' => $request->except(['type', 'subject']),
-            ],
+        StoreWebhookEvent::dispatch(
+            sourceId: $source->id,
+            kind: $data['type'] ?? 'received',
+            subject: $data['subject'] ?? [],
+            body: $request->except(['type', 'subject']),
         );
-        $event->setMetaData(['tenant_id' => $tenantKey]);
-        event($event);
 
-        $source->update(['last_received_at' => now()]);
-
-        return response()->json(['status' => 'recorded', 'id' => $event->storedEventId() ?? null], 201);
+        return response()->json(['status' => 'accepted'], 202);
     }
 }

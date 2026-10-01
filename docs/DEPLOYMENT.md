@@ -13,7 +13,7 @@ npm ci && npm run build
 cp .env.example .env && php artisan key:generate
 # MySQL-DB + User anlegen (siehe unten), dann:
 php artisan migrate --force
-php artisan serve   # oder nginx/apache auf public/
+php artisan serve   # dev only — prod: nginx/apache/php-fpm auf public/
 ```
 
 ## MySQL (Dev-Setup)
@@ -40,10 +40,20 @@ docker run -p 8000:8000 \
 `fly.toml` liegt bei. `fly launch` → `DB_*` Secrets auf eine externe MySQL
 (Fly MySQL, PlanetScale, RDS, …) zeigen — Schema ist DB-agnostisch.
 
-## Scheduler (Reminders + Aggregation)
+Drei Prozess-Gruppen laufen aus demselben Image (`[processes]`):
 
-Im Docker-Container läuft der Scheduler automatisch: das `CMD` startet
-`php artisan schedule:work` im Hintergrund neben `php artisan serve` —
-kein separater Cron nötig (`tasks:remind`, `compliance:remind` stündlich,
-`analytics:aggregate` täglich). Außerhalb des Containers:
-`php artisan schedule:run` per Cron (`* * * * *`).
+- `app` — FrankenPHP/Caddy (PHP 8.3, `php_server` auf `public/`)
+- `scheduler` — `php artisan schedule:work`
+- `worker` — `php artisan queue:work database`
+
+Der `app-entrypoint` führt `migrate --force` + `config:cache` nur im Web-Prozess aus.
+
+## Scheduler + Queue
+
+- **Scheduler**: im Container läuft `schedule:work` als eigener Prozess
+  (`[processes]` in fly.toml); außerhalb `php artisan schedule:run` per Cron
+  (`* * * * *`).
+- **Queue** (`QUEUE_CONNECTION=database`): ein Worker-Prozess
+  `php artisan queue:work database --sleep=3 --tries=3` läuft dauerhaft
+  (eigener fly-Prozess `worker`). Auf Shared-Hosting ohne langlaufende
+  Prozesse: Cron-Alternative `* * * * * php artisan queue:work --stop-when-empty`.

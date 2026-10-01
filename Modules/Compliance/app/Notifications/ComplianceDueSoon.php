@@ -3,11 +3,12 @@
 namespace Modules\Compliance\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ComplianceDueSoon extends Notification
+class ComplianceDueSoon extends Notification implements ShouldQueue
 {
     use Queueable;
 

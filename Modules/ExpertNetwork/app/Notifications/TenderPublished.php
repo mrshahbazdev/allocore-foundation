@@ -3,10 +3,11 @@
 namespace Modules\ExpertNetwork\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Modules\ExpertNetwork\Models\Tender;
 
-class TenderPublished extends Notification
+class TenderPublished extends Notification implements ShouldQueue
 {
     use Queueable;
 
