@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -117,12 +118,27 @@ class TenantIsolationTest extends TestCase
 
         $attrs['tenant_id'] = $tenant->id;
 
-        return $class::withoutEvents(function () use ($model, $attrs) {
-            $model->forceFill($attrs);
-            $model->save();
+        $save = function () use ($class, $model, &$attrs) {
+            return $class::withoutEvents(function () use ($model, $attrs) {
+                $model->forceFill($attrs);
+                $model->save();
 
-            return $model;
-        });
+                return $model;
+            });
+        };
+
+        try {
+            return $save();
+        } catch (QueryException $e) {
+            // A cached FK parent can still vanish before insert — re-seed all
+            // referenced parents and retry once.
+            foreach ($this->foreignKeys($model->getTable()) as $colName => $ref) {
+                $this->fkSeeds[$ref['table']] = $this->seedReferenced($ref['table'], $tenant);
+                $attrs[$colName] = $this->fkSeeds[$ref['table']];
+            }
+
+            return $save();
+        }
     }
 
     /** @return array<string, array{table: string, column: string}> column => referenced */
