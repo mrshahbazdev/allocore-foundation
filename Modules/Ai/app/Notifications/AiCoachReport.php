@@ -3,9 +3,10 @@
 namespace Modules\Ai\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class AiCoachReport extends Notification
+class AiCoachReport extends Notification implements ShouldQueue
 {
     use Queueable;
 

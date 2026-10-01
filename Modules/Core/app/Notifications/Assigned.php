@@ -3,9 +3,10 @@
 namespace Modules\Core\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class Assigned extends Notification
+class Assigned extends Notification implements ShouldQueue
 {
     use Queueable;
 

@@ -3,10 +3,11 @@
 namespace Modules\Hr\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Modules\Hr\Models\LeaveRequest;
 
-class LeaveDecided extends Notification
+class LeaveDecided extends Notification implements ShouldQueue
 {
     use Queueable;
 

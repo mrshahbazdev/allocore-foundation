@@ -44,7 +44,7 @@ class IntegrationsTest extends TestCase
             'subject' => ['type' => 'order', 'id' => '42', 'title' => 'Bestellung 42'],
             'total' => 199.0,
         ]);
-        $res->assertCreated();
+        $res->assertAccepted();
 
         $event = DB::table('stored_events')->where('event_properties->type', 'webhook.order')->latest('id')->first();
         $this->assertNotNull($event);
@@ -203,7 +203,7 @@ class IntegrationsTest extends TestCase
         $this->acting($tenant);
 
         $token = $this->postJson('/api/v1/integrations', ['name' => 'InvoiceMaker'], ['X-Tenant' => $tenant->id])->json('token');
-        $post = fn (array $body) => $this->postJson('/api/v1/webhooks/'.$token, $body)->assertCreated();
+        $post = fn (array $body) => $this->postJson('/api/v1/webhooks/'.$token, $body)->assertAccepted();
 
         $post(['type' => 'invoice_paid', 'amount' => 10000]);
         $post(['type' => 'invoice_paid', 'amount' => 2500]);
@@ -252,7 +252,7 @@ class IntegrationsTest extends TestCase
         $this->acting($tenant);
 
         $token = $this->postJson('/api/v1/integrations', ['name' => 'InvoiceMaker'], ['X-Tenant' => $tenant->id])->json('token');
-        $post = fn (array $body) => $this->postJson('/api/v1/webhooks/'.$token, $body)->assertCreated();
+        $post = fn (array $body) => $this->postJson('/api/v1/webhooks/'.$token, $body)->assertAccepted();
 
         $post(['type' => 'invoice_paid', 'amount' => 5000, 'occurred_at' => '2026-07-14']);
         $post(['type' => 'invoice_paid', 'amount' => 3000, 'occurred_at' => '2026-08-02']);

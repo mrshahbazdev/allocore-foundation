@@ -3,11 +3,12 @@
 namespace Modules\Tasks\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Modules\Tasks\Models\Task;
 
-class TaskDueSoon extends Notification
+class TaskDueSoon extends Notification implements ShouldQueue
 {
     use Queueable;
 
