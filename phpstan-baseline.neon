@@ -1,0 +1,169 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Relation ''assessor'' is not found in Modules\\Compliance\\Models\\RiskAssessment model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: Modules/Compliance/app/Console/RemindDueCompliance.php
+
+		-
+			message: '#^Relation ''person'' is not found in Modules\\Compliance\\Models\\Instruction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: Modules/Compliance/app/Console/RemindDueCompliance.php
+
+		-
+			message: '#^Relation ''responsible'' is not found in Modules\\Compliance\\Models\\Instruction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: Modules/Compliance/app/Console/RemindDueCompliance.php
+
+		-
+			message: '#^Relation ''responsible'' is not found in Modules\\Compliance\\Models\\Deadline model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/Compliance/app/Http/Controllers/DeadlineController.php
+
+		-
+			message: '#^Relation ''subject'' is not found in Modules\\Compliance\\Models\\Deadline model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: Modules/Compliance/app/Http/Controllers/DeadlineController.php
+
+		-
+			message: '#^Relation ''person'' is not found in Modules\\Compliance\\Models\\Inspection model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/Compliance/app/Http/Controllers/InspectionController.php
+
+		-
+			message: '#^Relation ''responsible'' is not found in Modules\\Compliance\\Models\\Inspection model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/Compliance/app/Http/Controllers/InspectionController.php
+
+		-
+			message: '#^Relation ''document'' is not found in Modules\\Compliance\\Models\\Instruction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: Modules/Compliance/app/Http/Controllers/InstructionController.php
+
+		-
+			message: '#^Relation ''person'' is not found in Modules\\Compliance\\Models\\Instruction model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/Compliance/app/Http/Controllers/InstructionController.php
+
+		-
+			message: '#^Relation ''responsible'' is not found in Modules\\Compliance\\Models\\Instruction model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/Compliance/app/Http/Controllers/InstructionController.php
+
+		-
+			message: '#^Relation ''document'' is not found in Modules\\Compliance\\Models\\OperatingInstruction model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: Modules/Compliance/app/Http/Controllers/OperatingInstructionController.php
+
+		-
+			message: '#^Relation ''assessor'' is not found in Modules\\Compliance\\Models\\RiskAssessment model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/Compliance/app/Http/Controllers/RiskAssessmentController.php
+
+		-
+			message: '#^Access to an undefined property Modules\\DataPlatform\\Models\\IntegrationConnector\:\:\$active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: Modules/DataPlatform/app/Models/IntegrationConnector.php
+
+		-
+			message: '#^Access to an undefined property Modules\\DataPlatform\\Models\\IntegrationConnector\:\:\$interval_minutes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: Modules/DataPlatform/app/Models/IntegrationConnector.php
+
+		-
+			message: '#^Access to an undefined property Modules\\DataPlatform\\Models\\IntegrationConnector\:\:\$last_run_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: Modules/DataPlatform/app/Models/IntegrationConnector.php
+
+		-
+			message: '#^Relation ''person'' is not found in Modules\\ExpertNetwork\\Models\\ExpertProfile model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: Modules/ExpertNetwork/app/Http/Controllers/ExpertProfileController.php
+
+		-
+			message: '#^Relation ''answers'' is not found in Modules\\ExpertNetwork\\Models\\Question model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/ExpertNetwork/app/Http/Controllers/QuestionController.php
+
+		-
+			message: '#^Relation ''asker'' is not found in Modules\\ExpertNetwork\\Models\\Question model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/ExpertNetwork/app/Http/Controllers/QuestionController.php
+
+		-
+			message: '#^Relation ''expertProfile'' is not found in Modules\\ExpertNetwork\\Models\\Question model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/ExpertNetwork/app/Http/Controllers/QuestionController.php
+
+		-
+			message: '#^Relation ''applications'' is not found in Modules\\ExpertNetwork\\Models\\Tender model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/ExpertNetwork/app/Http/Controllers/TenderController.php
+
+		-
+			message: '#^Relation ''company'' is not found in Modules\\ExpertNetwork\\Models\\Tender model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/ExpertNetwork/app/Http/Controllers/TenderController.php
+
+		-
+			message: '#^Relation ''creator'' is not found in Modules\\ExpertNetwork\\Models\\Tender model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: Modules/ExpertNetwork/app/Http/Controllers/TenderController.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Investments\\Models\\Investment\:\:\$cost_basis\.$#'
+			identifier: property.notFound
+			count: 3
+			path: Modules/Investments/app/Models/Investment.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Investments\\Models\\Investment\:\:\$current_value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: Modules/Investments/app/Models/Investment.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Participations\\Models\\Participation\:\:\$current_valuation\.$#'
+			identifier: property.notFound
+			count: 1
+			path: Modules/Participations/app/Models/Participation.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Participations\\Models\\Participation\:\:\$invested_amount\.$#'
+			identifier: property.notFound
+			count: 3
+			path: Modules/Participations/app/Models/Participation.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Production\\Models\\ProductionOrder\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: Modules/Production/app/Models/ProductionOrder.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Production\\Models\\ProductionOrder\:\:\$scrap_qty\.$#'
+			identifier: property.notFound
+			count: 1
+			path: Modules/Production/app/Models/ProductionOrder.php
