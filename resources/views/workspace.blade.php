@@ -640,7 +640,7 @@
                         </template>
                         <button x-show="recentRows().filter(r => r.key === section).length > 1" @click="clearRecentSection()" :title="t('Zuletzt-Liste für diese Sektion leeren')" class="ml-auto shrink-0 text-[10px] text-[#9CA3AF] hover:text-[#A6362E]">leeren ×</button>
                     </div>
-                    <div x-show="rows && (statusOpts().length > 1 || (rows||[]).some(r => overdue(r)) || section === 'notifications')" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
+                    <div x-show="rows && (statusOpts().length > 1 || (rows||[]).some(r => overdue(r)) || section === 'notifications' || section === 'tooldata')" class="flex flex-wrap items-center gap-1.5 px-5 py-2 border-b border-[#E4E9F0] print:hidden">
                         <button x-show="(rows||[]).some(r => overdue(r))" @click="overdueOnly = !overdueOnly" :title="t('Überfällig (u)')" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                 :class="overdueOnly ? 'border-[#A6362E] bg-[#A6362E] text-white' : 'border-[#A6362E]/40 text-[#A6362E] hover:bg-[#A6362E]/5'"
                                 x-text="t('Überfällig') + ' · ' + (rows||[]).filter(r => overdue(r)).length"></button>
@@ -665,6 +665,11 @@
                             <button x-show="section === 'events'" @click="evGroup = evGroup === t.g ? '' : t.g" class="text-[11px] px-2.5 py-1 rounded-full border transition"
                                     :class="evGroup === t.g ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
                                     x-text="t.g + ' · ' + t.events"></button>
+                        </template>
+                        <template x-for="tt in tdTypes()" :key="'tt'+tt.k">
+                            <button x-show="section === 'tooldata'" @click="tdType = tdType === tt.k ? '' : tt.k; columns = tdColumns()" class="text-[11px] px-2.5 py-1 rounded-full border transition"
+                                    :class="tdType === tt.k ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white' : 'border-[#D6DEE9] text-[#5B6B7E] hover:border-[#CA8A04]'"
+                                    x-text="tt.label + ' · ' + tt.n"></button>
                         </template>
                         <template x-for="a in (evActors || [])" :key="'ea'+a.id">
                             <button x-show="section === 'events'" @click="evActor = String(evActor) === String(a.id) ? '' : String(a.id)" class="text-[11px] px-2.5 py-1 rounded-full border transition"
@@ -1414,6 +1419,7 @@ function workspace(initial) {
         ]},
         {label:'PLATTFORM', items:[
             {key:'events',label:'Events',ep:'/api/v1/events'},
+            {key:'tooldata',label:'Tool-Daten',ep:'/api/v1/events'},
             {key:'data-objects',label:'Data Lake',ep:'/api/v1/data-objects'},
             {key:'ai-analyses',label:'KI-Analysen',ep:'/api/v1/ai-analyses'},
             {key:'graph-entities',label:'Graphen · Entitäten',ep:'/api/v1/graph-entities'},
@@ -1423,11 +1429,11 @@ function workspace(initial) {
             {key:'tokens',label:'API-Token',ep:'/api/v1/tokens'},
         ]},
     ];
-    const ICONS = {dashboard:'◈',companies:'▣',persons:'◉',documents:'▤',tasks:'☑',instructions:'ⓘ',inspections:'✓',deadlines:'◷','risk-assessments':'⚠','operating-instructions':'✎','expert-profiles':'◎',questions:'?',tenders:'☰',strategies:'⌘',projects:'◇',measures:'→',portfolios:'▲',investments:'€',participations:'◆',machines:'⚙','production-orders':'▶','leave-requests':'◔','financial-reports':'₣',events:'≋','data-objects':'▦','ai-analyses':'✦','graph-entities':'●','graph-edges':'↔',executive:'∑',users:'☺',audits:'§','audit-findings':'∴',notifications:'✉',tokens:'⚿',integrations:'⇄',connectors:'⤓'};
+    const ICONS = {dashboard:'◈',companies:'▣',persons:'◉',documents:'▤',tasks:'☑',instructions:'ⓘ',inspections:'✓',deadlines:'◷','risk-assessments':'⚠','operating-instructions':'✎','expert-profiles':'◎',questions:'?',tenders:'☰',strategies:'⌘',projects:'◇',measures:'→',portfolios:'▲',investments:'€',participations:'◆',machines:'⚙','production-orders':'▶','leave-requests':'◔','financial-reports':'₣',events:'≋','data-objects':'▦','ai-analyses':'✦','graph-entities':'●','graph-edges':'↔',executive:'∑',users:'☺',audits:'§','audit-findings':'∴',notifications:'✉',tokens:'⚿',integrations:'⇄',connectors:'⤓',tooldata:'◧'};
     const FKMAP = {person_id:'persons',company_id:'companies',machine_id:'machines',project_id:'projects',strategy_id:'strategies',portfolio_id:'portfolios',tender_id:'tenders',question_id:'questions',document_id:'documents',audit_id:'audits',expert_profile_id:'expert_profiles',responsible_id:'users',assignee_id:'users',owner_id:'users',asked_by:'users',approved_by:'users',answered_by:'users',created_by:'users',uploaded_by:'users',generated_by:'users',current_version_id:'documents',assigned_to:'persons',from_entity_id:'graph_entities',to_entity_id:'graph_entities',subject_id:'graph_entities'};
     const NOTIF_KIND = {unterweisung:'Unterweisung',pruefung:'Prüfung',frist:'Frist',feststellung:'Feststellung',audit:'Audit',massnahme:'Maßnahme',aufgabe:'Aufgabe',gefaehrdungsbeurteilung:'Gefährdungsbeurteilung',projekt:'Projekt',auftrag:'Produktionsauftrag',ausschreibung:'Ausschreibung',antwort:'Antwort',frage:'Frage',urlaub:'Urlaubsantrag',rollen:'Rollen',unterweisung_wiederholung:'Unterweisung (Wiederholung)',hinweis:'Kritischer Hinweis',passwort_geaendert:'Passwort geändert',anmeldung:'Anmeldung',anmeldeversuche:'Fehlgeschlagene Anmeldung',ki_coach:'KI-Coach'};
     const STATUS_DE = {open:'Offen',pending:'Ausstehend',in_progress:'Läuft',active:'Aktiv',done:'Fertig',completed:'Abgeschlossen',approved:'Genehmigt',archived:'Archiviert',draft:'Entwurf',maintenance:'Wartung',retired:'Ausgemustert',awarded:'Vergeben',info:'Info',warning:'Warnung',critical:'Kritisch',high:'Hoch',medium:'Mittel',low:'Niedrig',scheduled:'Geplant',cancelled:'Abgesagt',rejected:'Abgelehnt',answered:'Beantwortet',closed:'Geschlossen',submitted:'Eingereicht',shortlisted:'Vorauswahl',queued:'Warteschlange',running:'Läuft',mitigated:'Gemindert',accepted:'Akzeptiert',planned:'Geplant',on_hold:'Pausiert',inactive:'Inaktiv',todo:'Offen',overdue:'Überfällig',sent:'Gesendet',paid:'Bezahlt',unpaid:'Unbezahlt',expired:'Abgelaufen',suspended:'Gesperrt',review:'In Prüfung',assigned:'Zugewiesen',requested:'Angefragt',confirmed:'Bestätigt',declined:'Abgelehnt',exited:'Ausgestiegen',candidate:'Kandidat',resolved:'Gelöst',internal:'Intern',external:'Extern',vacation:'Urlaub',sick:'Krank',other:'Sonstiges'};
-    const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at','meta_data','event_class']);
+    const HIDE = new Set(['id','tenant_id','created_at','updated_at','deleted_at','pivot','data','roles','permissions','email_verified_at','meta_data','event_class','_etype']);
     const KPI = [
         {key:'companies',label:'Unternehmen',to:'companies'},{key:'persons',label:'Personen',to:'persons'},
         {key:'documents',label:'Dokumente',to:'documents'},{key:'tasks_open',label:'Offene Aufgaben',to:'tasks'},
@@ -1452,7 +1458,7 @@ function workspace(initial) {
         {key:'ext_web_visitors',label:'Websitebesucher (Tools)',to:'events'},
     ];
     const GROUP_EN = {START:'START',COMPLIANCE:'COMPLIANCE',FAVORITEN:'FAVORITES',ZULETZT:'RECENT',STAMMDATEN:'MASTER DATA',NETZWERK:'NETWORK',ENTWICKLUNG:'DEVELOPMENT',KAPITAL:'CAPITAL',PRODUKTION:'PRODUCTION',ORGANISATION:'ORGANIZATION',PLATTFORM:'PLATFORM'};
-    const ITEM_EN = {dashboard:'Dashboard',executive:'Executive',companies:'Companies',persons:'Persons',documents:'Documents',tasks:'Tasks',instructions:'Instructions',inspections:'Inspections',deadlines:'Deadlines','risk-assessments':'Risk Assessments','operating-instructions':'Operating Instructions',audits:'Audits','audit-findings':'Findings','expert-profiles':'Experts',questions:'Questions',tenders:'Tenders',strategies:'Strategies',projects:'Projects',measures:'Measures',portfolios:'Portfolios',investments:'Investments',participations:'Participations',machines:'Machines','production-orders':'Orders','leave-requests':'Leave Requests','financial-reports':'Finance',users:'Team',notifications:'Notifications',events:'Events','data-objects':'Data Lake','ai-analyses':'AI Analyses','graph-entities':'Graph · Entities','graph-edges':'Graph · Edges','answers':'Answers',integrations:'Webhook Sources',connectors:'Connectors',tokens:'API Tokens'};
+    const ITEM_EN = {dashboard:'Dashboard',executive:'Executive',companies:'Companies',persons:'Persons',documents:'Documents',tasks:'Tasks',instructions:'Instructions',inspections:'Inspections',deadlines:'Deadlines','risk-assessments':'Risk Assessments','operating-instructions':'Operating Instructions',audits:'Audits','audit-findings':'Findings','expert-profiles':'Experts',questions:'Questions',tenders:'Tenders',strategies:'Strategies',projects:'Projects',measures:'Measures',portfolios:'Portfolios',investments:'Investments',participations:'Participations',machines:'Machines','production-orders':'Orders','leave-requests':'Leave Requests','financial-reports':'Finance',users:'Team',notifications:'Notifications',events:'Events','data-objects':'Data Lake','ai-analyses':'AI Analyses','graph-entities':'Graph · Entities','graph-edges':'Graph · Edges','answers':'Answers',integrations:'Webhook Sources',connectors:'Connectors',tokens:'API Tokens',tooldata:'Tool Data'};
     const STATUS_EN = {open:'Open',pending:'Pending',in_progress:'Running',active:'Active',done:'Done',completed:'Completed',approved:'Approved',archived:'Archived',draft:'Draft',maintenance:'Maintenance',retired:'Retired',awarded:'Awarded',info:'Info',warning:'Warning',critical:'Critical',high:'High',medium:'Medium',low:'Low',scheduled:'Scheduled',cancelled:'Cancelled',rejected:'Rejected',answered:'Answered',closed:'Closed',submitted:'Submitted',shortlisted:'Shortlisted',queued:'Queued',running:'Running',mitigated:'Mitigated',accepted:'Accepted',planned:'Planned',on_hold:'On hold',inactive:'Inactive',todo:'Open',overdue:'Overdue',sent:'Sent',paid:'Paid',unpaid:'Unpaid',expired:'Expired',suspended:'Suspended',review:'In review',assigned:'Assigned',requested:'Requested',confirmed:'Confirmed',declined:'Declined',exited:'Exited',candidate:'Candidate',resolved:'Resolved',internal:'Internal',external:'External',vacation:'Vacation',sick:'Sick',other:'Other'};
     const NOTIF_EN = {unterweisung:'Instruction',pruefung:'Inspection',frist:'Deadline',feststellung:'Finding',audit:'Audit',massnahme:'Measure',aufgabe:'Task',gefaehrdungsbeurteilung:'Risk Assessment',projekt:'Project',auftrag:'Production Order',ausschreibung:'Tender',antwort:'Answer',frage:'Question',urlaub:'Leave Request',rollen:'Roles',unterweisung_wiederholung:'Instruction (Renewal)',hinweis:'Critical Notice',passwort_geaendert:'Password Changed',anmeldung:'Login',anmeldeversuche:'Failed Login',ki_coach:'AI Coach'};
     const KPI_EN = {companies:'Companies',persons:'Persons',documents:'Documents',tasks_open:'Open Tasks',instructions:'Instructions',compliance_rate:'Compliance %',deadlines_open:'Open Deadlines',risk_high:'High Risks',tenders_open:'Open Tenders',fin_revenue:'Revenue (Month)',fin_ebitda:'EBITDA (Month)',fin_liquidity:'Liquidity (Month)',expert_profiles:'Experts',questions:'Questions',inspections:'Inspections',team_members:'Team',audits_planned:'Planned Audits',audits_in_progress:'Running Audits',audit_findings_open:'Open Findings',audit_findings_overdue:'Overdue Findings',production_orders_open:'Running Orders',projects_open:'Open Projects',machines_active:'Machines Active',leave_requests_pending:'Leave Requests Open',questions_open:'Open Questions',ai_analyses:'AI Analyses',strategies_active:'Active Strategies',graph_entities:'Knowledge Graph',tender_applications:'Applications',instructions_pending:'Instructions Open',answers:'Answers',investments_active:'Investments Active',participations_active:'Participations Active',ext_revenue:'Revenue (Tools)',ext_revenue_paid:'Paid (Tools)',ext_costs:'Costs (Tools)',ext_cash_in:'Cash-In (Tools)',ext_cash_out:'Cash-Out (Tools)',ext_costs_marketing:'Marketing Costs (Tools)',ext_leads:'Leads (Tools)',ext_mql:'MQL (Tools)',ext_new_customers:'New Customers (Tools)',ext_orders:'Orders (Tools)',ext_orders_done:'Orders Done (Tools)',ext_orders_on_time:'On-Time Orders (Tools)',ext_complaints:'Complaints (Tools)',ext_billable_hours:'Billable Hrs (Tools)',ext_lead_time_days:'Lead Time Σ (Tools)',ext_pipeline_value:'Pipeline (Tools)',ext_web_visitors:'Web Visitors (Tools)'};
@@ -1887,7 +1893,7 @@ const T_EN2 = {
         tenantList: {{ \Illuminate\Support\Js::from($tenants->map(fn($t) => ['id' => $t->id, 'name' => $t->name])) }},
         loading: false, error: '', detail: null, drawerWide: localStorage.getItem('af_drawer_wide') === '1', showCreate: false, compact: localStorage.getItem('af_density') === '1',
         form: {}, formError: '', formDirty: false, query: '', editing: null, dupMode: false, showImport: false, importText: '', importResult: '', importErr: false, importing: false, importProgress: '', newToken: null, tokenAbilities: [], toasts: [],
-        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActorName: '', evWeekday: '', evHour: '', evActors: [], evActorsKey: '', evTypeList: [], linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
+        sortKey: '', sortAsc: true, limit: 100, statusFilter: '', severityFilter: '', roleFilter: '', kindFilter: '', codeFilter: '', unreadOnly: false, mutedOnly: false, overdueOnly: false, dueSoonOnly: false, dueTodayOnly: false, myOnly: false, unassignedOnly: false, evGroup: '', evDay: '', evActor: '', evActorName: '', evWeekday: '', evHour: '', evActors: [], evActorsKey: '', evTypeList: [], tdType: '', linkCopied: false, confirmKindDel: false, confirmCodeDel: false, jsonCopied: false, textCopied: false, lastLoad: null, rowLoading: false, dark: document.documentElement.classList.contains('dark'), navQ: '',
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {}, navBadgesWeek: {}, navTotal: null, navWindow: parseInt(localStorage.getItem('af_navwindow') || '7'),
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, rowNotifs: [], allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
@@ -2411,7 +2417,7 @@ const T_EN2 = {
             if (!this.tenant) { this.rows = null; return; }
             if (this._loadedTenant !== this.tenant) { this.lookups = {}; this._loadedTenant = this.tenant; }
             this.loading = true; this.error = '';
-            if (!soft) { this.limit = 100; this.statusFilter = ''; this.severityFilter = ''; this.roleFilter = ''; this.kindFilter = ''; this.codeFilter = ''; this.unreadOnly = false; this.mutedOnly = false; this.evGroup = ''; this.evDay = ''; evActor = ''; evActorName = ''; evDay = ''; this.unassignedOnly = false; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; try { this.collapsedGroups = JSON.parse(localStorage.getItem('af_gc_' + this.section) || '{}') || {}; } catch (e) { this.collapsedGroups = {}; } }
+            if (!soft) { this.limit = 100; this.statusFilter = ''; this.severityFilter = ''; this.roleFilter = ''; this.kindFilter = ''; this.codeFilter = ''; this.unreadOnly = false; this.mutedOnly = false; this.evGroup = ''; this.evDay = ''; evActor = ''; evActorName = ''; evDay = ''; this.tdType = ''; this.unassignedOnly = false; this.overdueOnly = false; this.dueSoonOnly = false; this.dueTodayOnly = false; this.myOnly = false; this.hiddenCols = this.loadColPrefs(); this.colPicker = false; this.selected = {}; this.groupBy = localStorage.getItem('af_group_' + this.section) || ''; try { this.collapsedGroups = JSON.parse(localStorage.getItem('af_gc_' + this.section) || '{}') || {}; } catch (e) { this.collapsedGroups = {}; } }
             try { const sp = JSON.parse(localStorage.getItem('af_sort_' + this.section) || 'null'); this.sortKey = sp ? sp.k : ''; this.sortAsc = sp ? sp.a : true; } catch (e) { this.sortKey = ''; this.sortAsc = true; }
             if (this._urlSort) { const m = this._urlSort.match(/^(.+?)(?::(asc|desc))?$/); this.sortKey = m[1]; this.sortAsc = m[2] !== 'desc'; this._urlSort = null; }
             const url = new URL(location.href); url.searchParams.set('tenant', this.tenant);
@@ -2460,13 +2466,14 @@ const T_EN2 = {
                 return;
             }
             this.loadLookups();
-            this.api(this.item().ep + '?per_page=200' + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : '')) + (this.section === 'events' && this.evWeekday ? '&weekday=' + this.evWeekday : '') + (this.section === 'events' && this.evHour !== '' ? '&hour=' + this.evHour : '') + (this.section === 'events' && this.query ? '&q=' + encodeURIComponent(this.query) : '') + (this.section === 'notifications' && this.query ? '&q=' + encodeURIComponent(this.query) : '')).then(r => {
+            this.api(this.item().ep + '?per_page=200' + (this.section === 'tooldata' ? '&group=webhook' : '') + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : '')) + (this.section === 'events' && this.evWeekday ? '&weekday=' + this.evWeekday : '') + (this.section === 'events' && this.evHour !== '' ? '&hour=' + this.evHour : '') + (this.section === 'events' && this.query ? '&q=' + encodeURIComponent(this.query) : '') + (this.section === 'notifications' && this.query ? '&q=' + encodeURIComponent(this.query) : '')).then(r => {
                 if (!r.ok) { const dom = this.permDom(this.section); this.error = r.status === 403 ? 'Keine Berechtigung ('+(dom ? dom+'.view' : 'Zugriff')+')' : 'HTTP '+r.status+' — Fehler beim Laden'; this.rows=[]; this.loading=false; return null; }
                 return r.json();
             }).then(d => {
                 if (d === null) return;
-                const rows = Array.isArray(d) ? d : (d.data || []);
+                let rows = Array.isArray(d) ? d : (d.data || []);
                 if (this.section === 'events') rows.forEach(r => r.summary = this.eventSummary(r));
+                if (this.section === 'tooldata') rows = rows.map(e => this.toolRow(e));
                 this.rows = rows;
                 this.rowsTotal = (d && typeof d.total === 'number') ? d.total : (rows||[]).length;
                 this.navBadges = {...this.navBadges, [this.section]: (rows||[]).filter(r => this.overdue(r)).length};
@@ -2481,6 +2488,7 @@ const T_EN2 = {
                     const keys = Object.keys(rows[0]).filter(k => !HIDE.has(k) && typeof rows[0][k] !== 'object');
                     this.columns = keys.slice(0, 7);
                 } else this.columns = [];
+                if (this.section === 'tooldata') this.columns = this.tdColumns();
                 const oid = new URLSearchParams(location.search).get('open');
                 if (oid) { const r = rows.find(x => String(x.id) === oid); if (r) this.detail = r; }
                 this.loading = false; this.lastLoad = new Date();
@@ -2488,10 +2496,11 @@ const T_EN2 = {
                     const sec = this.section;
                     const loadRest = (page) => {
                         if (this.section !== sec) return;
-                        this.api(this.item().ep + '?per_page=200&page=' + page + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : '')) + (this.section === 'events' && this.evWeekday ? '&weekday=' + this.evWeekday : '') + (this.section === 'events' && this.evHour !== '' ? '&hour=' + this.evHour : '') + (this.section === 'events' && this.query ? '&q=' + encodeURIComponent(this.query) : '') + (this.section === 'notifications' && this.query ? '&q=' + encodeURIComponent(this.query) : '')).then(r => r.ok ? r.json() : null).then(d2 => {
+                        this.api(this.item().ep + '?per_page=200&page=' + page + (this.section === 'tooldata' ? '&group=webhook' : '') + (this.section === 'events' && this.evGroup ? '&group=' + this.evGroup : '') + (this.section === 'events' && this.evDay ? '&day=' + this.evDay : '') + (this.section === 'events' && this.evActor ? '&actor=' + this.evActor : '' + (this.evActorName ? '&actor_name=' + encodeURIComponent(this.evActorName) : '')) + (this.section === 'events' && this.evWeekday ? '&weekday=' + this.evWeekday : '') + (this.section === 'events' && this.evHour !== '' ? '&hour=' + this.evHour : '') + (this.section === 'events' && this.query ? '&q=' + encodeURIComponent(this.query) : '') + (this.section === 'notifications' && this.query ? '&q=' + encodeURIComponent(this.query) : '')).then(r => r.ok ? r.json() : null).then(d2 => {
                             if (!d2 || this.section !== sec) return;
-                            const more = Array.isArray(d2) ? d2 : (d2.data || []);
+                            let more = Array.isArray(d2) ? d2 : (d2.data || []);
                             if (!more.length) return;
+                            if (this.section === 'tooldata') more = more.map(e => this.toolRow(e));
                             this.rows = this.rows.concat(more);
                             if (!this.detail) {
                                 const o2 = new URLSearchParams(location.search).get('open');
@@ -2829,6 +2838,7 @@ const T_EN2 = {
             if (this.roleFilter) rs = rs.filter(r => (r.role_names || []).includes(this.roleFilter));
             if (this.evGroup) rs = rs.filter(r => this.eventGroup(r.event_type) === this.evGroup);
             if (this.evDay) rs = rs.filter(r => (r.created_at || '').slice(0, 10) === this.evDay);
+            if (this.section === 'tooldata' && this.tdType) rs = rs.filter(r => r._etype === this.tdType);
             if (this.kindFilter) rs = rs.filter(r => String(r.kind || '') === this.kindFilter);
             if (this.codeFilter) rs = rs.filter(r => String(r.code || '') === this.codeFilter);
             if (this.unreadOnly) rs = rs.filter(r => !r.read);
@@ -2999,6 +3009,31 @@ const T_EN2 = {
             }
             return parts.join(' · ');
         },
+        toolRow(e) {
+            const p = (e && e.event_properties) || {};
+            const b = (p.payload && p.payload.body) || {};
+            const out = {id: e.id, _etype: (e.event_type || '').split('.').pop(), aktion: this.eventLabel(e.event_type)};
+            for (const [k, v] of Object.entries(b)) {
+                if (v === null || v === undefined || v === '' || typeof v === 'object') continue;
+                if (/^(source_id|source_name|tenantId|tenant_id|currency|ip)$/.test(k)) continue;
+                out[k] = v;
+            }
+            if (!out.occurred_at && e.created_at) out.occurred_at = e.created_at;
+            return out;
+        },
+        tdTypes() {
+            const keys = [...new Set((this.rows || []).map(r => r._etype).filter(Boolean))];
+            return keys.map(k => ({k, label: this.eventLabel('webhook.' + k), n: (this.rows || []).filter(r => r._etype === k).length})).sort((a, b) => b.n - a.n);
+        },
+        tdColumns() {
+            const rs = (this.rows || []).filter(r => !this.tdType || r._etype === this.tdType);
+            const keys = [...new Set(rs.flatMap(r => Object.keys(r)))].filter(k => !HIDE.has(k) && !k.startsWith('_'));
+            const PR = ['aktion','number','customer','name','amount','occurred_at','hours','category','count','value','on_time','days'];
+            return keys.sort((a, b) => {
+                const ia = PR.indexOf(a), ib = PR.indexOf(b);
+                return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib) || a.localeCompare(b);
+            }).slice(0, 7);
+        },
         createFields() {
             const SKIP = new Set([...HIDE, 'status', 'created_by', 'updated_by', 'completed_at', 'approved_at', 'approved_by', 'awarded_at', 'current_version', 'file_path', 'mime_type', 'size_bytes', 'role_names']);
             if (this.section === 'users') return [
@@ -3077,7 +3112,7 @@ const T_EN2 = {
         },
         hasPerm(p) { return !this.me || !Array.isArray(this.me.permissions) || this.me.permissions.includes(p); },
         permDom(key) {
-            const M = {companies:'companies',persons:'persons',documents:'documents',tasks:'tasks',instructions:'compliance',inspections:'compliance',deadlines:'compliance','risk-assessments':'compliance','operating-instructions':'compliance','expert-profiles':'experts',questions:'experts',tenders:'experts',strategies:'projects',projects:'projects',measures:'projects',portfolios:'investments',investments:'investments',participations:'participations',machines:'production','production-orders':'production','leave-requests':'hr','financial-reports':'finance',audits:'audits','audit-findings':'audits','data-objects':'datalake','ai-analyses':'ai','graph-entities':'graph','graph-edges':'graph',users:'roles',events:'metrics',executive:'executive','exec-reports':'executive',integrations:'metrics',connectors:'metrics'};
+            const M = {companies:'companies',persons:'persons',documents:'documents',tasks:'tasks',instructions:'compliance',inspections:'compliance',deadlines:'compliance','risk-assessments':'compliance','operating-instructions':'compliance','expert-profiles':'experts',questions:'experts',tenders:'experts',strategies:'projects',projects:'projects',measures:'projects',portfolios:'investments',investments:'investments',participations:'participations',machines:'production','production-orders':'production','leave-requests':'hr','financial-reports':'finance',audits:'audits','audit-findings':'audits','data-objects':'datalake','ai-analyses':'ai','graph-entities':'graph','graph-edges':'graph',users:'roles',events:'metrics',executive:'executive','exec-reports':'executive',integrations:'metrics',connectors:'metrics',tooldata:'metrics'};
             return M[key] || null;
         },
         managePerm() { return this.permDom(this.section); },
@@ -3119,7 +3154,7 @@ const T_EN2 = {
             const M = {task:'tasks',company:'companies',person:'persons',document:'documents',instruction:'instructions',inspection:'inspections',deadline:'deadlines',tender:'tenders',question:'questions',machine:'machines',production_order:'production-orders',financial_report:'financial-reports',leave_request:'leave-requests',participation:'participations',data_object:'data-objects',portfolio:'portfolios',investment:'investments',graph_entity:'graph-entities',graph_edge:'graph-edges',strategy:'strategies',project:'projects',measure:'measures',ai_analysis:'ai-analyses',risk_assessment:'risk-assessments',operating_instruction:'operating-instructions',audit:'audits',audit_finding:'audit-findings',expert_profile:'expert-profiles',tender_application:'tenders',answer:'questions',exec_report:'executive',user:'users'};
             return M[g] && s.id ? '/app/' + M[g] + '?tenant=' + this.tenant + '&open=' + s.id : '/app/events?tenant=' + this.tenant + '&q=' + encodeURIComponent(s.title || '');
         },
-        writable() { return !['events','ai-analyses','metrics','users','notifications'].includes(this.section) && this.canManage(); },
+        writable() { return !['events','ai-analyses','metrics','users','notifications','tooldata'].includes(this.section) && this.canManage(); },
         canEdit() { return this.writable() && !['data-objects','tokens'].includes(this.section); },
         canCreate() { return this.section === 'ai-analyses' ? this.hasPerm('ai.manage') : (this.section === 'users' ? this.hasPerm('roles.manage') : (this.section === 'tokens' ? true : this.writable())); },
         openCreate(prefill) {
@@ -3593,12 +3628,13 @@ const T_EN2 = {
             const L_EN = {__period:'Period',name:'Name',title:'Title',first_name:'First name',last_name:'Last name',email:'E-mail',phone:'Phone',type:'Type',status:'Status',description:'Description',content:'Content',category:'Category',subject:'Subject',area:'Area',hazard:'Hazard',risk_level:'Risk level',measures:'Measures',result:'Result',notes:'Notes',progress:'Progress',quantity:'Quantity',order_no:'Order no.',product:'Product',scrap_qty:'Scrap',headline:'Headline',bio:'Bio',skills:'Skills',hourly_rate:'Hourly rate',budget:'Budget',price:'Price',proposal:'Proposal',stake_pct:'Stake %',invested_amount:'Invested',current_valuation:'Valuation',capital_need:'Capital need',revenue:'Revenue',cashflow:'Cashflow',ebitda:'EBITDA',liquidity:'Liquidity',period:'Period',legal_form:'Legal form',street:'Street',zip:'ZIP',city:'City',country:'Country',version:'Version',valid_from:'Valid from',interval_months:'Interval (mo.)',capacity_units_per_day:'Capacity/day',asset_class:'Asset class',cost_basis:'Cost basis',current_value:'Current value',currency:'Currency',due_at:'Due',deadline_at:'Deadline',scheduled_at:'Scheduled',starts_on:'From',ends_on:'To',starts_at:'Start',ends_at:'End',acquired_at:'Acquired',valued_at:'Valued at',body:'Body',is_accepted:'Accepted',document_id:'Document',audit_id:'Audit',auditor:'Auditor',standard:'Standard',severity:'Severity',audits_open:'Open audits',findings_open:'Open findings',open_findings_count:'Open findings',findings_count:'Findings',applications_count:'Applications',answers_count:'Answers',open_tasks_count:'Open tasks',members_count:'Members',projects_count:'Projects',measures_count:'Measures',role_names:'Roles',password:'Password',last_login_at:'Last login',last_login_ip:'Login IP',read:'Read',kind:'Kind',entity_id:'Record',abilities:'Abilities',expires_at:'Expires',last_used_at:'Last used',expires_in_days:'Expiry (days)',summary:'Data'};
             const L = {__period:this.t('Zeitraum'),name:'Name',title:'Titel',first_name:'Vorname',last_name:'Nachname',email:'E-Mail',phone:'Telefon',type:'Typ',status:'Status',description:'Beschreibung',content:'Inhalt',category:'Kategorie',subject:'Betreff',area:'Bereich',hazard:this.t('Gefährdung'),risk_level:'Risikostufe',measures:'Maßnahmen',result:'Ergebnis',notes:'Notizen',progress:'Fortschritt',quantity:'Menge',order_no:'Auftrag-Nr.',product:'Produkt',scrap_qty:'Ausschuss',headline:'Schlagzeile',bio:'Bio',skills:'Skills',hourly_rate:'Stundensatz',budget:'Budget',price:'Preis',proposal:'Angebot',stake_pct:'Anteil %',invested_amount:'Investiert',current_valuation:'Bewertung',capital_need:'Kapitalbedarf',revenue:'Umsatz',cashflow:'Cashflow',ebitda:'EBITDA',liquidity:'Liquidität',period:'Periode',legal_form:'Rechtsform',street:'Straße',zip:'PLZ',city:'Stadt',country:'Land',version:'Version',valid_from:this.t('Gültig ab'),interval_months:'Intervall (Mon.)',capacity_units_per_day:this.t('Kapazität/Tag'),asset_class:'Anlageklasse',cost_basis:'Kostenbasis',current_value:'Aktueller Wert',currency:'Währung',due_at:this.t('Fällig'),deadline_at:'Frist',scheduled_at:'Geplant',starts_on:'Von',ends_on:'Bis',starts_at:'Start',ends_at:'Ende',acquired_at:'Erworben',valued_at:'Bewertet am',body:'Inhalt',is_accepted:'Akzeptiert',document_id:'Dokument',audit_id:'Audit',auditor:'Auditor',standard:'Norm',severity:'Schwere',audits_open:'Offene Audits',findings_open:'Offene Festst.',open_findings_count:'Offene Festst.',findings_count:'Feststellungen',applications_count:'Bewerbungen',answers_count:this.t('Antworten'),open_tasks_count:'Offene Aufgaben',members_count:'Mitglieder',projects_count:'Projekte',measures_count:'Maßnahmen',role_names:this.t('Rollen'),password:'Passwort',last_login_at:'Letzte Anmeldung',last_login_ip:'Anmeldung IP',read:this.t('Gelesen'),kind:'Art',entity_id:'Datensatz',abilities:'Rechte',expires_at:'Läuft ab',last_used_at:'Zuletzt genutzt',expires_in_days:'Ablauf (Tage)',summary:'Daten'};
             const LM = this.lang === 'en' ? L_EN : L;
+            const TD = this.lang === 'en' ? {aktion:'Action',occurred_at:'Date',number:'Number',customer:'Customer',count:'Count',days:'Days',on_time:'On time'} : {aktion:'Aktion',occurred_at:'Datum',number:'Nummer',customer:'Kunde',count:'Anzahl',days:'Tage',on_time:'Pünktlich'};
             if (!LM[c] && c.endsWith('_id')) {
                 const F = {person_id:'Person',company_id:'Unternehmen',machine_id:'Maschine',task_id:'Aufgabe',question_id:'Frage',answer_id:'Antwort',tender_id:'Ausschreibung',project_id:'Projekt',strategy_id:'Strategie',measure_id:'Maßnahme',portfolio_id:'Portfolio',investment_id:'Investment',participation_id:'Beteiligung',expert_profile_id:'Experte',instruction_id:'Unterweisung',inspection_id:this.t('Prüfung'),risk_assessment_id:this.t('Gefährdungsbeurteilung'),financial_report_id:'Finanzbericht',leave_request_id:'Abwesenheit',parent_id:this.t('Übergeordnet'),responsible_id:'Verantwortlich',assignee_id:'Zugewiesen',created_by:'Erstellt von',updated_by:this.t('Geändert von'),approved_by:'Genehmigt von',awarded_by:'Vergeben von',user_id:'Benutzer',document_id:'Dokument',audit_id:'Audit',auditor:'Auditor',standard:'Norm',severity:'Schwere',audits_open:'Offene Audits',findings_open:'Offene Festst.',open_findings_count:'Offene Festst.',findings_count:'Feststellungen',applications_count:'Bewerbungen',answers_count:this.t('Antworten'),open_tasks_count:'Offene Aufgaben',members_count:'Mitglieder',projects_count:'Projekte',measures_count:'Maßnahmen'};
                 if (F[c]) return F[c];
                 return c.slice(0, -3).replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
             }
-            return LM[c] || c.replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
+            return LM[c] || TD[c] || c.replace(/_/g,' ').replace(/^\w/, s => s.toUpperCase());
         },
         periodKey(v) {
             const d = new Date(v);
