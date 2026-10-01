@@ -5,19 +5,19 @@ RUN npm ci
 COPY resources ./resources
 RUN npm run build
 
-FROM php:8.3-cli-bookworm
+FROM dunglas/frankenphp:php8.3-bookworm
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        git unzip libzip-dev libsqlite3-dev libpng-dev libonig-dev \
-    && docker-php-ext-install pdo_mysql pdo_sqlite zip gd \
-    && rm -rf /var/lib/apt/lists/*
+RUN install-php-extensions pdo_mysql pdo_sqlite zip gd pcntl
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 COPY . .
+COPY docker/Caddyfile /etc/caddy/Caddyfile
+COPY docker/entrypoint.sh /usr/local/bin/app-entrypoint
+RUN chmod +x /usr/local/bin/app-entrypoint \
+    && composer install --no-dev --optimize-autoloader --no-interaction
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction
 COPY --from=assets /app/public/build ./public/build
 
 ENV APP_ENV=production \
@@ -25,11 +25,16 @@ ENV APP_ENV=production \
     DB_CONNECTION=mysql \
     DB_HOST=mysql \
     DB_PORT=3306 \
-    DB_DATABASE=allocore
+    DB_DATABASE=allocore \
+    QUEUE_CONNECTION=database \
+    SERVER_NAME=:8000
 
 EXPOSE 8000
 
-CMD php artisan migrate --force \
-    && php artisan config:cache \
-    && (php artisan schedule:work &) \
-    && php artisan serve --host=0.0.0.0 --port=8000
+# Default process: web server. fly.toml/docker-compose can override the
+# command to run the scheduler or a queue worker as separate processes:
+#   app       → frankenphp run --config /etc/caddy/Caddyfile
+#   scheduler → php artisan schedule:work
+#   worker    → php artisan queue:work
+ENTRYPOINT ["app-entrypoint"]
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

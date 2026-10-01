@@ -8,6 +8,12 @@ primary_region = "fra"
   APP_DEBUG = "false"
   DB_CONNECTION = "sqlite"
   DB_DATABASE = "/var/www/html/storage/database.sqlite"
+  QUEUE_CONNECTION = "database"
+
+[processes]
+  app = "frankenphp run --config /etc/caddy/Caddyfile"
+  scheduler = "php artisan schedule:work"
+  worker = "php artisan queue:work database --sleep=3 --tries=3 --backoff=10"
 
 [http_service]
   internal_port = 8000
@@ -15,6 +21,8 @@ primary_region = "fra"
   auto_stop_machines = "stop"
   auto_start_machines = true
   min_machines_running = 0
+  processes = ["app"]
 
 [[vm]]
   memory = "512mb"
+  processes = ["app", "scheduler", "worker"]

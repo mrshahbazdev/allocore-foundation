@@ -58,7 +58,7 @@ Strikte Mandanten-Mitgliedschaft (`X-Tenant` → 403), RBAC mit `*.view`/`*.mana
 
 ## Deploy
 
-- Docker + fly.toml (siehe `docs/DEPLOYMENT.md`) — Container startet `serve` + `schedule:work`
+- Docker + fly.toml (siehe `docs/DEPLOYMENT.md`) — FrankenPHP/Caddy als Webserver; `app`, `scheduler`, `worker` als eigene Prozesse
 - Apache/Shared Hosting: Root-`.htaccess` routet in `public/`; `public/build` ist committed (kein Node nötig)
 
 ## Tests
