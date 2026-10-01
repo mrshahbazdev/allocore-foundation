@@ -19,7 +19,7 @@
 <body class="font-sans antialiased bg-[#F6F7F9] text-[#1A2433]">
 <a href="#hauptinhalt" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:bg-[#0B0B0F] focus:text-[#FACC15] focus:px-3 focus:py-2 focus:rounded-lg focus:text-xs"><span x-text="t('Zum Inhalt springen')"></span></a>
 <div class="min-h-screen flex flex-col lg:flex-row" x-data="workspace(@js($section))" x-cloak
-     @keydown.escape.window="detail = null; closeCreate(); showCreate = false; navOpen = false; palette = false; colPicker = false; viewPicker = false; kbdHelp = false; showImport = false; confirmDel = false; notif = false; pwOpen = false; endTour()"
+     @keydown.escape.window="detail = null; closeCreate(); showCreate = false; navOpen = false; palette = false; colPicker = false; viewPicker = false; kbdHelp = false; showImport = false; confirmDel = false; notif = false; pwOpen = false; tenantModal = false; endTour()"
      @keydown.arrowright.window="detail && navDetail(1)"
      @keydown.arrowleft.window="detail && navDetail(-1)"
      @keydown.home.window="detail && (detail = sorted(filtered())[0])"
@@ -1406,6 +1406,21 @@
     </div>
 </div>
 
+{{-- Tenant create/rename modal --}}
+<div x-show="tenantModal" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none">
+    <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="tenantModal = false"></div>
+    <div class="relative w-full max-w-sm bg-white rounded-xl shadow-xl" role="dialog" aria-modal="true" :aria-label="t('Mandant')">
+        <div class="px-6 py-4 border-b border-[#E4E9F0]"><h2 class="font-semibold text-[#0B0B0F]" x-text="tenantMode === 'rename' ? t('Mandant umbenennen') : t('Neuer Mandant')"></h2></div>
+        <div class="p-6 space-y-3" @keydown.enter="submitTenant()">
+            <input type="text" x-model="tenantName" :placeholder="t('Name des Mandanten')" class="w-full rounded-lg border-[#D6DEE9] text-sm focus:border-[#CA8A04] focus:ring-[#CA8A04]/30">
+        </div>
+        <div class="px-6 py-3 border-t border-[#E4E9F0] flex items-center gap-2 justify-end">
+            <button @click="tenantModal = false" class="px-3 py-1.5 text-sm rounded-lg border border-[#D6DEE9] text-[#5B6B7E]" x-text="t('Abbrechen')"></button>
+            <button @click="submitTenant()" :disabled="!tenantName.trim()" class="px-4 py-1.5 text-sm rounded-lg bg-[#FACC15] text-black font-semibold disabled:opacity-50" x-text="tenantMode === 'rename' ? t('Umbenennen') : t('Anlegen')"></button>
+        </div>
+    </div>
+</div>
+
 <script>
 function workspace(initial) {
     const GROUPS = [
@@ -1931,7 +1946,7 @@ const T_EN2 = {
         pins: JSON.parse(localStorage.getItem('af_pins') || '[]'), kbdHelp: false, hiddenCols: {}, colPicker: false, viewPicker: false, selected: {}, recent: [], navBadges: {}, navBadgesToday: {}, navBadgesWeek: {}, navTotal: null, navWindow: parseInt(localStorage.getItem('af_navwindow') || '7'),
         docVersions: [], entityEdges: [], allEdges: [], expandedEdge: null, auditFindings: [], confirmDel: false, rowEvents: [], evShown: 6, rowNotifs: [], allRoles: [], userRoles: [], userPerms: [], roleEdit: null, allPerms: [], rolePerms: [], newRole: '',
         tour: false, tourStep: 0, tourRect: null, tourSteps: [], tourPrompt: false,
-        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
+        answers: [], answerText: '', apps: [], appForm: {expert_profile_id: '', proposal: '', price: ''}, palette: false, paletteQ: '', palIdx: 0, notif: false, globHits: [], globTimer: null, seeding: false, insightSev: '', fkQ: {}, insDismissed: JSON.parse(localStorage.getItem('af_insdismissed') || '[]'), dbNotifs: [], notifKinds: [], notifCodes: [], notifStats: null, tenantInfo: null, pwOpen: false, tenantModal: false, tenantMode: 'create', tenantName: '', pwErr: '', pwForm: {name:'',email:'',current:'',next:'',confirm:''}, loginHistory: [],
         meId: @js($user->id ?? null), offline: !navigator.onLine, groupBy: '', collapsedGroups: {}, dashMyOnly: false, rowsTotal: null, dashQ: '', dashHits: [], dashTimer: null,
         init() {
             document.documentElement.lang = this.lang;
@@ -2813,30 +2828,38 @@ const T_EN2 = {
             a.click();
             URL.revokeObjectURL(a.href);
         },
-        async createTenant() {
-            const name = prompt('Name des neuen Mandanten:');
-            if (!name || !name.trim()) return;
-            const r = await fetch('/api/v1/tenants', {method:'POST', headers:{
-                'Authorization': 'Bearer {{ $apiToken }}', 'Accept':'application/json',
-                'Content-Type':'application/json'},
-                body: JSON.stringify({name: name.trim()})});
-            if (!r.ok) { this.toast(this.t('Anlegen fehlgeschlagen (HTTP ')+r.status+')'); return; }
-            const t = await r.json();
-            this.tenantList.push({id: t.id, name: t.name});
-            this.tenant = t.id;
-            this.toast(this.t('Mandant angelegt: ') + t.name);
-            this.loadSection();
-            this.loadNavBadges();
+        createTenant() {
+            this.tenantMode = 'create'; this.tenantName = ''; this.tenantModal = true;
         },
-        async renameTenant() {
+        renameTenant() {
             const cur = this.tenantList.find(t => t.id === this.tenant);
-            const name = prompt(this.t('Neuer Name für ') + (cur ? cur.name : 'Mandanten') + ':', cur ? cur.name : '');
-            if (!name || !name.trim() || name.trim() === (cur ? cur.name : '')) return;
-            const r = await this.api('/api/v1/tenant', {method:'PUT', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({name: name.trim()})});
-            if (!r.ok) { this.toast(this.t('Umbenennen fehlgeschlagen (HTTP ')+r.status+')'); return; }
-            if (cur) cur.name = name.trim();
-            this.toast(this.t('Mandant umbenannt: ') + name.trim());
+            this.tenantMode = 'rename'; this.tenantName = cur ? cur.name : ''; this.tenantModal = true;
+        },
+        async submitTenant() {
+            const name = this.tenantName.trim();
+            if (!name) return;
+            if (this.tenantMode === 'rename') {
+                const cur = this.tenantList.find(t => t.id === this.tenant);
+                if (name === (cur ? cur.name : '')) { this.tenantModal = false; return; }
+                const r = await this.api('/api/v1/tenant', {method:'PUT', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({name})});
+                if (!r.ok) { this.toast(this.t('Umbenennen fehlgeschlagen (HTTP ')+r.status+')'); return; }
+                if (cur) cur.name = name;
+                this.toast(this.t('Mandant umbenannt: ') + name);
+            } else {
+                const r = await fetch('/api/v1/tenants', {method:'POST', headers:{
+                    'Authorization': 'Bearer {{ $apiToken }}', 'Accept':'application/json',
+                    'Content-Type':'application/json'},
+                    body: JSON.stringify({name})});
+                if (!r.ok) { this.toast(this.t('Anlegen fehlgeschlagen (HTTP ')+r.status+')'); return; }
+                const t = await r.json();
+                this.tenantList.push({id: t.id, name: t.name});
+                this.tenant = t.id;
+                this.toast(this.t('Mandant angelegt: ') + t.name);
+                this.loadSection();
+                this.loadNavBadges();
+            }
+            this.tenantModal = false;
         },
         async leaveTenant() {
             const cur = this.tenantList.find(t => t.id === this.tenant);
