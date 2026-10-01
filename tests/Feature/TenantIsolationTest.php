@@ -86,7 +86,10 @@ class TenantIsolationTest extends TestCase
         $attrs = [];
 
         foreach ($this->foreignKeys($model->getTable()) as $colName => $ref) {
-            if (! isset($this->fkSeeds[$ref['table']])) {
+            if (
+                ! isset($this->fkSeeds[$ref['table']])
+                || ! DB::table($ref['table'])->where($ref['column'], $this->fkSeeds[$ref['table']])->exists()
+            ) {
                 $this->fkSeeds[$ref['table']] = $this->seedReferenced($ref['table'], $tenant);
             }
             $attrs[$colName] = $this->fkSeeds[$ref['table']];
