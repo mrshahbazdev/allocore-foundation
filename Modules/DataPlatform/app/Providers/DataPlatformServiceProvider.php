@@ -7,6 +7,7 @@ use Modules\DataPlatform\Console\AggregateMetrics;
 use Modules\DataPlatform\Console\AnonymizeSyncCommand;
 use Modules\DataPlatform\Console\IngestMetrics;
 use Modules\DataPlatform\Console\NotifyCriticalInsights;
+use Modules\DataPlatform\Console\PruneData;
 use Modules\DataPlatform\Console\PruneNotifications;
 use Modules\DataPlatform\Console\PullConnectorsCommand;
 use Modules\DataPlatform\Support\ActivityRecorder;
@@ -21,6 +22,7 @@ class DataPlatformServiceProvider extends ModuleServiceProvider
     protected array $commands = [
         AggregateMetrics::class,
         PruneNotifications::class,
+        PruneData::class,
         NotifyCriticalInsights::class,
         PullConnectorsCommand::class,
         AnonymizeSyncCommand::class,
@@ -43,6 +45,7 @@ class DataPlatformServiceProvider extends ModuleServiceProvider
     {
         $schedule->command('analytics:aggregate')->daily();
         $schedule->command('notifications:prune')->daily();
+        $schedule->command('data:prune')->daily();
         $schedule->command('insights:notify')->daily();
         $schedule->command('insights:notify --warnings')->weeklyOn(1);
         $schedule->command('integrations:pull')->hourly();
