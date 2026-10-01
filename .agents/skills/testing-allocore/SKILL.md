@@ -36,3 +36,15 @@ Then browse `https://localhost:8443/...` (Chrome auto-proceeds or click through 
 - Webhook test data: seed rows into `stored_events` via `DB::table('stored_events')->insert(...)` with `event_properties` shaped `{"type":"webhook.<x>","payload":{"body":{...},"source_name":"Suite"},"subject":{"type":"integration_source","title":"Suite"},"tenantId":<tenant-uuid>}` — the Tool-Daten section and the `metrics:ingest` map both read this shape.
 - Run `php artisan migrate --force` before testing — pending migrations cause 500s on list endpoints.
 - Tenant-switch keyboard shortcut is `y` (cycles tenants); `o`/`1`-`9` open rows.
+
+## Live production testing (dirksoelter.de)
+- Live account `mrshahbaznns@gmail.com` exists; reset its password via server SSH (tinker `bcrypt`) when needed.
+- Tenant "shahbaz" (b46c5b51-e04e-4657-ad4c-701815fc680e) has real webhook/KPI data — best for screenshots.
+- Tenant "demo" returns 403 for notifications/insights for that account.
+- Bell dropdown renders nothing when the account has zero notifications — use the Benachrichtigungen section instead.
+
+## Live production testing (dirksoelter.de)
+- Live account `mrshahbaznns@gmail.com` exists; reset its password via server SSH (tinker `bcrypt`) when needed.
+- Tenant "shahbaz" (b46c5b51-e04e-4657-ad4c-701815fc680e) has real webhook/KPI data — best tenant for screenshots and E2E checks.
+- Tenant "demo" returns 403 for notifications/insights for that account.
+- The notification bell dropdown renders nothing when the account has zero notifications — screenshot the Benachrichtigungen section instead.
