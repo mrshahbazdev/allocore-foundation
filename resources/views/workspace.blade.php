@@ -1335,8 +1335,6 @@
             </div>
         </template>
     </div>
-</div>
-
 {{-- Passwort ändern --}}
 <div x-show="pwOpen" class="fixed inset-0 z-50 flex items-center justify-center" style="display:none">
     <div class="absolute inset-0 bg-[#0B0B0F]/40" @click="pwOpen = false"></div>
@@ -1419,6 +1417,7 @@
             <button @click="submitTenant()" :disabled="!tenantName.trim()" class="px-4 py-1.5 text-sm rounded-lg bg-[#FACC15] text-black font-semibold disabled:opacity-50" x-text="tenantMode === 'rename' ? t('Umbenennen') : t('Anlegen')"></button>
         </div>
     </div>
+</div>
 </div>
 
 <script>
