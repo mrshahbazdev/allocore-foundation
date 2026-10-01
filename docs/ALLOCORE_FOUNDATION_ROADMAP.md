@@ -255,3 +255,32 @@ Mohammad kann Bewerber an diesen konkreten Punkten messen:
 1. Mohammad: Team aufstellen (Phase-1-Rollen zuerst besetzen)
 2. Lead Architect: Repo `allocore-foundation` initialisieren + Skelett (Laravel, Modules, Tenancy, CI)
 3. Sprint 0: Dokumente A–D erstellen und abnehmen lassen
+
+---
+
+## 11. Modul-Reifegrade (Stand 2026-10)
+
+| Modul | Status | Hinweis |
+|---|---|---|
+| Core (Stammdaten, Auth, RBAC) | **stable** | Produktiv genutzt; Tenant-Isolation durch Sweep-Test abgesichert |
+| Documents | **stable** | Upload/Versionen vollständig |
+| Tasks | **stable** | Zuweisung, Erinnerungen, Insights |
+| Compliance | **stable** | Unterweisungen, Prüfungen, Fristen, GB, Betriebsanweisungen — Kernmodul, produktiv |
+| DataPlatform | **stable** | Event Store, KPIs, Webhooks, Connectors, Notifications, Insights |
+| Audits | **beta** | Audits + Feststellungen komplett; produktive Erprobung läuft |
+| Finance | **beta** | Monatsberichte + Finanz-KPIs; weitere Buchungs-Quellen offen |
+| Hr | **beta** | Urlaubsanträge mit Genehmigungsfluss; weitere Personalprozesse offen |
+| Production | **beta** | Zahnlabor-Aufträge + Maschinen; DentalTrack-Integration live |
+| ExpertNetwork | **beta** | Q&A + Ausschreibungen komplett; Matching heuristisch |
+| Ai | **beta** | Coach liest anonymisierte Schicht; LLM-Provider konfigurierbar |
+| CorporateDev | **stub** | Strategien/Projekte/Maßnahmen CRUD + Insights; keine Workflow-Tiefe |
+| Investments | **stub** | Portfolios/Investments CRUD; Bewertungslogik minimal |
+| Participations | **stub** | Beteiligungen CRUD; Reporting offen |
+| DataLake | **stub** | Objektablage API + UI; S3-Backend optional |
+| KnowledgeGraph | **stub** | Entitäten/Kanten + Traversal; keine Auto-Extraktion |
+| Executive | **beta** | Cross-Tenant-Rollup + Reports; executive.view Rolle offen |
+
+**Fokus-Empfehlung:** Core, Compliance und DataPlatform sind die drei Tragpfeiler —
+hier bleibt die Tiefe. Audits/Finance/Hr als nächstes auf stable heben.
+Stub-Module bleiben dünn, bis ein fachlicher Treiber existiert (keine
+vorauseilende Feature-Arbeit).
