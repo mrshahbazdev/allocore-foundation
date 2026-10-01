@@ -118,7 +118,7 @@ class TenantIsolationTest extends TestCase
 
         $attrs['tenant_id'] = $tenant->id;
 
-        $save = function () use ($class, $model, $attrs) {
+        $save = function () use ($class, $model, &$attrs) {
             return $class::withoutEvents(function () use ($model, $attrs) {
                 $model->forceFill($attrs);
                 $model->save();
