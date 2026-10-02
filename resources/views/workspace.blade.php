@@ -3172,7 +3172,7 @@ const T_EN2 = {
                 events: ['type'],
             };
             const keys = Object.keys(src).length
-                ? Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k])).slice(0, 12)
+                ? Object.keys(src).filter(k => !SKIP.has(k) && (!k.endsWith('_id') || FKMAP[k]) && (src[k] === null || src[k] === undefined || typeof src[k] !== 'object')).slice(0, 12)
                 : (DEFS[this.section] || ['title', 'description']);
             return keys.map((k, i) => ({
                 key: k,
